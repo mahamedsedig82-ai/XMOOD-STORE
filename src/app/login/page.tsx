@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { useAuth, useFirestore } from "@/firebase";
 import { 
   signInWithEmailAndPassword, 
@@ -44,7 +45,6 @@ export default function LoginPage() {
       const docSnap = await getDoc(userDocRef);
       
       if (!docSnap.exists()) {
-        // إذا كان الاسم هو XMOOD STORE، اجعله مديراً تلقائياً
         const isAdmin = user.displayName === "XMOOD STORE" || user.email === "admin@xmood.store";
         
         await setDoc(userDocRef, {
@@ -61,7 +61,7 @@ export default function LoginPage() {
       toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في XMOOD STORE" });
       router.push("/");
     } catch (error: any) {
-      toast({ variant: "destructive", title: "فشل الدخول عبر Google", description: "يرجى المحاولة مرة أخرى أو التأكد من إعدادات المتصفح" });
+      toast({ variant: "destructive", title: "فشل الدخول عبر Google", description: "يرجى المحاولة مرة أخرى" });
     } finally {
       setLoading(false);
     }
@@ -73,11 +73,6 @@ export default function LoginPage() {
     
     if (!showVerification) {
       setShowVerification(true);
-      return;
-    }
-
-    if (verificationCode.length < 4) {
-      toast({ variant: "destructive", title: "رمز غير مكتمل", description: "يرجى إدخال رمز الأمان المكون من 4 أرقام" });
       return;
     }
 
@@ -103,8 +98,7 @@ export default function LoginPage() {
 
       await updateProfile(user, { displayName: name });
       
-      // إذا كان الاسم هو XMOOD STORE، اجعله مديراً تلقائياً
-      const isAdmin = name === "XMOOD STORE";
+      const isAdmin = name === "XMOOD STORE" || email === "admin@xmood.store";
       
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
@@ -116,7 +110,7 @@ export default function LoginPage() {
         createdAt: new Date().toISOString(),
       });
 
-      toast({ title: "تم إنشاء الحساب", description: "مرحباً بك في عائلة XMOOD STORE" });
+      toast({ title: "تم إنشاء الحساب بنجاح", description: `مرحباً بك ${isAdmin ? 'أيها المدير' : ''} في XMOOD STORE` });
       router.push("/");
     } catch (error: any) {
       toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message });
@@ -129,7 +123,7 @@ export default function LoginPage() {
     <main className="min-h-screen bg-white font-body">
       <Navbar />
       <div className="container mx-auto px-4 py-12 flex justify-center items-center">
-        <Card className="w-full max-w-lg border-none shadow-2xl rounded-[3.5rem] overflow-hidden bg-white border border-slate-100">
+        <Card className="w-full max-w-lg border-none shadow-2xl rounded-[3.5rem] overflow-hidden bg-white">
           <div className="bg-primary p-12 text-center text-white relative">
             <div className="mx-auto w-20 h-20 bg-white/20 rounded-[1.8rem] flex items-center justify-center mb-6 backdrop-blur-xl border border-white/30 shadow-inner">
               <ShieldCheck size={40} strokeWidth={1.5} />
@@ -141,10 +135,10 @@ export default function LoginPage() {
           <CardContent className="p-10">
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-10 bg-slate-50 rounded-[1.8rem] p-1.5 h-16">
-                <TabsTrigger value="login" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold transition-all text-sm">
+                <TabsTrigger value="login" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold transition-all">
                   دخول
                 </TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold transition-all text-sm">
+                <TabsTrigger value="signup" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold transition-all">
                   تسجيل جديد
                 </TabsTrigger>
               </TabsList>
@@ -159,7 +153,7 @@ export default function LoginPage() {
                         <Input 
                           type="email" 
                           placeholder="example@mail.com" 
-                          className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
+                          className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold text-right" 
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
@@ -173,7 +167,7 @@ export default function LoginPage() {
                         <Input 
                           type="password" 
                           placeholder="••••••••" 
-                          className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
+                          className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold text-right" 
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
@@ -186,7 +180,7 @@ export default function LoginPage() {
 
                     <div className="relative my-8">
                       <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-100"></span></div>
-                      <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-300 font-bold tracking-[0.3em]">أو الدخول عبر</span></div>
+                      <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-300 font-bold tracking-[0.3em]">أو</span></div>
                     </div>
 
                     <Button 
@@ -206,7 +200,7 @@ export default function LoginPage() {
                         <Fingerprint size={40} />
                       </div>
                       <h3 className="text-2xl font-bold">رمز التحقق الأمني</h3>
-                      <p className="text-sm text-muted-foreground mt-2">أدخل الرمز المكون من 4 أرقام للمتابعة</p>
+                      <p className="text-sm text-muted-foreground mt-2">أدخل أي 4 أرقام للمتابعة (تجريبي)</p>
                     </div>
                     
                     <div className="flex justify-center gap-4" dir="ltr">
@@ -230,7 +224,7 @@ export default function LoginPage() {
                       </Button>
                       <Button 
                         onClick={handleEmailLogin} 
-                        className="flex-[2] h-16 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/20"
+                        className="flex-[2] h-16 rounded-2xl bg-primary text-white font-bold shadow-lg"
                         disabled={loading}
                       >
                         {loading ? <Loader2 className="animate-spin" /> : "تأكيد الهوية"}
@@ -247,8 +241,8 @@ export default function LoginPage() {
                     <div className="relative">
                       <User className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
                       <Input 
-                        placeholder="اكتب اسمك الحقيقي" 
-                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
+                        placeholder="استخدم XMOOD STORE للصلاحيات" 
+                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold text-right" 
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
@@ -262,7 +256,7 @@ export default function LoginPage() {
                       <Input 
                         type="email" 
                         placeholder="mail@example.com" 
-                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
+                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold text-right" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -276,7 +270,7 @@ export default function LoginPage() {
                       <Input 
                         type="password" 
                         placeholder="اختر كلمة مرور قوية" 
-                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
+                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold text-right" 
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -284,7 +278,7 @@ export default function LoginPage() {
                     </div>
                   </div>
                   <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-16 rounded-2xl shadow-xl mt-4" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء حسابك الآن"}
+                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء الحساب الإداري"}
                   </Button>
                 </form>
               </TabsContent>
