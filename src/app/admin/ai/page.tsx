@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { useFirestore, useCollection } from "@/firebase";
-import { collection, doc, updateDoc, addDoc, deleteDoc, writeBatch } from "firebase/firestore";
+import { collection, doc, updateDoc, addDoc, deleteDoc } from "firebase/firestore";
 import { adminAiAssistant } from "@/ai/flows/admin-ai-flow";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Cpu, Send, Sparkles, Loader2, Database, ShieldCheck, Zap, RefreshCcw } from "lucide-react";
+import { Cpu, Send, Sparkles, Loader2, Database, ShieldCheck, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
@@ -34,7 +34,6 @@ export default function AdminAiPage() {
         currentContext: { products }
       });
 
-      // تنفيذ التعديل الفعلي بناءً على استجابة الذكاء الاصطناعي
       if (result.actionType !== 'UNKNOWN' && result.actionType !== 'UI_STYLE_ADVICE') {
         await applyAiChange(result);
       }
@@ -51,7 +50,7 @@ export default function AdminAiPage() {
       });
 
     } catch (error) {
-      setHistory(prev => [...prev, { role: 'ai', content: "عذراً، واجهت مشكلة في معالجة هذا الأمر. يرجى المحاولة بصيغة أخرى." }]);
+      setHistory(prev => [...prev, { role: 'ai', content: "عذراً، واجهت مشكلة في معالجة هذا الأمر." }]);
     } finally {
       setIsLoading(false);
     }
@@ -62,20 +61,16 @@ export default function AdminAiPage() {
 
     try {
       if (actionType === 'UPDATE_PRODUCT' && targetId) {
-        await updateDoc(doc(db, "products", targetId), payload);
+        updateDoc(doc(db, "products", targetId), payload);
       } else if (actionType === 'CREATE_PRODUCT') {
-        await addDoc(collection(db, "products"), { ...payload, createdAt: new Date().toISOString() });
+        addDoc(collection(db, "products"), { ...payload, createdAt: new Date().toISOString() });
       } else if (actionType === 'DELETE_PRODUCT' && targetId) {
-        await deleteDoc(doc(db, "products", targetId));
-      } else if (actionType === 'UPDATE_SETTINGS') {
-        // تحديث إعدادات عامة (يمكن تخزينها في كولكشن منفصل)
-        await addDoc(collection(db, "audit_logs"), { type: 'SETTINGS_UPDATE', payload, createdAt: new Date().toISOString() });
+        deleteDoc(doc(db, "products", targetId));
       } else if (actionType === 'FINANCIAL_ADJUSTMENT' && targetId) {
-        await updateDoc(doc(db, "users", targetId), payload);
+        updateDoc(doc(db, "users", targetId), payload);
       }
     } catch (e) {
       console.error("AI Action Failed:", e);
-      throw e;
     }
   };
 
@@ -94,14 +89,10 @@ export default function AdminAiPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <Card className="lg:col-span-3 border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white flex flex-col h-[700px]">
-          <CardHeader className="bg-slate-950 text-white p-8 flex flex-row justify-between items-center">
-            <div>
-              <CardTitle className="text-xl flex items-center gap-3">
-                <Cpu className="text-primary" /> معالج الأوامر الفوري
-              </CardTitle>
-              <CardDescription className="text-slate-400">أي أمر تكتبه سيتحول إلى كود حقيقي في قاعدة البيانات.</CardDescription>
-            </div>
-            <Badge variant="outline" className="border-primary text-primary font-black">AI ONLINE</Badge>
+          <CardHeader className="bg-slate-950 text-white p-8">
+            <CardTitle className="text-xl flex items-center gap-3">
+              <Cpu className="text-primary" /> معالج الأوامر الفوري
+            </CardTitle>
           </CardHeader>
 
           <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
@@ -121,8 +112,8 @@ export default function AdminAiPage() {
                     <div className={`p-4 rounded-2xl max-w-[80%] text-sm font-bold shadow-sm ${msg.role === 'admin' ? 'bg-slate-900 text-white' : 'bg-slate-50 border'}`}>
                       {msg.content}
                       {msg.action && (
-                        <div className="mt-3 pt-3 border-t border-slate-200 text-[10px] text-primary uppercase font-black tracking-widest">
-                          Action: {msg.action.actionType} Applied
+                        <div className="mt-2 pt-2 border-t border-slate-200 text-[10px] text-primary uppercase font-black">
+                          تم تنفيذ إجراء: {msg.action.actionType}
                         </div>
                       )}
                     </div>
@@ -151,7 +142,7 @@ export default function AdminAiPage() {
                 <Button 
                   onClick={handleCommand}
                   disabled={isLoading}
-                  className="w-16 h-16 rounded-2xl bg-slate-950 hover:bg-primary transition-all shrink-0 shadow-xl"
+                  className="w-16 h-16 rounded-2xl bg-slate-950 hover:bg-primary transition-all shrink-0"
                 >
                   <Send className="rtl:rotate-180" />
                 </Button>
@@ -161,32 +152,22 @@ export default function AdminAiPage() {
         </Card>
 
         <div className="space-y-6">
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-8 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-[40px] rounded-full"></div>
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white p-8">
             <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">قدرات الذكاء الاصطناعي</h3>
             <ul className="space-y-4">
-              {[
-                { icon: Zap, text: "تعديل الأسعار والمخزون" },
-                { icon: RefreshCcw, text: "تغيير إعدادات الصرف" },
-                { icon: Database, text: "إضافة وحذف المنتجات" },
-                { icon: ShieldCheck, text: "إدارة رتب المستخدمين" }
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
-                    <item.icon size={16} />
-                  </div>
-                  <span className="text-sm font-bold">{item.text}</span>
-                </li>
-              ))}
+              <li className="flex items-center gap-3">
+                <Zap size={16} className="text-primary" />
+                <span className="text-sm font-bold">تعديل الأسعار والمخزون</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Database size={16} className="text-primary" />
+                <span className="text-sm font-bold">إضافة وحذف المنتجات</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <ShieldCheck size={16} className="text-primary" />
+                <span className="text-sm font-bold">إدارة رتب المستخدمين</span>
+              </li>
             </ul>
-          </Card>
-
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-primary text-white p-8">
-            <ShieldCheck size={32} className="mb-4" />
-            <h3 className="text-xl font-bold mb-2">أمان الإدارة</h3>
-            <p className="text-xs text-white/70 leading-relaxed font-medium">
-              نظام AI Assistant محمي بالكامل؛ فقط المدير العام الموثق يمكنه الوصول لهذه الأدوات الحساسة.
-            </p>
           </Card>
         </div>
       </div>

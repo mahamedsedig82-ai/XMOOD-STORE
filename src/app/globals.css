@@ -28,12 +28,8 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground antialiased selection:bg-primary/20;
-  }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground antialiased selection:bg-primary/20 font-body; }
 }
 
 .gold-gradient {
@@ -42,10 +38,6 @@
 
 .gold-gradient-text {
   @apply gold-gradient bg-clip-text text-transparent;
-}
-
-.royal-shadow {
-  box-shadow: 0 40px 100px -20px rgba(184, 134, 11, 0.15);
 }
 
 .luxury-card {
@@ -61,17 +53,8 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-.font-handwriting {
-  font-family: 'Caveat', cursive;
-}
+.font-handwriting { font-family: 'Caveat', cursive; }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  @apply bg-slate-50;
-}
-::-webkit-scrollbar-thumb {
-  @apply bg-primary/20 rounded-full hover:bg-primary/40;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { @apply bg-slate-50; }
+::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full hover:bg-primary/40; }

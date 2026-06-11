@@ -25,7 +25,6 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   
-  // Verification System
   const [showPinEntry, setShowPinEntry] = useState(false);
   const [pin, setPin] = useState("");
   const [generatedPin, setGeneratedPin] = useState("");
@@ -37,63 +36,39 @@ export default function LoginPage() {
 
   const ADMIN_EMAIL = "MAHAMEDFK3@GMAIL.COM";
 
-  const generateRandomPin = () => {
-    return Math.floor(1000 + Math.random() * 9000).toString();
-  };
-
   const handleStartVerification = (userEmail: string) => {
-    const newPin = generateRandomPin();
+    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
     setGeneratedPin(newPin);
     setShowPinEntry(true);
     toast({ 
-      title: "رمز التحقق الرقمي", 
-      description: `تم إرسال رمز الأمان ${newPin} إلى بريدك الخاص لضمان هوية XMOOD.`,
-      duration: 15000
+      title: "رمز التحقق الأمني", 
+      description: `تم إرسال الرمز ${newPin} إلى بريدك (محاكاة). يرجى إدخاله للمتابعة.`,
+      duration: 10000
     });
   };
 
   const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsVerifying(true);
-    
-    // Simulate verification
     setTimeout(() => {
       if (pin === generatedPin || pin === "2025") {
-        toast({ title: "تم التحقق الملكي", description: "مرحباً بك في عالم XMOOD STORE الفاخر." });
+        toast({ title: "تم التحقق", description: "مرحباً بك في XMOOD STORE." });
         router.push("/");
       } else {
-        toast({ variant: "destructive", title: "رمز خاطئ", description: "يرجى التحقق من الرمز الصحيح المرسل لبريدك." });
+        toast({ variant: "destructive", title: "رمز خاطئ", description: "يرجى إدخال الرمز الصحيح." });
       }
       setIsVerifying(false);
-    }, 1500);
+    }, 1000);
   };
 
   async function handleGoogleLogin() {
     if (!auth || !db) return;
     setLoading(true);
-    const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      const userDocRef = doc(db, 'users', user.uid);
-      const docSnap = await getDoc(userDocRef);
-      const isAdmin = user.email?.toUpperCase() === ADMIN_EMAIL.toUpperCase();
-      
-      if (!docSnap.exists()) {
-        await setDoc(userDocRef, {
-          uid: user.uid,
-          displayName: user.displayName || 'مستخدم XMOOD',
-          email: user.email,
-          walletBalance: isAdmin ? 999999999 : 0,
-          role: isAdmin ? 'admin' : 'user',
-          createdAt: new Date().toISOString(),
-        });
-      }
-      
-      handleStartVerification(user.email!);
+      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      handleStartVerification(result.user.email!);
     } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ في الاتصال", description: "فشل الدخول عبر بوابة جوجل الرقمية." });
+      toast({ variant: "destructive", title: "خطأ", description: "فشل الدخول عبر جوجل." });
     } finally {
       setLoading(false);
     }
@@ -107,7 +82,7 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       handleStartVerification(email);
     } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ في البيانات", description: "البريد أو كلمة المرور غير صحيحة." });
+      toast({ variant: "destructive", title: "خطأ", description: "البريد أو كلمة المرور غير صحيحة." });
     } finally {
       setLoading(false);
     }
@@ -119,24 +94,10 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      await updateProfile(user, { displayName: name });
-      
-      const isAdmin = email.toUpperCase() === ADMIN_EMAIL.toUpperCase();
-      const userDocRef = doc(db, 'users', user.uid);
-      
-      await setDoc(userDocRef, {
-        uid: user.uid,
-        displayName: name,
-        email: email,
-        walletBalance: isAdmin ? 999999999 : 0,
-        role: isAdmin ? 'admin' : 'user',
-        createdAt: new Date().toISOString(),
-      });
-
+      await updateProfile(userCredential.user, { displayName: name });
       handleStartVerification(email);
     } catch (error: any) {
-      toast({ variant: "destructive", title: "فشل إنشاء الحساب", description: error.message });
+      toast({ variant: "destructive", title: "خطأ", description: error.message });
     } finally {
       setLoading(false);
     }
@@ -144,31 +105,26 @@ export default function LoginPage() {
 
   if (showPinEntry) {
     return (
-      <main className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-body">
+      <main className="min-h-screen bg-slate-950 flex items-center justify-center p-6" dir="rtl">
         <Card className="w-full max-w-lg rounded-[4rem] overflow-hidden bg-white shadow-2xl animate-fade-in">
-          <div className="bg-primary p-16 text-center text-white relative">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-[60px] rounded-full"></div>
-            <KeyRound size={64} className="mx-auto mb-8 animate-pulse" />
-            <h2 className="text-4xl font-headline font-bold">بوابة التحقق الآمنة</h2>
-            <p className="text-sm opacity-80 mt-4 font-light tracking-widest uppercase">Identity Validation Protocol</p>
+          <div className="bg-primary p-12 text-center text-white">
+            <KeyRound size={48} className="mx-auto mb-6 animate-pulse" />
+            <h2 className="text-3xl font-headline font-bold">بوابة التحقق</h2>
+            <p className="text-xs opacity-70 mt-2">يرجى إدخال الرمز المرسل لبريدك</p>
           </div>
-          <CardContent className="p-16">
-            <form onSubmit={handlePinSubmit} className="space-y-10">
-              <div className="space-y-4">
-                 <p className="text-center text-slate-400 text-xs font-bold uppercase tracking-widest">أدخل رمز التحقق (4 أرقام)</p>
-                 <Input 
-                  type="password" 
-                  maxLength={4} 
-                  className="h-24 text-center text-6xl font-black rounded-3xl bg-slate-50 border-none text-primary shadow-inner tracking-[0.5em]"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              <Button disabled={isVerifying} type="submit" className="w-full h-20 bg-slate-950 hover:bg-primary rounded-[2rem] font-bold text-white text-xl shadow-2xl transition-all">
-                {isVerifying ? <Loader2 className="animate-spin" /> : "تأكيد الهوية والدخول"}
+          <CardContent className="p-12">
+            <form onSubmit={handlePinSubmit} className="space-y-8">
+              <Input 
+                type="text" 
+                maxLength={4} 
+                className="h-20 text-center text-5xl font-black rounded-3xl bg-slate-50 border-none text-primary"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                autoFocus
+              />
+              <Button disabled={isVerifying} type="submit" className="w-full h-16 bg-slate-950 hover:bg-primary rounded-2xl font-bold text-lg">
+                {isVerifying ? <Loader2 className="animate-spin" /> : "تأكيد والدخول"}
               </Button>
-              <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest opacity-40">Protected by XMOOD Royal Security</p>
             </form>
           </CardContent>
         </Card>
@@ -177,56 +133,43 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F8F9FA] font-body">
+    <main className="min-h-screen bg-slate-50 font-body" dir="rtl">
       <Navbar />
-      <div className="container mx-auto px-4 py-24 flex justify-center">
-        <Card className="w-full max-w-xl rounded-[4.5rem] overflow-hidden bg-white shadow-2xl border-none luxury-card animate-fade-in">
-          <div className="bg-slate-950 p-16 text-center text-white relative">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 blur-[80px] rounded-full"></div>
-            <ShieldCheck size={72} className="text-primary mx-auto mb-8" />
-            <h2 className="text-5xl font-headline font-bold mb-4 tracking-tighter">بوابة XMOOD</h2>
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-8 h-px bg-primary/40"></div>
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Royal Identity Hub</p>
-              <div className="w-8 h-px bg-primary/40"></div>
-            </div>
+      <div className="container mx-auto px-4 py-20 flex justify-center">
+        <Card className="w-full max-w-xl rounded-[4rem] overflow-hidden bg-white shadow-2xl border-none animate-fade-in">
+          <div className="bg-slate-950 p-12 text-center text-white relative">
+            <ShieldCheck size={64} className="text-primary mx-auto mb-6" />
+            <h2 className="text-4xl font-headline font-bold">بوابة XMOOD</h2>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mt-2">Royal Identity Access</p>
           </div>
           
-          <CardContent className="p-16 pt-12">
+          <CardContent className="p-12">
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-12 bg-slate-100 rounded-[2.5rem] p-1.5 h-16 shadow-inner">
-                <TabsTrigger value="login" className="rounded-3xl font-bold text-lg data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all">دخول</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-3xl font-bold text-lg data-[state=active]:bg-white data-[state=active]:shadow-lg transition-all">تسجيل</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-10 bg-slate-100 rounded-full p-1 h-14">
+                <TabsTrigger value="login" className="rounded-full font-bold">دخول</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-full font-bold">تسجيل</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="login" className="space-y-8">
-                <form onSubmit={handleEmailLogin} className="space-y-6">
-                  <div className="space-y-4">
-                    <Input placeholder="البريد الإلكتروني" type="email" className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold text-lg shadow-sm" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                    <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold text-lg shadow-sm" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                  </div>
-                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-20 rounded-[2rem] shadow-2xl shadow-primary/20 text-xl" disabled={loading}>
+              <TabsContent value="login" className="space-y-6">
+                <form onSubmit={handleEmailLogin} className="space-y-4">
+                  <Input placeholder="البريد الإلكتروني" type="email" className="h-14 rounded-xl bg-slate-50" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="كلمة المرور" className="h-14 rounded-xl bg-slate-50" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-16 rounded-xl" disabled={loading}>
                     {loading ? <Loader2 className="animate-spin" /> : "إرسال رمز الأمان"}
                   </Button>
-                  <div className="relative py-4">
-                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t"></div></div>
-                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-muted-foreground font-black tracking-widest">أو عبر البوابات الذكية</span></div>
-                  </div>
-                  <Button type="button" variant="outline" onClick={handleGoogleLogin} className="w-full h-18 rounded-[2rem] border-slate-100 font-bold flex gap-4 justify-center items-center hover:bg-slate-50 text-lg">
-                    <Chrome size={24} className="text-red-500" /> الدخول عبر Google
+                  <Button type="button" variant="outline" onClick={handleGoogleLogin} className="w-full h-14 rounded-xl border-slate-200 font-bold flex gap-3 justify-center items-center">
+                    <Chrome size={20} className="text-red-500" /> جوجل
                   </Button>
                 </form>
               </TabsContent>
 
-              <TabsContent value="signup" className="space-y-8">
-                <form onSubmit={handleSignUp} className="space-y-6">
-                  <div className="space-y-4">
-                    <Input placeholder="الاسم الكامل المستعار" className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold text-lg shadow-sm" value={name} onChange={(e) => setName(e.target.value)} required />
-                    <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold text-lg shadow-sm" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                    <Input type="password" placeholder="كلمة المرور القوية" className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold text-lg shadow-sm" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                  </div>
-                  <Button type="submit" className="w-full bg-slate-950 hover:bg-primary text-white font-bold h-20 rounded-[2rem] shadow-2xl transition-all text-xl" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء الهوية وإرسال الرمز"}
+              <TabsContent value="signup" className="space-y-6">
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <Input placeholder="الاسم" className="h-14 rounded-xl bg-slate-50" value={name} onChange={(e) => setName(e.target.value)} required />
+                  <Input type="email" placeholder="البريد" className="h-14 rounded-xl bg-slate-50" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="كلمة المرور" className="h-14 rounded-xl bg-slate-50" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <Button type="submit" className="w-full bg-slate-950 hover:bg-primary text-white font-bold h-16 rounded-xl" disabled={loading}>
+                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء حساب"}
                   </Button>
                 </form>
               </TabsContent>

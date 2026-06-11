@@ -1,21 +1,18 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, MoreVertical, Edit2, Trash2, ImageIcon, Loader2, RefreshCcw, Key, Package, Layers, Sparkles } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Loader2, Key, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useFirestore } from "@/firebase";
 import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy, onSnapshot } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
-import { errorEmitter } from "@/firebase/error-emitter";
-import { FirestorePermissionError } from "@/firebase/errors";
 
 export default function AdminProducts() {
   const db = useFirestore();
@@ -37,7 +34,6 @@ export default function AdminProducts() {
     shippingCodes: "" 
   });
 
-  // REAL-TIME LISTENER: الضمان النهائي لمزامنة البيانات
   useEffect(() => {
     if (!db) return;
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -45,18 +41,12 @@ export default function AdminProducts() {
       const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setProducts(items);
       setLoading(false);
-    }, (err) => {
-      console.error("Snapshot Error:", err);
-      setLoading(false);
     });
     return () => unsubscribe();
   }, [db]);
 
   const handleAddProduct = async () => {
-    if (!currentProduct.name || !currentProduct.price) {
-      toast({ variant: "destructive", title: "خطأ", description: "يرجى ملء الاسم والسعر" });
-      return;
-    }
+    if (!currentProduct.name || !currentProduct.price) return;
     setIsProcessing(true);
     const productData = {
       name: currentProduct.name,
@@ -72,15 +62,11 @@ export default function AdminProducts() {
 
     try {
       await addDoc(collection(db, "products"), productData);
-      toast({ title: "تم النشر بنجاح", description: "المنتج متاح الآن لجميع المستخدمين" });
+      toast({ title: "تم الإضافة بنجاح" });
       setIsAddDialogOpen(false);
       resetForm();
     } catch (err) {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: 'products',
-        operation: 'create',
-        requestResourceData: productData
-      }));
+      toast({ variant: "destructive", title: "خطأ في الصلاحيات" });
     } finally {
       setIsProcessing(false);
     }
@@ -104,52 +90,34 @@ export default function AdminProducts() {
 
     try {
       await updateDoc(productRef, updateData);
-      toast({ title: "تم تحديث البيانات", description: "تم حفظ التغييرات فوراً في قاعدة البيانات" });
+      toast({ title: "تم التحديث بنجاح" });
       setIsEditDialogOpen(false);
       resetForm();
     } catch (err) {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: productRef.path,
-        operation: 'update',
-        requestResourceData: updateData
-      }));
+      toast({ variant: "destructive", title: "خطأ في التحديث" });
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleDeleteProduct = async (id: string) => {
-    if (!confirm("سيتم حذف المنتج وأكواد الشحن نهائياً، هل أنت متأكد؟")) return;
-    try {
-      await deleteDoc(doc(db, "products", id));
-      toast({ title: "تم الحذف", description: "تمت إزالة المنتج من المتجر" });
-    } catch (err) {
-      toast({ variant: "destructive", title: "خطأ", description: "فشل الحذف" });
-    }
+    if (!confirm("هل أنت متأكد؟")) return;
+    deleteDoc(doc(db, "products", id));
+    toast({ title: "تم الحذف" });
   };
 
   const resetForm = () => {
     setCurrentProduct({
-      id: "",
-      name: "",
-      price: "",
-      stock: "100",
-      category: "شحن ألعاب",
-      imageUrl: "https://picsum.photos/seed/ff-main/800/600",
-      description: "",
-      shippingCodes: ""
+      id: "", name: "", price: "", stock: "100", category: "شحن ألعاب",
+      imageUrl: "https://picsum.photos/seed/ff-main/800/600", description: "", shippingCodes: ""
     });
   };
 
   const openEditDialog = (product: any) => {
     setCurrentProduct({
-      id: product.id,
-      name: product.name,
-      price: product.price.toString(),
-      stock: product.stock.toString(),
-      category: product.category,
-      imageUrl: product.imageUrl,
-      description: product.description || "",
+      id: product.id, name: product.name, price: product.price.toString(),
+      stock: product.stock.toString(), category: product.category,
+      imageUrl: product.imageUrl, description: product.description || "",
       shippingCodes: product.shippingCodes || ""
     });
     setIsEditDialogOpen(true);
@@ -160,51 +128,37 @@ export default function AdminProducts() {
   );
 
   return (
-    <div className="space-y-12 animate-fade-in" dir="rtl">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+    <div className="space-y-8 animate-fade-in" dir="rtl">
+      <div className="flex justify-between items-center">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-1 h-px bg-primary"></div>
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Master Inventory Control</span>
-          </div>
-          <h1 className="text-5xl font-headline font-bold">المستودع الملكي الرقمي</h1>
-          <p className="text-muted-foreground text-lg font-light mt-2">إدارة الباقات، المخزون، وأكواد الشحن الفوري بكل احترافية.</p>
+          <h1 className="text-4xl font-headline font-bold text-slate-900">المستودع الرقمي</h1>
+          <p className="text-muted-foreground mt-2">إدارة الباقات والمخزون وأكواد الشحن الفوري.</p>
         </div>
-        
-        <div className="flex gap-4">
-          <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if(!open) resetForm(); }}>
-            <DialogTrigger asChild>
-              <Button className="h-20 px-12 bg-slate-900 hover:bg-primary text-white font-bold rounded-[2rem] transition-all shadow-2xl shadow-primary/10 text-lg">
-                <Plus size={24} className="ml-3" /> إضافة باقة جديدة
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="h-14 px-8 bg-slate-950 text-white font-bold rounded-2xl">
+              <Plus size={20} className="ml-2" /> إضافة باقة
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[700px] rounded-[3rem] p-10" dir="rtl">
+            <DialogHeader><DialogTitle className="text-2xl font-bold mb-6">إنشاء منتج جديد</DialogTitle></DialogHeader>
+            <ProductForm currentProduct={currentProduct} setCurrentProduct={setCurrentProduct} />
+            <DialogFooter className="mt-8">
+              <Button onClick={handleAddProduct} disabled={isProcessing} className="h-14 w-full rounded-xl bg-primary text-white font-bold">
+                {isProcessing ? <Loader2 className="animate-spin" /> : "نشر المنتج فوراً"}
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[800px] rounded-[4rem] p-12 border-none shadow-2xl" dir="rtl">
-              <DialogHeader>
-                <DialogTitle className="text-4xl font-headline font-bold mb-8 text-right flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                    <Plus size={28} />
-                  </div>
-                  إنشاء منتج جديد
-                </DialogTitle>
-              </DialogHeader>
-              <ProductForm currentProduct={currentProduct} setCurrentProduct={setCurrentProduct} />
-              <DialogFooter className="mt-12">
-                <Button onClick={handleAddProduct} disabled={isProcessing} className="h-20 w-full rounded-3xl bg-primary text-white font-bold text-2xl shadow-xl hover:scale-[1.02] transition-transform">
-                  {isProcessing ? <Loader2 className="animate-spin" /> : "نشر المنتج في المتجر فوراً"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-[4rem] overflow-hidden bg-white luxury-card">
-        <CardHeader className="bg-slate-50/50 p-10 border-b">
-          <div className="relative max-w-2xl">
-            <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground w-6 h-6" />
+      <Card className="border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white">
+        <CardHeader className="bg-slate-50/50 p-8">
+          <div className="relative max-w-md">
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input 
-              placeholder="ابحث عن باقة، خدمة، أو كود معين..." 
-              className="pr-16 h-16 rounded-2xl bg-white border-none shadow-inner text-lg font-medium"
+              placeholder="ابحث عن باقة..." 
+              className="pr-10 h-12 rounded-xl border-none shadow-inner"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -214,49 +168,38 @@ export default function AdminProducts() {
           <Table>
             <TableHeader className="bg-slate-50">
               <TableRow>
-                <TableHead className="text-right py-8 pr-12 font-black text-[10px] uppercase tracking-widest">المنتج والخدمة</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-widest">الفئة</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-widest">السعر الملكي</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-widest">المخزون</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-widest">أكواد الشحن</TableHead>
-                <TableHead className="text-center w-[200px] font-black text-[10px] uppercase tracking-widest">إجراءات</TableHead>
+                <TableHead className="text-right py-6 pr-10">المنتج</TableHead>
+                <TableHead className="text-right">السعر</TableHead>
+                <TableHead className="text-right">المخزون</TableHead>
+                <TableHead className="text-right">الأكواد</TableHead>
+                <TableHead className="text-center">إجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-32"><Loader2 className="animate-spin mx-auto text-primary w-16 h-16" /></TableCell></TableRow>
-              ) : filteredProducts.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-32 text-muted-foreground text-2xl font-light">لا توجد منتجات مسجلة حالياً في المستودع.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
               ) : filteredProducts.map((product: any) => (
-                <TableRow key={product.id} className="hover:bg-slate-50/50 transition-colors border-b last:border-0 group">
-                  <TableCell className="py-8 pr-12">
-                    <div className="flex items-center gap-6">
-                      <div className="w-20 h-20 bg-slate-100 rounded-3xl overflow-hidden shadow-inner shrink-0 group-hover:scale-110 transition-transform duration-500">
-                         <img src={product.imageUrl} className="object-cover w-full h-full" alt="" />
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <span className="font-bold text-slate-900 text-lg">{product.name}</span>
-                        <span className="text-[10px] text-muted-foreground tracking-widest uppercase font-black">ID: {product.id.substring(0,10)}</span>
-                      </div>
+                <TableRow key={product.id} className="hover:bg-slate-50/50 border-b last:border-0">
+                  <TableCell className="py-6 pr-10">
+                    <div className="flex items-center gap-4">
+                      <img src={product.imageUrl} className="w-12 h-12 rounded-xl object-cover" alt="" />
+                      <span className="font-bold">{product.name}</span>
                     </div>
                   </TableCell>
+                  <TableCell className="font-black text-primary">${product.price}</TableCell>
+                  <TableCell className="font-bold">{product.stock}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="rounded-xl border-primary/20 bg-primary/5 text-primary px-4 py-1.5 font-bold">{product.category}</Badge>
-                  </TableCell>
-                  <TableCell className="font-black text-primary text-2xl">${product.price}</TableCell>
-                  <TableCell className="font-bold text-lg">{product.stock}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="bg-amber-50 text-amber-600 border-none flex w-fit gap-2 items-center font-black px-4 py-1.5 rounded-full">
-                       <Key size={14} /> {product.shippingCodes?.split('\n').filter(Boolean).length || 0}
+                    <Badge variant="secondary" className="bg-amber-50 text-amber-600 font-bold">
+                       <Key size={12} className="ml-1" /> {product.shippingCodes?.split('\n').filter(Boolean).length || 0}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex justify-center gap-3">
-                       <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl hover:bg-blue-50 text-blue-600 shadow-sm" onClick={() => openEditDialog(product)}>
-                          <Edit2 size={20} />
+                    <div className="flex justify-center gap-2">
+                       <Button size="icon" variant="ghost" className="h-10 w-10 text-blue-600" onClick={() => openEditDialog(product)}>
+                          <Edit2 size={16} />
                        </Button>
-                       <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl hover:bg-red-50 text-red-600 shadow-sm" onClick={() => handleDeleteProduct(product.id)}>
-                          <Trash2 size={20} />
+                       <Button size="icon" variant="ghost" className="h-10 w-10 text-red-600" onClick={() => handleDeleteProduct(product.id)}>
+                          <Trash2 size={16} />
                        </Button>
                     </div>
                   </TableCell>
@@ -267,21 +210,13 @@ export default function AdminProducts() {
         </CardContent>
       </Card>
 
-      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[800px] rounded-[4rem] p-12 border-none shadow-2xl" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-4xl font-headline font-bold mb-8 text-right flex items-center gap-4">
-              <div className="w-12 h-12 bg-slate-900/10 rounded-2xl flex items-center justify-center text-slate-900">
-                <Edit2 size={28} />
-              </div>
-              تعديل بيانات المنتج
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-[700px] rounded-[3rem] p-10" dir="rtl">
+          <DialogHeader><DialogTitle className="text-2xl font-bold mb-6">تعديل المنتج</DialogTitle></DialogHeader>
           <ProductForm currentProduct={currentProduct} setCurrentProduct={setCurrentProduct} />
-          <DialogFooter className="mt-12">
-            <Button onClick={handleUpdateProduct} disabled={isProcessing} className="h-20 w-full rounded-3xl bg-slate-900 text-white font-bold text-2xl shadow-xl hover:bg-primary transition-all">
-              {isProcessing ? <Loader2 className="animate-spin" /> : "حفظ وتطبيق التغييرات فوراً"}
+          <DialogFooter className="mt-8">
+            <Button onClick={handleUpdateProduct} disabled={isProcessing} className="h-14 w-full rounded-xl bg-slate-950 text-white font-bold">
+              {isProcessing ? <Loader2 className="animate-spin" /> : "حفظ التغييرات"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -292,67 +227,38 @@ export default function AdminProducts() {
 
 function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: any, setCurrentProduct: any }) {
   return (
-    <div className="grid gap-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-3">
-          <Label className="font-black text-xs uppercase tracking-widest text-slate-400 pr-4">اسم الباقة أو الخدمة</Label>
-          <Input 
-            value={currentProduct.name}
-            onChange={(e) => setCurrentProduct({...currentProduct, name: e.target.value})}
-            className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold text-lg" 
-          />
+    <div className="grid gap-6">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>اسم الباقة</Label>
+          <Input value={currentProduct.name} onChange={(e) => setCurrentProduct({...currentProduct, name: e.target.value})} className="h-12 bg-slate-50" />
         </div>
-        <div className="space-y-3">
-          <Label className="font-black text-xs uppercase tracking-widest text-slate-400 pr-4">فئة المنتج</Label>
-          <select 
-            value={currentProduct.category}
-            onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})}
-            className="w-full h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold text-lg appearance-none cursor-pointer"
-          >
+        <div className="space-y-2">
+          <Label>الفئة</Label>
+          <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})} className="w-full h-12 rounded-xl bg-slate-50 border-none px-4 font-bold">
             <option>شحن ألعاب</option>
             <option>حسابات ألعاب</option>
             <option>خدمات رقمية</option>
-            <option>خدمات تصميم</option>
           </select>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-3">
-          <Label className="font-black text-xs uppercase tracking-widest text-slate-400 pr-4">السعر الملكي (USD)</Label>
-          <Input 
-            type="number"
-            value={currentProduct.price}
-            onChange={(e) => setCurrentProduct({...currentProduct, price: e.target.value})}
-            className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-black text-2xl text-primary" 
-          />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>السعر (USD)</Label>
+          <Input type="number" value={currentProduct.price} onChange={(e) => setCurrentProduct({...currentProduct, price: e.target.value})} className="h-12 bg-slate-50" />
         </div>
-        <div className="space-y-3">
-          <Label className="font-black text-xs uppercase tracking-widest text-slate-400 pr-4">المخزون الظاهري</Label>
-          <Input 
-            type="number"
-            value={currentProduct.stock}
-            onChange={(e) => setCurrentProduct({...currentProduct, stock: e.target.value})}
-            className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold text-lg" 
-          />
+        <div className="space-y-2">
+          <Label>المخزون</Label>
+          <Input type="number" value={currentProduct.stock} onChange={(e) => setCurrentProduct({...currentProduct, stock: e.target.value})} className="h-12 bg-slate-50" />
         </div>
       </div>
-      <div className="space-y-3">
-        <Label className="font-black text-xs uppercase tracking-widest text-slate-400 pr-4">قائمة أكواد الشحن (كود واحد في كل سطر)</Label>
-        <Textarea 
-          value={currentProduct.shippingCodes}
-          onChange={(e) => setCurrentProduct({...currentProduct, shippingCodes: e.target.value})}
-          placeholder="XMOOD-XXXX-XXXX-XXXX..."
-          className="min-h-[180px] rounded-[2rem] bg-slate-50 border-none px-8 py-6 font-mono text-sm shadow-inner"
-        />
-        <p className="text-[10px] text-muted-foreground pr-4 italic">سيقوم النظام بتسليم هذه الأكواد آلياً عند كل عملية شراء ناجحة.</p>
+      <div className="space-y-2">
+        <Label>أكواد الشحن (كود في كل سطر)</Label>
+        <Textarea value={currentProduct.shippingCodes} onChange={(e) => setCurrentProduct({...currentProduct, shippingCodes: e.target.value})} className="min-h-[120px] bg-slate-50" />
       </div>
-      <div className="space-y-3">
-        <Label className="font-black text-xs uppercase tracking-widest text-slate-400 pr-4">رابط الصورة (URL)</Label>
-        <Input 
-          value={currentProduct.imageUrl}
-          onChange={(e) => setCurrentProduct({...currentProduct, imageUrl: e.target.value})}
-          className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold" 
-        />
+      <div className="space-y-2">
+        <Label>رابط الصورة</Label>
+        <Input value={currentProduct.imageUrl} onChange={(e) => setCurrentProduct({...currentProduct, imageUrl: e.target.value})} className="h-12 bg-slate-50" />
       </div>
     </div>
   );

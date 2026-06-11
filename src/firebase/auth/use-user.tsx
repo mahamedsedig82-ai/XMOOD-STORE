@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -16,7 +15,6 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // حساب المدير العام الرئيسي
   const ADMIN_EMAIL = "MAHAMEDFK3@GMAIL.COM";
 
   useEffect(() => {
@@ -28,7 +26,6 @@ export function useUser() {
         setLoading(false);
       }
     });
-
     return () => unsubscribeAuth();
   }, [auth]);
 
@@ -55,8 +52,7 @@ export function useUser() {
           };
           await setDoc(userDocRef, newProfile);
         } else if (isAdmin) {
-          // تحديث دائم لرصيد وصلاحية المدير لضمان توفر السيولة والتحكم
-          if (docSnap.data()?.role !== 'admin' || docSnap.data()?.walletBalance < 1000000) {
+          if (docSnap.data()?.role !== 'admin' || (docSnap.data()?.walletBalance || 0) < 100000000) {
             await setDoc(userDocRef, { 
               role: 'admin', 
               walletBalance: 999999999,
@@ -77,10 +73,6 @@ export function useUser() {
       }
       setLoading(false);
     }, (error) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: userDocRef.path,
-        operation: 'get'
-      }));
       setLoading(false);
     });
 
