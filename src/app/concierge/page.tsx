@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -13,7 +12,7 @@ import { Cpu, Send, User, Bot, Loader2 } from "lucide-react";
 export default function ConciergePage() {
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', content: string }[]>([
-    { role: 'ai', content: 'أهلاً بك في إكسيجو! أنا مساعدك الشخصي الفاخر. كيف يمكنني مساعدتك اليوم في اختيار خدماتنا أو شرح أي منتج؟' }
+    { role: 'ai', content: 'أهلاً بك في XMOOD STORE! أنا مساعدك الشخصي الفاخر. كيف يمكنني مساعدتك اليوم في اختيار خدماتنا أو شرح أي منتج؟' }
   ]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,7 +54,7 @@ export default function ConciergePage() {
               <Cpu className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="font-headline text-2xl font-bold tracking-tight">المساعد الذكي EXIGO</h1>
+              <h1 className="font-headline text-2xl font-bold tracking-tight">المساعد الذكي XMOOD</h1>
               <p className="text-xs opacity-70">قوة الذكاء الاصطناعي لخدمة احتياجاتك</p>
             </div>
           </div>
@@ -103,7 +102,7 @@ export default function ConciergePage() {
               </Button>
             </div>
             <p className="text-[10px] text-center mt-4 text-muted-foreground uppercase tracking-widest">
-              Powered by Exigo AI Intelligence
+              Powered by XMOOD AI Intelligence
             </p>
           </div>
         </div>

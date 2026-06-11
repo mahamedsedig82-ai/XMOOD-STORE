@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -35,7 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground shadow-lg">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <span className="font-headline font-bold text-xl text-primary">إكسيجو</span>
+              <span className="font-headline font-bold text-xl text-primary">XMOOD</span>
             </Link>
           </SidebarHeader>
           <SidebarContent className="p-4">

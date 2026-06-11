@@ -4,7 +4,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'إكسيجو | منصة الخدمات الرقمية الفاخرة',
+  title: 'XMOOD STORE | منصة الخدمات الرقمية الفاخرة',
   description: 'الوجهة الأولى لشحن الألعاب، شراء الحسابات، والخدمات الرقمية الآمنة.',
 };
 

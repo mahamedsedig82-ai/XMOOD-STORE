@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -42,7 +41,7 @@ export function Navbar() {
           <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-105 transition-all">
             <ShieldCheck size={24} strokeWidth={2} />
           </div>
-          <span className="font-headline text-3xl font-bold tracking-tighter text-primary">EXIGO</span>
+          <span className="font-headline text-2xl font-bold tracking-tighter text-primary">XMOOD</span>
         </Link>
 
         {/* Desktop Nav */}

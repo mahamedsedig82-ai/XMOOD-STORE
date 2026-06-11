@@ -1,8 +1,6 @@
-
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/shared/ProductCard";
@@ -18,7 +16,7 @@ export default function Home() {
       <section className="relative pt-32 pb-48 text-center overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <h1 className="text-6xl md:text-8xl font-headline font-bold mb-6 tracking-tight leading-tight">
-            إكسيجو <br/> 
+            XMOOD STORE <br/> 
             <span className="text-primary drop-shadow-sm">فخامة العالم الرقمي</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed font-light">
@@ -38,7 +36,7 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Feature Grid - Positioned partially over the hero */}
+          {/* Feature Grid */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[
               { icon: ShieldCheck, title: "وساطة آمنة", desc: "نظام ضمان وحماية متطور" },
@@ -83,7 +81,7 @@ export default function Home() {
           <div className="max-w-3xl mx-auto text-center mb-20">
             <h2 className="text-4xl font-headline font-bold mb-6 text-foreground">نظام شحن الرصيد</h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              إكسيجو ماركت بليس يعتمد نظام شحن المحفظة عبر الوكلاء المعتمدين لتوفير أعلى مستويات الأمان. تواصل مع وكيلك المفضل واشحن رصيدك فوراً.
+              XMOOD STORE يعتمد نظام شحن المحفظة عبر الوكلاء المعتمدين لتوفير أعلى مستويات الأمان. تواصل مع وكيلك المفضل واشحن رصيدك فوراً.
             </p>
           </div>
 
@@ -115,9 +113,9 @@ export default function Home() {
              <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center text-primary mb-2">
                 <ShieldCheck size={32} strokeWidth={1.5} />
              </div>
-             <span className="font-headline text-3xl font-bold tracking-tight text-primary">EXIGO</span>
+             <span className="font-headline text-3xl font-bold tracking-tight text-primary">XMOOD STORE</span>
           </div>
-          <p className="text-sm text-muted-foreground mb-12">© 2024 إكسيجو ماركت بليس. الفخامة الرقمية في خدمتك.</p>
+          <p className="text-sm text-muted-foreground mb-12">© 2024 XMOOD STORE. الفخامة الرقمية في خدمتك.</p>
           <div className="flex justify-center gap-12 text-sm font-bold text-muted-foreground/60">
             <Link href="/terms" className="hover:text-primary transition-colors">الشروط</Link>
             <Link href="/privacy" className="hover:text-primary transition-colors">الخصوصية</Link>

@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview An AI assistant for the Exigo Digital Marketplace.
+ * @fileOverview An AI assistant for XMOOD STORE.
  *
  * - aiPlatformSupport - A function that handles user queries for marketplace support.
  * - AiPlatformSupportInput - The input type for the aiPlatformSupport function.
@@ -28,7 +28,7 @@ const aiPlatformSupportPrompt = ai.definePrompt({
   name: 'aiPlatformSupportPrompt',
   input: {schema: AiPlatformSupportInputSchema},
   output: {schema: AiPlatformSupportOutputSchema},
-  prompt: `You are an AI assistant for the Exigo Digital Marketplace. Your role is to provide instant, concise, and helpful answers to users regarding marketplace operations, policies, or how to use specific features. If a question falls outside these categories, politely state that you cannot assist with that specific query.\n\nQuestion: {{{question}}}`,
+  prompt: `You are an AI assistant for XMOOD STORE. Your role is to provide instant, concise, and helpful answers to users regarding marketplace operations, policies, or how to use specific features. If a question falls outside these categories, politely state that you cannot assist with that specific query.\n\nQuestion: {{{question}}}`,
 });
 
 const aiPlatformSupportFlow = ai.defineFlow(

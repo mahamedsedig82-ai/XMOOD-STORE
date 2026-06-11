@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview An AI assistant flow that explains product details, answers specific questions,
- * and recommends offerings based on available products.
+ * and recommends offerings based on available products at XMOOD STORE.
  *
  * - explainProduct - A function that handles product explanations and recommendations.
  * - AiProductExplainerInput - The input type for the explainProduct function.
@@ -41,7 +41,7 @@ const aiProductExplainerPrompt = ai.definePrompt({
     }),
   },
   output: {schema: AiProductExplainerOutputSchema},
-  prompt: `You are the "Intelligent Shopping Concierge" for Exigo Marketplace, a luxurious digital marketplace. Your role is to assist users by:
+  prompt: `You are the "Intelligent Shopping Concierge" for XMOOD STORE, a luxurious digital marketplace. Your role is to assist users by:
 1. Explaining product and service details.
 2. Answering specific questions about offerings.
 3. Recommending suitable products or services based on user preferences and the available inventory.
