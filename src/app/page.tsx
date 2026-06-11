@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -6,64 +5,69 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { STORE_PRODUCTS } from "@/app/lib/mock-data";
-import { ShieldCheck, Zap, HeartHandshake, Send, ArrowRight, Sparkles, TrendingUp, Gem } from "lucide-react";
+import { ShieldCheck, Zap, HeartHandshake, Send, ArrowRight, Sparkles, TrendingUp, Gem, Cpu } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useCollection, useFirestore } from "@/firebase";
+import { collection, query, limit } from "firebase/firestore";
 
 export default function Home() {
-  const categories = Array.from(new Set(STORE_PRODUCTS.map(p => p.category)));
+  const db = useFirestore();
+  const { data: products } = useCollection(query(collection(db, "products"), limit(8)));
+  const categories = Array.from(new Set(products?.map(p => p.category) || []));
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-950 font-body">
       <Navbar />
       
-      {/* Hero Section Luxury Redesign */}
-      <section className="relative py-32 md:py-48 text-center bg-white overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none">
+      {/* Hero Section Luxury Pro */}
+      <section className="relative py-40 md:py-60 text-center bg-slate-950 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full opacity-[0.05] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="lux-grid" width="80" height="80" patternUnits="userSpaceOnUse">
-                <path d="M 80 0 L 0 0 0 80" fill="none" stroke="currentColor" strokeWidth="1"/>
+              <pattern id="lux-grid" width="100" height="100" patternUnits="userSpaceOnUse">
+                <path d="M 100 0 L 0 0 0 100" fill="none" stroke="white" strokeWidth="1"/>
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#lux-grid)" />
           </svg>
         </div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 blur-[150px] rounded-full pointer-events-none"></div>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <Badge className="mb-8 py-2 px-8 bg-primary/10 text-primary border-primary/20 rounded-full font-black tracking-[0.4em] animate-fade-in uppercase text-[10px]">
-            The Royal Digital Experience
+        <div className="container mx-auto px-4 relative z-10 animate-fade-in">
+          <Badge className="mb-10 py-3 px-10 bg-primary/10 text-primary border-primary/20 rounded-full font-black tracking-[0.5em] uppercase text-[10px]">
+            Master Identity Digital Store
           </Badge>
-          <h1 className="text-6xl md:text-9xl mb-10 tracking-tighter font-headline font-bold text-slate-950 animate-fade-in">
-             <span className="block gold-gradient-text drop-shadow-sm">XMOOD STORE</span>
-             <span className="text-4xl md:text-5xl font-light opacity-80 mt-4 block">فخامة الخدمات الرقمية</span>
+          <h1 className="text-7xl md:text-[10rem] mb-12 tracking-tighter font-headline font-bold leading-none">
+             <span className="block gold-text drop-shadow-2xl">XMOOD STORE</span>
+             <span className="text-3xl md:text-5xl font-light text-slate-400 mt-6 block uppercase tracking-[0.3em]">The Royal Protocol</span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-16 leading-relaxed font-light animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            الوجهة الفاخرة لخبراء الألعاب والخدمات الرقمية. نجمع بين السرعة المطلقة والأمان الملكي في كل عملية.
+          <p className="text-xl md:text-2xl text-slate-500 max-w-4xl mx-auto mb-20 leading-relaxed font-light">
+            المنصة الرقمية الفاخرة لخبراء الألعاب والخدمات التقنية. نوفر لك شحناً فورياً، أماناً ملكياً، وتجربة مستخدم لا تضاهى.
           </p>
           
-          <div className="flex flex-wrap justify-center gap-6 mb-24 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <Button asChild className="h-20 px-16 royal-button text-xl shadow-2xl">
+          <div className="flex flex-wrap justify-center gap-8 mb-32">
+            <Button asChild className="h-24 px-20 royal-button text-2xl">
               <Link href="/store">دخول المتجر</Link>
             </Button>
-            <Button asChild variant="outline" className="h-20 px-16 rounded-[1.5rem] border-slate-200 text-slate-600 font-bold text-xl hover:bg-slate-50">
+            <Button asChild variant="outline" className="h-24 px-20 rounded-3xl border-white/10 text-white font-bold text-2xl hover:bg-white/5 transition-all">
               <Link href="/marketplace">سوق التداول</Link>
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-6xl mx-auto border-t pt-20 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-7xl mx-auto border-t border-white/5 pt-32">
             {[
-              { icon: ShieldCheck, title: "ضمان ملكي", desc: "أمان فائق لبياناتك" },
-              { icon: Zap, title: "شحن فوري", desc: "تنفيذ بلمح البصر" },
-              { icon: Gem, title: "باقات نادرة", desc: "حصرياً لعملاء XMOOD" },
-              { icon: HeartHandshake, title: "دعم مخصص", desc: "نحن معك دائماً" },
+              { icon: ShieldCheck, title: "أمان ملكي", desc: "تشفير وحماية لكافة بياناتك" },
+              { icon: Zap, title: "تنفيذ فوري", desc: "شحن الأكواد في أجزاء من الثانية" },
+              { icon: Cpu, title: "ذكاء اصطناعي", desc: "مساعد ذكي لخدمتكم 24/7" },
+              { icon: HeartHandshake, title: "ضمان XMOOD", desc: "حقك محفوظ بنظام ضمان ذكي" },
             ].map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-4 group">
-                <div className="w-16 h-16 bg-slate-50 rounded-[1.5rem] flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm">
-                  <item.icon size={28} strokeWidth={1.5} />
+              <div key={i} className="flex flex-col items-center gap-6 group">
+                <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-700 shadow-2xl">
+                  <item.icon size={32} strokeWidth={1.5} />
                 </div>
                 <div className="text-center">
-                   <h4 className="font-bold text-lg text-slate-900">{item.title}</h4>
-                   <p className="text-xs text-muted-foreground font-medium">{item.desc}</p>
+                   <h4 className="font-bold text-xl text-white mb-2">{item.title}</h4>
+                   <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -71,26 +75,32 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Collections */}
-      <section className="py-32">
+      {/* Dynamic Collections */}
+      <section className="py-40 bg-slate-950/50">
         <div className="container mx-auto px-4">
-          {categories.map((cat, idx) => (
-            <div key={cat} className="mb-32 last:mb-0">
-              <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+          {products?.length === 0 ? (
+            <div className="py-40 text-center luxury-card border-dashed p-20">
+               <Sparkles size={80} className="mx-auto mb-8 text-slate-800" />
+               <h2 className="text-4xl font-headline font-bold text-slate-600">المتجر قيد التحديث...</h2>
+               <p className="text-slate-500 mt-4">نحن نقوم الآن برفع باقات رقمية جديدة وحصرية لعملاء XMOOD.</p>
+            </div>
+          ) : categories.map((cat, idx) => (
+            <div key={cat} className="mb-40 last:mb-0">
+              <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                 <div className="text-right">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="text-primary" size={18} />
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">Collection Elite</span>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">Elite Collection</span>
                   </div>
-                  <h3 className="text-4xl md:text-5xl font-headline font-bold text-slate-950">{cat}</h3>
+                  <h3 className="text-5xl md:text-7xl font-headline font-bold text-white">{cat}</h3>
                 </div>
-                <Button asChild variant="link" className="text-primary font-bold text-lg p-0 hover:no-underline flex items-center gap-2 group">
-                  <Link href={`/store?category=${cat}`}>تصفح المجموعة بالكامل <ArrowRight size={20} className="group-hover:translate-x-[-5px] transition-transform" /></Link>
+                <Button asChild variant="link" className="text-primary font-bold text-xl p-0 hover:no-underline flex items-center gap-3 group">
+                  <Link href={`/store?category=${cat}`}>تصفح المجموعة بالكامل <ArrowRight size={24} className="group-hover:translate-x-[-8px] transition-transform" /></Link>
                 </Button>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
-                {STORE_PRODUCTS.filter(p => p.category === cat).slice(0, 4).map((product) => (
+                {products?.filter(p => p.category === cat).slice(0, 4).map((product: any) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
@@ -100,20 +110,21 @@ export default function Home() {
       </section>
 
       {/* Royal Footer */}
-      <footer className="py-24 border-t bg-slate-950 text-white">
+      <footer className="py-32 border-t border-white/5 bg-slate-950">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center">
-            <div className="font-handwriting text-6xl font-bold gold-gradient-text mb-8">XMOOD STORE</div>
-            <p className="text-slate-400 max-w-lg mb-12 text-lg font-light leading-relaxed">
+            <div className="font-handwriting text-8xl font-bold gold-text mb-10">XMOOD STORE</div>
+            <p className="text-slate-500 max-w-2xl mb-16 text-xl font-light leading-relaxed">
               الوجهة الأولى والأرقى للتميز الرقمي في المنطقة. نضع بين يديك خلاصة الأمان والفخامة في مكان واحد.
             </p>
-            <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-[0.4em] opacity-40">
-              <Link href="/terms" className="hover:opacity-100 transition-opacity">Terms of Service</Link>
-              <Link href="/privacy" className="hover:opacity-100 transition-opacity">Privacy Policy</Link>
-              <Link href="/help" className="hover:opacity-100 transition-opacity">Global Support</Link>
+            <div className="flex flex-wrap justify-center gap-16 text-[10px] font-black uppercase tracking-[0.5em] opacity-40">
+              <Link href="/terms" className="hover:opacity-100 text-white transition-opacity">Terms</Link>
+              <Link href="/privacy" className="hover:opacity-100 text-white transition-opacity">Privacy</Link>
+              <Link href="/help" className="hover:opacity-100 text-white transition-opacity">Support</Link>
+              <Link href="/agents" className="hover:opacity-100 text-white transition-opacity">Agents</Link>
             </div>
-            <div className="mt-16 text-[10px] font-medium text-slate-600">
-              © 2025 XMOOD STORE. ALL RIGHTS RESERVED.
+            <div className="mt-24 text-[10px] font-black text-slate-800 uppercase tracking-widest">
+              © 2025 XMOOD STORE SYSTEM. ALL RIGHTS RESERVED.
             </div>
           </div>
         </div>
