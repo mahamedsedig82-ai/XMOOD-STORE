@@ -1,14 +1,14 @@
 /**
- * @fileOverview Firebase configuration using environment variables.
- * If variables are missing, it defaults to empty strings to prevent build crashes,
- * but will throw a descriptive error during runtime operations.
+ * @fileOverview Firebase configuration for XMOOD STORE.
+ * Linked to project: xmood-36c92
  */
 
 export const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || ""
+  apiKey: "AIzaSyAtPvqa1t5GVWWqFzKY8S9kDlo241fhvNA",
+  authDomain: "xmood-36c92.firebaseapp.com",
+  projectId: "xmood-36c92",
+  storageBucket: "xmood-36c92.appspot.com",
+  messagingSenderId: "977561332302",
+  appId: "1:977561332302:web:6320d06bf266f26b8eb11f",
+  measurementId: "G-DS0CPFRDSY"
 };
