@@ -33,32 +33,35 @@ export function useUser() {
 
     const userDocRef = doc(db, 'users', user.uid);
 
-    const initProfile = async () => {
+    // دالة تهيئة الملف الشخصي بشكل آمن
+    const syncProfile = async () => {
       try {
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) {
           const newProfile: UserProfile = {
             uid: user.uid,
-            displayName: user.displayName || 'مستخدم إكسيجو',
+            displayName: user.displayName || 'مستخدم جديد',
             email: user.email || '',
             walletBalance: 0,
             role: 'user',
             photoURL: user.photoURL || '',
             createdAt: new Date().toISOString(),
           };
-          
+          // استخدام { merge: true } لضمان عدم مسح البيانات إذا وجدت
           await setDoc(userDocRef, newProfile, { merge: true });
         }
       } catch (err) {
-        console.error("Profile init error:", err);
+        console.error("خطأ في مزامنة الملف الشخصي:", err);
       }
     };
 
-    initProfile();
+    syncProfile();
 
     const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
       if (snapshot.exists()) {
         setProfile(snapshot.data() as UserProfile);
+      } else {
+        // في حالة عدم وجود الوثيقة بعد، ننتظر قليلًا أو نعتمد على البيانات الأولية
       }
       setLoading(false);
     }, (error) => {

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -50,11 +49,12 @@ export default function LoginPage() {
           email: user.email,
           walletBalance: 0,
           role: 'user',
+          photoURL: user.photoURL,
           createdAt: new Date().toISOString(),
         });
       }
       
-      toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في XMOOD STORE عبر Google" });
+      toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في XMOOD STORE" });
       router.push("/");
     } catch (error: any) {
       toast({ variant: "destructive", title: "فشل الدخول", description: "حدث خطأ أثناء الاتصال بحساب Google" });
@@ -67,22 +67,20 @@ export default function LoginPage() {
     e.preventDefault();
     if (!auth) return;
     
-    // محاكاة رمز التحقق للأمان
     if (!showVerification) {
       setShowVerification(true);
-      toast({ title: "تحقق أمني", description: "يرجى إدخال رمز الأمان الخاص بك للمتابعة" });
       return;
     }
 
     if (verificationCode.length < 4) {
-      toast({ variant: "destructive", title: "رمز غير صحيح", description: "يرجى إدخال رمز التحقق المكون من 4 أرقام" });
+      toast({ variant: "destructive", title: "رمز غير مكتمل", description: "يرجى إدخال رمز الأمان" });
       return;
     }
 
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "تم تسجيل الدخول", description: "مرحباً بك مجدداً في XMOOD STORE" });
+      toast({ title: "تم تسجيل الدخول", description: "مرحباً بك مجدداً" });
       router.push("/");
     } catch (error: any) {
       toast({ variant: "destructive", title: "فشل الدخول", description: "البريد أو كلمة المرور غير صحيحة" });
@@ -97,11 +95,15 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: name });
+      const user = userCredential.user;
+
+      // تحديث الاسم في نظام الحماية
+      await updateProfile(user, { displayName: name });
       
-      const userDocRef = doc(db, 'users', userCredential.user.uid);
+      // إنشاء السجل في قاعدة البيانات
+      const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
-        uid: userCredential.user.uid,
+        uid: user.uid,
         displayName: name,
         email: email,
         walletBalance: 0,
@@ -109,10 +111,10 @@ export default function LoginPage() {
         createdAt: new Date().toISOString(),
       });
 
-      toast({ title: "تم إنشاء الحساب", description: "مرحباً بك في عالم الفخامة الرقمية" });
+      toast({ title: "تم إنشاء الحساب", description: "مرحباً بك في XMOOD STORE" });
       router.push("/");
     } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ في التسجيل", description: "البريد الإلكتروني مستخدم بالفعل أو كلمة المرور ضعيفة" });
+      toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message || "حدث خطأ غير متوقع" });
     } finally {
       setLoading(false);
     }
