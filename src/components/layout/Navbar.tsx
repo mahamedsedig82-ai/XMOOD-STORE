@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -38,7 +39,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-8 flex-row-reverse">
         
-        {/* Logo */}
+        {/* Logo - Handwriting Style */}
         <Link href="/" className="flex items-center gap-2 group flex-row-reverse shrink-0">
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:rotate-3 transition-transform">
             <ShieldCheck size={24} strokeWidth={2.5} />
@@ -46,7 +47,7 @@ export function Navbar() {
           <span className="font-handwriting text-3xl font-bold tracking-tight text-primary mt-1">XMOOD STORE</span>
         </Link>
 
-        {/* Search Bar */}
+        {/* Search Bar - Professional Minimalist */}
         <div className="hidden lg:flex flex-1 max-w-xl relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
@@ -55,7 +56,7 @@ export function Navbar() {
           />
         </div>
 
-        {/* Links */}
+        {/* Navigation Links */}
         <div className="hidden md:flex items-center gap-6 flex-row-reverse shrink-0">
           {navLinks.map((link) => (
             <Link 
