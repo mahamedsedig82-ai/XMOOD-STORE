@@ -11,7 +11,7 @@ export interface UserProfile {
 }
 
 export type Category = 'شحن ألعاب' | 'حسابات ألعاب' | 'خدمات رقمية' | 'خدمات تصميم' | 'وساطة وخدمات خاصة';
-export type ProductStatus = 'active' | 'inactive' | 'archived';
+export type ProductStatus = 'active' | 'out_of_stock' | 'discount' | 'inactive';
 
 export interface Product {
   id: string;
@@ -21,9 +21,9 @@ export interface Product {
   category: Category;
   imageUrl: string;
   stock: number;
-  vendorId?: string;
-  isP2P?: boolean;
   status: ProductStatus;
+  discountPrice?: number;
+  isP2P?: boolean;
   rating?: number;
 }
 
@@ -59,14 +59,4 @@ export interface Agent {
   contactType: 'WhatsApp' | 'Telegram';
   contactValue: string;
   availability: string;
-}
-
-export interface MiddlemanRequest {
-  id: string;
-  title: string;
-  status: 'pending' | 'in progress' | 'completed' | 'cancelled';
-  amount: number;
-  buyer: string;
-  seller: string;
-  createdAt: string;
 }
