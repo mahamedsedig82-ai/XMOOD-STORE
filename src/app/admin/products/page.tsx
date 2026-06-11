@@ -1,18 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useFirestore } from "@/firebase";
+import { collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Edit2, Trash2, Loader2, Key, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Plus, Edit2, Trash2, Loader2, Search, Image as ImageIcon, Key } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { useFirestore } from "@/firebase";
-import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy, onSnapshot } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminProducts() {
   const db = useFirestore();
@@ -20,154 +19,136 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  
-  const [currentProduct, setCurrentProduct] = useState({
-    id: "",
+  const [isOpen, setIsOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const [form, setForm] = useState({
     name: "",
     price: "",
-    stock: "100",
     category: "شحن ألعاب",
-    imageUrl: "https://picsum.photos/seed/ff-main/800/600",
+    stock: "100",
+    imageUrl: "https://picsum.photos/seed/xmood/800/600",
     description: "",
-    shippingCodes: "" 
+    shippingCodes: ""
   });
 
   useEffect(() => {
     if (!db) return;
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setProducts(items);
+    return onSnapshot(q, (snapshot) => {
+      setProducts(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       setLoading(false);
     });
-    return () => unsubscribe();
   }, [db]);
 
-  const handleAddProduct = async () => {
-    if (!currentProduct.name || !currentProduct.price) return;
+  const handleSubmit = async () => {
+    if (!form.name || !form.price) return;
     setIsProcessing(true);
-    const productData = {
-      name: currentProduct.name,
-      price: Number(currentProduct.price),
-      stock: Number(currentProduct.stock),
-      category: currentProduct.category,
-      imageUrl: currentProduct.imageUrl,
-      description: currentProduct.description || "",
-      shippingCodes: currentProduct.shippingCodes || "",
-      status: Number(currentProduct.stock) > 0 ? "active" : "out_of_stock",
-      createdAt: new Date().toISOString(),
+    
+    const data = {
+      ...form,
+      price: Number(form.price),
+      stock: Number(form.stock),
+      updatedAt: serverTimestamp(),
+      status: Number(form.stock) > 0 ? 'active' : 'out_of_stock'
     };
 
     try {
-      await addDoc(collection(db, "products"), productData);
-      toast({ title: "تم الإضافة بنجاح" });
-      setIsAddDialogOpen(false);
+      if (editingId) {
+        await updateDoc(doc(db, "products", editingId), data);
+        toast({ title: "تم التحديث بنجاح" });
+      } else {
+        await addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() });
+        toast({ title: "تمت الإضافة بنجاح" });
+      }
+      setIsOpen(false);
       resetForm();
-    } catch (err) {
+    } catch (e) {
       toast({ variant: "destructive", title: "خطأ في الصلاحيات" });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleUpdateProduct = async () => {
-    if (!currentProduct.id) return;
-    setIsProcessing(true);
-    const productRef = doc(db, "products", currentProduct.id);
-    const updateData = {
-      name: currentProduct.name,
-      price: Number(currentProduct.price),
-      stock: Number(currentProduct.stock),
-      category: currentProduct.category,
-      imageUrl: currentProduct.imageUrl,
-      description: currentProduct.description || "",
-      shippingCodes: currentProduct.shippingCodes || "",
-      status: Number(currentProduct.stock) > 0 ? "active" : "out_of_stock",
-      updatedAt: new Date().toISOString(),
-    };
-
+  const handleDelete = async (id: string) => {
+    if (!confirm("هل أنت متأكد من الحذف؟")) return;
     try {
-      await updateDoc(productRef, updateData);
-      toast({ title: "تم التحديث بنجاح" });
-      setIsEditDialogOpen(false);
-      resetForm();
-    } catch (err) {
-      toast({ variant: "destructive", title: "خطأ في التحديث" });
-    } finally {
-      setIsProcessing(false);
+      await deleteDoc(doc(db, "products", id));
+      toast({ title: "تم الحذف" });
+    } catch (e) {
+      toast({ variant: "destructive", title: "فشل الحذف" });
     }
   };
 
-  const handleDeleteProduct = async (id: string) => {
-    if (!confirm("هل أنت متأكد؟")) return;
-    deleteDoc(doc(db, "products", id));
-    toast({ title: "تم الحذف" });
-  };
-
   const resetForm = () => {
-    setCurrentProduct({
-      id: "", name: "", price: "", stock: "100", category: "شحن ألعاب",
-      imageUrl: "https://picsum.photos/seed/ff-main/800/600", description: "", shippingCodes: ""
-    });
+    setForm({ name: "", price: "", category: "شحن ألعاب", stock: "100", imageUrl: "https://picsum.photos/seed/xmood/800/600", description: "", shippingCodes: "" });
+    setEditingId(null);
   };
 
-  const openEditDialog = (product: any) => {
-    setCurrentProduct({
-      id: product.id, name: product.name, price: product.price.toString(),
-      stock: product.stock.toString(), category: product.category,
-      imageUrl: product.imageUrl, description: product.description || "",
-      shippingCodes: product.shippingCodes || ""
+  const startEdit = (p: any) => {
+    setForm({
+      name: p.name,
+      price: p.price.toString(),
+      category: p.category,
+      stock: p.stock.toString(),
+      imageUrl: p.imageUrl,
+      description: p.description || "",
+      shippingCodes: p.shippingCodes || ""
     });
-    setIsEditDialogOpen(true);
+    setEditingId(p.id);
+    setIsOpen(true);
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="space-y-8 animate-fade-in" dir="rtl">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-4xl font-headline font-bold text-slate-900">المستودع الرقمي</h1>
-          <p className="text-muted-foreground mt-2">إدارة الباقات والمخزون وأكواد الشحن الفوري.</p>
+          <h1 className="text-4xl font-headline font-bold gold-text">المستودع الرقمي</h1>
+          <p className="text-muted-foreground mt-2">إدارة الباقات والمخزون المباشر.</p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog open={isOpen} onOpenChange={(val) => { setIsOpen(val); if (!val) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button className="h-14 px-8 bg-slate-950 text-white font-bold rounded-2xl">
-              <Plus size={20} className="ml-2" /> إضافة باقة
+            <Button className="h-14 px-8 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/20">
+              <Plus className="ml-2" /> إضافة باقة جديدة
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[700px] rounded-[3rem] p-10" dir="rtl">
-            <DialogHeader><DialogTitle className="text-2xl font-bold mb-6">إنشاء منتج جديد</DialogTitle></DialogHeader>
-            <ProductForm currentProduct={currentProduct} setCurrentProduct={setCurrentProduct} />
+          <DialogContent className="max-w-2xl bg-slate-900 border-white/10 rounded-[2.5rem] p-10 text-white">
+            <DialogHeader><DialogTitle className="text-2xl font-bold">{editingId ? 'تعديل باقة' : 'إضافة باقة جديدة'}</DialogTitle></DialogHeader>
+            <div className="grid grid-cols-2 gap-6 mt-6">
+              <div className="space-y-2"><label className="text-xs font-bold opacity-50">الاسم</label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="bg-white/5 border-none h-12" /></div>
+              <div className="space-y-2"><label className="text-xs font-bold opacity-50">الفئة</label><Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="bg-white/5 border-none h-12" /></div>
+              <div className="space-y-2"><label className="text-xs font-bold opacity-50">السعر (USD)</label><Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="bg-white/5 border-none h-12" /></div>
+              <div className="space-y-2"><label className="text-xs font-bold opacity-50">المخزون</label><Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="bg-white/5 border-none h-12" /></div>
+              <div className="col-span-2 space-y-2"><label className="text-xs font-bold opacity-50">رابط الصورة</label><Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} className="bg-white/5 border-none h-12" /></div>
+              <div className="col-span-2 space-y-2"><label className="text-xs font-bold opacity-50">أكواد الشحن (كود لكل سطر)</label><Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="bg-white/5 border-none min-h-[100px]" /></div>
+            </div>
             <DialogFooter className="mt-8">
-              <Button onClick={handleAddProduct} disabled={isProcessing} className="h-14 w-full rounded-xl bg-primary text-white font-bold">
-                {isProcessing ? <Loader2 className="animate-spin" /> : "نشر المنتج فوراً"}
+              <Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-14 bg-primary text-white font-bold text-lg">
+                {isProcessing ? <Loader2 className="animate-spin" /> : editingId ? 'تحديث البيانات' : 'نشر الباقة الآن'}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white">
-        <CardHeader className="bg-slate-50/50 p-8">
+      <Card className="luxury-card border-none">
+        <CardHeader className="p-8 pb-0">
           <div className="relative max-w-md">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input 
               placeholder="ابحث عن باقة..." 
-              className="pr-10 h-12 rounded-xl border-none shadow-inner"
+              className="pr-10 h-12 bg-white/5 border-none"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
-            <TableHeader className="bg-slate-50">
-              <TableRow>
+            <TableHeader className="border-b border-white/5">
+              <TableRow className="hover:bg-transparent">
                 <TableHead className="text-right py-6 pr-10">المنتج</TableHead>
                 <TableHead className="text-right">السعر</TableHead>
                 <TableHead className="text-right">المخزون</TableHead>
@@ -178,29 +159,25 @@ export default function AdminProducts() {
             <TableBody>
               {loading ? (
                 <TableRow><TableCell colSpan={5} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
-              ) : filteredProducts.map((product: any) => (
-                <TableRow key={product.id} className="hover:bg-slate-50/50 border-b last:border-0">
-                  <TableCell className="py-6 pr-10">
-                    <div className="flex items-center gap-4">
-                      <img src={product.imageUrl} className="w-12 h-12 rounded-xl object-cover" alt="" />
-                      <span className="font-bold">{product.name}</span>
-                    </div>
+              ) : filtered.length === 0 ? (
+                <TableRow><TableCell colSpan={5} className="text-center py-20 text-muted-foreground">لا توجد منتجات حالياً.</TableCell></TableRow>
+              ) : filtered.map((p) => (
+                <TableRow key={p.id} className="hover:bg-white/5 border-b border-white/5 transition-colors">
+                  <TableCell className="py-6 pr-10 font-bold flex items-center gap-4">
+                    <img src={p.imageUrl} className="w-12 h-12 rounded-xl object-cover shadow-xl" alt="" />
+                    {p.name}
                   </TableCell>
-                  <TableCell className="font-black text-primary">${product.price}</TableCell>
-                  <TableCell className="font-bold">{product.stock}</TableCell>
+                  <TableCell className="font-black text-primary text-lg">${p.price}</TableCell>
+                  <TableCell className="font-bold">{p.stock}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="bg-amber-50 text-amber-600 font-bold">
-                       <Key size={12} className="ml-1" /> {product.shippingCodes?.split('\n').filter(Boolean).length || 0}
+                    <Badge variant="outline" className="border-primary/20 text-primary">
+                      <Key size={12} className="ml-1" /> {p.shippingCodes?.split('\n').filter(Boolean).length || 0}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
                     <div className="flex justify-center gap-2">
-                       <Button size="icon" variant="ghost" className="h-10 w-10 text-blue-600" onClick={() => openEditDialog(product)}>
-                          <Edit2 size={16} />
-                       </Button>
-                       <Button size="icon" variant="ghost" className="h-10 w-10 text-red-600" onClick={() => handleDeleteProduct(product.id)}>
-                          <Trash2 size={16} />
-                       </Button>
+                      <Button size="icon" variant="ghost" className="text-blue-400" onClick={() => startEdit(p)}><Edit2 size={18} /></Button>
+                      <Button size="icon" variant="ghost" className="text-red-400" onClick={() => handleDelete(p.id)}><Trash2 size={18} /></Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -209,57 +186,6 @@ export default function AdminProducts() {
           </Table>
         </CardContent>
       </Card>
-
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] rounded-[3rem] p-10" dir="rtl">
-          <DialogHeader><DialogTitle className="text-2xl font-bold mb-6">تعديل المنتج</DialogTitle></DialogHeader>
-          <ProductForm currentProduct={currentProduct} setCurrentProduct={setCurrentProduct} />
-          <DialogFooter className="mt-8">
-            <Button onClick={handleUpdateProduct} disabled={isProcessing} className="h-14 w-full rounded-xl bg-slate-950 text-white font-bold">
-              {isProcessing ? <Loader2 className="animate-spin" /> : "حفظ التغييرات"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
-
-function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: any, setCurrentProduct: any }) {
-  return (
-    <div className="grid gap-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>اسم الباقة</Label>
-          <Input value={currentProduct.name} onChange={(e) => setCurrentProduct({...currentProduct, name: e.target.value})} className="h-12 bg-slate-50" />
-        </div>
-        <div className="space-y-2">
-          <Label>الفئة</Label>
-          <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})} className="w-full h-12 rounded-xl bg-slate-50 border-none px-4 font-bold">
-            <option>شحن ألعاب</option>
-            <option>حسابات ألعاب</option>
-            <option>خدمات رقمية</option>
-          </select>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>السعر (USD)</Label>
-          <Input type="number" value={currentProduct.price} onChange={(e) => setCurrentProduct({...currentProduct, price: e.target.value})} className="h-12 bg-slate-50" />
-        </div>
-        <div className="space-y-2">
-          <Label>المخزون</Label>
-          <Input type="number" value={currentProduct.stock} onChange={(e) => setCurrentProduct({...currentProduct, stock: e.target.value})} className="h-12 bg-slate-50" />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label>أكواد الشحن (كود في كل سطر)</Label>
-        <Textarea value={currentProduct.shippingCodes} onChange={(e) => setCurrentProduct({...currentProduct, shippingCodes: e.target.value})} className="min-h-[120px] bg-slate-50" />
-      </div>
-      <div className="space-y-2">
-        <Label>رابط الصورة</Label>
-        <Input value={currentProduct.imageUrl} onChange={(e) => setCurrentProduct({...currentProduct, imageUrl: e.target.value})} className="h-12 bg-slate-50" />
-      </div>
     </div>
   );
 }

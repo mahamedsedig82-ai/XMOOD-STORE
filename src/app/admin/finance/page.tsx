@@ -1,19 +1,16 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
 import { useFirestore, useCollection } from "@/firebase";
-import { collection, doc, updateDoc, addDoc, query, where, limit, getDocs, orderBy } from "firebase/firestore";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { collection, query, orderBy, limit, doc, updateDoc, addDoc, where, getDocs } from "firebase/firestore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wallet, Search, ArrowUpRight, ArrowDownLeft, Loader2, DollarSign, History, RefreshCcw } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Wallet, Search, RefreshCw, ArrowUpRight, ArrowDownLeft, Loader2, History } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { errorEmitter } from "@/firebase/error-emitter";
-import { FirestorePermissionError } from "@/firebase/errors";
 
 export default function AdminFinance() {
   const db = useFirestore();
@@ -22,198 +19,130 @@ export default function AdminFinance() {
   const [amount, setAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const globalTransQuery = useMemo(() => query(collection(db, "transactions"), orderBy("createdAt", "desc"), limit(20)), [db]);
-  const { data: globalTransactions, loading: transLoading } = useCollection(globalTransQuery);
+  const transQuery = useMemo(() => query(collection(db, "transactions"), orderBy("createdAt", "desc"), limit(20)), [db]);
+  const { data: globalTransactions, loading: transLoading } = useCollection(transQuery);
 
-  const handleSearchUser = async () => {
+  const handleSearch = async () => {
     if (!searchEmail) return;
     setIsProcessing(true);
     try {
-      const q = query(collection(db, "users"), where("email", "==", searchEmail.trim()), limit(1));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        setTargetUser({ id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() });
-        toast({ title: "تم العثور على المستخدم", description: `المستخدم: ${querySnapshot.docs[0].data().displayName}` });
+      const q = query(collection(db, "users"), where("email", "==", searchEmail.trim().toLowerCase()), limit(1));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        setTargetUser({ id: snap.docs[0].id, ...snap.docs[0].data() });
       } else {
-        setTargetUser(null);
-        toast({ variant: "destructive", title: "خطأ", description: "لم يتم العثور على مستخدم بهذا البريد" });
+        toast({ variant: "destructive", title: "خطأ", description: "المستخدم غير موجود" });
       }
-    } catch (error) {
-      toast({ variant: "destructive", title: "خطأ", description: "حدث خطأ في عملية البحث" });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleUpdateBalance = (type: 'deposit' | 'withdrawal' | 'refund') => {
-    if (!targetUser || !amount || isNaN(Number(amount))) {
-      toast({ variant: "destructive", title: "خطأ", description: "يرجى إدخال مبلغ مالي صحيح" });
-      return;
-    }
-
+  const handleUpdateBalance = async (type: 'deposit' | 'withdrawal') => {
+    if (!targetUser || !amount) return;
     setIsProcessing(true);
-    const numAmount = Number(amount);
-    const newBalance = type === 'deposit' 
-      ? (targetUser.walletBalance || 0) + numAmount 
-      : (targetUser.walletBalance || 0) - numAmount;
+    const num = Number(amount);
+    const newBalance = type === 'deposit' ? (targetUser.walletBalance || 0) + num : (targetUser.walletBalance || 0) - num;
 
-    const userRef = doc(db, "users", targetUser.id);
-    
-    // تنفيذ التحديث
-    updateDoc(userRef, { walletBalance: newBalance })
-      .then(() => {
-        const transData = {
-          userId: targetUser.id,
-          type: type,
-          amount: numAmount,
-          description: `إدارة XMOOD: ${type === 'deposit' ? 'شحن رصيد إداري' : type === 'refund' ? 'استرداد مبلغ' : 'خصم إداري'}`,
-          createdAt: new Date().toISOString(),
-          status: 'success'
-        };
-
-        // إضافة العمليات للسجلات دون انتظار
-        addDoc(collection(db, "users", targetUser.id, "transactions"), transData);
-        addDoc(collection(db, "transactions"), transData);
-
-        toast({ title: "نجحت العملية", description: `الرصيد الجديد للعميل: ${formatUSD(newBalance)}` });
-        setTargetUser({ ...targetUser, walletBalance: newBalance });
-        setAmount("");
-      })
-      .catch(async () => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: userRef.path,
-          operation: 'update',
-          requestResourceData: { walletBalance: newBalance }
-        }));
-      })
-      .finally(() => setIsProcessing(false));
+    try {
+      await updateDoc(doc(db, "users", targetUser.id), { walletBalance: newBalance });
+      const transData = {
+        userId: targetUser.id,
+        amount: num,
+        type,
+        description: `إجراء إداري: ${type === 'deposit' ? 'شحن رصيد' : 'خصم رصيد'}`,
+        createdAt: new Date().toISOString()
+      };
+      await addDoc(collection(db, "transactions"), transData);
+      await addDoc(collection(db, "users", targetUser.id, "transactions"), transData);
+      
+      setTargetUser({...targetUser, walletBalance: newBalance});
+      toast({ title: "تم التحديث", description: `الرصيد الجديد: ${formatUSD(newBalance)}` });
+      setAmount("");
+    } catch (e) {
+      toast({ variant: "destructive", title: "خطأ", description: "فشل تحديث الرصيد" });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
-    <div className="space-y-12 animate-fade-in" dir="rtl">
-      <header className="flex justify-between items-end">
-        <div>
-          <h1 className="text-4xl font-headline font-bold mb-2">المركز المالي الملكي</h1>
-          <p className="text-muted-foreground text-lg">تحكم مطلق في السيولة، مراقبة التحويلات، ومعالجة الاسترداد.</p>
-        </div>
+    <div className="space-y-8 animate-fade-in" dir="rtl">
+      <header>
+        <h1 className="text-4xl font-headline font-bold gold-text">البنك المركزي XMOOD</h1>
+        <p className="text-muted-foreground mt-2">تحكم مطلق في السيولة، مراقبة التحويلات، وإصدار الاستردادات.</p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-1 border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white">
-          <CardHeader className="bg-slate-900 text-white p-10">
-            <CardTitle className="text-2xl flex items-center gap-3">
-              <Wallet className="text-primary" /> تعديل الأرصدة
+        <Card className="luxury-card border-none lg:col-span-1">
+          <CardHeader className="p-8 bg-white/5">
+            <CardTitle className="flex items-center gap-3">
+              <Wallet className="text-primary" /> تعديل رصيد مستخدم
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-10 space-y-8">
-            <div className="flex gap-3">
+          <CardContent className="p-8 space-y-6">
+            <div className="flex gap-2">
               <Input 
-                placeholder="بريد العميل..." 
-                className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold"
+                placeholder="بريد المستخدم..." 
                 value={searchEmail}
-                onChange={(e) => setSearchEmail(e.target.value)}
+                onChange={e => setSearchEmail(e.target.value)}
+                className="bg-white/5 border-none h-12"
               />
-              <Button onClick={handleSearchUser} disabled={isProcessing} className="h-16 w-16 rounded-2xl p-0 shrink-0">
-                {isProcessing ? <Loader2 className="animate-spin" /> : <Search size={24} />}
-              </Button>
+              <Button onClick={handleSearch} disabled={isProcessing} className="h-12 w-12 p-0"><Search size={18} /></Button>
             </div>
 
             {targetUser && (
-              <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-dashed border-primary/20 space-y-6 animate-fade-in">
-                <div className="flex justify-between items-start">
-                   <div className="text-right">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">العميل</p>
-                      <h3 className="font-bold text-xl">{targetUser.displayName}</h3>
-                      <Badge variant="outline" className="mt-1">{targetUser.role === 'admin' ? 'مدير' : targetUser.role === 'agent' ? 'وكيل' : 'عضو'}</Badge>
-                   </div>
-                   <div className="text-left">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">الرصيد</p>
-                      <p className="text-3xl font-black text-primary">{formatUSD(targetUser.walletBalance || 0)}</p>
-                   </div>
+              <div className="p-6 bg-white/5 rounded-2xl border border-white/5 space-y-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-xs opacity-50">المستخدم</p>
+                    <h3 className="font-bold">{targetUser.displayName}</h3>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs opacity-50">الرصيد الحالي</p>
+                    <p className="font-black text-primary">{formatUSD(targetUser.walletBalance || 0)}</p>
+                  </div>
                 </div>
-
-                <div className="space-y-4 pt-4 border-t">
-                  <div className="relative">
-                    <DollarSign className="absolute right-6 top-1/2 -translate-y-1/2 text-primary w-6 h-6" />
-                    <Input 
-                      type="number" 
-                      placeholder="0.00" 
-                      className="h-16 rounded-2xl bg-white pr-16 text-3xl font-black text-center shadow-sm"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 gap-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button 
-                        onClick={() => handleUpdateBalance('deposit')}
-                        disabled={isProcessing}
-                        className="h-14 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
-                      >
-                        <ArrowUpRight size={18} /> شحن
-                      </Button>
-                      <Button 
-                        onClick={() => handleUpdateBalance('withdrawal')}
-                        disabled={isProcessing}
-                        variant="destructive"
-                        className="h-14 rounded-2xl font-bold gap-2"
-                      >
-                        <ArrowDownLeft size={18} /> خصم
-                      </Button>
-                    </div>
-                    <Button 
-                      onClick={() => handleUpdateBalance('refund')}
-                      disabled={isProcessing}
-                      variant="outline"
-                      className="h-14 rounded-2xl border-primary text-primary hover:bg-primary/5 font-bold gap-2"
-                    >
-                      <RefreshCcw size={18} /> استرداد (Refund)
-                    </Button>
-                  </div>
+                <Input type="number" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} className="h-14 text-center text-2xl font-black bg-slate-900 border-primary/20" />
+                <div className="grid grid-cols-2 gap-2">
+                  <Button onClick={() => handleUpdateBalance('deposit')} disabled={isProcessing} className="bg-green-600 hover:bg-green-700 text-white font-bold h-12"><ArrowUpRight size={18} /> شحن</Button>
+                  <Button onClick={() => handleUpdateBalance('withdrawal')} disabled={isProcessing} variant="destructive" className="font-bold h-12"><ArrowDownLeft size={18} /> خصم</Button>
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 border-none shadow-xl rounded-[3rem] overflow-hidden bg-white">
-          <CardHeader className="p-10 border-b">
-            <CardTitle className="text-2xl flex items-center gap-3">
-              <History className="text-primary" /> تتبع التدفقات المالية
+        <Card className="luxury-card border-none lg:col-span-2 overflow-hidden">
+          <CardHeader className="p-8 border-b border-white/5">
+            <CardTitle className="flex items-center gap-3">
+              <History className="text-primary" /> سجل التدفقات المالية الشامل
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
-              <TableHeader className="bg-slate-50">
-                <TableRow>
-                  <TableHead className="text-right py-6 pr-10 font-black text-[10px] uppercase">التاريخ</TableHead>
-                  <TableHead className="text-right font-black text-[10px] uppercase">المستخدم</TableHead>
-                  <TableHead className="text-right font-black text-[10px] uppercase">النوع</TableHead>
-                  <TableHead className="text-right font-black text-[10px] uppercase">المبلغ</TableHead>
+              <TableHeader className="bg-white/5">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-right py-6 pr-10">التاريخ</TableHead>
+                  <TableHead className="text-right">المستخدم</TableHead>
+                  <TableHead className="text-right">العملية</TableHead>
+                  <TableHead className="text-right">المبلغ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {transLoading ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-20 text-muted-foreground">جاري تحميل السجلات...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center py-10"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
                 ) : globalTransactions?.map((t: any) => (
-                  <TableRow key={t.id} className="hover:bg-slate-50/50">
-                    <TableCell className="py-6 pr-10 text-xs font-medium text-slate-500">
-                      {new Date(t.createdAt).toLocaleString('ar-EG')}
-                    </TableCell>
+                  <TableRow key={t.id} className="hover:bg-white/5 border-b border-white/5">
+                    <TableCell className="py-5 pr-10 text-xs text-muted-foreground">{new Date(t.createdAt).toLocaleString('ar-EG')}</TableCell>
+                    <TableCell className="font-bold text-xs uppercase">{t.userId.substring(0,8)}</TableCell>
                     <TableCell>
-                      <span className="font-bold text-sm">UID: {t.userId.substring(0,8)}</span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={`rounded-full font-bold text-[10px] ${
-                        t.type === 'deposit' ? 'text-green-600 bg-green-50' : 
-                        t.type === 'refund' ? 'text-blue-600 bg-blue-50' : 'text-red-600 bg-red-50'
-                      }`}>
-                        {t.type === 'deposit' ? 'إيداع' : t.type === 'purchase' ? 'شراء' : t.type === 'refund' ? 'استرداد' : 'سحب'}
+                      <Badge variant="outline" className={`rounded-full ${t.type === 'deposit' ? 'text-green-500' : 'text-red-500'}`}>
+                        {t.type === 'deposit' ? 'إيداع إداري' : 'سحب/شراء'}
                       </Badge>
                     </TableCell>
-                    <TableCell className={`font-black ${t.type === 'deposit' || t.type === 'refund' ? 'text-green-600' : 'text-red-600'}`}>
-                      {t.type === 'deposit' || t.type === 'refund' ? '+' : '-'}{formatUSD(t.amount)}
+                    <TableCell className={`font-black ${t.type === 'deposit' ? 'text-green-500' : 'text-red-500'}`}>
+                      {t.type === 'deposit' ? '+' : '-'}{formatUSD(t.amount)}
                     </TableCell>
                   </TableRow>
                 ))}
