@@ -1,3 +1,4 @@
+
 export type UserRole = 'user' | 'admin' | 'agent';
 
 export interface UserProfile {
@@ -10,7 +11,7 @@ export interface UserProfile {
   createdAt: string;
 }
 
-export type Category = 'شحن ألعاب' | 'حسابات ألعاب' | 'خدمات رقمية' | 'خدمات تصميم' | 'وساطة وخدمات خاصة';
+export type Category = 'شحن ألعاب' | 'حسابات ألعاب' | 'خدمات رقمية' | 'خدمات تصميم' | 'وساطة وخدمات خاصة' | 'تبادل عملات';
 export type ProductStatus = 'active' | 'out_of_stock' | 'discount' | 'inactive';
 
 export interface Product {
@@ -24,6 +25,7 @@ export interface Product {
   status: ProductStatus;
   discountPrice?: number;
   isP2P?: boolean;
+  vendorId?: string;
   rating?: number;
 }
 
@@ -40,7 +42,7 @@ export interface Order {
   updatedAt: string;
 }
 
-export type TransactionType = 'deposit' | 'purchase' | 'refund' | 'withdrawal';
+export type TransactionType = 'deposit' | 'purchase' | 'refund' | 'withdrawal' | 'exchange';
 
 export interface Transaction {
   id: string;

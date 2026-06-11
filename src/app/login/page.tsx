@@ -25,13 +25,15 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [showVerification, setShowVerification] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
   
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
+
+  const ADMIN_EMAIL = "admin@xmood.store";
+  const ADMIN_NAME = "XMOOD STORE";
 
   async function handleGoogleLogin() {
     if (!auth || !db) return;
@@ -45,8 +47,7 @@ export default function LoginPage() {
       const docSnap = await getDoc(userDocRef);
       
       if (!docSnap.exists()) {
-        const isAdmin = user.displayName === "XMOOD STORE" || user.email === "admin@xmood.store";
-        
+        const isAdmin = user.email === ADMIN_EMAIL || user.displayName === ADMIN_NAME;
         await setDoc(userDocRef, {
           uid: user.uid,
           displayName: user.displayName || 'مستخدم XMOOD',
@@ -71,11 +72,6 @@ export default function LoginPage() {
     e.preventDefault();
     if (!auth) return;
     
-    if (!showVerification) {
-      setShowVerification(true);
-      return;
-    }
-
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -98,7 +94,7 @@ export default function LoginPage() {
 
       await updateProfile(user, { displayName: name });
       
-      const isAdmin = name === "XMOOD STORE" || email === "admin@xmood.store";
+      const isAdmin = email === ADMIN_EMAIL || name === ADMIN_NAME;
       
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
@@ -110,7 +106,7 @@ export default function LoginPage() {
         createdAt: new Date().toISOString(),
       });
 
-      toast({ title: "تم إنشاء الحساب بنجاح", description: `مرحباً بك ${isAdmin ? 'أيها المدير' : ''} في XMOOD STORE` });
+      toast({ title: "تم إنشاء الحساب بنجاح", description: `مرحباً بك في XMOOD STORE` });
       router.push("/");
     } catch (error: any) {
       toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message });
@@ -135,150 +131,60 @@ export default function LoginPage() {
           <CardContent className="p-10">
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-10 bg-slate-50 rounded-[1.8rem] p-1.5 h-16">
-                <TabsTrigger value="login" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold transition-all">
-                  دخول
-                </TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold transition-all">
-                  تسجيل جديد
-                </TabsTrigger>
+                <TabsTrigger value="login" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold">دخول</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold">تسجيل جديد</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="login">
-                {!showVerification ? (
-                  <form onSubmit={handleEmailLogin} className="space-y-6">
-                    <div className="space-y-2 text-right">
-                      <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">البريد الإلكتروني</Label>
-                      <div className="relative">
-                        <Mail className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                        <Input 
-                          type="email" 
-                          placeholder="example@mail.com" 
-                          className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold text-right" 
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2 text-right">
-                      <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">كلمة المرور</Label>
-                      <div className="relative">
-                        <Lock className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••" 
-                          className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold text-right" 
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-16 rounded-2xl shadow-xl transition-all" disabled={loading}>
-                      {loading ? <Loader2 className="animate-spin" /> : "متابعة للدخول"}
-                    </Button>
-
-                    <div className="relative my-8">
-                      <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-100"></span></div>
-                      <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-300 font-bold tracking-[0.3em]">أو</span></div>
-                    </div>
-
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={handleGoogleLogin}
-                      className="w-full h-16 rounded-2xl border-slate-100 hover:bg-slate-50 font-bold flex gap-3 text-slate-600 justify-center"
-                      disabled={loading}
-                    >
-                      <Chrome className="text-red-500 w-5 h-5" /> Google Account
-                    </Button>
-                  </form>
-                ) : (
-                  <div className="space-y-8 animate-fade-in">
-                    <div className="text-center">
-                      <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
-                        <Fingerprint size={40} />
-                      </div>
-                      <h3 className="text-2xl font-bold">رمز التحقق الأمني</h3>
-                      <p className="text-sm text-muted-foreground mt-2">أدخل أي 4 أرقام للمتابعة (تجريبي)</p>
-                    </div>
-                    
-                    <div className="flex justify-center gap-4" dir="ltr">
-                      <Input 
-                        maxLength={4}
-                        placeholder="0000"
-                        className="w-44 h-20 text-center text-4xl font-black tracking-[0.5em] rounded-[1.8rem] border-primary/20 bg-slate-50 shadow-inner"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
-                        autoFocus
-                      />
-                    </div>
-
-                    <div className="flex gap-4">
-                      <Button 
-                        onClick={() => setShowVerification(false)} 
-                        variant="ghost" 
-                        className="flex-1 h-16 rounded-2xl font-bold"
-                      >
-                        رجوع
-                      </Button>
-                      <Button 
-                        onClick={handleEmailLogin} 
-                        className="flex-[2] h-16 rounded-2xl bg-primary text-white font-bold shadow-lg"
-                        disabled={loading}
-                      >
-                        {loading ? <Loader2 className="animate-spin" /> : "تأكيد الهوية"}
-                      </Button>
+              <TabsContent value="login" className="animate-fade-in">
+                <form onSubmit={handleEmailLogin} className="space-y-6">
+                  <div className="space-y-2 text-right">
+                    <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">البريد الإلكتروني</Label>
+                    <div className="relative">
+                      <Mail className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
+                      <Input type="email" placeholder="mail@example.com" className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold" value={email} onChange={(e) => setEmail(e.target.value)} required />
                     </div>
                   </div>
-                )}
+                  <div className="space-y-2 text-right">
+                    <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">كلمة المرور</Label>
+                    <div className="relative">
+                      <Lock className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
+                      <Input type="password" placeholder="••••••••" className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-16 rounded-2xl shadow-xl" disabled={loading}>
+                    {loading ? <Loader2 className="animate-spin" /> : "تسجيل الدخول"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={handleGoogleLogin} className="w-full h-16 rounded-2xl border-slate-100 hover:bg-slate-50 font-bold flex gap-3 text-slate-600 justify-center">
+                    <Chrome className="text-red-500 w-5 h-5" /> الدخول عبر Google
+                  </Button>
+                </form>
               </TabsContent>
 
-              <TabsContent value="signup">
+              <TabsContent value="signup" className="animate-fade-in">
                 <form onSubmit={handleSignUp} className="space-y-5">
                   <div className="space-y-1 text-right">
                     <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">الاسم الكامل</Label>
                     <div className="relative">
                       <User className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                      <Input 
-                        placeholder="استخدم XMOOD STORE للصلاحيات" 
-                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold text-right" 
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
+                      <Input placeholder="اسمك الكامل" className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold" value={name} onChange={(e) => setName(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-1 text-right">
                     <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">البريد الإلكتروني</Label>
                     <div className="relative">
                       <Mail className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                      <Input 
-                        type="email" 
-                        placeholder="mail@example.com" 
-                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold text-right" 
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
+                      <Input type="email" placeholder="mail@example.com" className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold" value={email} onChange={(e) => setEmail(e.target.value)} required />
                     </div>
                   </div>
                   <div className="space-y-1 text-right">
                     <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">كلمة المرور</Label>
                     <div className="relative">
                       <Lock className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                      <Input 
-                        type="password" 
-                        placeholder="اختر كلمة مرور قوية" 
-                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold text-right" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
+                      <Input type="password" placeholder="كلمة مرور قوية" className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
                   </div>
                   <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-16 rounded-2xl shadow-xl mt-4" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء الحساب الإداري"}
+                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء الحساب"}
                   </Button>
                 </form>
               </TabsContent>
