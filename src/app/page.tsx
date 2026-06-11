@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -85,31 +84,6 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Concierge & Specialized Services */}
-      <section className="container mx-auto px-4 py-20">
-         <div className="bg-slate-900 rounded-[3rem] p-12 md:p-20 text-white flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative shadow-2xl">
-            <div className="relative z-10 max-w-xl text-center md:text-right">
-               <h2 className="text-4xl font-headline font-bold mb-6">هل تبحث عن خدمة مخصصة؟</h2>
-               <p className="text-slate-400 text-lg mb-8 leading-relaxed font-light">
-                  نحن نوفر خدمات الوساطة الخاصة وطلبات التصميم الفريدة. فريقنا من الوكلاء المعتمدين جاهز لتلبية احتياجاتك مهما كانت معقدة.
-               </p>
-               <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                  <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold h-14 px-10 rounded-2xl shadow-2xl shadow-primary/20">
-                     <Link href="/middleman">نظام الوساطة</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10 h-14 px-10 rounded-2xl">
-                     <Link href="/concierge">المساعد الذكي</Link>
-                  </Button>
-               </div>
-            </div>
-            <div className="relative z-10">
-               <div className="w-32 h-32 bg-primary/20 rounded-full flex items-center justify-center backdrop-blur-3xl animate-pulse">
-                  <Sparkles size={48} className="text-primary" />
-               </div>
-            </div>
-         </div>
       </section>
 
       <footer className="py-16 border-t bg-white">
