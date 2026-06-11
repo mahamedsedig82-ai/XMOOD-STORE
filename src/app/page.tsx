@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
@@ -6,8 +5,12 @@ import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { STORE_PRODUCTS, AGENTS } from "@/app/lib/mock-data";
 import { ShieldCheck, Zap, HeartHandshake, Smartphone, Send } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { getPlaceholderById } from "@/lib/placeholder-images";
 
 export default function Home() {
+  const heroImg = getPlaceholderById('hero-luxury');
+
   return (
     <main className="min-h-screen pb-20">
       <Navbar />
@@ -16,11 +19,12 @@ export default function Home() {
       <section className="relative h-[80vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image 
-            src="https://picsum.photos/seed/exigo_hero/1920/1080" 
-            alt="Hero background"
+            src={heroImg.imageUrl} 
+            alt={heroImg.description}
             fill
             className="object-cover opacity-20"
             priority
+            data-ai-hint={heroImg.imageHint}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
         </div>
@@ -132,5 +136,3 @@ export default function Home() {
     </main>
   );
 }
-
-import { Badge } from "@/components/ui/badge";

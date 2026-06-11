@@ -1,0 +1,89 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Extended user information and wallet balance",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "walletBalance": { "type": "number" },
+        "role": { "type": "string", "enum": ["user", "admin", "agent"] },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "walletBalance", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Service or item in store/marketplace",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "stock": { "type": "number" },
+        "vendorId": { "type": "string" },
+        "isP2P": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["active", "inactive", "archived"] },
+        "rating": { "type": "number" }
+      },
+      "required": ["name", "price", "category", "stock", "status"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Purchase transaction record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["waiting_payment", "processing", "completed", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "productId", "amount", "status", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Wallet balance change log",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["deposit", "purchase", "refund", "withdrawal"] },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "agentId": { "type": "string" },
+        "orderId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "type", "amount", "createdAt"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Public and private user data"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Catalog of all services and items"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "All customer orders across the platform"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Immutable ledger of user wallet activity"
+    }
+  }
+}

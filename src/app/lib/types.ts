@@ -1,5 +1,17 @@
+export type UserRole = 'user' | 'admin' | 'agent';
+
+export interface UserProfile {
+  uid: string;
+  displayName: string;
+  email: string;
+  walletBalance: number;
+  role: UserRole;
+  photoURL?: string;
+  createdAt: string;
+}
 
 export type Category = 'شحن ألعاب' | 'حسابات ألعاب' | 'خدمات رقمية' | 'خدمات تصميم' | 'وساطة وخدمات خاصة';
+export type ProductStatus = 'active' | 'inactive' | 'archived';
 
 export interface Product {
   id: string;
@@ -9,30 +21,35 @@ export interface Product {
   category: Category;
   imageUrl: string;
   stock: number;
-  vendor?: string;
+  vendorId?: string;
   isP2P?: boolean;
+  status: ProductStatus;
+  rating?: number;
 }
 
-export interface WalletTransaction {
+export type OrderStatus = 'waiting_payment' | 'processing' | 'completed' | 'cancelled';
+
+export interface Order {
   id: string;
-  type: 'deposit' | 'purchase' | 'refund';
+  userId: string;
+  productId: string;
+  productName: string;
   amount: number;
-  date: string;
+  status: OrderStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TransactionType = 'deposit' | 'purchase' | 'refund' | 'withdrawal';
+
+export interface Transaction {
+  id: string;
+  userId: string;
+  type: TransactionType;
+  amount: number;
   description: string;
-}
-
-export interface Wallet {
-  balance: number;
-  transactions: WalletTransaction[];
-}
-
-export interface MiddlemanRequest {
-  id: string;
-  title: string;
-  status: 'pending' | 'in progress' | 'completed' | 'disputed';
-  amount: number;
-  buyer: string;
-  seller: string;
+  agentId?: string;
+  orderId?: string;
   createdAt: string;
 }
 
@@ -42,4 +59,14 @@ export interface Agent {
   contactType: 'WhatsApp' | 'Telegram';
   contactValue: string;
   availability: string;
+}
+
+export interface MiddlemanRequest {
+  id: string;
+  title: string;
+  status: 'pending' | 'in progress' | 'completed' | 'cancelled';
+  amount: number;
+  buyer: string;
+  seller: string;
+  createdAt: string;
 }

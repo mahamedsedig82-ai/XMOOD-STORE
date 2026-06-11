@@ -1,10 +1,11 @@
-
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
+import { FirebaseClientProvider } from '@/firebase';
+import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Exigo Marketplace | Luxury Digital Showroom',
-  description: 'The ultimate digital marketplace for games, designs, and escrow services.',
+  title: 'إكسيجو | منصة الخدمات الرقمية الفاخرة',
+  description: 'الوجهة الأولى لشحن الألعاب، شراء الحسابات، والخدمات الرقمية الآمنة.',
 };
 
 export default function RootLayout({
@@ -13,14 +14,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ar" dir="rtl">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased bg-background">
-        {children}
+      <body className="font-body antialiased bg-background text-foreground selection:bg-primary/30">
+        <FirebaseClientProvider>
+          {children}
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );

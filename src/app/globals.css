@@ -1,17 +1,16 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 40 20% 97%; /* Pure Alabaster #FAF9F6 */
+    --background: 40 20% 97%; /* Alabaster White #FAF9F6 */
     --foreground: 45 10% 10%;
     --card: 0 0% 100%;
     --card-foreground: 45 10% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 45 10% 10%;
-    --primary: 46 66% 46%; /* Muted Antique Gold #C5A028 */
+    --primary: 46 66% 46%; /* Antique Gold #C5A028 */
     --primary-foreground: 40 20% 97%;
     --secondary: 40 10% 90%;
     --secondary-foreground: 46 66% 46%;
@@ -24,7 +23,16 @@
     --border: 46 20% 85%;
     --input: 46 20% 85%;
     --ring: 46 66% 46%;
-    --radius: 0.75rem;
+    --radius: 1rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 46 66% 46%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -38,4 +46,12 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;
   }
+}
+
+.luxury-shadow {
+  box-shadow: 0 10px 30px -10px rgba(197, 160, 40, 0.15);
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #C5A028 0%, #E8C14D 50%, #C5A028 100%);
 }
