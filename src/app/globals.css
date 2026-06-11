@@ -5,15 +5,15 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
+    --background: 0 0% 100%;
     --foreground: 224 71% 4%;
     --card: 0 0% 100%;
     --card-foreground: 224 71% 4%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 4%;
-    --primary: 43 74% 49%; /* الذهب الملكي */
+    --primary: 43 74% 49%; /* Gold */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 10%; /* الكحلي العميق */
+    --secondary: 222 47% 11%; /* Navy Black */
     --secondary-foreground: 210 20% 98%;
     --muted: 220 14% 96%;
     --muted-foreground: 220 14% 46%;
@@ -24,7 +24,7 @@
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 43 74% 49%;
-    --radius: 2rem;
+    --radius: 2.5rem;
   }
 
   .dark {
@@ -56,33 +56,30 @@
   }
   body {
     @apply bg-background text-foreground antialiased selection:bg-primary/20;
-    font-feature-settings: "cv11", "ss01";
   }
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #B8860B 0%, #FFD700 50%, #B8860B 100%);
+}
+
+.royal-shadow {
+  shadow: 0 25px 50px -12px rgba(184, 134, 11, 0.25);
 }
 
 .font-handwriting {
   font-family: 'Caveat', cursive;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-royal-fade {
+  animation: royalFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(15px); }
+@keyframes royalFade {
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .luxury-card {
-  @apply bg-white border border-slate-100 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] transition-all duration-500 hover:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.1)];
-}
-
-.gold-gradient-text {
-  background: linear-gradient(to bottom right, #B8860B, #FFD700, #B8860B);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.royal-button {
-  @apply bg-slate-950 text-white font-bold rounded-[1.5rem] transition-all duration-300 hover:bg-primary hover:scale-[1.02] active:scale-95 shadow-lg shadow-slate-900/10;
+  @apply bg-white border border-slate-100 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] transition-all duration-500 hover:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.1)] rounded-[3rem];
 }
