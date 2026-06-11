@@ -2,7 +2,21 @@
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
-import { LayoutDashboard, Package, ShoppingCart, Users, ShieldCheck, Wallet, Settings, ArrowRight } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Package, 
+  ShoppingCart, 
+  Users, 
+  ShieldCheck, 
+  Wallet, 
+  Settings, 
+  ArrowRight, 
+  Coins, 
+  LifeBuoy, 
+  Activity, 
+  UserCheck, 
+  Lock
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@/firebase";
@@ -15,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && (!profile || (profile.role !== 'admin' && profile.role !== 'agent'))) {
+    if (!loading && (!profile || profile.role !== 'admin')) {
       router.push('/'); 
     }
   }, [profile, loading, router]);
@@ -31,38 +45,46 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const menuItems = [
     { label: "الإحصائيات", icon: LayoutDashboard, href: "/admin" },
     { label: "إدارة المنتجات", icon: Package, href: "/admin/products" },
-    { label: "طلبات العملاء", icon: ShoppingCart, href: "/admin/orders" },
+    { label: "طلبات الشحن", icon: ShoppingCart, href: "/admin/orders" },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users" },
-    { label: "المالية والشحن", icon: Wallet, href: "/admin/finance" },
+    { label: "المركز المالي", icon: Wallet, href: "/admin/finance" },
+    { label: "سوق التداول P2P", icon: UserCheck, href: "/admin/marketplace" },
+    { label: "أسعار الصرف", icon: Coins, href: "/admin/exchange" },
+    { label: "الدعم الفني", icon: LifeBuoy, href: "/admin/support" },
+    { label: "سجلات الأمان", icon: Lock, href: "/admin/security" },
     { label: "إعدادات المتجر", icon: Settings, href: "/admin/settings" },
+    { label: "إدارة الوكلاء", icon: Activity, href: "/admin/agents" },
   ];
 
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-slate-50 font-body" dir="rtl">
-        <Sidebar className="border-l bg-white" side="right">
-          <SidebarHeader className="p-6 border-b">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-md">
-                <ShieldCheck size={20} />
+        <Sidebar className="border-l bg-white shadow-xl" side="right">
+          <SidebarHeader className="p-8 border-b bg-slate-900 text-white">
+            <Link href="/" className="flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg">
+                  <ShieldCheck size={24} />
+                </div>
+                <span className="font-handwriting text-3xl font-bold text-primary">XMOOD Admin</span>
               </div>
-              <span className="font-handwriting text-2xl font-bold text-primary">XMOOD Admin</span>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Master Control Panel</p>
             </Link>
           </SidebarHeader>
-          <SidebarContent className="p-4">
+          <SidebarContent className="p-4 bg-white">
             <SidebarGroup>
-              <SidebarGroupLabel className="text-right px-4 mb-2 text-[10px] font-black uppercase tracking-widest opacity-50">إدارة المنصة</SidebarGroupLabel>
-              <SidebarMenu>
+              <SidebarGroupLabel className="text-right px-4 mb-4 text-[10px] font-black uppercase tracking-widest opacity-40">أقسام الإدارة الشاملة</SidebarGroupLabel>
+              <SidebarMenu className="gap-1">
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton 
                       asChild 
                       isActive={pathname === item.href}
-                      className="justify-start gap-3 h-12 px-4 rounded-2xl hover:bg-slate-50 transition-all data-[active=true]:bg-primary/5 data-[active=true]:text-primary"
+                      className="justify-start gap-3 h-12 px-5 rounded-2xl hover:bg-slate-50 transition-all data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                     >
                       <Link href={item.href}>
                         <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-primary' : 'text-slate-400'}`} />
-                        <span className={pathname === item.href ? 'font-bold' : ''}>{item.label}</span>
+                        <span className={`text-sm ${pathname === item.href ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -70,18 +92,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </SidebarMenu>
             </SidebarGroup>
             
-            <div className="mt-auto pt-6 px-4">
-               <Button asChild variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-primary rounded-2xl h-12">
+            <div className="mt-auto pt-8 px-4 border-t">
+               <Button asChild variant="ghost" className="w-full justify-start gap-4 text-slate-400 hover:text-primary rounded-2xl h-14">
                   <Link href="/">
-                    <ArrowRight className="w-5 h-5" />
-                    <span className="font-bold">العودة للمتجر</span>
+                    <ArrowRight className="w-6 h-6" />
+                    <span className="font-bold text-base">الخروج للمتجر</span>
                   </Link>
                </Button>
             </div>
           </SidebarContent>
         </Sidebar>
-        <main className="flex-1 overflow-y-auto p-6 md:p-10">
-          <div className="max-w-6xl mx-auto">
+        <main className="flex-1 overflow-y-auto p-8 md:p-12">
+          <div className="max-w-7xl mx-auto">
             {children}
           </div>
         </main>

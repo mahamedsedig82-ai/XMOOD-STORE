@@ -1,5 +1,5 @@
 
-export type UserRole = 'user' | 'admin' | 'agent';
+export type UserRole = 'user' | 'admin' | 'agent' | 'vip';
 
 export interface UserProfile {
   uid: string;
@@ -7,8 +7,10 @@ export interface UserProfile {
   email: string;
   walletBalance: number;
   role: UserRole;
+  label?: string; // مسمى المستخدم (مثلاً: تاجر معتمد، عميل VIP)
   photoURL?: string;
   createdAt: string;
+  lastLogin?: string;
 }
 
 export type Category = 'شحن ألعاب' | 'حسابات ألعاب' | 'خدمات رقمية' | 'خدمات تصميم' | 'وساطة وخدمات خاصة' | 'تبادل عملات';
@@ -29,7 +31,7 @@ export interface Product {
   rating?: number;
 }
 
-export type OrderStatus = 'waiting_payment' | 'processing' | 'completed' | 'cancelled';
+export type OrderStatus = 'waiting_payment' | 'processing' | 'completed' | 'cancelled' | 'refunded';
 
 export interface Order {
   id: string;
@@ -42,17 +44,19 @@ export interface Order {
   updatedAt: string;
 }
 
-export type TransactionType = 'deposit' | 'purchase' | 'refund' | 'withdrawal' | 'exchange';
+export type TransactionType = 'deposit' | 'purchase' | 'refund' | 'withdrawal' | 'exchange' | 'transfer_send' | 'transfer_receive';
 
 export interface Transaction {
   id: string;
   userId: string;
+  targetUserId?: string; // في حال التحويل
   type: TransactionType;
   amount: number;
   description: string;
   agentId?: string;
   orderId?: string;
   createdAt: string;
+  status?: 'success' | 'failed' | 'refunded';
 }
 
 export interface Agent {

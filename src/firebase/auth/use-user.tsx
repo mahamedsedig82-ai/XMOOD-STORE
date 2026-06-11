@@ -16,7 +16,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // الإيميل الرسمي للإدارة
+  // حساب المدير العام الرئيسي
   const ADMIN_EMAIL = "MAHAMEDFK3@GMAIL.COM";
 
   useEffect(() => {
@@ -47,21 +47,25 @@ export function useUser() {
             uid: user.uid,
             displayName: user.displayName || 'مستخدم XMOOD',
             email: user.email || '',
-            walletBalance: isAdmin ? 1000000 : 0, // رصيد ضخم للادمن
+            walletBalance: isAdmin ? 999999999 : 0, // رصيد إداري ضخم
             role: isAdmin ? 'admin' : 'user',
+            label: isAdmin ? 'المدير العام' : 'عضو جديد',
             photoURL: user.photoURL || '',
             createdAt: new Date().toISOString(),
           };
           await setDoc(userDocRef, newProfile, { merge: true });
-        } else if (isAdmin && docSnap.data()?.role !== 'admin') {
-          // تحديث الصلاحيات فوراً في حال لم تكن مطبقة
-          await setDoc(userDocRef, { 
-            role: 'admin', 
-            walletBalance: 1000000 
-          }, { merge: true });
+        } else if (isAdmin) {
+          // تحديث يومي أو دائم لرصيد المدير لضمان توفر السيولة للتحويلات
+          if (docSnap.data()?.walletBalance < 1000000 || docSnap.data()?.role !== 'admin') {
+            await setDoc(userDocRef, { 
+              role: 'admin', 
+              walletBalance: 999999999,
+              label: 'المدير العام للمنصة'
+            }, { merge: true });
+          }
         }
       } catch (err) {
-        console.error("Error syncing profile:", err);
+        console.error("Critical Profile Sync Error:", err);
       }
     };
 
