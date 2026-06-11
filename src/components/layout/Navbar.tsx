@@ -46,7 +46,7 @@ export function Navbar() {
           <span className="font-headline text-2xl font-bold tracking-tighter text-primary">XMOOD</span>
         </Link>
 
-        {/* Search Bar - Main Store Style */}
+        {/* Search Bar */}
         <div className="hidden lg:flex flex-1 max-w-xl relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
