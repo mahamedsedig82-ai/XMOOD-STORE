@@ -5,7 +5,7 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, MoreVertical, Edit2, Trash2, ImageIcon, Loader2, RefreshCcw, Key } from "lucide-react";
+import { Plus, Search, MoreVertical, Edit2, Trash2, ImageIcon, Loader2, RefreshCcw, Key, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useCollection, useFirestore } from "@/firebase";
-import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
 import { STORE_PRODUCTS } from "@/app/lib/mock-data";
 import { errorEmitter } from "@/firebase/error-emitter";
@@ -36,10 +36,10 @@ export default function AdminProducts() {
     category: "شحن ألعاب",
     imageUrl: "https://picsum.photos/seed/ff-main/800/600",
     description: "",
-    shippingCodes: "" // أكواد الشحن لكل عنصر
+    shippingCodes: "" 
   });
 
-  const handleAddProduct = async () => {
+  const handleAddProduct = () => {
     if (!currentProduct.name || !currentProduct.price) {
       toast({ variant: "destructive", title: "خطأ", description: "يرجى ملء الاسم والسعر" });
       return;
@@ -57,23 +57,23 @@ export default function AdminProducts() {
       createdAt: new Date().toISOString(),
     };
 
-    try {
-      await addDoc(collection(db, "products"), productData);
-      toast({ title: "تمت الإضافة", description: "تم نشر المنتج بنجاح في المتجر" });
-      setIsAddDialogOpen(false);
-      resetForm();
-    } catch (err) {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: 'products',
-        operation: 'create',
-        requestResourceData: productData
-      }));
-    } finally {
-      setIsProcessing(false);
-    }
+    addDoc(collection(db, "products"), productData)
+      .then(() => {
+        toast({ title: "تمت الإضافة", description: "تم نشر المنتج بنجاح في المتجر" });
+        setIsAddDialogOpen(false);
+        resetForm();
+      })
+      .catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: 'products',
+          operation: 'create',
+          requestResourceData: productData
+        }));
+      })
+      .finally(() => setIsProcessing(false));
   };
 
-  const handleUpdateProduct = async () => {
+  const handleUpdateProduct = () => {
     if (!currentProduct.id) return;
     setIsProcessing(true);
     const productRef = doc(db, "products", currentProduct.id);
@@ -89,34 +89,35 @@ export default function AdminProducts() {
       updatedAt: new Date().toISOString(),
     };
 
-    try {
-      await updateDoc(productRef, updateData);
-      toast({ title: "تم التحديث", description: "تم حفظ التغييرات بنجاح" });
-      setIsEditDialogOpen(false);
-      resetForm();
-    } catch (err) {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: productRef.path,
-        operation: 'update',
-        requestResourceData: updateData
-      }));
-    } finally {
-      setIsProcessing(false);
-    }
+    updateDoc(productRef, updateData)
+      .then(() => {
+        toast({ title: "تم التحديث", description: "تم حفظ التغييرات بنجاح" });
+        setIsEditDialogOpen(false);
+        resetForm();
+      })
+      .catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: productRef.path,
+          operation: 'update',
+          requestResourceData: updateData
+        }));
+      })
+      .finally(() => setIsProcessing(false));
   };
 
-  const handleDeleteProduct = async (id: string) => {
+  const handleDeleteProduct = (id: string) => {
     if (!confirm("هل أنت متأكد من حذف هذا المنتج نهائياً؟")) return;
     const productRef = doc(db, "products", id);
-    try {
-      await deleteDoc(productRef);
-      toast({ title: "تم الحذف", description: "تمت إزالة المنتج من المتجر" });
-    } catch (err) {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: productRef.path,
-        operation: 'delete'
-      }));
-    }
+    deleteDoc(productRef)
+      .then(() => {
+        toast({ title: "تم الحذف", description: "تمت إزالة المنتج من المتجر" });
+      })
+      .catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: productRef.path,
+          operation: 'delete'
+        }));
+      });
   };
 
   const resetForm = () => {
@@ -149,14 +150,14 @@ export default function AdminProducts() {
   const handleSeedData = async () => {
     setIsProcessing(true);
     try {
-      const seedPromises = STORE_PRODUCTS.map(p => 
-        addDoc(collection(db, "products"), { 
+      for (const p of STORE_PRODUCTS) {
+        await addDoc(collection(db, "products"), { 
           ...p, 
           createdAt: new Date().toISOString(),
-          status: p.stock > 0 ? 'active' : 'out_of_stock'
-        })
-      );
-      await Promise.all(seedPromises);
+          status: p.stock > 0 ? 'active' : 'out_of_stock',
+          shippingCodes: "XMOOD-TEST-CODE-1\nXMOOD-TEST-CODE-2"
+        });
+      }
       toast({ title: "تمت التهيئة", description: "تمت إضافة المنتجات الافتراضية بنجاح" });
     } catch (error) {
       toast({ variant: "destructive", title: "خطأ", description: "فشل في تهيئة البيانات" });
@@ -174,7 +175,7 @@ export default function AdminProducts() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h1 className="text-4xl font-headline font-bold mb-2 gold-gradient-text">إدارة المخزون والأكواد</h1>
-          <p className="text-muted-foreground text-sm">تحكم شامل في الباقات، الأسعار، وأكواد الشحن الفوري.</p>
+          <p className="text-muted-foreground text-sm">تحكم شامل في الباقات، الأسعار، وأكواد الشحن الفوري لكل عنصر.</p>
         </div>
         
         <div className="flex gap-3">
@@ -224,7 +225,7 @@ export default function AdminProducts() {
                 <TableHead className="text-right font-black text-[10px] uppercase">الفئة</TableHead>
                 <TableHead className="text-right font-black text-[10px] uppercase">السعر</TableHead>
                 <TableHead className="text-right font-black text-[10px] uppercase">المخزون</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase">الأكواد المتاحة</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase">الأكواد</TableHead>
                 <TableHead className="text-center w-[120px] font-black text-[10px] uppercase">إجراءات</TableHead>
               </TableRow>
             </TableHeader>
@@ -254,7 +255,7 @@ export default function AdminProducts() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                        <Key size={14} className="text-amber-500" />
-                       <span className="text-xs font-bold text-slate-500">{product.shippingCodes?.split('\n').filter(Boolean).length || 0} كود</span>
+                       <span className="text-xs font-bold text-slate-500">{product.shippingCodes?.split('\n').filter(Boolean).length || 0}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
@@ -266,7 +267,7 @@ export default function AdminProducts() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48 rounded-2xl border-none shadow-2xl p-2" dir="rtl">
                         <DropdownMenuItem onClick={() => openEditDialog(product)} className="gap-3 p-3 cursor-pointer rounded-xl font-bold text-sm focus:bg-primary/5 focus:text-primary justify-end">
-                          تعديل وتحديث الأكواد <Edit2 size={16} />
+                          تعديل المنتج والأكواد <Edit2 size={16} />
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => handleDeleteProduct(product.id)}
@@ -305,7 +306,7 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
   return (
     <div className="grid gap-6 py-4">
       <div className="space-y-2 text-right">
-        <Label className="font-black text-[10px] uppercase opacity-40 pr-2">اسم الباقة الاحترافي</Label>
+        <Label className="font-black text-[10px] uppercase opacity-40 pr-2">اسم الباقة</Label>
         <Input 
           value={currentProduct.name}
           onChange={(e) => setCurrentProduct({...currentProduct, name: e.target.value})}
@@ -325,7 +326,7 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
           />
         </div>
         <div className="space-y-2 text-right">
-          <Label className="font-black text-[10px] uppercase opacity-40 pr-2">الكمية الإجمالية</Label>
+          <Label className="font-black text-[10px] uppercase opacity-40 pr-2">الكمية (المخزون)</Label>
           <Input 
             type="number" 
             value={currentProduct.stock}
@@ -373,4 +374,3 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
     </div>
   );
 }
-

@@ -17,7 +17,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Mail, Lock, Chrome, Loader2, User, KeyRound, Send } from "lucide-react";
+import { ShieldCheck, Mail, Lock, Chrome, Loader2, User, KeyRound, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -147,7 +147,7 @@ export default function LoginPage() {
             <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
                <KeyRound size={40} className="animate-pulse" />
             </div>
-            <h2 className="text-3xl font-headline font-bold">تأكيد الهوية</h2>
+            <h2 className="text-3xl font-headline font-bold">تأكيد الهوية الملكية</h2>
             <p className="text-xs opacity-80 mt-2 font-medium">أدخل الرمز المكون من 4 أرقام المرسل إلى بريدك</p>
           </div>
           <CardContent className="p-12">
@@ -167,7 +167,7 @@ export default function LoginPage() {
               <Button disabled={isVerifying} type="submit" className="w-full h-16 bg-slate-900 hover:bg-primary rounded-2xl font-bold text-white shadow-xl transition-all text-lg">
                 {isVerifying ? <Loader2 className="animate-spin" /> : "تأكيد الدخول الآمن"}
               </Button>
-              <button type="button" className="w-full text-xs font-bold text-primary hover:underline">إعادة إرسال الرمز</button>
+              <button type="button" className="w-full text-xs font-bold text-primary hover:underline">إعادة إرسال الرمز لبريدي</button>
             </form>
           </CardContent>
         </Card>
@@ -216,7 +216,7 @@ export default function LoginPage() {
 
               <TabsContent value="signup" className="animate-fade-in space-y-6">
                 <form onSubmit={handleSignUp} className="space-y-5">
-                  <Input placeholder="الاسم الملكي الكامل" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={name} onChange={(e) => setName(e.target.value)} required />
+                  <Input placeholder="الاسم الكامل" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={name} onChange={(e) => setName(e.target.value)} required />
                   <Input type="email" placeholder="البريد الإلكتروني" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   <Input type="password" placeholder="كلمة المرور" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={password} onChange={(e) => setPassword(e.target.value)} required />
                   <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-16 rounded-2xl shadow-xl mt-4" disabled={loading}>
