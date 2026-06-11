@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -51,7 +52,7 @@ export function useUser() {
           await setDoc(userDocRef, newProfile, { merge: true });
         }
       } catch (err) {
-        console.error("خطأ في مزامنة الملف الشخصي:", err);
+        // إذا حدث خطأ في الصلاحيات هنا، سنعالجه في الـ onSnapshot
       }
     };
 
