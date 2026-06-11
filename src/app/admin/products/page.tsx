@@ -5,14 +5,15 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, MoreVertical, Edit2, Trash2, ImageIcon, Loader2, RefreshCcw } from "lucide-react";
+import { Plus, Search, MoreVertical, Edit2, Trash2, ImageIcon, Loader2, RefreshCcw, Key } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useCollection, useFirestore } from "@/firebase";
-import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
 import { STORE_PRODUCTS } from "@/app/lib/mock-data";
 import { errorEmitter } from "@/firebase/error-emitter";
@@ -34,7 +35,8 @@ export default function AdminProducts() {
     stock: "100",
     category: "شحن ألعاب",
     imageUrl: "https://picsum.photos/seed/ff-main/800/600",
-    description: ""
+    description: "",
+    shippingCodes: "" // أكواد الشحن لكل عنصر
   });
 
   const handleAddProduct = async () => {
@@ -50,6 +52,7 @@ export default function AdminProducts() {
       category: currentProduct.category,
       imageUrl: currentProduct.imageUrl,
       description: currentProduct.description || "",
+      shippingCodes: currentProduct.shippingCodes || "",
       status: Number(currentProduct.stock) > 0 ? "active" : "out_of_stock",
       createdAt: new Date().toISOString(),
     };
@@ -81,6 +84,7 @@ export default function AdminProducts() {
       category: currentProduct.category,
       imageUrl: currentProduct.imageUrl,
       description: currentProduct.description || "",
+      shippingCodes: currentProduct.shippingCodes || "",
       status: Number(currentProduct.stock) > 0 ? "active" : "out_of_stock",
       updatedAt: new Date().toISOString(),
     };
@@ -123,7 +127,8 @@ export default function AdminProducts() {
       stock: "100",
       category: "شحن ألعاب",
       imageUrl: "https://picsum.photos/seed/ff-main/800/600",
-      description: ""
+      description: "",
+      shippingCodes: ""
     });
   };
 
@@ -135,7 +140,8 @@ export default function AdminProducts() {
       stock: product.stock.toString(),
       category: product.category,
       imageUrl: product.imageUrl,
-      description: product.description || ""
+      description: product.description || "",
+      shippingCodes: product.shippingCodes || ""
     });
     setIsEditDialogOpen(true);
   };
@@ -167,8 +173,8 @@ export default function AdminProducts() {
     <div className="space-y-10 animate-fade-in" dir="rtl">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-4xl font-headline font-bold mb-2 gold-gradient-text">إدارة المخزون الملكي</h1>
-          <p className="text-muted-foreground text-sm">تحكم شامل في الباقات، الأسعار، والمخزون الفوري.</p>
+          <h1 className="text-4xl font-headline font-bold mb-2 gold-gradient-text">إدارة المخزون والأكواد</h1>
+          <p className="text-muted-foreground text-sm">تحكم شامل في الباقات، الأسعار، وأكواد الشحن الفوري.</p>
         </div>
         
         <div className="flex gap-3">
@@ -183,7 +189,7 @@ export default function AdminProducts() {
                 <Plus size={20} className="ml-2" /> إضافة باقة جديدة
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] rounded-[3rem] p-8" dir="rtl">
+            <DialogContent className="sm:max-w-[600px] rounded-[3rem] p-8 max-h-[90vh] overflow-y-auto" dir="rtl">
               <DialogHeader>
                 <DialogTitle className="text-right text-3xl font-bold mb-4">إنشاء منتج جديد</DialogTitle>
               </DialogHeader>
@@ -218,7 +224,7 @@ export default function AdminProducts() {
                 <TableHead className="text-right font-black text-[10px] uppercase">الفئة</TableHead>
                 <TableHead className="text-right font-black text-[10px] uppercase">السعر</TableHead>
                 <TableHead className="text-right font-black text-[10px] uppercase">المخزون</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase">الحالة</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase">الأكواد المتاحة</TableHead>
                 <TableHead className="text-center w-[120px] font-black text-[10px] uppercase">إجراءات</TableHead>
               </TableRow>
             </TableHeader>
@@ -246,9 +252,10 @@ export default function AdminProducts() {
                   <TableCell className="font-black text-primary text-lg">${product.price}</TableCell>
                   <TableCell className="font-mono text-sm">{product.stock}</TableCell>
                   <TableCell>
-                    <Badge className={`${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'} border-none rounded-full font-bold text-[10px] px-3 py-1`}>
-                      {product.stock > 0 ? 'متاح' : 'نافذ'}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                       <Key size={14} className="text-amber-500" />
+                       <span className="text-xs font-bold text-slate-500">{product.shippingCodes?.split('\n').filter(Boolean).length || 0} كود</span>
+                    </div>
                   </TableCell>
                   <TableCell className="text-center">
                     <DropdownMenu>
@@ -259,7 +266,7 @@ export default function AdminProducts() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48 rounded-2xl border-none shadow-2xl p-2" dir="rtl">
                         <DropdownMenuItem onClick={() => openEditDialog(product)} className="gap-3 p-3 cursor-pointer rounded-xl font-bold text-sm focus:bg-primary/5 focus:text-primary justify-end">
-                          تعديل المنتج <Edit2 size={16} />
+                          تعديل وتحديث الأكواد <Edit2 size={16} />
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => handleDeleteProduct(product.id)}
@@ -278,14 +285,14 @@ export default function AdminProducts() {
       </Card>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[3rem] p-8" dir="rtl">
+        <DialogContent className="sm:max-w-[600px] rounded-[3rem] p-8 max-h-[90vh] overflow-y-auto" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="text-right text-3xl font-bold mb-4">تحديث البيانات</DialogTitle>
+            <DialogTitle className="text-right text-3xl font-bold mb-4">تحديث بيانات المنتج</DialogTitle>
           </DialogHeader>
           <ProductForm currentProduct={currentProduct} setCurrentProduct={setCurrentProduct} />
           <DialogFooter className="mt-6">
             <Button onClick={handleUpdateProduct} disabled={isProcessing} className="h-16 rounded-2xl bg-slate-900 text-white font-bold w-full text-lg">
-              {isProcessing ? <Loader2 className="animate-spin" /> : "حفظ التعديلات"}
+              {isProcessing ? <Loader2 className="animate-spin" /> : "حفظ كافة التعديلات"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -318,7 +325,7 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
           />
         </div>
         <div className="space-y-2 text-right">
-          <Label className="font-black text-[10px] uppercase opacity-40 pr-2">الكمية المتاحة</Label>
+          <Label className="font-black text-[10px] uppercase opacity-40 pr-2">الكمية الإجمالية</Label>
           <Input 
             type="number" 
             value={currentProduct.stock}
@@ -327,6 +334,15 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
             className="h-14 rounded-2xl bg-slate-50 border-none px-6 font-bold text-lg" 
           />
         </div>
+      </div>
+      <div className="space-y-2 text-right">
+        <Label className="font-black text-[10px] uppercase opacity-40 pr-2">أكواد الشحن (ضع كل كود في سطر منفصل)</Label>
+        <Textarea 
+          value={currentProduct.shippingCodes}
+          onChange={(e) => setCurrentProduct({...currentProduct, shippingCodes: e.target.value})}
+          placeholder="XMOOD-XXXX-XXXX&#10;XMOOD-YYYY-YYYY"
+          className="min-h-[150px] rounded-2xl bg-slate-50 border-none px-6 py-4 font-mono text-xs leading-relaxed"
+        />
       </div>
       <div className="space-y-2 text-right">
         <Label className="font-black text-[10px] uppercase opacity-40 pr-2">تصنيف الخدمة</Label>
@@ -357,3 +373,4 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
     </div>
   );
 }
+

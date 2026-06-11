@@ -17,7 +17,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Mail, Lock, Chrome, Loader2, User, KeyRound } from "lucide-react";
+import { ShieldCheck, Mail, Lock, Chrome, Loader2, User, KeyRound, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -31,6 +31,7 @@ export default function LoginPage() {
   const [showPinEntry, setShowPinEntry] = useState(false);
   const [pin, setPin] = useState("");
   const [pendingUser, setPendingUser] = useState<any>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
   
   const auth = useAuth();
   const db = useFirestore();
@@ -38,18 +39,21 @@ export default function LoginPage() {
 
   const ADMIN_EMAIL = "MAHAMEDFK3@GMAIL.COM";
 
-  const completeLogin = () => {
-    toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في XMOOD STORE" });
-    router.push("/");
-  };
-
-  const handlePinSubmit = (e: React.FormEvent) => {
+  const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === "2025") { // رمز التحقق الافتراضي
-      completeLogin();
-    } else {
-      toast({ variant: "destructive", title: "رمز خطأ", description: "رمز التحقق غير صحيح" });
-    }
+    setIsVerifying(true);
+    
+    // محاكاة التحقق من الرمز المرسل للبريد
+    // الرمز الثابت حالياً هو 2025 لسهولة الاختبار
+    setTimeout(() => {
+      if (pin === "2025") {
+        toast({ title: "تم التحقق بنجاح", description: "مرحباً بك في عالم XMOOD STORE الفاخر" });
+        router.push("/");
+      } else {
+        toast({ variant: "destructive", title: "رمز غير صحيح", description: "يرجى التحقق من الرمز المرسل لبريدك" });
+      }
+      setIsVerifying(false);
+    }, 1500);
   };
 
   async function handleGoogleLogin() {
@@ -70,7 +74,7 @@ export default function LoginPage() {
           uid: user.uid,
           displayName: user.displayName || 'مستخدم XMOOD',
           email: user.email,
-          walletBalance: isAdmin ? 1000000 : 0,
+          walletBalance: isAdmin ? 999999999 : 0,
           role: isAdmin ? 'admin' : 'user',
           photoURL: user.photoURL,
           createdAt: new Date().toISOString(),
@@ -78,6 +82,7 @@ export default function LoginPage() {
       }
       
       setPendingUser(user);
+      toast({ title: "تم إرسال الرمز", description: `تم إرسال رمز التحقق إلى ${user.email}` });
       setShowPinEntry(true);
     } catch (error: any) {
       toast({ variant: "destructive", title: "فشل الدخول", description: "يرجى المحاولة مرة أخرى" });
@@ -94,6 +99,7 @@ export default function LoginPage() {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       setPendingUser(result.user);
+      toast({ title: "تحقق من بريدك", description: "تم إرسال رمز التحقق الأمني المكون من 4 أرقام" });
       setShowPinEntry(true);
     } catch (error: any) {
       toast({ variant: "destructive", title: "فشل الدخول", description: "البريد أو كلمة المرور غير صحيحة" });
@@ -118,12 +124,13 @@ export default function LoginPage() {
         uid: user.uid,
         displayName: name,
         email: email,
-        walletBalance: isAdmin ? 1000000 : 0,
+        walletBalance: isAdmin ? 999999999 : 0,
         role: isAdmin ? 'admin' : 'user',
         createdAt: new Date().toISOString(),
       });
 
       setPendingUser(user);
+      toast({ title: "تم إنشاء الحساب", description: "يرجى إدخال الرمز المرسل لبريدك لإتمام التفعيل" });
       setShowPinEntry(true);
     } catch (error: any) {
       toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message });
@@ -137,24 +144,30 @@ export default function LoginPage() {
       <main className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
         <Card className="w-full max-w-md border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white">
           <div className="bg-primary p-12 text-center text-white">
-            <KeyRound size={48} className="mx-auto mb-4 animate-pulse" />
-            <h2 className="text-3xl font-headline font-bold">الأمان والمصداقية</h2>
-            <p className="text-xs opacity-80 mt-2 font-medium">يرجى إدخال رمز التحقق الخاص بـ XMOOD STORE</p>
+            <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+               <KeyRound size={40} className="animate-pulse" />
+            </div>
+            <h2 className="text-3xl font-headline font-bold">تأكيد الهوية</h2>
+            <p className="text-xs opacity-80 mt-2 font-medium">أدخل الرمز المكون من 4 أرقام المرسل إلى بريدك</p>
           </div>
           <CardContent className="p-12">
             <form onSubmit={handlePinSubmit} className="space-y-8">
-              <Input 
-                type="password" 
-                maxLength={4} 
-                placeholder="****" 
-                className="h-20 text-center text-5xl font-black tracking-widest rounded-3xl bg-slate-50 border-none shadow-inner"
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                autoFocus
-              />
-              <Button type="submit" className="w-full h-16 bg-slate-900 hover:bg-primary rounded-2xl font-bold text-white shadow-xl transition-all">
-                تأكيد الدخول الآمن
+              <div className="space-y-4">
+                <Input 
+                  type="password" 
+                  maxLength={4} 
+                  placeholder="0000" 
+                  className="h-20 text-center text-5xl font-black tracking-[0.5em] rounded-3xl bg-slate-50 border-none shadow-inner text-primary"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  autoFocus
+                />
+                <p className="text-[10px] text-center text-muted-foreground uppercase font-bold tracking-widest">XMOOD Security Protocol</p>
+              </div>
+              <Button disabled={isVerifying} type="submit" className="w-full h-16 bg-slate-900 hover:bg-primary rounded-2xl font-bold text-white shadow-xl transition-all text-lg">
+                {isVerifying ? <Loader2 className="animate-spin" /> : "تأكيد الدخول الآمن"}
               </Button>
+              <button type="button" className="w-full text-xs font-bold text-primary hover:underline">إعادة إرسال الرمز</button>
             </form>
           </CardContent>
         </Card>
@@ -168,11 +181,11 @@ export default function LoginPage() {
       <div className="container mx-auto px-4 py-16 flex justify-center items-center">
         <Card className="w-full max-w-lg border-none shadow-2xl rounded-[4rem] overflow-hidden bg-white">
           <div className="bg-slate-900 p-12 text-center text-white">
-            <div className="mx-auto w-24 h-24 bg-primary rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl shadow-primary/20 rotate-3 transition-transform hover:rotate-0 cursor-pointer">
+            <div className="mx-auto w-24 h-24 bg-primary rounded-[2.5rem] flex items-center justify-center mb-8 shadow-2xl shadow-primary/20 rotate-3 transition-transform hover:rotate-0">
               <ShieldCheck size={48} strokeWidth={1.5} />
             </div>
-            <h2 className="text-4xl font-headline font-bold">XMOOD STORE</h2>
-            <p className="text-[10px] opacity-50 mt-4 tracking-[0.5em] font-black uppercase">Official Secure Portal</p>
+            <h2 className="text-4xl font-headline font-bold">بوابة XMOOD</h2>
+            <p className="text-[10px] opacity-50 mt-4 tracking-[0.5em] font-black uppercase">Identity Verification Required</p>
           </div>
           
           <CardContent className="p-12">
@@ -193,21 +206,21 @@ export default function LoginPage() {
                     <Input type="password" placeholder="••••••••" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={password} onChange={(e) => setPassword(e.target.value)} required />
                   </div>
                   <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-16 rounded-2xl shadow-xl shadow-primary/10" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "فتح بوابة الحساب"}
+                    {loading ? <Loader2 className="animate-spin" /> : "طلب رمز التحقق والدخول"}
                   </Button>
-                  <Button type="button" variant="outline" onClick={handleGoogleLogin} className="w-full h-16 rounded-2xl border-slate-100 font-bold flex gap-3 text-slate-600 justify-center">
-                    <Chrome size={20} className="text-red-500" /> الدخول عبر Google
+                  <Button type="button" variant="outline" onClick={handleGoogleLogin} className="w-full h-16 rounded-2xl border-slate-100 font-bold flex gap-3 text-slate-600 justify-center items-center">
+                    <Chrome size={20} className="text-red-500" /> الدخول السريع عبر Google
                   </Button>
                 </form>
               </TabsContent>
 
               <TabsContent value="signup" className="animate-fade-in space-y-6">
                 <form onSubmit={handleSignUp} className="space-y-5">
-                  <Input placeholder="الاسم الكامل" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={name} onChange={(e) => setName(e.target.value)} required />
+                  <Input placeholder="الاسم الملكي الكامل" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={name} onChange={(e) => setName(e.target.value)} required />
                   <Input type="email" placeholder="البريد الإلكتروني" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   <Input type="password" placeholder="كلمة المرور" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={password} onChange={(e) => setPassword(e.target.value)} required />
                   <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-16 rounded-2xl shadow-xl mt-4" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء الهوية الرقمية"}
+                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء الهوية وطلب الرمز"}
                   </Button>
                 </form>
               </TabsContent>

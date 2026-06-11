@@ -10,9 +10,10 @@
         "displayName": { "type": "string" },
         "email": { "type": "string" },
         "walletBalance": { "type": "number" },
-        "role": { "type": "string", "enum": ["user", "admin", "agent"] },
+        "role": { "type": "string", "enum": ["user", "admin", "agent", "vip"] },
         "photoURL": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "label": { "type": "string" }
       },
       "required": ["uid", "email", "walletBalance", "role"]
     },
@@ -27,9 +28,10 @@
         "category": { "type": "string" },
         "imageUrl": { "type": "string" },
         "stock": { "type": "number" },
+        "shippingCodes": { "type": "string", "description": "Newline separated keys for automated delivery" },
+        "status": { "type": "string", "enum": ["active", "out_of_stock", "discount", "inactive"] },
         "vendorId": { "type": "string" },
         "isP2P": { "type": "boolean" },
-        "status": { "type": "string", "enum": ["active", "inactive", "archived"] },
         "rating": { "type": "number" }
       },
       "required": ["name", "price", "category", "stock", "status"]
@@ -43,7 +45,8 @@
         "productId": { "type": "string" },
         "productName": { "type": "string" },
         "amount": { "type": "number" },
-        "status": { "type": "string", "enum": ["waiting_payment", "processing", "completed", "cancelled"] },
+        "status": { "type": "string", "enum": ["waiting_payment", "processing", "completed", "cancelled", "refunded"] },
+        "shippingCodeSent": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
@@ -55,11 +58,10 @@
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
-        "type": { "type": "string", "enum": ["deposit", "purchase", "refund", "withdrawal"] },
+        "type": { "type": "string", "enum": ["deposit", "purchase", "refund", "withdrawal", "exchange", "transfer_send", "transfer_receive"] },
         "amount": { "type": "number" },
         "description": { "type": "string" },
-        "agentId": { "type": "string" },
-        "orderId": { "type": "string" },
+        "targetUserId": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "type", "amount", "createdAt"]
@@ -84,6 +86,10 @@
     "/users/{userId}/transactions/{transactionId}": {
       "schema": "Transaction",
       "description": "Immutable ledger of user wallet activity"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Global transaction logs for admin monitoring"
     }
   }
 }
