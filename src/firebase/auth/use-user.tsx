@@ -16,6 +16,8 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const ADMIN_EMAIL = "MAHAMEDFK3@GMAIL.COM";
+
   useEffect(() => {
     if (!auth) return;
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
@@ -34,25 +36,28 @@ export function useUser() {
 
     const userDocRef = doc(db, 'users', user.uid);
 
-    // دالة تهيئة الملف الشخصي بشكل آمن
     const syncProfile = async () => {
       try {
         const docSnap = await getDoc(userDocRef);
+        const isAdmin = user.email?.toUpperCase() === ADMIN_EMAIL.toUpperCase();
+        
         if (!docSnap.exists()) {
           const newProfile: UserProfile = {
             uid: user.uid,
             displayName: user.displayName || 'مستخدم جديد',
             email: user.email || '',
-            walletBalance: 0,
-            role: 'user',
+            walletBalance: isAdmin ? 1000000 : 0,
+            role: isAdmin ? 'admin' : 'user',
             photoURL: user.photoURL || '',
             createdAt: new Date().toISOString(),
           };
-          // استخدام { merge: true } لضمان عدم مسح البيانات إذا وجدت
           await setDoc(userDocRef, newProfile, { merge: true });
+        } else if (isAdmin && docSnap.data()?.role !== 'admin') {
+          // Force admin role if it's the specific email
+          await setDoc(userDocRef, { role: 'admin', walletBalance: 1000000 }, { merge: true });
         }
       } catch (err) {
-        // إذا حدث خطأ في الصلاحيات هنا، سنعالجه في الـ onSnapshot
+        // Handle error
       }
     };
 
@@ -61,8 +66,6 @@ export function useUser() {
     const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
       if (snapshot.exists()) {
         setProfile(snapshot.data() as UserProfile);
-      } else {
-        // في حالة عدم وجود الوثيقة بعد، ننتظر قليلًا أو نعتمد على البيانات الأولية
       }
       setLoading(false);
     }, (error) => {

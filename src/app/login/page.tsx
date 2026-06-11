@@ -17,7 +17,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Mail, Lock, Chrome, Fingerprint, Loader2, User } from "lucide-react";
+import { ShieldCheck, Mail, Lock, Chrome, Loader2, User, KeyRound } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -26,14 +26,33 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showVerification, setShowVerification] = useState(false);
+  
+  // PIN Verification State
+  const [showPinEntry, setShowPinEntry] = useState(false);
+  const [pin, setPin] = useState("");
+  const [pendingUser, setPendingUser] = useState<any>(null);
   
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
 
-  const ADMIN_EMAIL = "admin@xmood.store";
+  const ADMIN_EMAIL = "MAHAMEDFK3@GMAIL.COM";
   const ADMIN_NAME = "XMOOD STORE";
+
+  // دالة لإكمال الدخول بعد التحقق من الـ PIN
+  const completeLogin = async (user: any) => {
+    toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في XMOOD STORE" });
+    router.push("/");
+  };
+
+  const handlePinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pin === "2025") { // رمز التحقق الافتراضي
+      completeLogin(pendingUser);
+    } else {
+      toast({ variant: "destructive", title: "رمز خطأ", description: "رمز التحقق غير صحيح" });
+    }
+  };
 
   async function handleGoogleLogin() {
     if (!auth || !db) return;
@@ -46,21 +65,22 @@ export default function LoginPage() {
       const userDocRef = doc(db, 'users', user.uid);
       const docSnap = await getDoc(userDocRef);
       
+      const isAdmin = user.email?.toUpperCase() === ADMIN_EMAIL.toUpperCase();
+      
       if (!docSnap.exists()) {
-        const isAdmin = user.email === ADMIN_EMAIL || user.displayName === ADMIN_NAME;
         await setDoc(userDocRef, {
           uid: user.uid,
           displayName: user.displayName || 'مستخدم XMOOD',
           email: user.email,
-          walletBalance: 0,
+          walletBalance: isAdmin ? 1000000 : 0, // رصيد كامل للادمن
           role: isAdmin ? 'admin' : 'user',
           photoURL: user.photoURL,
           createdAt: new Date().toISOString(),
         });
       }
       
-      toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في XMOOD STORE" });
-      router.push("/");
+      setPendingUser(user);
+      setShowPinEntry(true);
     } catch (error: any) {
       toast({ variant: "destructive", title: "فشل الدخول عبر Google", description: "يرجى المحاولة مرة أخرى" });
     } finally {
@@ -74,9 +94,9 @@ export default function LoginPage() {
     
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "تم تسجيل الدخول", description: "مرحباً بك مجدداً في XMOOD" });
-      router.push("/");
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      setPendingUser(result.user);
+      setShowPinEntry(true);
     } catch (error: any) {
       toast({ variant: "destructive", title: "فشل الدخول", description: "البريد أو كلمة المرور غير صحيحة" });
     } finally {
@@ -94,25 +114,55 @@ export default function LoginPage() {
 
       await updateProfile(user, { displayName: name });
       
-      const isAdmin = email === ADMIN_EMAIL || name === ADMIN_NAME;
+      const isAdmin = email.toUpperCase() === ADMIN_EMAIL.toUpperCase();
       
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
         uid: user.uid,
         displayName: name,
         email: email,
-        walletBalance: 0,
+        walletBalance: isAdmin ? 1000000 : 0,
         role: isAdmin ? 'admin' : 'user',
         createdAt: new Date().toISOString(),
       });
 
-      toast({ title: "تم إنشاء الحساب بنجاح", description: `مرحباً بك في XMOOD STORE` });
-      router.push("/");
+      setPendingUser(user);
+      setShowPinEntry(true);
     } catch (error: any) {
       toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message });
     } finally {
       setLoading(false);
     }
+  }
+
+  if (showPinEntry) {
+    return (
+      <main className="min-h-screen bg-white font-body flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-none shadow-2xl rounded-[3rem] overflow-hidden">
+          <div className="bg-primary p-10 text-center text-white">
+            <KeyRound size={48} className="mx-auto mb-4 animate-bounce" />
+            <h2 className="text-2xl font-headline font-bold">رمز التحقق الأمني</h2>
+            <p className="text-xs opacity-80 mt-2">يرجى إدخال رمز التحقق الخاص بـ XMOOD</p>
+          </div>
+          <CardContent className="p-10">
+            <form onSubmit={handlePinSubmit} className="space-y-6">
+              <Input 
+                type="password" 
+                maxLength={4} 
+                placeholder="0000" 
+                className="h-16 text-center text-3xl font-black tracking-[1em] rounded-2xl bg-slate-50 border-none"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                autoFocus
+              />
+              <Button type="submit" className="w-full h-14 bg-slate-900 rounded-2xl font-bold text-white">
+                تأكيد الرمز
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </main>
+    );
   }
 
   return (

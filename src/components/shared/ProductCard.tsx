@@ -1,21 +1,26 @@
+
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Product } from "@/app/lib/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Star, Zap, AlertCircle } from "lucide-react";
+import { ShoppingBag, Star, Zap, AlertCircle, Edit } from "lucide-react";
 import { formatUSD, formatSDG } from "@/lib/currency";
+import { useUser } from "@/firebase";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { profile } = useUser();
   const isOutOfStock = product.status === 'out_of_stock' || product.stock <= 0;
   const hasDiscount = product.status === 'discount' && product.discountPrice;
   const displayPrice = hasDiscount ? product.discountPrice! : product.price;
+  const isAdmin = profile?.role === 'admin';
 
   return (
     <Card className={`group overflow-hidden border-none bg-white shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] flex flex-col ${isOutOfStock ? 'opacity-75' : ''}`}>
@@ -28,6 +33,15 @@ export function ProductCard({ product }: ProductCardProps) {
         />
         <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
         
+        {/* Admin Edit Shortcut */}
+        {isAdmin && (
+          <Button asChild variant="secondary" className="absolute top-4 left-4 h-10 w-10 rounded-full p-0 shadow-lg z-20 hover:scale-110 transition-transform">
+            <Link href={`/admin/products`}>
+              <Edit size={16} className="text-primary" />
+            </Link>
+          </Button>
+        )}
+
         {/* Status Badges */}
         <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
           {isOutOfStock ? (
