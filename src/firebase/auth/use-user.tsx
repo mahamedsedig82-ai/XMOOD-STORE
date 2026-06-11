@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 import { errorEmitter } from '../error-emitter';
@@ -16,6 +16,7 @@ export function useUser() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       if (!firebaseUser) {
@@ -32,14 +33,13 @@ export function useUser() {
 
     const userDocRef = doc(db, 'users', user.uid);
 
-    // Ensure user profile exists
-    const checkAndCreateProfile = async () => {
+    const initProfile = async () => {
       try {
         const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) {
-          const newProfile: Partial<UserProfile> = {
+          const newProfile: UserProfile = {
             uid: user.uid,
-            displayName: user.displayName || 'مستخدم جديد',
+            displayName: user.displayName || 'مستخدم إكسيجو',
             email: user.email || '',
             walletBalance: 0,
             role: 'user',
@@ -47,21 +47,14 @@ export function useUser() {
             createdAt: new Date().toISOString(),
           };
           
-          setDoc(userDocRef, newProfile, { merge: true })
-            .catch(async (err) => {
-              errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'create',
-                requestResourceData: newProfile
-              }));
-            });
+          await setDoc(userDocRef, newProfile, { merge: true });
         }
       } catch (err) {
-        console.error("Profile initialization check failed:", err);
+        console.error("Profile init error:", err);
       }
     };
 
-    checkAndCreateProfile();
+    initProfile();
 
     const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
       if (snapshot.exists()) {

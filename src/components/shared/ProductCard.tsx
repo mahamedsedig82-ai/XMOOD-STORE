@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -7,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Star } from "lucide-react";
+import { formatUSD, formatSDG } from "@/lib/currency";
 
 interface ProductCardProps {
   product: Product;
@@ -14,8 +14,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   return (
-    <Card className="group overflow-hidden border-none shadow-sm hover:shadow-xl transition-all duration-300">
-      <CardHeader className="p-0 relative aspect-[4/3] overflow-hidden">
+    <Card className="group overflow-hidden border bg-white shadow-sm hover:shadow-md transition-all duration-300">
+      <CardHeader className="p-0 relative aspect-[16/10] overflow-hidden border-b">
         <Image 
           src={product.imageUrl} 
           alt={product.name}
@@ -23,28 +23,29 @@ export function ProductCard({ product }: ProductCardProps) {
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
         {product.isP2P && (
-          <Badge className="absolute top-2 left-2 bg-accent hover:bg-accent font-bold">بائع مستقل</Badge>
+          <Badge className="absolute top-3 right-3 bg-primary hover:bg-primary font-bold text-[10px] px-2 py-0.5">بائع مستقل</Badge>
         )}
-        <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-          <Star className="w-3 h-3 text-primary fill-primary" />
-          4.9
-        </div>
       </CardHeader>
-      <CardContent className="p-5">
-        <div className="flex justify-between items-start mb-2">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{product.category}</span>
-          <span className="font-headline font-bold text-xl text-primary">${product.price}</span>
+      <CardContent className="p-5 text-right">
+        <div className="flex flex-col gap-1 mb-3">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{product.category}</span>
+          <CardTitle className="text-lg line-clamp-1 group-hover:text-primary transition-colors">
+            {product.name}
+          </CardTitle>
         </div>
-        <CardTitle className="text-lg line-clamp-1 mb-2 group-hover:text-primary transition-colors">
-          {product.name}
-        </CardTitle>
-        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed h-10">
+        
+        <div className="flex flex-col mb-4">
+          <span className="font-headline font-bold text-xl text-primary">{formatUSD(product.price)}</span>
+          <span className="text-xs text-muted-foreground font-medium">{formatSDG(product.price)}</span>
+        </div>
+        
+        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed min-h-[2.5rem]">
           {product.description}
         </p>
       </CardContent>
       <CardFooter className="p-5 pt-0">
-        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold group">
-          <ShoppingCart className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" />
+        <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-11 rounded-lg">
+          <ShoppingCart size={18} className="ml-2" />
           شراء الآن
         </Button>
       </CardFooter>

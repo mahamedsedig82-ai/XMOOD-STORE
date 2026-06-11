@@ -4,26 +4,26 @@
 
 @layer base {
   :root {
-    --background: 40 20% 97%; /* Alabaster White #FAF9F6 */
+    --background: 0 0% 100%; /* Pure White Background */
     --foreground: 45 10% 10%;
     --card: 0 0% 100%;
     --card-foreground: 45 10% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 45 10% 10%;
     --primary: 46 66% 46%; /* Antique Gold #C5A028 */
-    --primary-foreground: 40 20% 97%;
-    --secondary: 40 10% 90%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 10% 96%;
     --secondary-foreground: 46 66% 46%;
-    --muted: 40 10% 92%;
+    --muted: 40 10% 96%;
     --muted-foreground: 45 5% 45%;
-    --accent: 14 64% 43%; /* Burnished Terra Cotta #B54A28 */
-    --accent-foreground: 40 20% 97%;
+    --accent: 46 66% 46%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 46 20% 85%;
-    --input: 46 20% 85%;
+    --border: 45 10% 90%;
+    --input: 45 10% 90%;
     --ring: 46 66% 46%;
-    --radius: 1rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -48,10 +48,10 @@
   }
 }
 
-.luxury-shadow {
-  box-shadow: 0 10px 30px -10px rgba(197, 160, 40, 0.15);
+.clean-shadow {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
-.gold-gradient {
-  background: linear-gradient(135deg, #C5A028 0%, #E8C14D 50%, #C5A028 100%);
+.gold-border-focus:focus-within {
+  @apply ring-2 ring-primary/20 border-primary/50;
 }
