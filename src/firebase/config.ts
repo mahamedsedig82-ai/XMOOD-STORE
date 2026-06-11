@@ -1,6 +1,7 @@
-
 /**
  * @fileOverview Firebase configuration using environment variables.
+ * If variables are missing, it defaults to empty strings to prevent build crashes,
+ * but will throw a descriptive error during runtime operations.
  */
 
 export const firebaseConfig = {

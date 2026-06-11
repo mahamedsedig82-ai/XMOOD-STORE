@@ -1,4 +1,3 @@
-
 import { Product, Agent } from './types';
 
 export const STORE_PRODUCTS: Product[] = [
