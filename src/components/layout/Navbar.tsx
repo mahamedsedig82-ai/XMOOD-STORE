@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -38,7 +39,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-8 flex-row-reverse">
         
-        {/* Logo - Handwriting Style */}
+        {/* Logo - XMOOD STORE in Handwriting */}
         <Link href="/" className="flex items-center gap-2 group flex-row-reverse shrink-0">
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:rotate-3 transition-transform">
             <ShieldCheck size={24} strokeWidth={2.5} />
@@ -97,24 +98,24 @@ export function Navbar() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-64 mt-2 p-2 rounded-2xl border-none shadow-2xl" align="start">
-                <DropdownMenuLabel className="p-4">
+                <DropdownMenuLabel className="p-4 text-right">
                   <p className="font-bold text-slate-900">{user.displayName}</p>
                   <p className="text-xs text-slate-500 truncate">{user.email}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <div className="p-1">
                   {profile?.role === 'admin' && (
-                    <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer text-primary font-bold focus:bg-primary/5">
+                    <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer text-primary font-bold focus:bg-primary/5 justify-end">
                       <Link href="/admin"><LayoutDashboard className="ml-3 w-4 h-4" /> لوحة الإدارة</Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer focus:bg-slate-50">
+                  <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer focus:bg-slate-50 justify-end">
                     <Link href="/wallet"><Wallet className="ml-3 w-4 h-4" /> محفظتي</Link>
                   </DropdownMenuItem>
                 </div>
                 <DropdownMenuSeparator />
                 <div className="p-1">
-                  <DropdownMenuItem onClick={handleSignOut} className="rounded-xl p-3 cursor-pointer text-destructive focus:bg-destructive/5 font-bold">
+                  <DropdownMenuItem onClick={handleSignOut} className="rounded-xl p-3 cursor-pointer text-destructive focus:bg-destructive/5 font-bold justify-end">
                     <LogOut className="ml-3 w-4 h-4" /> خروج
                   </DropdownMenuItem>
                 </div>

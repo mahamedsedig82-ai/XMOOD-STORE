@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -15,7 +16,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Mail, Lock, LogIn, UserPlus, Chrome, Fingerprint, Loader2 } from "lucide-react";
+import { ShieldCheck, Mail, Lock, Chrome, Fingerprint, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -45,7 +46,7 @@ export default function LoginPage() {
       if (!docSnap.exists()) {
         await setDoc(userDocRef, {
           uid: user.uid,
-          displayName: user.displayName,
+          displayName: user.displayName || 'مستخدم XMOOD',
           email: user.email,
           walletBalance: 0,
           role: 'user',
@@ -97,10 +98,8 @@ export default function LoginPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // تحديث الاسم في نظام الحماية
       await updateProfile(user, { displayName: name });
       
-      // إنشاء السجل في قاعدة البيانات
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
         uid: user.uid,
@@ -124,7 +123,7 @@ export default function LoginPage() {
     <main className="min-h-screen bg-white font-body">
       <Navbar />
       <div className="container mx-auto px-4 py-12 flex justify-center items-center">
-        <Card className="w-full max-w-lg border-none shadow-[0_32px_64px_-15px_rgba(0,0,0,0.1)] rounded-[3rem] overflow-hidden bg-white border border-slate-100">
+        <Card className="w-full max-w-lg border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white border border-slate-100">
           <div className="bg-primary p-12 text-center text-white relative">
             <div className="mx-auto w-20 h-20 bg-white/20 rounded-[1.8rem] flex items-center justify-center mb-6 backdrop-blur-xl border border-white/30 shadow-inner">
               <ShieldCheck size={40} strokeWidth={1.5} />

@@ -1,15 +1,18 @@
 
 import { Product, Agent } from './types';
 
+// الصورة الموحدة لفري فاير كما طلب المستخدم
+const FREE_FIRE_MAIN_IMAGE = 'https://picsum.photos/seed/ff-main/800/600';
+
 export const STORE_PRODUCTS: Product[] = [
-  // Free Fire
+  // Free Fire - Updated with consistent image
   {
     id: 'ff1',
     name: 'Free Fire - 100 Diamonds',
     description: 'شحن فوري لجواهر فري فاير عبر المعرف (ID).',
     price: 1.20,
     category: 'شحن ألعاب',
-    imageUrl: 'https://picsum.photos/seed/ff1/400/300',
+    imageUrl: FREE_FIRE_MAIN_IMAGE,
     stock: 100,
     status: 'active'
   },
@@ -19,7 +22,7 @@ export const STORE_PRODUCTS: Product[] = [
     description: 'باقة الجواهر المتوسطة لفري فاير.',
     price: 5.50,
     category: 'شحن ألعاب',
-    imageUrl: 'https://picsum.photos/seed/ff2/400/300',
+    imageUrl: FREE_FIRE_MAIN_IMAGE,
     stock: 50,
     status: 'discount',
     discountPrice: 4.99
@@ -30,7 +33,7 @@ export const STORE_PRODUCTS: Product[] = [
     description: 'باقة الجواهر المتقدمة لفري فاير.',
     price: 10.00,
     category: 'شحن ألعاب',
-    imageUrl: 'https://picsum.photos/seed/ff4/400/300',
+    imageUrl: FREE_FIRE_MAIN_IMAGE,
     stock: 20,
     status: 'active'
   },
@@ -40,7 +43,7 @@ export const STORE_PRODUCTS: Product[] = [
     description: 'الباقة الكبيرة لمحترفي فري فاير.',
     price: 22.00,
     category: 'شحن ألعاب',
-    imageUrl: 'https://picsum.photos/seed/ff3/400/300',
+    imageUrl: FREE_FIRE_MAIN_IMAGE,
     stock: 0,
     status: 'out_of_stock'
   },
@@ -137,7 +140,7 @@ export const MARKETPLACE_PRODUCTS: Product[] = [
     description: 'حساب يحتوي على رقصة الساكورا وسكنات حصرية.',
     price: 450.00,
     category: 'حسابات ألعاب',
-    imageUrl: 'https://picsum.photos/seed/m2/400/300',
+    imageUrl: FREE_FIRE_MAIN_IMAGE,
     stock: 1,
     status: 'active',
     isP2P: true
