@@ -47,16 +47,16 @@ export function useUser() {
             uid: user.uid,
             displayName: user.displayName || 'مستخدم XMOOD',
             email: user.email || '',
-            walletBalance: isAdmin ? 999999999 : 0, // رصيد إداري ضخم
+            walletBalance: isAdmin ? 999999999 : 0,
             role: isAdmin ? 'admin' : 'user',
-            label: isAdmin ? 'المدير العام' : 'عضو جديد',
+            label: isAdmin ? 'المدير العام للمنصة' : 'عضو XMOOD',
             photoURL: user.photoURL || '',
             createdAt: new Date().toISOString(),
           };
-          await setDoc(userDocRef, newProfile, { merge: true });
+          await setDoc(userDocRef, newProfile);
         } else if (isAdmin) {
-          // تحديث يومي أو دائم لرصيد المدير لضمان توفر السيولة للتحويلات
-          if (docSnap.data()?.walletBalance < 1000000 || docSnap.data()?.role !== 'admin') {
+          // تحديث دائم لرصيد وصلاحية المدير لضمان توفر السيولة والتحكم
+          if (docSnap.data()?.role !== 'admin' || docSnap.data()?.walletBalance < 1000000) {
             await setDoc(userDocRef, { 
               role: 'admin', 
               walletBalance: 999999999,
@@ -65,7 +65,7 @@ export function useUser() {
           }
         }
       } catch (err) {
-        console.error("Critical Profile Sync Error:", err);
+        console.error("Profile Sync Error:", err);
       }
     };
 

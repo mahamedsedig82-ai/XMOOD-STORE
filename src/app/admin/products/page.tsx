@@ -18,41 +18,77 @@ import { STORE_PRODUCTS } from "@/app/lib/mock-data";
 
 export default function AdminProducts() {
   const db = useFirestore();
-  const productsQuery = query(collection(db, "products"), orderBy("name"));
+  const productsQuery = query(collection(db, "products"), orderBy("createdAt", "desc"));
   const { data: dbProducts, loading } = useCollection(productsQuery);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isAdding, setIsAdding] = useState(false);
-
-  // فورم إضافة منتج جديد
-  const [newProduct, setNewProduct] = useState({
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  const [currentProduct, setCurrentProduct] = useState({
+    id: "",
     name: "",
     price: "",
     stock: "100",
     category: "شحن ألعاب",
     imageUrl: "https://picsum.photos/seed/ff-main/800/600",
+    description: ""
   });
 
   const handleAddProduct = async () => {
-    if (!newProduct.name || !newProduct.price) return;
-    setIsAdding(true);
+    if (!currentProduct.name || !currentProduct.price) {
+      toast({ variant: "destructive", title: "خطأ", description: "يرجى ملء الاسم والسعر" });
+      return;
+    }
+    setIsProcessing(true);
     try {
       await addDoc(collection(db, "products"), {
-        ...newProduct,
-        price: Number(newProduct.price),
-        stock: Number(newProduct.stock),
-        status: "active",
+        name: currentProduct.name,
+        price: Number(currentProduct.price),
+        stock: Number(currentProduct.stock),
+        category: currentProduct.category,
+        imageUrl: currentProduct.imageUrl,
+        description: currentProduct.description || "",
+        status: Number(currentProduct.stock) > 0 ? "active" : "out_of_stock",
         createdAt: new Date().toISOString(),
       });
       toast({ title: "تمت الإضافة", description: "تمت إضافة المنتج بنجاح" });
-      setNewProduct({ name: "", price: "", stock: "100", category: "شحن ألعاب", imageUrl: "https://picsum.photos/seed/ff-main/800/600" });
+      setIsAddDialogOpen(false);
+      resetForm();
     } catch (error) {
       toast({ variant: "destructive", title: "خطأ", description: "فشل إضافة المنتج" });
     } finally {
-      setIsAdding(false);
+      setIsProcessing(false);
+    }
+  };
+
+  const handleUpdateProduct = async () => {
+    if (!currentProduct.id) return;
+    setIsProcessing(true);
+    try {
+      const productRef = doc(db, "products", currentProduct.id);
+      await updateDoc(productRef, {
+        name: currentProduct.name,
+        price: Number(currentProduct.price),
+        stock: Number(currentProduct.stock),
+        category: currentProduct.category,
+        imageUrl: currentProduct.imageUrl,
+        description: currentProduct.description || "",
+        status: Number(currentProduct.stock) > 0 ? "active" : "out_of_stock",
+        updatedAt: new Date().toISOString(),
+      });
+      toast({ title: "تم التحديث", description: "تم تحديث بيانات المنتج بنجاح" });
+      setIsEditDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      toast({ variant: "destructive", title: "خطأ", description: "فشل تحديث المنتج" });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleDeleteProduct = async (id: string) => {
+    if (!confirm("هل أنت متأكد من رغبتك في حذف هذا المنتج؟")) return;
     try {
       await deleteDoc(doc(db, "products", id));
       toast({ title: "تم الحذف", description: "تم حذف المنتج من المتجر" });
@@ -61,94 +97,77 @@ export default function AdminProducts() {
     }
   };
 
+  const resetForm = () => {
+    setCurrentProduct({
+      id: "",
+      name: "",
+      price: "",
+      stock: "100",
+      category: "شحن ألعاب",
+      imageUrl: "https://picsum.photos/seed/ff-main/800/600",
+      description: ""
+    });
+  };
+
+  const openEditDialog = (product: any) => {
+    setCurrentProduct({
+      id: product.id,
+      name: product.name,
+      price: product.price.toString(),
+      stock: product.stock.toString(),
+      category: product.category,
+      imageUrl: product.imageUrl,
+      description: product.description || ""
+    });
+    setIsEditDialogOpen(true);
+  };
+
   const handleSeedData = async () => {
-    setIsAdding(true);
+    setIsProcessing(true);
     try {
       for (const p of STORE_PRODUCTS) {
-        await addDoc(collection(db, "products"), { ...p, createdAt: new Date().toISOString() });
+        await addDoc(collection(db, "products"), { 
+          ...p, 
+          createdAt: new Date().toISOString(),
+          status: p.stock > 0 ? 'active' : 'out_of_stock'
+        });
       }
-      toast({ title: "تم تهيئة البيانات", description: "تم إضافة المنتجات الافتراضية بنجاح" });
+      toast({ title: "تمت التهيئة", description: "تمت إضافة المنتجات الافتراضية بنجاح" });
     } catch (error) {
       toast({ variant: "destructive", title: "خطأ", description: "فشل تهيئة البيانات" });
     } finally {
-      setIsAdding(false);
+      setIsProcessing(false);
     }
   };
-
-  const productsToDisplay = dbProducts.length > 0 ? dbProducts : [];
 
   return (
     <div className="space-y-8 animate-fade-in" dir="rtl">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold mb-1">إدارة المنتجات والمخزون</h1>
-          <p className="text-muted-foreground text-sm">أضف باقات شحن جديدة أو عدل الأسعار والمخزون الحالي.</p>
+          <h1 className="text-3xl font-headline font-bold mb-1">المستودع الملكي</h1>
+          <p className="text-muted-foreground text-sm">إدارة المخزون، تعديل الأسعار، وإضافة الباقات الحصرية.</p>
         </div>
         
         <div className="flex gap-2">
-          {productsToDisplay.length === 0 && (
-            <Button variant="outline" onClick={handleSeedData} disabled={isAdding} className="rounded-2xl h-14 px-6 border-dashed">
-              تهيئة البيانات الافتراضية
+          {dbProducts.length === 0 && !loading && (
+            <Button variant="outline" onClick={handleSeedData} disabled={isProcessing} className="rounded-2xl h-14 px-6 border-dashed">
+              {isProcessing ? <Loader2 className="animate-spin" /> : "تهيئة البيانات الافتراضية"}
             </Button>
           )}
-          <Dialog>
+          <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if(!open) resetForm(); }}>
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90 text-white rounded-2xl gap-2 h-14 px-8 shadow-lg shadow-primary/20 font-bold">
-                <Plus size={20} /> إضافة منتج جديد
+                <Plus size={20} /> إضافة باقة جديدة
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]" dir="rtl">
               <DialogHeader>
-                <DialogTitle className="text-right text-2xl font-bold">بيانات المنتج الجديد</DialogTitle>
+                <DialogTitle className="text-right text-2xl font-bold">إضافة منتج للمتجر</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-6 py-6">
-                <div className="grid gap-2 text-right">
-                  <Label className="font-bold text-xs uppercase opacity-60 pr-2">اسم المنتج / الباقة</Label>
-                  <Input 
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                    placeholder="مثال: Free Fire 100 Diamonds" 
-                    className="h-12 rounded-2xl bg-slate-50 border-none" 
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2 text-right">
-                    <Label className="font-bold text-xs uppercase opacity-60 pr-2">السعر (USD)</Label>
-                    <Input 
-                      type="number" 
-                      value={newProduct.price}
-                      onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-                      placeholder="1.20" 
-                      className="h-12 rounded-2xl bg-slate-50 border-none" 
-                    />
-                  </div>
-                  <div className="grid gap-2 text-right">
-                    <Label className="font-bold text-xs uppercase opacity-60 pr-2">الكمية بالمخزون</Label>
-                    <Input 
-                      type="number" 
-                      value={newProduct.stock}
-                      onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})}
-                      placeholder="100" 
-                      className="h-12 rounded-2xl bg-slate-50 border-none" 
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-2 text-right">
-                  <Label className="font-bold text-xs uppercase opacity-60 pr-2">رابط الصورة</Label>
-                  <div className="relative">
-                    <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
-                    <Input 
-                      value={newProduct.imageUrl}
-                      onChange={(e) => setNewProduct({...newProduct, imageUrl: e.target.value})}
-                      placeholder="https://..." 
-                      className="pr-12 h-12 rounded-2xl bg-slate-50 border-none" 
-                    />
-                  </div>
-                </div>
-              </div>
-              <DialogFooter className="sm:justify-start gap-2">
-                <Button onClick={handleAddProduct} disabled={isAdding} className="h-14 rounded-2xl bg-primary text-white font-bold w-full">
-                  {isAdding ? <Loader2 className="animate-spin" /> : "حفظ المنتج"}
+              <ProductForm currentProduct={currentProduct} setCurrentProduct={setCurrentProduct} />
+              <DialogFooter>
+                <Button onClick={handleAddProduct} disabled={isProcessing} className="h-14 rounded-2xl bg-primary text-white font-bold w-full">
+                  {isProcessing ? <Loader2 className="animate-spin" /> : "حفظ ونشر المنتج"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -161,7 +180,7 @@ export default function AdminProducts() {
           <div className="relative max-w-md">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input 
-              placeholder="ابحث باسم المنتج أو الفئة..." 
+              placeholder="ابحث باسم الباقة..." 
               className="pr-10 h-12 rounded-2xl bg-white border-slate-200"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -182,19 +201,15 @@ export default function AdminProducts() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-20">جاري تحميل المنتجات...</TableCell></TableRow>
-              ) : productsToDisplay.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-20 text-muted-foreground">لا توجد منتجات حالياً. قم بتهيئة البيانات أو إضافة منتج.</TableCell></TableRow>
-              ) : productsToDisplay.filter(p => p.name.includes(searchTerm)).map((product: any) => (
+                <TableRow><TableCell colSpan={6} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
+              ) : dbProducts.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center py-20 text-muted-foreground">لا توجد منتجات حالياً.</TableCell></TableRow>
+              ) : dbProducts.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map((product: any) => (
                 <TableRow key={product.id} className="hover:bg-slate-50/50 transition-colors">
                   <TableCell className="py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-slate-100 rounded-xl overflow-hidden relative shrink-0">
-                         {product.imageUrl ? (
-                           <img src={product.imageUrl} className="object-cover w-full h-full" alt="" />
-                         ) : (
-                           <div className="flex items-center justify-center h-full text-slate-300"><Package size={20} /></div>
-                         )}
+                         <img src={product.imageUrl || "https://picsum.photos/seed/placeholder/200/200"} className="object-cover w-full h-full" alt="" />
                       </div>
                       <div className="flex flex-col">
                         <span className="font-bold text-sm">{product.name}</span>
@@ -219,15 +234,15 @@ export default function AdminProducts() {
                           <MoreVertical size={16} />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44 rounded-2xl border-none shadow-2xl p-2">
-                        <DropdownMenuItem className="gap-3 p-3 cursor-pointer rounded-xl font-bold text-xs focus:bg-slate-50">
-                          <Edit2 size={14} className="text-blue-600" /> تعديل البيانات
+                      <DropdownMenuContent align="end" className="w-44 rounded-2xl border-none shadow-2xl p-2" dir="rtl">
+                        <DropdownMenuItem onClick={() => openEditDialog(product)} className="gap-3 p-3 cursor-pointer rounded-xl font-bold text-xs focus:bg-slate-50 justify-end">
+                          تعديل البيانات <Edit2 size={14} className="text-blue-600" />
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => handleDeleteProduct(product.id)}
-                          className="gap-3 p-3 cursor-pointer text-destructive focus:bg-destructive/5 rounded-xl font-bold text-xs"
+                          className="gap-3 p-3 cursor-pointer text-destructive focus:bg-destructive/5 rounded-xl font-bold text-xs justify-end"
                         >
-                          <Trash2 size={14} /> حذف المنتج
+                          حذف المنتج <Trash2 size={14} />
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -238,6 +253,84 @@ export default function AdminProducts() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* نافذة التعديل */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right text-2xl font-bold">تعديل بيانات الباقة</DialogTitle>
+          </DialogHeader>
+          <ProductForm currentProduct={currentProduct} setCurrentProduct={setCurrentProduct} />
+          <DialogFooter>
+            <Button onClick={handleUpdateProduct} disabled={isProcessing} className="h-14 rounded-2xl bg-slate-900 text-white font-bold w-full">
+              {isProcessing ? <Loader2 className="animate-spin" /> : "حفظ التغييرات"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: any, setCurrentProduct: any }) {
+  return (
+    <div className="grid gap-6 py-6">
+      <div className="grid gap-2 text-right">
+        <Label className="font-bold text-xs uppercase opacity-60 pr-2">اسم الباقة</Label>
+        <Input 
+          value={currentProduct.name}
+          onChange={(e) => setCurrentProduct({...currentProduct, name: e.target.value})}
+          placeholder="مثال: Free Fire 520 Diamonds" 
+          className="h-12 rounded-2xl bg-slate-50 border-none" 
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-2 text-right">
+          <Label className="font-bold text-xs uppercase opacity-60 pr-2">السعر (USD)</Label>
+          <Input 
+            type="number" 
+            value={currentProduct.price}
+            onChange={(e) => setCurrentProduct({...currentProduct, price: e.target.value})}
+            placeholder="1.20" 
+            className="h-12 rounded-2xl bg-slate-50 border-none" 
+          />
+        </div>
+        <div className="grid gap-2 text-right">
+          <Label className="font-bold text-xs uppercase opacity-60 pr-2">الكمية</Label>
+          <Input 
+            type="number" 
+            value={currentProduct.stock}
+            onChange={(e) => setCurrentProduct({...currentProduct, stock: e.target.value})}
+            placeholder="100" 
+            className="h-12 rounded-2xl bg-slate-50 border-none" 
+          />
+        </div>
+      </div>
+      <div className="grid gap-2 text-right">
+        <Label className="font-bold text-xs uppercase opacity-60 pr-2">الفئة</Label>
+        <select 
+          value={currentProduct.category}
+          onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})}
+          className="h-12 rounded-2xl bg-slate-50 border-none px-4 text-sm font-medium focus:ring-2 focus:ring-primary"
+        >
+          <option value="شحن ألعاب">شحن ألعاب</option>
+          <option value="حسابات ألعاب">حسابات ألعاب</option>
+          <option value="خدمات رقمية">خدمات رقمية</option>
+          <option value="خدمات تصميم">خدمات تصميم</option>
+        </select>
+      </div>
+      <div className="grid gap-2 text-right">
+        <Label className="font-bold text-xs uppercase opacity-60 pr-2">رابط الصورة</Label>
+        <div className="relative">
+          <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
+          <Input 
+            value={currentProduct.imageUrl}
+            onChange={(e) => setCurrentProduct({...currentProduct, imageUrl: e.target.value})}
+            placeholder="https://..." 
+            className="pr-12 h-12 rounded-2xl bg-slate-50 border-none" 
+          />
+        </div>
+      </div>
     </div>
   );
 }
