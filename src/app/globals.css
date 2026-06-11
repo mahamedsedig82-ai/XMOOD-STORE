@@ -5,26 +5,48 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --background: 210 20% 98%;
+    --foreground: 224 71% 4%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 224 71% 4%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 46 66% 46%; /* ذهبي XMOOD الملكي */
+    --popover-foreground: 224 71% 4%;
+    --primary: 43 74% 49%; /* الذهب الملكي */
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 46 66% 46%;
-    --accent-foreground: 222 47% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 46 66% 46%;
-    --radius: 1.5rem;
+    --secondary: 220 14% 10%; /* الكحلي العميق */
+    --secondary-foreground: 210 20% 98%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 14% 46%;
+    --accent: 43 74% 49%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 43 74% 49%;
+    --radius: 2rem;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 210 20% 98%;
+    --card: 224 71% 4%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 43 74% 49%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 217 16% 65%;
+    --accent: 215 28% 17%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 43 74% 49%;
   }
 }
 
@@ -33,7 +55,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased selection:bg-primary/20;
     font-feature-settings: "cv11", "ss01";
   }
 }
@@ -47,18 +69,20 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.luxury-shadow {
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+.luxury-card {
+  @apply bg-white border border-slate-100 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] transition-all duration-500 hover:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.1)];
 }
 
-.gold-gradient {
-  background: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #b8860b 100%);
+.gold-gradient-text {
+  background: linear-gradient(to bottom right, #B8860B, #FFD700, #B8860B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.dark-card {
-  @apply bg-slate-900 text-white border-none shadow-2xl;
+.royal-button {
+  @apply bg-slate-950 text-white font-bold rounded-[1.5rem] transition-all duration-300 hover:bg-primary hover:scale-[1.02] active:scale-95 shadow-lg shadow-slate-900/10;
 }

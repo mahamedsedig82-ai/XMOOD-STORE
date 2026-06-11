@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,7 +20,7 @@ import { FirestorePermissionError } from "@/firebase/errors";
 
 export default function AdminProducts() {
   const db = useFirestore();
-  const productsQuery = query(collection(db, "products"), orderBy("createdAt", "desc"));
+  const productsQuery = useMemo(() => query(collection(db, "products"), orderBy("createdAt", "desc")), [db]);
   const { data: dbProducts, loading } = useCollection(productsQuery);
   const [searchTerm, setSearchTerm] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -37,7 +37,7 @@ export default function AdminProducts() {
     description: ""
   });
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!currentProduct.name || !currentProduct.price) {
       toast({ variant: "destructive", title: "خطأ", description: "يرجى ملء الاسم والسعر" });
       return;
@@ -54,23 +54,23 @@ export default function AdminProducts() {
       createdAt: new Date().toISOString(),
     };
 
-    addDoc(collection(db, "products"), productData)
-      .then(() => {
-        toast({ title: "تمت الإضافة", description: "تم نشر المنتج بنجاح في المتجر" });
-        setIsAddDialogOpen(false);
-        resetForm();
-      })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: 'products',
-          operation: 'create',
-          requestResourceData: productData
-        }));
-      })
-      .finally(() => setIsProcessing(false));
+    try {
+      await addDoc(collection(db, "products"), productData);
+      toast({ title: "تمت الإضافة", description: "تم نشر المنتج بنجاح في المتجر" });
+      setIsAddDialogOpen(false);
+      resetForm();
+    } catch (err) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: 'products',
+        operation: 'create',
+        requestResourceData: productData
+      }));
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleUpdateProduct = () => {
+  const handleUpdateProduct = async () => {
     if (!currentProduct.id) return;
     setIsProcessing(true);
     const productRef = doc(db, "products", currentProduct.id);
@@ -85,35 +85,34 @@ export default function AdminProducts() {
       updatedAt: new Date().toISOString(),
     };
 
-    updateDoc(productRef, updateData)
-      .then(() => {
-        toast({ title: "تم التحديث", description: "تم حفظ التغييرات بنجاح" });
-        setIsEditDialogOpen(false);
-        resetForm();
-      })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: productRef.path,
-          operation: 'update',
-          requestResourceData: updateData
-        }));
-      })
-      .finally(() => setIsProcessing(false));
+    try {
+      await updateDoc(productRef, updateData);
+      toast({ title: "تم التحديث", description: "تم حفظ التغييرات بنجاح" });
+      setIsEditDialogOpen(false);
+      resetForm();
+    } catch (err) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: productRef.path,
+        operation: 'update',
+        requestResourceData: updateData
+      }));
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async (id: string) => {
     if (!confirm("هل أنت متأكد من حذف هذا المنتج نهائياً؟")) return;
     const productRef = doc(db, "products", id);
-    deleteDoc(productRef)
-      .then(() => {
-        toast({ title: "تم الحذف", description: "تمت إزالة المنتج من المتجر" });
-      })
-      .catch(async () => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: productRef.path,
-          operation: 'delete'
-        }));
-      });
+    try {
+      await deleteDoc(productRef);
+      toast({ title: "تم الحذف", description: "تمت إزالة المنتج من المتجر" });
+    } catch (err) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: productRef.path,
+        operation: 'delete'
+      }));
+    }
   };
 
   const resetForm = () => {
@@ -141,54 +140,57 @@ export default function AdminProducts() {
     setIsEditDialogOpen(true);
   };
 
-  const handleSeedData = () => {
+  const handleSeedData = async () => {
     setIsProcessing(true);
-    const seedPromises = STORE_PRODUCTS.map(p => 
-      addDoc(collection(db, "products"), { 
-        ...p, 
-        createdAt: new Date().toISOString(),
-        status: p.stock > 0 ? 'active' : 'out_of_stock'
-      })
-    );
-
-    Promise.all(seedPromises)
-      .then(() => {
-        toast({ title: "تمت التهيئة", description: "تمت إضافة المنتجات الافتراضية بنجاح" });
-      })
-      .catch(() => {
-        toast({ variant: "destructive", title: "خطأ", description: "فشل في تهيئة البيانات" });
-      })
-      .finally(() => setIsProcessing(false));
+    try {
+      const seedPromises = STORE_PRODUCTS.map(p => 
+        addDoc(collection(db, "products"), { 
+          ...p, 
+          createdAt: new Date().toISOString(),
+          status: p.stock > 0 ? 'active' : 'out_of_stock'
+        })
+      );
+      await Promise.all(seedPromises);
+      toast({ title: "تمت التهيئة", description: "تمت إضافة المنتجات الافتراضية بنجاح" });
+    } catch (error) {
+      toast({ variant: "destructive", title: "خطأ", description: "فشل في تهيئة البيانات" });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
+  const filteredProducts = dbProducts.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="space-y-8 animate-fade-in" dir="rtl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="space-y-10 animate-fade-in" dir="rtl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-headline font-bold mb-1">المستودع الملكي</h1>
-          <p className="text-muted-foreground text-sm">إدارة المخزون، تعديل الأسعار، وإضافة الباقات الحصرية.</p>
+          <h1 className="text-4xl font-headline font-bold mb-2 gold-gradient-text">إدارة المخزون الملكي</h1>
+          <p className="text-muted-foreground text-sm">تحكم شامل في الباقات، الأسعار، والمخزون الفوري.</p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           {dbProducts.length === 0 && !loading && (
-            <Button variant="outline" onClick={handleSeedData} disabled={isProcessing} className="rounded-2xl h-14 px-6 border-dashed">
-              {isProcessing ? <Loader2 className="animate-spin" /> : <RefreshCcw className="ml-2" />} تهيئة البيانات
+            <Button variant="outline" onClick={handleSeedData} disabled={isProcessing} className="rounded-2xl h-14 px-6 border-dashed border-primary/40 text-primary">
+              {isProcessing ? <Loader2 className="animate-spin" /> : <RefreshCcw className="ml-2" />} استيراد المنتجات
             </Button>
           )}
           <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if(!open) resetForm(); }}>
             <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 text-white rounded-2xl gap-2 h-14 px-8 shadow-lg shadow-primary/20 font-bold">
-                <Plus size={20} /> إضافة باقة جديدة
+              <Button className="royal-button h-14 px-8 shadow-2xl shadow-primary/20">
+                <Plus size={20} className="ml-2" /> إضافة باقة جديدة
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]" dir="rtl">
+            <DialogContent className="sm:max-w-[500px] rounded-[3rem] p-8" dir="rtl">
               <DialogHeader>
-                <DialogTitle className="text-right text-2xl font-bold">إضافة منتج للمتجر</DialogTitle>
+                <DialogTitle className="text-right text-3xl font-bold mb-4">إنشاء منتج جديد</DialogTitle>
               </DialogHeader>
               <ProductForm currentProduct={currentProduct} setCurrentProduct={setCurrentProduct} />
-              <DialogFooter>
-                <Button onClick={handleAddProduct} disabled={isProcessing} className="h-14 rounded-2xl bg-primary text-white font-bold w-full">
-                  {isProcessing ? <Loader2 className="animate-spin" /> : "حفظ ونشر المنتج"}
+              <DialogFooter className="mt-6">
+                <Button onClick={handleAddProduct} disabled={isProcessing} className="h-16 rounded-2xl bg-primary text-white font-bold w-full text-lg">
+                  {isProcessing ? <Loader2 className="animate-spin" /> : "نشر المنتج الآن"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -196,13 +198,13 @@ export default function AdminProducts() {
         </div>
       </div>
 
-      <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
-        <CardHeader className="bg-slate-50/50 p-6 border-b">
-          <div className="relative max-w-md">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+      <Card className="luxury-card rounded-[3rem] overflow-hidden">
+        <CardHeader className="bg-slate-50/50 p-8 border-b">
+          <div className="relative max-w-xl">
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input 
-              placeholder="ابحث باسم الباقة..." 
-              className="pr-10 h-12 rounded-2xl bg-white border-slate-200"
+              placeholder="ابحث عن باقة..." 
+              className="pr-12 h-14 rounded-2xl bg-white border-slate-200 text-lg"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -212,58 +214,58 @@ export default function AdminProducts() {
           <Table>
             <TableHeader className="bg-slate-50/80">
               <TableRow>
-                <TableHead className="text-right font-bold text-xs uppercase py-4">المنتج</TableHead>
-                <TableHead className="text-right font-bold text-xs uppercase">الفئة</TableHead>
-                <TableHead className="text-right font-bold text-xs uppercase">السعر</TableHead>
-                <TableHead className="text-right font-bold text-xs uppercase">المخزون</TableHead>
-                <TableHead className="text-right font-bold text-xs uppercase">الحالة</TableHead>
-                <TableHead className="text-center w-[100px] font-bold text-xs uppercase">إجراءات</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase py-6 pr-8">المنتج</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase">الفئة</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase">السعر</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase">المخزون</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase">الحالة</TableHead>
+                <TableHead className="text-center w-[120px] font-black text-[10px] uppercase">إجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
-              ) : dbProducts.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-20 text-muted-foreground">لا توجد منتجات حالياً.</TableCell></TableRow>
-              ) : dbProducts.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map((product: any) => (
-                <TableRow key={product.id} className="hover:bg-slate-50/50 transition-colors">
-                  <TableCell className="py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-slate-100 rounded-xl overflow-hidden relative shrink-0">
-                         <img src={product.imageUrl || "https://picsum.photos/seed/placeholder/200/200"} className="object-cover w-full h-full" alt="" />
+                <TableRow><TableCell colSpan={6} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary w-10 h-10" /></TableCell></TableRow>
+              ) : filteredProducts.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center py-20 text-muted-foreground font-bold">لا توجد منتجات مطابقة للبحث</TableCell></TableRow>
+              ) : filteredProducts.map((product: any) => (
+                <TableRow key={product.id} className="group hover:bg-slate-50/50 transition-colors">
+                  <TableCell className="py-5 pr-8">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-slate-100 rounded-2xl overflow-hidden relative shadow-inner">
+                         <img src={product.imageUrl} className="object-cover w-full h-full" alt="" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm">{product.name}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase">{product.id.substring(0,8)}</span>
+                        <span className="font-bold text-base text-slate-900">{product.name}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{product.id.substring(0,8)}</span>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="rounded-md font-bold text-[10px] bg-primary/5 text-primary border-none">{product.category}</Badge>
+                    <Badge variant="secondary" className="rounded-lg font-bold text-[10px] bg-primary/5 text-primary border-none px-3 py-1">{product.category}</Badge>
                   </TableCell>
-                  <TableCell className="font-black text-primary">${product.price}</TableCell>
-                  <TableCell className="font-mono">{product.stock}</TableCell>
+                  <TableCell className="font-black text-primary text-lg">${product.price}</TableCell>
+                  <TableCell className="font-mono text-sm">{product.stock}</TableCell>
                   <TableCell>
-                    <Badge className={`${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'} border-none rounded-full font-bold text-[10px]`}>
-                      {product.stock > 0 ? 'نشط' : 'نافذ'}
+                    <Badge className={`${product.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'} border-none rounded-full font-bold text-[10px] px-3 py-1`}>
+                      {product.stock > 0 ? 'متاح' : 'نافذ'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100 h-10 w-10">
-                          <MoreVertical size={16} />
+                          <MoreVertical size={18} />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44 rounded-2xl border-none shadow-2xl p-2" dir="rtl">
-                        <DropdownMenuItem onClick={() => openEditDialog(product)} className="gap-3 p-3 cursor-pointer rounded-xl font-bold text-xs focus:bg-slate-50 justify-end">
-                          تعديل البيانات <Edit2 size={14} className="text-blue-600" />
+                      <DropdownMenuContent align="end" className="w-48 rounded-2xl border-none shadow-2xl p-2" dir="rtl">
+                        <DropdownMenuItem onClick={() => openEditDialog(product)} className="gap-3 p-3 cursor-pointer rounded-xl font-bold text-sm focus:bg-primary/5 focus:text-primary justify-end">
+                          تعديل المنتج <Edit2 size={16} />
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => handleDeleteProduct(product.id)}
-                          className="gap-3 p-3 cursor-pointer text-destructive focus:bg-destructive/5 rounded-xl font-bold text-xs justify-end"
+                          className="gap-3 p-3 cursor-pointer text-destructive focus:bg-destructive/5 rounded-xl font-bold text-sm justify-end"
                         >
-                          حذف المنتج <Trash2 size={14} />
+                          حذف نهائي <Trash2 size={16} />
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -275,16 +277,15 @@ export default function AdminProducts() {
         </CardContent>
       </Card>
 
-      {/* نافذة التعديل */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]" dir="rtl">
+        <DialogContent className="sm:max-w-[500px] rounded-[3rem] p-8" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="text-right text-2xl font-bold">تعديل بيانات الباقة</DialogTitle>
+            <DialogTitle className="text-right text-3xl font-bold mb-4">تحديث البيانات</DialogTitle>
           </DialogHeader>
           <ProductForm currentProduct={currentProduct} setCurrentProduct={setCurrentProduct} />
-          <DialogFooter>
-            <Button onClick={handleUpdateProduct} disabled={isProcessing} className="h-14 rounded-2xl bg-slate-900 text-white font-bold w-full">
-              {isProcessing ? <Loader2 className="animate-spin" /> : "حفظ التغييرات"}
+          <DialogFooter className="mt-6">
+            <Button onClick={handleUpdateProduct} disabled={isProcessing} className="h-16 rounded-2xl bg-slate-900 text-white font-bold w-full text-lg">
+              {isProcessing ? <Loader2 className="animate-spin" /> : "حفظ التعديلات"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -295,60 +296,61 @@ export default function AdminProducts() {
 
 function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: any, setCurrentProduct: any }) {
   return (
-    <div className="grid gap-6 py-6">
-      <div className="grid gap-2 text-right">
-        <Label className="font-bold text-xs uppercase opacity-60 pr-2">اسم الباقة</Label>
+    <div className="grid gap-6 py-4">
+      <div className="space-y-2 text-right">
+        <Label className="font-black text-[10px] uppercase opacity-40 pr-2">اسم الباقة الاحترافي</Label>
         <Input 
           value={currentProduct.name}
           onChange={(e) => setCurrentProduct({...currentProduct, name: e.target.value})}
-          placeholder="مثال: Free Fire 520 Diamonds" 
-          className="h-12 rounded-2xl bg-slate-50 border-none px-6 font-bold" 
+          placeholder="مثال: Free Fire 2180 Diamonds" 
+          className="h-14 rounded-2xl bg-slate-50 border-none px-6 font-bold text-lg" 
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2 text-right">
-          <Label className="font-bold text-xs uppercase opacity-60 pr-2">السعر (USD)</Label>
+        <div className="space-y-2 text-right">
+          <Label className="font-black text-[10px] uppercase opacity-40 pr-2">السعر (USD)</Label>
           <Input 
             type="number" 
             value={currentProduct.price}
             onChange={(e) => setCurrentProduct({...currentProduct, price: e.target.value})}
             placeholder="1.20" 
-            className="h-12 rounded-2xl bg-slate-50 border-none px-6 font-bold" 
+            className="h-14 rounded-2xl bg-slate-50 border-none px-6 font-bold text-lg" 
           />
         </div>
-        <div className="grid gap-2 text-right">
-          <Label className="font-bold text-xs uppercase opacity-60 pr-2">الكمية</Label>
+        <div className="space-y-2 text-right">
+          <Label className="font-black text-[10px] uppercase opacity-40 pr-2">الكمية المتاحة</Label>
           <Input 
             type="number" 
             value={currentProduct.stock}
             onChange={(e) => setCurrentProduct({...currentProduct, stock: e.target.value})}
             placeholder="100" 
-            className="h-12 rounded-2xl bg-slate-50 border-none px-6 font-bold" 
+            className="h-14 rounded-2xl bg-slate-50 border-none px-6 font-bold text-lg" 
           />
         </div>
       </div>
-      <div className="grid gap-2 text-right">
-        <Label className="font-bold text-xs uppercase opacity-60 pr-2">الفئة</Label>
+      <div className="space-y-2 text-right">
+        <Label className="font-black text-[10px] uppercase opacity-40 pr-2">تصنيف الخدمة</Label>
         <select 
           value={currentProduct.category}
           onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})}
-          className="h-12 rounded-2xl bg-slate-50 border-none px-4 text-sm font-bold focus:ring-2 focus:ring-primary"
+          className="w-full h-14 rounded-2xl bg-slate-50 border-none px-6 text-sm font-bold focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
         >
           <option value="شحن ألعاب">شحن ألعاب</option>
           <option value="حسابات ألعاب">حسابات ألعاب</option>
           <option value="خدمات رقمية">خدمات رقمية</option>
           <option value="خدمات تصميم">خدمات تصميم</option>
+          <option value="وساطة وخدمات خاصة">وساطة وخدمات خاصة</option>
         </select>
       </div>
-      <div className="grid gap-2 text-right">
-        <Label className="font-bold text-xs uppercase opacity-60 pr-2">رابط الصورة</Label>
+      <div className="space-y-2 text-right">
+        <Label className="font-black text-[10px] uppercase opacity-40 pr-2">رابط صورة المنتج (URL)</Label>
         <div className="relative">
-          <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
+          <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
           <Input 
             value={currentProduct.imageUrl}
             onChange={(e) => setCurrentProduct({...currentProduct, imageUrl: e.target.value})}
             placeholder="https://..." 
-            className="pr-12 h-12 rounded-2xl bg-slate-50 border-none px-6 font-bold" 
+            className="pr-14 h-14 rounded-2xl bg-slate-50 border-none px-6 font-bold" 
           />
         </div>
       </div>
