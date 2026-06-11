@@ -1,7 +1,7 @@
 
 import { Product, Agent } from './types';
 
-// الصورة الموحدة لفري فاير
+// الصورة الموحدة لفري فاير المطلوبة من المستخدم
 const FREE_FIRE_MAIN_IMAGE = 'https://picsum.photos/seed/ff-main/800/600';
 
 export const STORE_PRODUCTS: Product[] = [

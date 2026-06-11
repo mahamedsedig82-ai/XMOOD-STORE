@@ -1,28 +1,34 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, History, Info, Copy } from "lucide-react";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, History, Info, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useUser } from "@/firebase";
+import { useUser, useCollection, useFirestore } from "@/firebase";
 import { formatUSD, formatSDG } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
+import { query, collection, orderBy } from "firebase/firestore";
+import { useMemo } from "react";
 
 export default function WalletPage() {
-  const { profile, loading } = useUser();
+  const { profile, user, loading: userLoading } = useUser();
+  const db = useFirestore();
 
-  const transactions = [
-    { id: 't1', type: 'deposit', amount: 50.00, date: '2023-11-21', status: 'completed', agent: 'أبو فهد' },
-    { id: 't2', type: 'purchase', amount: 12.50, date: '2023-11-20', status: 'completed', product: 'PUBG UC' },
-  ];
+  const transactionsQuery = useMemo(() => {
+    if (!user || !db) return null;
+    return query(collection(db, "users", user.uid, "transactions"), orderBy("createdAt", "desc"));
+  }, [user, db]);
+
+  const { data: transactions, loading: transLoading } = useCollection(transactionsQuery);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: "تم النسخ", description: "تم نسخ المعرف الخاص بك بنجاح" });
   };
 
-  if (loading) return (
+  if (userLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <Loader2 className="animate-spin text-primary w-10 h-10" />
     </div>
@@ -31,7 +37,7 @@ export default function WalletPage() {
   const balance = profile?.walletBalance || 0;
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white" dir="rtl">
       <Navbar />
       <div className="container mx-auto px-4 py-12">
         <header className="mb-10 text-right">
@@ -40,8 +46,8 @@ export default function WalletPage() {
         </header>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-          {/* Main Balance Card */}
-          <Card className="border shadow-sm bg-white overflow-hidden text-right">
+          {/* رصيد المحفظة */}
+          <Card className="border shadow-sm bg-white overflow-hidden text-right rounded-3xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">الرصيد المتاح</CardTitle>
             </CardHeader>
@@ -55,32 +61,16 @@ export default function WalletPage() {
             </CardContent>
           </Card>
 
-          {/* User ID & Deposit Info Card */}
-          <Card className="lg:col-span-2 border bg-muted/20 text-right">
+          {/* معلومات الشحن والمعرف */}
+          <Card className="lg:col-span-2 border bg-muted/20 text-right rounded-3xl">
             <CardHeader>
               <CardTitle className="text-lg flex items-center justify-end gap-2">
                 بيانات الشحن <Info size={18} className="text-primary" />
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row-reverse items-center justify-between gap-6">
-                <div className="flex flex-col items-end gap-2">
-                   <p className="text-xs text-muted-foreground font-bold uppercase">معرف المستخدم (USER ID)</p>
-                   <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border shadow-sm group">
-                      <span className="font-mono font-black text-xl text-primary tracking-wider">{profile?.uid?.substring(0, 10).toUpperCase() || "---"}</span>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 rounded-full hover:bg-primary/10 text-slate-400 hover:text-primary transition-colors"
-                        onClick={() => copyToClipboard(profile?.uid || "")}
-                      >
-                        <Copy size={14} />
-                      </Button>
-                   </div>
-                   <p className="text-[10px] text-slate-400 mt-1">هذا هو المعرف الذي تعطيه للوكيل لإتمام عملية الشحن</p>
-                </div>
-                
-                <div className="flex-1 text-right">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex flex-col items-end gap-2 order-2 md:order-1">
                   <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                     يتم شحن الرصيد حصرياً عبر الوكلاء المعتمدين. اختر وكيلاً، قم بالتحويل له، ثم قدم له "المعرف" الخاص بك لتحديث رصيدك فوراً.
                   </p>
@@ -88,14 +78,30 @@ export default function WalletPage() {
                     تواصل مع وكيل شحن
                   </Button>
                 </div>
+                
+                <div className="flex flex-col items-end gap-2 order-1 md:order-2">
+                   <p className="text-xs font-bold text-muted-foreground uppercase">معرف المستخدم (USER ID)</p>
+                   <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border shadow-sm group">
+                      <span className="font-mono font-black text-xl text-primary tracking-wider">{user?.uid?.substring(0, 10).toUpperCase() || "---"}</span>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 rounded-full hover:bg-primary/10 text-slate-400 hover:text-primary transition-colors"
+                        onClick={() => copyToClipboard(user?.uid || "")}
+                      >
+                        <Copy size={14} />
+                      </Button>
+                   </div>
+                   <p className="text-[10px] text-slate-400 mt-1 text-center">أعط هذا المعرف للوكيل ليقوم بشحن حسابك</p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Transaction History */}
-        <Card className="border shadow-sm">
-          <CardHeader className="flex flex-row-reverse items-center justify-between border-b bg-muted/5">
+        {/* سجل العمليات */}
+        <Card className="border shadow-sm rounded-3xl overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/5">
             <CardTitle className="text-lg flex items-center gap-2">
               <History size={20} className="text-primary" /> سجل العمليات
             </CardTitle>
@@ -107,36 +113,34 @@ export default function WalletPage() {
                   <TableHead className="text-right font-bold text-xs uppercase">التاريخ</TableHead>
                   <TableHead className="text-right font-bold text-xs uppercase">النوع</TableHead>
                   <TableHead className="text-right font-bold text-xs uppercase">المبلغ (USD)</TableHead>
-                  <TableHead className="text-right font-bold text-xs uppercase">المبلغ (SDG)</TableHead>
                   <TableHead className="text-right font-bold text-xs uppercase">التفاصيل</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {transactions.length > 0 ? transactions.map((t) => (
+                {transLoading ? (
+                  <TableRow><TableCell colSpan={4} className="text-center py-10">جاري تحميل العمليات...</TableCell></TableRow>
+                ) : transactions && transactions.length > 0 ? transactions.map((t: any) => (
                   <TableRow key={t.id} className="hover:bg-muted/10 transition-colors">
-                    <TableCell className="text-xs">{t.date}</TableCell>
+                    <TableCell className="text-xs">{new Date(t.createdAt).toLocaleDateString('ar-EG')}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-2 text-xs font-bold">
-                        {t.type === 'deposit' ? 'إيداع' : 'شراء'}
+                        {t.type === 'deposit' ? 'إيداع' : 'سحب'}
                         {t.type === 'deposit' ? 
                           <ArrowUpCircle className="text-green-500" size={16} /> : 
                           <ArrowDownCircle className="text-red-500" size={16} />
                         }
                       </div>
                     </TableCell>
-                    <TableCell className="font-bold text-sm">
+                    <TableCell className={`font-bold text-sm ${t.type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
                       {t.type === 'deposit' ? `+${formatUSD(t.amount)}` : `-${formatUSD(t.amount)}`}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {t.type === 'deposit' ? `+${formatSDG(t.amount)}` : `-${formatSDG(t.amount)}`}
-                    </TableCell>
                     <TableCell className="text-muted-foreground text-[10px] font-medium">
-                      {t.type === 'deposit' ? `عبر الوكيل: ${t.agent}` : `منتج: ${t.product}`}
+                      {t.description || "عملية نظام"}
                     </TableCell>
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">لا توجد عمليات سابقة</TableCell>
+                    <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">لا توجد عمليات سابقة</TableCell>
                   </TableRow>
                 )}
               </TableBody>

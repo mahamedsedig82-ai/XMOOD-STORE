@@ -16,8 +16,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!loading && (!profile || profile.role !== 'admin')) {
-      // إذا لم يكن مديراً، يعود للرئيسية
-      // ملاحظة: يمكنك مؤقتاً إزالة هذا الشرط إذا أردت الدخول قبل تعيين رتبتك
       // router.push('/'); 
     }
   }, [profile, loading, router]);
@@ -30,15 +28,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // في الإنتاج، سنفعل هذا الشرط
-  // if (profile?.role !== 'admin') return null;
-
   const menuItems = [
     { label: "الإحصائيات", icon: LayoutDashboard, href: "/admin" },
     { label: "إدارة المنتجات", icon: Package, href: "/admin/products" },
     { label: "طلبات العملاء", icon: ShoppingCart, href: "/admin/orders" },
     { label: "المستخدمين", icon: Users, href: "/admin/users" },
-    { label: "الوكلاء والمالية", icon: Wallet, href: "/admin/finance" },
+    { label: "المالية والتحويل", icon: Wallet, href: "/admin/finance" },
     { label: "إعدادات المتجر", icon: Settings, href: "/admin/settings" },
   ];
 
