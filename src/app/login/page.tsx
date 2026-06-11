@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -15,7 +16,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Mail, Lock, Chrome, Fingerprint, Loader2, AlertCircle } from "lucide-react";
+import { ShieldCheck, Mail, Lock, Chrome, Fingerprint, Loader2, User } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -43,12 +44,15 @@ export default function LoginPage() {
       const docSnap = await getDoc(userDocRef);
       
       if (!docSnap.exists()) {
+        // إذا كان الاسم هو XMOOD STORE، اجعله مديراً تلقائياً
+        const isAdmin = user.displayName === "XMOOD STORE" || user.email === "admin@xmood.store";
+        
         await setDoc(userDocRef, {
           uid: user.uid,
           displayName: user.displayName || 'مستخدم XMOOD',
           email: user.email,
           walletBalance: 0,
-          role: 'user',
+          role: isAdmin ? 'admin' : 'user',
           photoURL: user.photoURL,
           createdAt: new Date().toISOString(),
         });
@@ -57,12 +61,7 @@ export default function LoginPage() {
       toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في XMOOD STORE" });
       router.push("/");
     } catch (error: any) {
-      console.error(error);
-      toast({ 
-        variant: "destructive", 
-        title: "فشل الدخول عبر Google", 
-        description: error.code === 'auth/popup-closed-by-user' ? 'تم إغلاق النافذة المنبثقة' : 'تأكد من إعدادات مشروعك في Firebase' 
-      });
+      toast({ variant: "destructive", title: "فشل الدخول عبر Google", description: "يرجى المحاولة مرة أخرى أو التأكد من إعدادات المتصفح" });
     } finally {
       setLoading(false);
     }
@@ -104,13 +103,16 @@ export default function LoginPage() {
 
       await updateProfile(user, { displayName: name });
       
+      // إذا كان الاسم هو XMOOD STORE، اجعله مديراً تلقائياً
+      const isAdmin = name === "XMOOD STORE";
+      
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
         uid: user.uid,
         displayName: name,
         email: email,
         walletBalance: 0,
-        role: 'user',
+        role: isAdmin ? 'admin' : 'user',
         createdAt: new Date().toISOString(),
       });
 
@@ -127,7 +129,7 @@ export default function LoginPage() {
     <main className="min-h-screen bg-white font-body">
       <Navbar />
       <div className="container mx-auto px-4 py-12 flex justify-center items-center">
-        <Card className="w-full max-w-lg border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white border border-slate-100">
+        <Card className="w-full max-w-lg border-none shadow-2xl rounded-[3.5rem] overflow-hidden bg-white border border-slate-100">
           <div className="bg-primary p-12 text-center text-white relative">
             <div className="mx-auto w-20 h-20 bg-white/20 rounded-[1.8rem] flex items-center justify-center mb-6 backdrop-blur-xl border border-white/30 shadow-inner">
               <ShieldCheck size={40} strokeWidth={1.5} />
@@ -138,12 +140,12 @@ export default function LoginPage() {
           
           <CardContent className="p-10">
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-10 bg-slate-50 rounded-[1.5rem] p-1.5 h-14">
-                <TabsTrigger value="login" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold transition-all">
+              <TabsList className="grid w-full grid-cols-2 mb-10 bg-slate-50 rounded-[1.8rem] p-1.5 h-16">
+                <TabsTrigger value="login" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold transition-all text-sm">
                   دخول
                 </TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold transition-all">
-                  تسجيل
+                <TabsTrigger value="signup" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold transition-all text-sm">
+                  تسجيل جديد
                 </TabsTrigger>
               </TabsList>
 
@@ -151,7 +153,7 @@ export default function LoginPage() {
                 {!showVerification ? (
                   <form onSubmit={handleEmailLogin} className="space-y-6">
                     <div className="space-y-2 text-right">
-                      <label className="text-xs font-bold text-slate-400 pr-2">البريد الإلكتروني</label>
+                      <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">البريد الإلكتروني</Label>
                       <div className="relative">
                         <Mail className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
                         <Input 
@@ -165,7 +167,7 @@ export default function LoginPage() {
                       </div>
                     </div>
                     <div className="space-y-2 text-right">
-                      <label className="text-xs font-bold text-slate-400 pr-2">كلمة المرور</label>
+                      <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">كلمة المرور</Label>
                       <div className="relative">
                         <Lock className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
                         <Input 
@@ -178,32 +180,32 @@ export default function LoginPage() {
                         />
                       </div>
                     </div>
-                    <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-14 rounded-2xl shadow-xl transition-all" disabled={loading}>
+                    <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-16 rounded-2xl shadow-xl transition-all" disabled={loading}>
                       {loading ? <Loader2 className="animate-spin" /> : "متابعة للدخول"}
                     </Button>
 
                     <div className="relative my-8">
                       <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-100"></span></div>
-                      <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-400 font-bold tracking-widest">أو الدفع عبر</span></div>
+                      <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-300 font-bold tracking-[0.3em]">أو الدخول عبر</span></div>
                     </div>
 
                     <Button 
                       type="button" 
                       variant="outline" 
                       onClick={handleGoogleLogin}
-                      className="w-full h-14 rounded-2xl border-slate-100 hover:bg-slate-50 font-bold flex gap-3 text-slate-600 justify-center"
+                      className="w-full h-16 rounded-2xl border-slate-100 hover:bg-slate-50 font-bold flex gap-3 text-slate-600 justify-center"
                       disabled={loading}
                     >
-                      <Chrome className="text-red-500 w-5 h-5" /> تسجيل الدخول عبر Google
+                      <Chrome className="text-red-500 w-5 h-5" /> Google Account
                     </Button>
                   </form>
                 ) : (
                   <div className="space-y-8 animate-fade-in">
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
-                        <Fingerprint size={32} />
+                      <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
+                        <Fingerprint size={40} />
                       </div>
-                      <h3 className="text-xl font-bold">رمز التحقق الأمني</h3>
+                      <h3 className="text-2xl font-bold">رمز التحقق الأمني</h3>
                       <p className="text-sm text-muted-foreground mt-2">أدخل الرمز المكون من 4 أرقام للمتابعة</p>
                     </div>
                     
@@ -211,7 +213,7 @@ export default function LoginPage() {
                       <Input 
                         maxLength={4}
                         placeholder="0000"
-                        className="w-40 h-16 text-center text-3xl font-black tracking-[0.5em] rounded-2xl border-primary/20 bg-slate-50"
+                        className="w-44 h-20 text-center text-4xl font-black tracking-[0.5em] rounded-[1.8rem] border-primary/20 bg-slate-50 shadow-inner"
                         value={verificationCode}
                         onChange={(e) => setVerificationCode(e.target.value)}
                         autoFocus
@@ -222,13 +224,13 @@ export default function LoginPage() {
                       <Button 
                         onClick={() => setShowVerification(false)} 
                         variant="ghost" 
-                        className="flex-1 h-14 rounded-2xl font-bold"
+                        className="flex-1 h-16 rounded-2xl font-bold"
                       >
                         رجوع
                       </Button>
                       <Button 
                         onClick={handleEmailLogin} 
-                        className="flex-[2] h-14 rounded-2xl bg-primary text-white font-bold shadow-lg"
+                        className="flex-[2] h-16 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/20"
                         disabled={loading}
                       >
                         {loading ? <Loader2 className="animate-spin" /> : "تأكيد الهوية"}
@@ -241,39 +243,48 @@ export default function LoginPage() {
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-5">
                   <div className="space-y-1 text-right">
-                    <label className="text-[10px] font-black text-slate-400 pr-2 uppercase">الاسم الكامل</label>
-                    <Input 
-                      placeholder="اكتب اسمك الحقيقي" 
-                      className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                    />
+                    <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">الاسم الكامل</Label>
+                    <div className="relative">
+                      <User className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
+                      <Input 
+                        placeholder="اكتب اسمك الحقيقي" 
+                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                      />
+                    </div>
                   </div>
                   <div className="space-y-1 text-right">
-                    <label className="text-[10px] font-black text-slate-400 pr-2 uppercase">البريد الإلكتروني</label>
-                    <Input 
-                      type="email" 
-                      placeholder="mail@example.com" 
-                      className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
+                    <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">البريد الإلكتروني</Label>
+                    <div className="relative">
+                      <Mail className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
+                      <Input 
+                        type="email" 
+                        placeholder="mail@example.com" 
+                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
                   </div>
                   <div className="space-y-1 text-right">
-                    <label className="text-[10px] font-black text-slate-400 pr-2 uppercase">كلمة المرور</label>
-                    <Input 
-                      type="password" 
-                      placeholder="اختر كلمة مرور قوية" 
-                      className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">كلمة المرور</Label>
+                    <div className="relative">
+                      <Lock className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
+                      <Input 
+                        type="password" 
+                        placeholder="اختر كلمة مرور قوية" 
+                        className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
                   </div>
-                  <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-14 rounded-2xl shadow-xl mt-4" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء حساب جديد"}
+                  <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-16 rounded-2xl shadow-xl mt-4" disabled={loading}>
+                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء حسابك الآن"}
                   </Button>
                 </form>
               </TabsContent>

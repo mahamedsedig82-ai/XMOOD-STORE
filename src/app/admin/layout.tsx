@@ -15,8 +15,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && (!profile || profile.role !== 'admin')) {
-      // router.push('/'); 
+    if (!loading && (!profile || (profile.role !== 'admin' && profile.role !== 'agent'))) {
+      router.push('/'); 
     }
   }, [profile, loading, router]);
 
@@ -32,8 +32,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "الإحصائيات", icon: LayoutDashboard, href: "/admin" },
     { label: "إدارة المنتجات", icon: Package, href: "/admin/products" },
     { label: "طلبات العملاء", icon: ShoppingCart, href: "/admin/orders" },
-    { label: "المستخدمين", icon: Users, href: "/admin/users" },
-    { label: "المالية والتحويل", icon: Wallet, href: "/admin/finance" },
+    { label: "إدارة الأعضاء", icon: Users, href: "/admin/users" },
+    { label: "المالية والشحن", icon: Wallet, href: "/admin/finance" },
     { label: "إعدادات المتجر", icon: Settings, href: "/admin/settings" },
   ];
 
@@ -51,18 +51,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </SidebarHeader>
           <SidebarContent className="p-4">
             <SidebarGroup>
-              <SidebarGroupLabel className="text-right px-4 mb-2">القائمة الإدارية</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-right px-4 mb-2 text-[10px] font-black uppercase tracking-widest opacity-50">إدارة المنصة</SidebarGroupLabel>
               <SidebarMenu>
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton 
                       asChild 
                       isActive={pathname === item.href}
-                      className="justify-start gap-3 h-11 px-4 rounded-xl hover:bg-slate-100 transition-colors"
+                      className="justify-start gap-3 h-12 px-4 rounded-2xl hover:bg-slate-50 transition-all data-[active=true]:bg-primary/5 data-[active=true]:text-primary"
                     >
                       <Link href={item.href}>
-                        <item.icon className={`w-4 h-4 ${pathname === item.href ? 'text-primary' : 'text-slate-400'}`} />
-                        <span className={pathname === item.href ? 'font-bold text-primary' : ''}>{item.label}</span>
+                        <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-primary' : 'text-slate-400'}`} />
+                        <span className={pathname === item.href ? 'font-bold' : ''}>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -71,16 +71,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </SidebarGroup>
             
             <div className="mt-auto pt-6 px-4">
-               <Button asChild variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-primary rounded-xl">
+               <Button asChild variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-primary rounded-2xl h-12">
                   <Link href="/">
-                    <ArrowRight className="w-4 h-4" />
-                    <span>العودة للمتجر</span>
+                    <ArrowRight className="w-5 h-5" />
+                    <span className="font-bold">العودة للمتجر</span>
                   </Link>
                </Button>
             </div>
           </SidebarContent>
         </Sidebar>
-        <main className="flex-1 overflow-y-auto p-8 lg:p-12">
+        <main className="flex-1 overflow-y-auto p-6 md:p-10">
           <div className="max-w-6xl mx-auto">
             {children}
           </div>
