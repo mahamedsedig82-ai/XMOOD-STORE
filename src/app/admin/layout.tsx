@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -15,7 +14,9 @@ import {
   LifeBuoy, 
   Activity, 
   UserCheck, 
-  Lock
+  Lock,
+  Sparkles,
+  Cpu
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -47,6 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const menuItems = [
     { label: "نظرة عامة", icon: LayoutDashboard, href: "/admin" },
+    { label: "مساعد الذكاء الاصطناعي", icon: Sparkles, href: "/admin/ai", highlight: true },
     { label: "إدارة المنتجات", icon: Package, href: "/admin/products" },
     { label: "طلبات الشحن", icon: ShoppingCart, href: "/admin/orders" },
     { label: "الأعضاء والرتب", icon: Users, href: "/admin/users" },
@@ -85,10 +87,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <SidebarMenuButton 
                       asChild 
                       isActive={pathname === item.href}
-                      className="justify-start gap-4 h-14 px-6 rounded-[1.2rem] hover:bg-slate-50 transition-all data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                      className={`justify-start gap-4 h-14 px-6 rounded-[1.2rem] hover:bg-slate-50 transition-all data-[active=true]:bg-primary/10 data-[active=true]:text-primary ${item.highlight ? 'bg-primary/5 border border-primary/10' : ''}`}
                     >
                       <Link href={item.href}>
-                        <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-primary' : 'text-slate-400'}`} />
+                        <item.icon className={`w-5 h-5 ${pathname === item.href || item.highlight ? 'text-primary' : 'text-slate-400'}`} />
                         <span className={`text-sm ${pathname === item.href ? 'font-black' : 'font-bold'}`}>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
