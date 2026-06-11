@@ -1,6 +1,6 @@
+
 /**
  * @fileOverview Firebase configuration for XMOOD STORE.
- * Linked to project: xmood-36c92
  */
 
 export const firebaseConfig = {
