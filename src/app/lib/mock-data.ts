@@ -1,11 +1,10 @@
-
 import { Product, Agent } from './types';
 
-// الصورة الموحدة لفري فاير كما طلب المستخدم
+// الصورة الموحدة لفري فاير
 const FREE_FIRE_MAIN_IMAGE = 'https://picsum.photos/seed/ff-main/800/600';
 
 export const STORE_PRODUCTS: Product[] = [
-  // Free Fire - Updated with consistent image
+  // Free Fire
   {
     id: 'ff1',
     name: 'Free Fire - 100 Diamonds',

@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Firebase configuration for XMOOD STORE.
  */

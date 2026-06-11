@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -51,8 +50,8 @@ export function Navbar() {
         <div className="hidden lg:flex flex-1 max-w-xl relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
-            placeholder="ابحث عن شدات، حسابات، أو خدمات..." 
-            className="w-full pr-10 h-11 bg-slate-50 border-none rounded-full focus-visible:ring-primary/20 text-sm"
+            placeholder="ابحث في XMOOD..." 
+            className="w-full pr-10 h-11 bg-slate-50 border-none rounded-full focus-visible:ring-primary/20 text-sm text-right"
           />
         </div>
 

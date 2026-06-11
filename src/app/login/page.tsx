@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -16,7 +15,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Mail, Lock, Chrome, Fingerprint, Loader2 } from "lucide-react";
+import { ShieldCheck, Mail, Lock, Chrome, Fingerprint, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -58,7 +57,12 @@ export default function LoginPage() {
       toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في XMOOD STORE" });
       router.push("/");
     } catch (error: any) {
-      toast({ variant: "destructive", title: "فشل الدخول", description: "حدث خطأ أثناء الاتصال بحساب Google" });
+      console.error(error);
+      toast({ 
+        variant: "destructive", 
+        title: "فشل الدخول عبر Google", 
+        description: error.code === 'auth/popup-closed-by-user' ? 'تم إغلاق النافذة المنبثقة' : 'تأكد من إعدادات مشروعك في Firebase' 
+      });
     } finally {
       setLoading(false);
     }
@@ -74,14 +78,14 @@ export default function LoginPage() {
     }
 
     if (verificationCode.length < 4) {
-      toast({ variant: "destructive", title: "رمز غير مكتمل", description: "يرجى إدخال رمز الأمان" });
+      toast({ variant: "destructive", title: "رمز غير مكتمل", description: "يرجى إدخال رمز الأمان المكون من 4 أرقام" });
       return;
     }
 
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "تم تسجيل الدخول", description: "مرحباً بك مجدداً" });
+      toast({ title: "تم تسجيل الدخول", description: "مرحباً بك مجدداً في XMOOD" });
       router.push("/");
     } catch (error: any) {
       toast({ variant: "destructive", title: "فشل الدخول", description: "البريد أو كلمة المرور غير صحيحة" });
@@ -110,10 +114,10 @@ export default function LoginPage() {
         createdAt: new Date().toISOString(),
       });
 
-      toast({ title: "تم إنشاء الحساب", description: "مرحباً بك في XMOOD STORE" });
+      toast({ title: "تم إنشاء الحساب", description: "مرحباً بك في عائلة XMOOD STORE" });
       router.push("/");
     } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message || "حدث خطأ غير متوقع" });
+      toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message });
     } finally {
       setLoading(false);
     }
@@ -146,28 +150,28 @@ export default function LoginPage() {
               <TabsContent value="login">
                 {!showVerification ? (
                   <form onSubmit={handleEmailLogin} className="space-y-6">
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-right">
                       <label className="text-xs font-bold text-slate-400 pr-2">البريد الإلكتروني</label>
                       <div className="relative">
                         <Mail className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
                         <Input 
                           type="email" 
                           placeholder="example@mail.com" 
-                          className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold" 
+                          className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
                         />
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-right">
                       <label className="text-xs font-bold text-slate-400 pr-2">كلمة المرور</label>
                       <div className="relative">
                         <Lock className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
                         <Input 
                           type="password" 
                           placeholder="••••••••" 
-                          className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold" 
+                          className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
@@ -175,19 +179,19 @@ export default function LoginPage() {
                       </div>
                     </div>
                     <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-14 rounded-2xl shadow-xl transition-all" disabled={loading}>
-                      {loading ? <Loader2 className="animate-spin" /> : "متابعة"}
+                      {loading ? <Loader2 className="animate-spin" /> : "متابعة للدخول"}
                     </Button>
 
                     <div className="relative my-8">
                       <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-100"></span></div>
-                      <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-400 font-bold tracking-widest">أو عبر</span></div>
+                      <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-400 font-bold tracking-widest">أو الدفع عبر</span></div>
                     </div>
 
                     <Button 
                       type="button" 
                       variant="outline" 
                       onClick={handleGoogleLogin}
-                      className="w-full h-14 rounded-2xl border-slate-100 hover:bg-slate-50 font-bold flex gap-3 text-slate-600"
+                      className="w-full h-14 rounded-2xl border-slate-100 hover:bg-slate-50 font-bold flex gap-3 text-slate-600 justify-center"
                       disabled={loading}
                     >
                       <Chrome className="text-red-500 w-5 h-5" /> تسجيل الدخول عبر Google
@@ -199,8 +203,8 @@ export default function LoginPage() {
                       <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
                         <Fingerprint size={32} />
                       </div>
-                      <h3 className="text-xl font-bold">رمز التحقق</h3>
-                      <p className="text-sm text-muted-foreground mt-2">أدخل الرمز الأمني المكون من 4 أرقام المخصص لحسابك</p>
+                      <h3 className="text-xl font-bold">رمز التحقق الأمني</h3>
+                      <p className="text-sm text-muted-foreground mt-2">أدخل الرمز المكون من 4 أرقام للمتابعة</p>
                     </div>
                     
                     <div className="flex justify-center gap-4" dir="ltr">
@@ -227,7 +231,7 @@ export default function LoginPage() {
                         className="flex-[2] h-14 rounded-2xl bg-primary text-white font-bold shadow-lg"
                         disabled={loading}
                       >
-                        {loading ? <Loader2 className="animate-spin" /> : "تأكيد الدخول"}
+                        {loading ? <Loader2 className="animate-spin" /> : "تأكيد الهوية"}
                       </Button>
                     </div>
                   </div>
@@ -236,33 +240,33 @@ export default function LoginPage() {
 
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-5">
-                  <div className="space-y-1">
+                  <div className="space-y-1 text-right">
                     <label className="text-[10px] font-black text-slate-400 pr-2 uppercase">الاسم الكامل</label>
                     <Input 
-                      placeholder="اكتب اسمك هنا" 
-                      className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold" 
+                      placeholder="اكتب اسمك الحقيقي" 
+                      className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
                     />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 text-right">
                     <label className="text-[10px] font-black text-slate-400 pr-2 uppercase">البريد الإلكتروني</label>
                     <Input 
                       type="email" 
                       placeholder="mail@example.com" 
-                      className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold" 
+                      className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 text-right">
                     <label className="text-[10px] font-black text-slate-400 pr-2 uppercase">كلمة المرور</label>
                     <Input 
                       type="password" 
                       placeholder="اختر كلمة مرور قوية" 
-                      className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold" 
+                      className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 font-bold text-right" 
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
