@@ -16,6 +16,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // الإيميل الرسمي للإدارة
   const ADMIN_EMAIL = "MAHAMEDFK3@GMAIL.COM";
 
   useEffect(() => {
@@ -44,20 +45,23 @@ export function useUser() {
         if (!docSnap.exists()) {
           const newProfile: UserProfile = {
             uid: user.uid,
-            displayName: user.displayName || 'مستخدم جديد',
+            displayName: user.displayName || 'مستخدم XMOOD',
             email: user.email || '',
-            walletBalance: isAdmin ? 1000000 : 0,
+            walletBalance: isAdmin ? 1000000 : 0, // رصيد ضخم للادمن
             role: isAdmin ? 'admin' : 'user',
             photoURL: user.photoURL || '',
             createdAt: new Date().toISOString(),
           };
           await setDoc(userDocRef, newProfile, { merge: true });
         } else if (isAdmin && docSnap.data()?.role !== 'admin') {
-          // Force admin role if it's the specific email
-          await setDoc(userDocRef, { role: 'admin', walletBalance: 1000000 }, { merge: true });
+          // تحديث الصلاحيات فوراً في حال لم تكن مطبقة
+          await setDoc(userDocRef, { 
+            role: 'admin', 
+            walletBalance: 1000000 
+          }, { merge: true });
         }
       } catch (err) {
-        // Handle error
+        console.error("Error syncing profile:", err);
       }
     };
 

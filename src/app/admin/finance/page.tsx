@@ -2,14 +2,13 @@
 "use client";
 
 import { useState } from "react";
-import { useCollection, useFirestore } from "@/firebase";
-import { collection, doc, updateDoc, addDoc, query, orderBy, limit, where, getDocs } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
+import { collection, doc, updateDoc, addDoc, query, where, limit, getDocs } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Wallet, Search, ArrowUpRight, ArrowDownLeft, Loader2, Send, History } from "lucide-react";
-import { formatUSD, formatSDG } from "@/lib/currency";
+import { Wallet, Search, ArrowUpRight, ArrowDownLeft, Loader2, DollarSign } from "lucide-react";
+import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 
 export default function AdminFinance() {
@@ -17,25 +16,23 @@ export default function AdminFinance() {
   const [searchEmail, setSearchEmail] = useState("");
   const [targetUser, setTargetUser] = useState<any>(null);
   const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("شحن رصيد - إدارة XMOOD");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // البحث عن مستخدم بالبريد الإلكتروني
   const handleSearchUser = async () => {
     if (!searchEmail) return;
     setIsProcessing(true);
     try {
-      const q = query(collection(db, "users"), where("email", "==", searchEmail.toLowerCase()), limit(1));
+      const q = query(collection(db, "users"), where("email", "==", searchEmail.trim()), limit(1));
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         setTargetUser({ id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() });
         toast({ title: "تم العثور على المستخدم", description: `المستخدم: ${querySnapshot.docs[0].data().displayName}` });
       } else {
         setTargetUser(null);
-        toast({ variant: "destructive", title: "خطأ", description: "لم يتم العثور على مستخدم بهذا البريد" });
+        toast({ variant: "destructive", title: "خطأ", description: "لم يتم العثور على مستخدم" });
       }
     } catch (error) {
-      toast({ variant: "destructive", title: "خطأ", description: "حدث خطأ أثناء البحث" });
+      toast({ variant: "destructive", title: "خطأ", description: "حدث خطأ في البحث" });
     } finally {
       setIsProcessing(false);
     }
@@ -54,21 +51,15 @@ export default function AdminFinance() {
       : (targetUser.walletBalance || 0) - numAmount;
 
     try {
-      // 1. تحديث رصيد المستخدم
-      await updateDoc(doc(db, "users", targetUser.id), {
-        walletBalance: newBalance
-      });
-
-      // 2. إضافة عملية للسجل
+      await updateDoc(doc(db, "users", targetUser.id), { walletBalance: newBalance });
       await addDoc(collection(db, "users", targetUser.id, "transactions"), {
         type: type,
         amount: numAmount,
-        description: description,
-        createdAt: new Date().toISOString(),
-        status: 'completed'
+        description: `إدارة XMOOD: ${type === 'deposit' ? 'شحن رصيد' : 'خصم رصيد'}`,
+        createdAt: new Date().toISOString()
       });
 
-      toast({ title: "تمت العملية بنجاح", description: `الرصيد الجديد: ${formatUSD(newBalance)}` });
+      toast({ title: "نجحت العملية", description: `الرصيد الجديد: ${formatUSD(newBalance)}` });
       setTargetUser({ ...targetUser, walletBalance: newBalance });
       setAmount("");
     } catch (error) {
@@ -79,78 +70,73 @@ export default function AdminFinance() {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in" dir="rtl">
+    <div className="space-y-10 animate-fade-in" dir="rtl">
       <header>
-        <h1 className="text-3xl font-headline font-bold mb-1">الإدارة المالية</h1>
-        <p className="text-muted-foreground">تحويل الأموال، شحن المحافظ، ومراجعة سجل العمليات.</p>
+        <h1 className="text-4xl font-headline font-bold mb-2">الإدارة المالية الملكية</h1>
+        <p className="text-muted-foreground">تحكم كامل في أرصدة المستخدمين والتحويلات المالية.</p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* التحويل والشحن */}
-        <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-          <CardHeader className="bg-primary/5">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Wallet className="text-primary" /> شحن / خصم رصيد
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <Card className="border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white">
+          <CardHeader className="bg-slate-900 text-white p-10">
+            <CardTitle className="text-2xl flex items-center gap-3">
+              <Wallet className="text-primary" /> تعديل رصيد المحفظة
             </CardTitle>
-            <CardDescription>ابحث عن المستخدم بالبريد الإلكتروني للتحكم في رصيده.</CardDescription>
+            <CardDescription className="text-slate-400">ابحث عن العميل بالبريد لتعديل رصيده فوراً.</CardDescription>
           </CardHeader>
-          <CardContent className="p-8 space-y-6">
-            <div className="flex gap-2">
+          <CardContent className="p-10 space-y-8">
+            <div className="flex gap-4">
               <Input 
-                placeholder="البريد الإلكتروني للعميل..." 
-                className="h-12 rounded-2xl bg-slate-50 border-none"
+                placeholder="بريد العميل الإلكتروني..." 
+                className="h-16 rounded-2xl bg-slate-50 border-none px-8 font-bold"
                 value={searchEmail}
                 onChange={(e) => setSearchEmail(e.target.value)}
               />
-              <Button onClick={handleSearchUser} disabled={isProcessing} className="h-12 w-12 rounded-2xl p-0">
-                {isProcessing ? <Loader2 className="animate-spin" /> : <Search size={20} />}
+              <Button onClick={handleSearchUser} disabled={isProcessing} className="h-16 w-16 rounded-2xl p-0">
+                {isProcessing ? <Loader2 className="animate-spin" /> : <Search size={24} />}
               </Button>
             </div>
 
             {targetUser && (
-              <div className="bg-slate-50 p-6 rounded-3xl border border-dashed border-primary/20 space-y-4 animate-fade-in">
+              <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-dashed border-primary/20 space-y-6 animate-fade-in">
                 <div className="flex justify-between items-center">
                    <div className="text-right">
-                      <p className="text-xs font-bold text-muted-foreground uppercase">المستخدم الحالي</p>
-                      <h3 className="font-bold text-lg">{targetUser.displayName}</h3>
-                      <p className="text-xs text-primary font-mono">{targetUser.uid}</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">العميل المستهدف</p>
+                      <h3 className="font-bold text-xl">{targetUser.displayName}</h3>
                    </div>
                    <div className="text-left">
-                      <p className="text-xs font-bold text-muted-foreground uppercase">الرصيد الحالي</p>
-                      <p className="text-2xl font-black text-primary">{formatUSD(targetUser.walletBalance || 0)}</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">الرصيد الحالي</p>
+                      <p className="text-3xl font-black text-primary">{formatUSD(targetUser.walletBalance || 0)}</p>
                    </div>
                 </div>
 
-                <div className="space-y-4 pt-4">
-                  <Input 
-                    type="number" 
-                    placeholder="المبلغ بالدولار (USD)" 
-                    className="h-14 rounded-2xl bg-white text-center text-xl font-bold"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                  />
-                  <Input 
-                    placeholder="سبب العملية (اختياري)..." 
-                    className="h-12 rounded-2xl bg-white"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
+                <div className="space-y-6 pt-4 border-t">
+                  <div className="relative">
+                    <DollarSign className="absolute right-6 top-1/2 -translate-y-1/2 text-primary w-6 h-6" />
+                    <Input 
+                      type="number" 
+                      placeholder="المبلغ بالدولار (USD)" 
+                      className="h-16 rounded-2xl bg-white pr-16 text-2xl font-black text-center shadow-sm"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                    />
+                  </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-6">
                     <Button 
                       onClick={() => handleUpdateBalance('deposit')}
                       disabled={isProcessing}
-                      className="h-14 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
+                      className="h-16 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-bold gap-3 text-lg"
                     >
-                      <ArrowUpRight size={18} /> شحن (إيداع)
+                      <ArrowUpRight size={20} /> شحن (إيداع)
                     </Button>
                     <Button 
                       onClick={() => handleUpdateBalance('withdrawal')}
                       disabled={isProcessing}
                       variant="destructive"
-                      className="h-14 rounded-2xl font-bold gap-2"
+                      className="h-16 rounded-2xl font-bold gap-3 text-lg"
                     >
-                      <ArrowDownLeft size={18} /> خصم (سحب)
+                      <ArrowDownLeft size={20} /> خصم (سحب)
                     </Button>
                   </div>
                 </div>
@@ -159,36 +145,21 @@ export default function AdminFinance() {
           </CardContent>
         </Card>
 
-        {/* معلومات سريعة */}
-        <div className="space-y-6">
-           <Card className="border-none shadow-sm rounded-3xl bg-slate-900 text-white p-8">
-              <h3 className="text-sm font-bold opacity-60 uppercase mb-4 tracking-widest">إرشادات الإدارة</h3>
-              <ul className="space-y-4 text-sm font-light">
-                <li className="flex gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                  <p>تتم كافة العمليات بالدولار الأمريكي (USD) وتتحول تلقائياً في واجهة العميل.</p>
-                </li>
-                <li className="flex gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                  <p>كل عملية شحن يتم توثيقها فوراً في سجل العميل كمرجع قانوني.</p>
-                </li>
-                <li className="flex gap-3">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                  <p>يرجى التأكد من "معرف العميل" قبل إتمام عمليات المبالغ الكبيرة.</p>
-                </li>
-              </ul>
-           </Card>
-
-           <Card className="border-none shadow-sm rounded-3xl p-8 flex items-center justify-between">
-              <div>
-                <p className="text-xs font-bold text-muted-foreground uppercase">سعر الصرف الحالي</p>
-                <p className="text-2xl font-bold text-slate-900">1 USD = 5400 SDG</p>
-              </div>
-              <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                <Send size={24} />
-              </div>
-           </Card>
-        </div>
+        <Card className="border-none shadow-2xl rounded-[3rem] bg-slate-900 text-white p-12 flex flex-col justify-center">
+          <div className="space-y-8">
+            <h2 className="text-3xl font-headline font-bold text-primary">إحصائيات الإدارة</h2>
+            <div className="space-y-6">
+               <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
+                 <p className="text-xs font-black opacity-50 uppercase tracking-widest mb-2">إجمالي أرصدة المستخدمين</p>
+                 <p className="text-4xl font-black">$---,---</p>
+               </div>
+               <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
+                 <p className="text-xs font-black opacity-50 uppercase tracking-widest mb-2">العمليات اليومية</p>
+                 <p className="text-4xl font-black">---</p>
+               </div>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );

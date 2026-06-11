@@ -37,10 +37,8 @@ export default function LoginPage() {
   const router = useRouter();
 
   const ADMIN_EMAIL = "MAHAMEDFK3@GMAIL.COM";
-  const ADMIN_NAME = "XMOOD STORE";
 
-  // دالة لإكمال الدخول بعد التحقق من الـ PIN
-  const completeLogin = async (user: any) => {
+  const completeLogin = () => {
     toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في XMOOD STORE" });
     router.push("/");
   };
@@ -48,7 +46,7 @@ export default function LoginPage() {
   const handlePinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (pin === "2025") { // رمز التحقق الافتراضي
-      completeLogin(pendingUser);
+      completeLogin();
     } else {
       toast({ variant: "destructive", title: "رمز خطأ", description: "رمز التحقق غير صحيح" });
     }
@@ -72,7 +70,7 @@ export default function LoginPage() {
           uid: user.uid,
           displayName: user.displayName || 'مستخدم XMOOD',
           email: user.email,
-          walletBalance: isAdmin ? 1000000 : 0, // رصيد كامل للادمن
+          walletBalance: isAdmin ? 1000000 : 0,
           role: isAdmin ? 'admin' : 'user',
           photoURL: user.photoURL,
           createdAt: new Date().toISOString(),
@@ -82,7 +80,7 @@ export default function LoginPage() {
       setPendingUser(user);
       setShowPinEntry(true);
     } catch (error: any) {
-      toast({ variant: "destructive", title: "فشل الدخول عبر Google", description: "يرجى المحاولة مرة أخرى" });
+      toast({ variant: "destructive", title: "فشل الدخول", description: "يرجى المحاولة مرة أخرى" });
     } finally {
       setLoading(false);
     }
@@ -111,7 +109,6 @@ export default function LoginPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
       await updateProfile(user, { displayName: name });
       
       const isAdmin = email.toUpperCase() === ADMIN_EMAIL.toUpperCase();
@@ -137,26 +134,26 @@ export default function LoginPage() {
 
   if (showPinEntry) {
     return (
-      <main className="min-h-screen bg-white font-body flex items-center justify-center p-4">
-        <Card className="w-full max-w-md border-none shadow-2xl rounded-[3rem] overflow-hidden">
-          <div className="bg-primary p-10 text-center text-white">
-            <KeyRound size={48} className="mx-auto mb-4 animate-bounce" />
-            <h2 className="text-2xl font-headline font-bold">رمز التحقق الأمني</h2>
-            <p className="text-xs opacity-80 mt-2">يرجى إدخال رمز التحقق الخاص بـ XMOOD</p>
+      <main className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-none shadow-2xl rounded-[3rem] overflow-hidden bg-white">
+          <div className="bg-primary p-12 text-center text-white">
+            <KeyRound size={48} className="mx-auto mb-4 animate-pulse" />
+            <h2 className="text-3xl font-headline font-bold">الأمان والمصداقية</h2>
+            <p className="text-xs opacity-80 mt-2 font-medium">يرجى إدخال رمز التحقق الخاص بـ XMOOD STORE</p>
           </div>
-          <CardContent className="p-10">
-            <form onSubmit={handlePinSubmit} className="space-y-6">
+          <CardContent className="p-12">
+            <form onSubmit={handlePinSubmit} className="space-y-8">
               <Input 
                 type="password" 
                 maxLength={4} 
-                placeholder="0000" 
-                className="h-16 text-center text-3xl font-black tracking-[1em] rounded-2xl bg-slate-50 border-none"
+                placeholder="****" 
+                className="h-20 text-center text-5xl font-black tracking-widest rounded-3xl bg-slate-50 border-none shadow-inner"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
                 autoFocus
               />
-              <Button type="submit" className="w-full h-14 bg-slate-900 rounded-2xl font-bold text-white">
-                تأكيد الرمز
+              <Button type="submit" className="w-full h-16 bg-slate-900 hover:bg-primary rounded-2xl font-bold text-white shadow-xl transition-all">
+                تأكيد الدخول الآمن
               </Button>
             </form>
           </CardContent>
@@ -166,75 +163,51 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white font-body">
+    <main className="min-h-screen bg-slate-50 font-body">
       <Navbar />
-      <div className="container mx-auto px-4 py-12 flex justify-center items-center">
-        <Card className="w-full max-w-lg border-none shadow-2xl rounded-[3.5rem] overflow-hidden bg-white">
-          <div className="bg-primary p-12 text-center text-white relative">
-            <div className="mx-auto w-20 h-20 bg-white/20 rounded-[1.8rem] flex items-center justify-center mb-6 backdrop-blur-xl border border-white/30 shadow-inner">
-              <ShieldCheck size={40} strokeWidth={1.5} />
+      <div className="container mx-auto px-4 py-16 flex justify-center items-center">
+        <Card className="w-full max-w-lg border-none shadow-2xl rounded-[4rem] overflow-hidden bg-white">
+          <div className="bg-slate-900 p-12 text-center text-white">
+            <div className="mx-auto w-24 h-24 bg-primary rounded-[2rem] flex items-center justify-center mb-8 shadow-2xl shadow-primary/20 rotate-3 transition-transform hover:rotate-0 cursor-pointer">
+              <ShieldCheck size={48} strokeWidth={1.5} />
             </div>
-            <h2 className="text-4xl font-headline font-bold tracking-tight">XMOOD STORE</h2>
-            <p className="text-[10px] opacity-70 mt-3 font-black tracking-[0.4em] uppercase">Private Security Gate</p>
+            <h2 className="text-4xl font-headline font-bold">XMOOD STORE</h2>
+            <p className="text-[10px] opacity-50 mt-4 tracking-[0.5em] font-black uppercase">Official Secure Portal</p>
           </div>
           
-          <CardContent className="p-10">
+          <CardContent className="p-12">
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-10 bg-slate-50 rounded-[1.8rem] p-1.5 h-16">
+              <TabsList className="grid w-full grid-cols-2 mb-12 bg-slate-100 rounded-[2rem] p-2 h-16">
                 <TabsTrigger value="login" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold">دخول</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold">تسجيل جديد</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-2xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary font-bold">تسجيل</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="login" className="animate-fade-in">
+              <TabsContent value="login" className="animate-fade-in space-y-8">
                 <form onSubmit={handleEmailLogin} className="space-y-6">
-                  <div className="space-y-2 text-right">
-                    <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">البريد الإلكتروني</Label>
-                    <div className="relative">
-                      <Mail className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                      <Input type="email" placeholder="mail@example.com" className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-400 pr-4">البريد الإلكتروني</Label>
+                    <Input type="email" placeholder="name@example.com" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   </div>
-                  <div className="space-y-2 text-right">
-                    <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">كلمة المرور</Label>
-                    <div className="relative">
-                      <Lock className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                      <Input type="password" placeholder="••••••••" className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-400 pr-4">كلمة المرور</Label>
+                    <Input type="password" placeholder="••••••••" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={password} onChange={(e) => setPassword(e.target.value)} required />
                   </div>
-                  <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-16 rounded-2xl shadow-xl" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "تسجيل الدخول"}
+                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-16 rounded-2xl shadow-xl shadow-primary/10" disabled={loading}>
+                    {loading ? <Loader2 className="animate-spin" /> : "فتح بوابة الحساب"}
                   </Button>
-                  <Button type="button" variant="outline" onClick={handleGoogleLogin} className="w-full h-16 rounded-2xl border-slate-100 hover:bg-slate-50 font-bold flex gap-3 text-slate-600 justify-center">
-                    <Chrome className="text-red-500 w-5 h-5" /> الدخول عبر Google
+                  <Button type="button" variant="outline" onClick={handleGoogleLogin} className="w-full h-16 rounded-2xl border-slate-100 font-bold flex gap-3 text-slate-600 justify-center">
+                    <Chrome size={20} className="text-red-500" /> الدخول عبر Google
                   </Button>
                 </form>
               </TabsContent>
 
-              <TabsContent value="signup" className="animate-fade-in">
+              <TabsContent value="signup" className="animate-fade-in space-y-6">
                 <form onSubmit={handleSignUp} className="space-y-5">
-                  <div className="space-y-1 text-right">
-                    <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">الاسم الكامل</Label>
-                    <div className="relative">
-                      <User className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                      <Input placeholder="اسمك الكامل" className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold" value={name} onChange={(e) => setName(e.target.value)} required />
-                    </div>
-                  </div>
-                  <div className="space-y-1 text-right">
-                    <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">البريد الإلكتروني</Label>
-                    <div className="relative">
-                      <Mail className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                      <Input type="email" placeholder="mail@example.com" className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                    </div>
-                  </div>
-                  <div className="space-y-1 text-right">
-                    <Label className="text-[10px] font-black text-slate-400 pr-2 uppercase">كلمة المرور</Label>
-                    <div className="relative">
-                      <Lock className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
-                      <Input type="password" placeholder="كلمة مرور قوية" className="pr-14 h-14 rounded-2xl border-slate-100 bg-slate-50 font-bold" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                    </div>
-                  </div>
+                  <Input placeholder="الاسم الكامل" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={name} onChange={(e) => setName(e.target.value)} required />
+                  <Input type="email" placeholder="البريد الإلكتروني" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="كلمة المرور" className="h-14 rounded-2xl border-none bg-slate-50 font-bold px-6" value={password} onChange={(e) => setPassword(e.target.value)} required />
                   <Button type="submit" className="w-full bg-slate-900 hover:bg-primary text-white font-bold h-16 rounded-2xl shadow-xl mt-4" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء الحساب"}
+                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء الهوية الرقمية"}
                   </Button>
                 </form>
               </TabsContent>
