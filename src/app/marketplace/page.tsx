@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -6,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { STORE_PRODUCTS, MARKETPLACE_PRODUCTS } from "@/app/lib/mock-data";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, ShoppingBag, Coins, ArrowLeftRight, UserCheck } from "lucide-react";
+import { Search, Filter, ShoppingBag, Coins, ArrowLeftRight, UserCheck, ShieldCheck, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
