@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, MoreVertical, Edit2, Trash2, Package, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Plus, Search, MoreVertical, Edit2, Trash2, ImageIcon, Loader2, RefreshCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,6 +15,8 @@ import { useCollection, useFirestore } from "@/firebase";
 import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
 import { STORE_PRODUCTS } from "@/app/lib/mock-data";
+import { errorEmitter } from "@/firebase/error-emitter";
+import { FirestorePermissionError } from "@/firebase/errors";
 
 export default function AdminProducts() {
   const db = useFirestore();
@@ -35,66 +37,83 @@ export default function AdminProducts() {
     description: ""
   });
 
-  const handleAddProduct = async () => {
+  const handleAddProduct = () => {
     if (!currentProduct.name || !currentProduct.price) {
       toast({ variant: "destructive", title: "خطأ", description: "يرجى ملء الاسم والسعر" });
       return;
     }
     setIsProcessing(true);
-    try {
-      await addDoc(collection(db, "products"), {
-        name: currentProduct.name,
-        price: Number(currentProduct.price),
-        stock: Number(currentProduct.stock),
-        category: currentProduct.category,
-        imageUrl: currentProduct.imageUrl,
-        description: currentProduct.description || "",
-        status: Number(currentProduct.stock) > 0 ? "active" : "out_of_stock",
-        createdAt: new Date().toISOString(),
-      });
-      toast({ title: "تمت الإضافة", description: "تمت إضافة المنتج بنجاح" });
-      setIsAddDialogOpen(false);
-      resetForm();
-    } catch (error) {
-      toast({ variant: "destructive", title: "خطأ", description: "فشل إضافة المنتج" });
-    } finally {
-      setIsProcessing(false);
-    }
+    const productData = {
+      name: currentProduct.name,
+      price: Number(currentProduct.price),
+      stock: Number(currentProduct.stock),
+      category: currentProduct.category,
+      imageUrl: currentProduct.imageUrl,
+      description: currentProduct.description || "",
+      status: Number(currentProduct.stock) > 0 ? "active" : "out_of_stock",
+      createdAt: new Date().toISOString(),
+    };
+
+    addDoc(collection(db, "products"), productData)
+      .then(() => {
+        toast({ title: "تمت الإضافة", description: "تم نشر المنتج بنجاح في المتجر" });
+        setIsAddDialogOpen(false);
+        resetForm();
+      })
+      .catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: 'products',
+          operation: 'create',
+          requestResourceData: productData
+        }));
+      })
+      .finally(() => setIsProcessing(false));
   };
 
-  const handleUpdateProduct = async () => {
+  const handleUpdateProduct = () => {
     if (!currentProduct.id) return;
     setIsProcessing(true);
-    try {
-      const productRef = doc(db, "products", currentProduct.id);
-      await updateDoc(productRef, {
-        name: currentProduct.name,
-        price: Number(currentProduct.price),
-        stock: Number(currentProduct.stock),
-        category: currentProduct.category,
-        imageUrl: currentProduct.imageUrl,
-        description: currentProduct.description || "",
-        status: Number(currentProduct.stock) > 0 ? "active" : "out_of_stock",
-        updatedAt: new Date().toISOString(),
-      });
-      toast({ title: "تم التحديث", description: "تم تحديث بيانات المنتج بنجاح" });
-      setIsEditDialogOpen(false);
-      resetForm();
-    } catch (error) {
-      toast({ variant: "destructive", title: "خطأ", description: "فشل تحديث المنتج" });
-    } finally {
-      setIsProcessing(false);
-    }
+    const productRef = doc(db, "products", currentProduct.id);
+    const updateData = {
+      name: currentProduct.name,
+      price: Number(currentProduct.price),
+      stock: Number(currentProduct.stock),
+      category: currentProduct.category,
+      imageUrl: currentProduct.imageUrl,
+      description: currentProduct.description || "",
+      status: Number(currentProduct.stock) > 0 ? "active" : "out_of_stock",
+      updatedAt: new Date().toISOString(),
+    };
+
+    updateDoc(productRef, updateData)
+      .then(() => {
+        toast({ title: "تم التحديث", description: "تم حفظ التغييرات بنجاح" });
+        setIsEditDialogOpen(false);
+        resetForm();
+      })
+      .catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: productRef.path,
+          operation: 'update',
+          requestResourceData: updateData
+        }));
+      })
+      .finally(() => setIsProcessing(false));
   };
 
-  const handleDeleteProduct = async (id: string) => {
-    if (!confirm("هل أنت متأكد من رغبتك في حذف هذا المنتج؟")) return;
-    try {
-      await deleteDoc(doc(db, "products", id));
-      toast({ title: "تم الحذف", description: "تم حذف المنتج من المتجر" });
-    } catch (error) {
-      toast({ variant: "destructive", title: "خطأ", description: "فشل الحذف" });
-    }
+  const handleDeleteProduct = (id: string) => {
+    if (!confirm("هل أنت متأكد من حذف هذا المنتج نهائياً؟")) return;
+    const productRef = doc(db, "products", id);
+    deleteDoc(productRef)
+      .then(() => {
+        toast({ title: "تم الحذف", description: "تمت إزالة المنتج من المتجر" });
+      })
+      .catch(async () => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: productRef.path,
+          operation: 'delete'
+        }));
+      });
   };
 
   const resetForm = () => {
@@ -122,22 +141,24 @@ export default function AdminProducts() {
     setIsEditDialogOpen(true);
   };
 
-  const handleSeedData = async () => {
+  const handleSeedData = () => {
     setIsProcessing(true);
-    try {
-      for (const p of STORE_PRODUCTS) {
-        await addDoc(collection(db, "products"), { 
-          ...p, 
-          createdAt: new Date().toISOString(),
-          status: p.stock > 0 ? 'active' : 'out_of_stock'
-        });
-      }
-      toast({ title: "تمت التهيئة", description: "تمت إضافة المنتجات الافتراضية بنجاح" });
-    } catch (error) {
-      toast({ variant: "destructive", title: "خطأ", description: "فشل تهيئة البيانات" });
-    } finally {
-      setIsProcessing(false);
-    }
+    const seedPromises = STORE_PRODUCTS.map(p => 
+      addDoc(collection(db, "products"), { 
+        ...p, 
+        createdAt: new Date().toISOString(),
+        status: p.stock > 0 ? 'active' : 'out_of_stock'
+      })
+    );
+
+    Promise.all(seedPromises)
+      .then(() => {
+        toast({ title: "تمت التهيئة", description: "تمت إضافة المنتجات الافتراضية بنجاح" });
+      })
+      .catch(() => {
+        toast({ variant: "destructive", title: "خطأ", description: "فشل في تهيئة البيانات" });
+      })
+      .finally(() => setIsProcessing(false));
   };
 
   return (
@@ -151,7 +172,7 @@ export default function AdminProducts() {
         <div className="flex gap-2">
           {dbProducts.length === 0 && !loading && (
             <Button variant="outline" onClick={handleSeedData} disabled={isProcessing} className="rounded-2xl h-14 px-6 border-dashed">
-              {isProcessing ? <Loader2 className="animate-spin" /> : "تهيئة البيانات الافتراضية"}
+              {isProcessing ? <Loader2 className="animate-spin" /> : <RefreshCcw className="ml-2" />} تهيئة البيانات
             </Button>
           )}
           <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if(!open) resetForm(); }}>
@@ -175,7 +196,7 @@ export default function AdminProducts() {
         </div>
       </div>
 
-      <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
+      <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
         <CardHeader className="bg-slate-50/50 p-6 border-b">
           <div className="relative max-w-md">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -281,7 +302,7 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
           value={currentProduct.name}
           onChange={(e) => setCurrentProduct({...currentProduct, name: e.target.value})}
           placeholder="مثال: Free Fire 520 Diamonds" 
-          className="h-12 rounded-2xl bg-slate-50 border-none" 
+          className="h-12 rounded-2xl bg-slate-50 border-none px-6 font-bold" 
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -292,7 +313,7 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
             value={currentProduct.price}
             onChange={(e) => setCurrentProduct({...currentProduct, price: e.target.value})}
             placeholder="1.20" 
-            className="h-12 rounded-2xl bg-slate-50 border-none" 
+            className="h-12 rounded-2xl bg-slate-50 border-none px-6 font-bold" 
           />
         </div>
         <div className="grid gap-2 text-right">
@@ -302,7 +323,7 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
             value={currentProduct.stock}
             onChange={(e) => setCurrentProduct({...currentProduct, stock: e.target.value})}
             placeholder="100" 
-            className="h-12 rounded-2xl bg-slate-50 border-none" 
+            className="h-12 rounded-2xl bg-slate-50 border-none px-6 font-bold" 
           />
         </div>
       </div>
@@ -311,7 +332,7 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
         <select 
           value={currentProduct.category}
           onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})}
-          className="h-12 rounded-2xl bg-slate-50 border-none px-4 text-sm font-medium focus:ring-2 focus:ring-primary"
+          className="h-12 rounded-2xl bg-slate-50 border-none px-4 text-sm font-bold focus:ring-2 focus:ring-primary"
         >
           <option value="شحن ألعاب">شحن ألعاب</option>
           <option value="حسابات ألعاب">حسابات ألعاب</option>
@@ -327,7 +348,7 @@ function ProductForm({ currentProduct, setCurrentProduct }: { currentProduct: an
             value={currentProduct.imageUrl}
             onChange={(e) => setCurrentProduct({...currentProduct, imageUrl: e.target.value})}
             placeholder="https://..." 
-            className="pr-12 h-12 rounded-2xl bg-slate-50 border-none" 
+            className="pr-12 h-12 rounded-2xl bg-slate-50 border-none px-6 font-bold" 
           />
         </div>
       </div>
