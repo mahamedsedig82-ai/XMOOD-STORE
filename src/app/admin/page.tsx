@@ -1,112 +1,97 @@
 
 "use client";
 
-import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
-import { LayoutDashboard, Package, ShoppingCart, Users, LifeBuoy, ShieldCheck, Wallet, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ShoppingCart, Users, Wallet, TrendingUp, Package, AlertCircle } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminDashboard() {
+  const stats = [
+    { label: "إجمالي المبيعات", val: "$12,450", icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
+    { label: "الطلبات الجديدة", val: "24", icon: ShoppingCart, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "المستخدمين", val: "1,200", icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "المنتجات النشطة", val: "45", icon: Package, color: "text-amber-600", bg: "bg-amber-50" },
+  ];
+
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full bg-muted/10">
-        <Sidebar className="border-l">
-          <SidebarHeader className="p-6 border-b">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="text-primary w-8 h-8" />
-              <span className="font-headline font-bold text-xl">لوحة الإدارة</span>
-            </div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>الرئيسية</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton isActive><LayoutDashboard /> لوحة التحكم</SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton><Package /> إدارة المخزون</SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton><ShoppingCart /> الطلبات</SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-            <SidebarGroup>
-              <SidebarGroupLabel>المستخدمون والمالية</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton><Users /> المستخدمون</SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton><Wallet /> الوكلاء والمحافظ</SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton><LifeBuoy /> الوساطة</SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-            <SidebarGroup>
-              <SidebarGroupLabel>المجتمع</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton><MessageSquare /> المنتدى والتقييمات</SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
+    <div className="space-y-8 animate-fade-in">
+      <header>
+        <h1 className="text-3xl font-headline font-bold mb-2">لوحة التحكم الإدارية</h1>
+        <p className="text-muted-foreground">مرحباً بك، إليك نظرة سريعة على أداء XMOOD STORE اليوم.</p>
+      </header>
 
-        <main className="flex-1 overflow-y-auto p-12">
-          <header className="mb-12 flex justify-between items-center">
-            <div>
-              <h1 className="text-4xl font-headline font-bold mb-2">مرحباً أيها المدير</h1>
-              <p className="text-muted-foreground">نظرة عامة على حالة النظام الاقتصادي للمنصة</p>
-            </div>
-            <div className="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border">
-               <div className="text-right">
-                 <p className="text-[10px] text-muted-foreground uppercase">إجمالي مبيعات اليوم</p>
-                 <p className="text-2xl font-bold text-primary">$1,250.00</p>
-               </div>
-            </div>
-          </header>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-            {[
-              { label: "إجمالي المستخدمين", val: "1,245", color: "blue" },
-              { label: "طلبات معلقة", val: "14", color: "orange" },
-              { label: "عمليات وساطة", val: "8", color: "green" },
-              { label: "تقييمات جديدة", val: "32", color: "purple" },
-            ].map((stat, i) => (
-              <Card key={i} className="border-none shadow-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-light text-muted-foreground uppercase">{stat.label}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{stat.val}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <Tabs defaultValue="orders" className="w-full">
-            <TabsList className="bg-white border mb-8 p-1 rounded-xl">
-              <TabsTrigger value="orders" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white">أحدث الطلبات</TabsTrigger>
-              <TabsTrigger value="p2p" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white">نشاط السوق</TabsTrigger>
-              <TabsTrigger value="agents" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white">إيداعات الوكلاء</TabsTrigger>
-            </TabsList>
-            <TabsContent value="orders">
-              <Card className="border-none shadow-sm">
-                <CardContent className="p-0">
-                  <div className="p-8 text-center text-muted-foreground">
-                    <p>لا توجد طلبات معلقة حالياً. جميع العمليات مستقرة.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </main>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, i) => (
+          <Card key={i} className="border-none shadow-sm hover:shadow-md transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+              <div className={`${stat.bg} ${stat.color} p-2 rounded-lg`}>
+                <stat.icon size={18} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.val}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
-    </SidebarProvider>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Card className="lg:col-span-2 border-none shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg">أحدث الطلبات</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader className="bg-slate-50">
+                <TableRow>
+                  <TableHead className="text-right">العميل</TableHead>
+                  <TableHead className="text-right">المنتج</TableHead>
+                  <TableHead className="text-right">المبلغ</TableHead>
+                  <TableHead className="text-right">الحالة</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[
+                  { user: "أحمد علي", product: "UC PUBG 6000", price: "$99.99", status: "completed" },
+                  { user: "سارة محمد", product: "حساب Valorant", price: "$250.00", status: "processing" },
+                  { user: "خالد محمود", product: "بوستر متجر", price: "$15.00", status: "waiting_payment" },
+                ].map((order, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="font-medium">{order.user}</TableCell>
+                    <TableCell>{order.product}</TableCell>
+                    <TableCell>{order.price}</TableCell>
+                    <TableCell>
+                      <Badge variant={order.status === 'completed' ? 'default' : 'outline'} className="rounded-full">
+                        {order.status === 'completed' ? 'مكتمل' : order.status === 'processing' ? 'قيد التنفيذ' : 'انتظار الدفع'}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-sm bg-primary text-white overflow-hidden relative">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <AlertCircle size={20} /> تنبيهات النظام
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm">
+              <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">الوكلاء</p>
+              <p className="text-sm">توجد 3 طلبات إيداع معلقة تحتاج مراجعة.</p>
+            </div>
+            <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm">
+              <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">المخزون</p>
+              <p className="text-sm">نفذ مخزون "بطاقات جوجل بلاي 50$".</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

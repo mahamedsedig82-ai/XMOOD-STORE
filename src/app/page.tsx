@@ -1,140 +1,135 @@
+
 "use client";
 
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/shared/ProductCard";
-import { STORE_PRODUCTS, AGENTS } from "@/app/lib/mock-data";
-import { ShieldCheck, Zap, HeartHandshake, Smartphone, Send, ArrowRight, Star } from "lucide-react";
+import { STORE_PRODUCTS } from "@/app/lib/mock-data";
+import { ShieldCheck, Zap, HeartHandshake, Send, ArrowRight, Sparkles, LayoutGrid } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
+  // تجميع المنتجات حسب الفئات للعرض المنظم
+  const categories = Array.from(new Set(STORE_PRODUCTS.map(p => p.category)));
+
   return (
     <main className="min-h-screen bg-white font-body selection:bg-primary/20">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-40 text-center overflow-hidden">
+      {/* Hero Section - Clean & High End */}
+      <section className="relative py-24 md:py-32 text-center overflow-hidden border-b">
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex justify-center mb-8">
-            <Badge variant="outline" className="py-2 px-6 text-xs font-bold tracking-[0.3em] bg-primary/5 text-primary border-primary/20 rounded-full animate-fade-in uppercase">
-              Digital Excellence & Luxury
+          <div className="flex justify-center mb-6">
+            <Badge variant="outline" className="py-2 px-6 text-[10px] font-bold tracking-[0.3em] bg-primary/5 text-primary border-primary/20 rounded-full animate-fade-in uppercase">
+              XMOOD DIGITAL ECOSYSTEM
             </Badge>
           </div>
-          <h1 className="text-6xl md:text-8xl mb-8 tracking-tighter leading-[1.1]">
-            <span className="font-handwriting text-primary drop-shadow-sm block mb-4">XMOOD STORE</span>
-            <span className="font-headline font-bold">فخامة العالم الرقمي</span>
+          <h1 className="text-5xl md:text-7xl mb-8 tracking-tighter leading-tight">
+             <span className="font-handwriting text-primary block mb-2 text-4xl md:text-5xl">XMOOD STORE</span>
+             <span className="font-headline font-bold text-slate-900">فخامة الخدمات الرقمية</span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-14 leading-relaxed font-light px-4">
-            ارتقِ بتجربتك مع المنصة الرائدة في خدمات شحن الألعاب، اقتناء الحسابات النادرة، والحلول الرقمية المبتكرة بنظام وساطة يضمن لك الأمان المطلق.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed font-light">
+            تجربة استثنائية في عالم شحن الألعاب، شراء الحسابات، والخدمات الخاصة. جودة وسرعة وأمان في كل عملية.
           </p>
           
-          <div className="flex flex-wrap justify-center gap-6 mb-28">
-            <Link href="/store">
-              <Button size="lg" className="h-16 px-12 bg-primary text-white font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl shadow-primary/30 text-lg">
-                اكتشف المتجر
-              </Button>
-            </Link>
-            <Link href="/marketplace">
-              <Button size="lg" variant="outline" className="h-16 px-12 border-primary text-primary font-bold rounded-2xl hover:bg-primary/5 transition-all text-lg">
-                سوق المستخدمين
-              </Button>
-            </Link>
+          <div className="flex flex-wrap justify-center gap-4 mb-20">
+            <Button asChild size="lg" className="h-14 px-10 bg-primary text-white font-bold rounded-2xl hover:scale-105 transition-all shadow-xl shadow-primary/20">
+              <Link href="/store">تسوق الآن</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="h-14 px-10 border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all">
+              <Link href="/marketplace">سوق المستخدمين</Link>
+            </Button>
           </div>
 
-          {/* Feature Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          {/* Quick Stats/Features - Horizontal & Subtle */}
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 max-w-5xl mx-auto border-t pt-16">
             {[
-              { icon: ShieldCheck, title: "وساطة آمنة", desc: "نظام ضمان وحماية متطور يضمن حق البائع والمشتري." },
-              { icon: HeartHandshake, title: "وكلاء معتمدون", desc: "شبكة واسعة من الوكلاء الموثوقين لتسهيل عملياتك المالية." },
-              { icon: Zap, title: "تنفيذ ذكي", desc: "عمليات شحن تلقائية وتوصيل فوري للخدمات الرقمية." },
-              { icon: Send, title: "دعم متميز", desc: "فريق دعم متخصص ومساعد ذكي متاح على مدار الساعة." },
+              { icon: ShieldCheck, title: "وساطة آمنة", desc: "ضمان كامل لحقوقك" },
+              { icon: Zap, title: "شحن تلقائي", desc: "تنفيذ فوري للطلبات" },
+              { icon: HeartHandshake, title: "وكلاء معتمدون", desc: "دفع سهل وموثوق" },
+              { icon: Send, title: "دعم فني", desc: "متاح على مدار الساعة" },
             ].map((item, i) => (
-              <div key={i} className="bg-white p-10 rounded-[2.5rem] border border-primary/5 shadow-xl shadow-primary/5 flex flex-col items-center text-center group hover:-translate-y-3 transition-all duration-500">
-                <div className="w-20 h-20 rounded-3xl bg-primary/5 flex items-center justify-center text-primary mb-8 group-hover:bg-primary group-hover:text-white transition-all shadow-inner">
-                  <item.icon size={36} strokeWidth={1.5} />
+              <div key={i} className="flex flex-col items-center gap-3">
+                <item.icon className="w-8 h-8 text-primary/40" strokeWidth={1.5} />
+                <div className="text-center">
+                   <h4 className="font-bold text-sm text-slate-900">{item.title}</h4>
+                   <p className="text-[10px] text-muted-foreground uppercase">{item.desc}</p>
                 </div>
-                <h3 className="font-bold text-2xl mb-4 text-foreground">{item.title}</h3>
-                <p className="text-base text-muted-foreground leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Services */}
-      <section className="container mx-auto px-4 py-32 border-t border-primary/5">
-        <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-20 gap-8">
-          <div className="text-center md:text-right">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-4 text-primary">
-              <Star size={18} fill="currentColor" />
-              <span className="text-sm font-bold tracking-widest uppercase">Premium Selection</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-headline font-bold mb-4">خدمات مختارة بعناية</h2>
-            <p className="text-muted-foreground text-lg max-w-xl">نقدم لك نخبة من المنتجات الرقمية والحسابات الحصرية التي تلبي تطلعاتك كلاعب محترف.</p>
+      {/* Structured Category Sections */}
+      <section className="py-24 bg-[#FCFCFC]">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center gap-3 mb-16 justify-center">
+             <div className="h-px bg-slate-200 flex-1"></div>
+             <h2 className="text-3xl font-headline font-bold text-slate-800 px-4">اكتشف خدماتنا</h2>
+             <div className="h-px bg-slate-200 flex-1"></div>
           </div>
-          <Link href="/store">
-            <Button variant="ghost" className="text-primary font-bold text-lg group gap-3 hover:bg-primary/5 px-6 rounded-xl">
-              عرض كافة الخدمات <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" />
-            </Button>
-          </Link>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {STORE_PRODUCTS.map((product) => (
-            <ProductCard key={product.id} product={product} />
+
+          {categories.map((cat, idx) => (
+            <div key={cat} className={`mb-24 ${idx !== 0 ? 'pt-12 border-t' : ''}`}>
+              <div className="flex justify-between items-end mb-10">
+                <div className="text-right">
+                  <Badge variant="secondary" className="mb-2 bg-primary/10 text-primary hover:bg-primary/20 border-none rounded-md px-3">قسم خاص</Badge>
+                  <h3 className="text-3xl font-bold text-slate-900">{cat}</h3>
+                </div>
+                <Link href={`/store?category=${cat}`} className="text-primary font-bold text-sm flex items-center gap-2 hover:underline">
+                  عرض المزيد <ArrowRight size={16} />
+                </Link>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {STORE_PRODUCTS.filter(p => p.category === cat).slice(0, 4).map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* Deposit System Section */}
-      <section className="bg-[#FAF9F6] py-32 border-y border-primary/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center mb-24">
-            <h2 className="text-4xl md:text-5xl font-headline font-bold mb-8 text-foreground">المنظومة المالية الآمنة</h2>
-            <p className="text-xl text-muted-foreground leading-relaxed font-light">
-              في XMOOD STORE، نضع أمانك المالي كأولوية قصوى. نعتمد نظام شحن المحفظة عبر الوكلاء المعتمدين لتوفير تجربة خالية من المخاطر وبعيدة عن التعقيدات التقنية التقليدية.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto">
-            {AGENTS.map((agent) => (
-              <div key={agent.id} className="bg-white p-10 rounded-[3rem] border border-primary/10 flex flex-col sm:flex-row items-center justify-between group hover:shadow-3xl hover:shadow-primary/5 transition-all duration-500 gap-8">
-                <div className="flex items-center gap-8 text-center sm:text-right">
-                  <div className="w-20 h-20 bg-primary/5 rounded-3xl flex items-center justify-center text-primary group-hover:scale-110 transition-all shadow-inner">
-                    {agent.contactType === 'WhatsApp' ? <Smartphone size={40} /> : <Send size={40} />}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-2xl mb-2 text-foreground">{agent.name}</h4>
-                    <p className="text-sm text-primary font-bold uppercase tracking-widest mb-1">{agent.contactType}</p>
-                    <p className="text-sm text-muted-foreground">متاح: {agent.availability}</p>
-                  </div>
-                </div>
-                <Button className="bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl px-10 h-16 shadow-xl shadow-primary/20 text-lg w-full sm:w-auto">
-                  تواصل مع الوكيل
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Specialized Services Banner */}
+      <section className="container mx-auto px-4 py-20">
+         <div className="bg-slate-900 rounded-[3rem] p-12 md:p-20 text-white flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+               <LayoutGrid className="w-full h-full" />
+            </div>
+            <div className="relative z-10 max-w-xl text-center md:text-right">
+               <h2 className="text-4xl font-headline font-bold mb-6">هل تبحث عن خدمة مخصصة؟</h2>
+               <p className="text-slate-400 text-lg mb-8 leading-relaxed">
+                  نحن نوفر خدمات الوساطة الخاصة وطلبات التصميم الفريدة. فريقنا من الوكلاء المعتمدين جاهز لتلبية احتياجاتك مهما كانت معقدة.
+               </p>
+               <div className="flex flex-wrap gap-4 justify-center md:justify-start flex-row-reverse">
+                  <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold h-14 px-10 rounded-2xl shadow-2xl shadow-primary/20">
+                     <Link href="/middleman">نظام الوساطة</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10 h-14 px-10 rounded-2xl">
+                     <Link href="/concierge">المساعد الذكي</Link>
+                  </Button>
+               </div>
+            </div>
+            <div className="relative z-10 flex flex-col items-center">
+               <div className="w-48 h-48 bg-primary/20 rounded-full flex items-center justify-center backdrop-blur-3xl animate-pulse">
+                  <Sparkles size={80} className="text-primary" />
+               </div>
+            </div>
+         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-32 bg-white">
+      {/* Minimal Footer */}
+      <footer className="py-16 border-t bg-white">
         <div className="container mx-auto px-4 text-center">
-          <div className="mb-14 flex flex-col items-center gap-4">
-             <div className="w-16 h-16 bg-primary/5 rounded-3xl flex items-center justify-center text-primary mb-2 shadow-inner">
-                <ShieldCheck size={40} strokeWidth={1.5} />
-             </div>
-             <span className="font-handwriting text-5xl font-bold tracking-tight text-primary">XMOOD STORE</span>
-             <p className="text-muted-foreground text-sm font-medium tracking-[0.2em] uppercase">The Pinnacle of Digital Luxury</p>
-          </div>
-          <p className="text-base text-muted-foreground mb-16 max-w-md mx-auto leading-relaxed">حقوق النشر © 2024 XMOOD STORE. نلتزم بتقديم أرقى الخدمات الرقمية بمعايير عالمية.</p>
-          <div className="flex justify-center gap-16 text-sm font-bold text-muted-foreground/60 uppercase tracking-widest">
-            <Link href="/terms" className="hover:text-primary transition-colors">الشروط</Link>
-            <Link href="/privacy" className="hover:text-primary transition-colors">الخصوصية</Link>
-            <Link href="/help" className="hover:text-primary transition-colors">المساعدة</Link>
+          <div className="font-handwriting text-4xl font-bold text-primary mb-6">XMOOD STORE</div>
+          <p className="text-sm text-slate-400 mb-8 max-w-md mx-auto leading-relaxed">الوجهة الأولى للتميز الرقمي. الأمان والفخامة في مكان واحد.</p>
+          <div className="flex justify-center gap-10 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+            <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link href="/help" className="hover:text-primary transition-colors">Support</Link>
           </div>
         </div>
       </footer>
