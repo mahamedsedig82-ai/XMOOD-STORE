@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -26,7 +27,7 @@ export default function WalletPage() {
       <div className="container mx-auto px-4 py-12">
         <header className="mb-10 text-right">
           <h1 className="text-3xl font-headline font-bold mb-2">المحفظة الرقمية</h1>
-          <p className="text-muted-foreground">إدارة رصيدك وعملياتك المالية في إكسيجو</p>
+          <p className="text-muted-foreground">إدارة رصيدك وعملياتك المالية في XMOOD STORE</p>
         </header>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
