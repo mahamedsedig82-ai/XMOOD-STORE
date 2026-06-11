@@ -96,27 +96,31 @@ export const STORE_PRODUCTS: Product[] = [
     stock: 5,
     status: 'active'
   },
-  // Accounts & Services
+];
+
+export const MARKETPLACE_PRODUCTS: Product[] = [
   {
-    id: 'acc1',
-    name: 'حساب Valorant نادر',
-    description: 'يحتوي على سكنات حصرية من السيزون الأول.',
-    price: 250.00,
+    id: 'm1',
+    name: 'حساب ببجي لفل 75 نادر',
+    description: 'حساب قديم يحتوي على سكنات نادرة من الموسم الثاني.',
+    price: 320.00,
     category: 'حسابات ألعاب',
-    imageUrl: 'https://picsum.photos/seed/val1/400/300',
+    imageUrl: 'https://picsum.photos/seed/m1/400/300',
     stock: 1,
-    status: 'active'
+    status: 'active',
+    isP2P: true
   },
   {
-    id: 'ds1',
-    name: 'بوستر متجر احترافي',
-    description: 'تصميم بوستر تسويقي عالي الجودة لمتجرك الرقمي.',
-    price: 15.00,
-    category: 'خدمات تصميم',
-    imageUrl: 'https://picsum.photos/seed/design2/400/300',
-    stock: 100,
-    status: 'active'
-  },
+    id: 'm2',
+    name: 'حساب فري فاير ساكورا',
+    description: 'حساب يحتوي على رقصة الساكورا وسكنات حصرية.',
+    price: 450.00,
+    category: 'حسابات ألعاب',
+    imageUrl: 'https://picsum.photos/seed/m2/400/300',
+    stock: 1,
+    status: 'active',
+    isP2P: true
+  }
 ];
 
 export const AGENTS: Agent[] = [
