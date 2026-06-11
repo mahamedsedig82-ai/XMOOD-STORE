@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -11,7 +12,7 @@ import {
   createUserWithEmailAndPassword, 
   updateProfile 
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Mail, Lock, LogIn, UserPlus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -36,7 +37,10 @@ export default function LoginPage() {
       router.push("/");
     } catch (error: any) {
       console.error(error);
-      toast({ variant: "destructive", title: "فشل الدخول", description: "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
+      const message = error.code === 'auth/invalid-api-key' 
+        ? "خطأ في تهيئة النظام: يرجى التأكد من إعدادات API Key" 
+        : "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+      toast({ variant: "destructive", title: "فشل الدخول", description: message });
     } finally {
       setLoading(false);
     }
@@ -64,7 +68,10 @@ export default function LoginPage() {
       router.push("/");
     } catch (error: any) {
       console.error(error);
-      toast({ variant: "destructive", title: "خطأ في التسجيل", description: "حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة لاحقاً" });
+      const message = error.code === 'auth/invalid-api-key' 
+        ? "خطأ في تهيئة النظام: يرجى التأكد من إعدادات API Key" 
+        : "حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة لاحقاً";
+      toast({ variant: "destructive", title: "خطأ في التسجيل", description: message });
     } finally {
       setLoading(false);
     }
@@ -103,7 +110,7 @@ export default function LoginPage() {
                       <Input 
                         type="email" 
                         placeholder="example@mail.com" 
-                        className="pr-14 h-16 rounded-[1.5rem] border-slate-100 focus:ring-primary bg-slate-50/50 font-bold" 
+                        className="pr-14 h-16 rounded-[1.5rem] border-slate-100 focus:ring-primary bg-slate-50/50 font-bold text-right" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -117,7 +124,7 @@ export default function LoginPage() {
                       <Input 
                         type="password" 
                         placeholder="••••••••" 
-                        className="pr-14 h-16 rounded-[1.5rem] border-slate-100 focus:ring-primary bg-slate-50/50 font-bold" 
+                        className="pr-14 h-16 rounded-[1.5rem] border-slate-100 focus:ring-primary bg-slate-50/50 font-bold text-right" 
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -133,13 +140,13 @@ export default function LoginPage() {
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-6">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 pr-2">الاسم الكامل (يظهر في المتجر)</label>
+                    <label className="text-xs font-bold text-slate-400 pr-2">الاسم الكامل</label>
                     <div className="relative">
                       <LogIn className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
                       <Input 
                         type="text" 
                         placeholder="اكتب اسمك هنا" 
-                        className="pr-14 h-16 rounded-[1.5rem] border-slate-100 focus:ring-primary bg-slate-50/50 font-bold" 
+                        className="pr-14 h-16 rounded-[1.5rem] border-slate-100 focus:ring-primary bg-slate-50/50 font-bold text-right" 
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
@@ -153,7 +160,7 @@ export default function LoginPage() {
                       <Input 
                         type="email" 
                         placeholder="example@mail.com" 
-                        className="pr-14 h-16 rounded-[1.5rem] border-slate-100 focus:ring-primary bg-slate-50/50 font-bold" 
+                        className="pr-14 h-16 rounded-[1.5rem] border-slate-100 focus:ring-primary bg-slate-50/50 font-bold text-right" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -167,7 +174,7 @@ export default function LoginPage() {
                       <Input 
                         type="password" 
                         placeholder="اختر كلمة مرور قوية" 
-                        className="pr-14 h-16 rounded-[1.5rem] border-slate-100 focus:ring-primary bg-slate-50/50 font-bold" 
+                        className="pr-14 h-16 rounded-[1.5rem] border-slate-100 focus:ring-primary bg-slate-50/50 font-bold text-right" 
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -180,10 +187,6 @@ export default function LoginPage() {
                 </form>
               </TabsContent>
             </Tabs>
-
-            <p className="text-[10px] text-center mt-12 text-slate-400 font-bold uppercase tracking-[0.3em]">
-              XMOOD Global Authenticator
-            </p>
           </CardContent>
         </Card>
       </div>

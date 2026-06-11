@@ -1,3 +1,4 @@
+
 import { Product, Agent } from './types';
 
 export const STORE_PRODUCTS: Product[] = [
@@ -25,6 +26,16 @@ export const STORE_PRODUCTS: Product[] = [
   },
   {
     id: 'ff3',
+    name: 'Free Fire - 1060 Diamonds',
+    description: 'باقة الجواهر المتقدمة لفري فاير.',
+    price: 10.00,
+    category: 'شحن ألعاب',
+    imageUrl: 'https://picsum.photos/seed/ff4/400/300',
+    stock: 20,
+    status: 'active'
+  },
+  {
+    id: 'ff4',
     name: 'Free Fire - 2180 Diamonds',
     description: 'الباقة الكبيرة لمحترفي فري فاير.',
     price: 22.00,
@@ -56,14 +67,24 @@ export const STORE_PRODUCTS: Product[] = [
   },
   {
     id: 'pb3',
+    name: 'PUBG UC - 660 UC',
+    description: 'باقة الشدات المتوسطة لببجي.',
+    price: 10.50,
+    category: 'شحن ألعاب',
+    imageUrl: 'https://picsum.photos/seed/pubg4/400/300',
+    stock: 100,
+    status: 'discount',
+    discountPrice: 9.99
+  },
+  {
+    id: 'pb4',
     name: 'PUBG UC - 6000 UC',
     description: 'الباقة الملكية لشحن شدات ببجي.',
     price: 95.00,
     category: 'شحن ألعاب',
     imageUrl: 'https://picsum.photos/seed/pubg3/400/300',
     stock: 10,
-    status: 'discount',
-    discountPrice: 89.99
+    status: 'active'
   },
   // FC (FIFA)
   {
