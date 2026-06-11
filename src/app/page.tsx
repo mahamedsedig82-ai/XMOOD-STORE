@@ -21,9 +21,9 @@ export default function Home() {
               Digital Excellence & Luxury
             </Badge>
           </div>
-          <h1 className="text-6xl md:text-8xl font-headline font-bold mb-8 tracking-tighter leading-[1.1]">
-            XMOOD STORE <br/> 
-            <span className="text-primary drop-shadow-sm">فخامة العالم الرقمي</span>
+          <h1 className="text-6xl md:text-8xl mb-8 tracking-tighter leading-[1.1]">
+            <span className="font-handwriting text-primary drop-shadow-sm block mb-4">XMOOD STORE</span>
+            <span className="font-headline font-bold">فخامة العالم الرقمي</span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-14 leading-relaxed font-light px-4">
             ارتقِ بتجربتك مع المنصة الرائدة في خدمات شحن الألعاب، اقتناء الحسابات النادرة، والحلول الرقمية المبتكرة بنظام وساطة يضمن لك الأمان المطلق.
@@ -127,7 +127,7 @@ export default function Home() {
              <div className="w-16 h-16 bg-primary/5 rounded-3xl flex items-center justify-center text-primary mb-2 shadow-inner">
                 <ShieldCheck size={40} strokeWidth={1.5} />
              </div>
-             <span className="font-headline text-4xl font-bold tracking-tight text-primary">XMOOD STORE</span>
+             <span className="font-handwriting text-5xl font-bold tracking-tight text-primary">XMOOD STORE</span>
              <p className="text-muted-foreground text-sm font-medium tracking-[0.2em] uppercase">The Pinnacle of Digital Luxury</p>
           </div>
           <p className="text-base text-muted-foreground mb-16 max-w-md mx-auto leading-relaxed">حقوق النشر © 2024 XMOOD STORE. نلتزم بتقديم أرقى الخدمات الرقمية بمعايير عالمية.</p>

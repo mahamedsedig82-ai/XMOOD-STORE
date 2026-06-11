@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wallet, LayoutDashboard, ShieldCheck, Sparkles, LogOut, User as UserIcon, Search, ShoppingCart, Menu } from "lucide-react";
+import { Wallet, LayoutDashboard, ShieldCheck, Sparkles, LogOut, User as UserIcon, Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUser, useAuth } from "@/firebase";
@@ -39,11 +39,11 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-8 flex-row-reverse">
         
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 group flex-row-reverse shrink-0">
+        <Link href="/" className="flex items-center gap-2 group flex-row-reverse shrink-0">
           <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:rotate-3 transition-transform">
             <ShieldCheck size={24} strokeWidth={2.5} />
           </div>
-          <span className="font-headline text-2xl font-bold tracking-tighter text-primary">XMOOD</span>
+          <span className="font-handwriting text-3xl font-bold tracking-tight text-primary mt-1">XMOOD STORE</span>
         </Link>
 
         {/* Search Bar */}
@@ -81,7 +81,7 @@ export function Navbar() {
           )}
 
           {!user ? (
-            <Button asChild className="rounded-full px-6 font-bold shadow-md">
+            <Button asChild className="rounded-full px-6 font-bold shadow-md bg-primary hover:bg-primary/90 text-white">
               <Link href="/login">دخول</Link>
             </Button>
           ) : (
