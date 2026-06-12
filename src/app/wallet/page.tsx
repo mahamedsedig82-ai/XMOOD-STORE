@@ -1,8 +1,8 @@
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, History, Copy, Loader2, ShieldCheck, Users, Send } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Wallet, ShieldCheck, History, Copy, Loader2, Send, Users, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useUser, useCollection, useFirestore } from "@/firebase";
@@ -43,7 +43,7 @@ export default function WalletPage() {
           </div>
           <div className="flex gap-4 w-full md:w-auto">
             <Button asChild className="h-16 px-10 royal-button flex-1 md:flex-none text-lg">
-              <Link href="/wallet/transfer"><Send className="ml-2" /> تحويل رصيد</Link>
+              <Link href="/wallet/transfer"><ArrowRightLeft className="ml-2" /> تحويل رصيد P2P</Link>
             </Button>
           </div>
         </header>
@@ -69,9 +69,9 @@ export default function WalletPage() {
             <CardContent className="p-10 space-y-10">
               <div className="bg-white/5 p-8 rounded-[2rem] border border-white/5 flex flex-col md:flex-row items-center gap-8">
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-3">تنبيه إداري:</h3>
+                  <h3 className="text-xl font-bold mb-3 text-white">تنبيه إداري:</h3>
                   <p className="text-sm text-slate-400 leading-relaxed">
-                    شحن الرصيد يتم <span className="text-primary font-black underline">حصرياً عبر الوكلاء المعتمدين</span> أو عبر التحويل من مستخدم آخر. قدم معرفك الرقمي للوكيل ليتم شحن حسابك فوراً.
+                    شحن الرصيد يتم <span className="text-primary font-black underline">حصرياً عبر الوكلاء المعتمدين</span>. قدم معرفك الرقمي للوكيل ليتم شحن حسابك فوراً.
                   </p>
                 </div>
                 <Button asChild variant="outline" className="h-14 px-8 rounded-2xl border-primary/20 text-primary font-bold hover:bg-primary/10">

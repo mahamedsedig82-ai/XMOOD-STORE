@@ -1,6 +1,6 @@
 import { Product, Agent } from './types';
 
-// تم تفريغ المنتجات بناءً على طلب المدير العام لبدء إضافة منتجات حقيقية عبر لوحة الإدارة
+// تم تصفير كافة المنتجات بناءً على طلب المدير العام لبدء بناء المخزون الحقيقي يدوياً
 export const STORE_PRODUCTS: Product[] = [];
 
 export const MARKETPLACE_PRODUCTS: Product[] = [];
