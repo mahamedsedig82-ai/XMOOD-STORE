@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useState } from "react";
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, doc, updateDoc, query, orderBy } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function AdminUsers() {
   const db = useFirestore();
-  const { data: users, loading } = useCollection(query(collection(db, "users"), orderBy("createdAt", "desc")));
+  const usersQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "users"), orderBy("createdAt", "desc"));
+  }, [db]);
+
+  const { data: users, loading } = useCollection(usersQuery);
   const [searchTerm, setSearchTerm] = useState("");
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 

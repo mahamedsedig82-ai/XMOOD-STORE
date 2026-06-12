@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, doc, updateDoc } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,11 @@ import { toast } from "@/hooks/use-toast";
 
 export default function AdminOrders() {
   const db = useFirestore();
-  const ordersQuery = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+  const ordersQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "orders"), orderBy("createdAt", "desc"));
+  }, [db]);
+  
   const { data: orders, loading } = useCollection(ordersQuery);
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {

@@ -1,8 +1,9 @@
+
 "use client";
 
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
-import { useUser, useCollection, useFirestore } from "@/firebase";
+import { useUser, useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit } from "firebase/firestore";
 import { 
   ArrowLeftRight, 
@@ -28,9 +29,12 @@ export default function MarketplacePage() {
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: marketplaceUsers } = useCollection(
-    query(collection(db, "users"), orderBy("walletBalance", "desc"), limit(20))
-  );
+  const leaderboardQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "users"), orderBy("walletBalance", "desc"), limit(20));
+  }, [db]);
+
+  const { data: marketplaceUsers } = useCollection(leaderboardQuery);
 
   return (
     <main className="min-h-screen bg-black text-white selection:bg-primary/30">

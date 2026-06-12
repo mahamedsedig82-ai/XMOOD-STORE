@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -14,10 +15,14 @@ export default function StorePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const productsQuery = useMemoFirebase(() => query(collection(db, "products"), orderBy("createdAt", "desc")), [db]);
+  const productsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "products"), orderBy("createdAt", "desc"));
+  }, [db]);
+
   const { data: products, loading } = useCollection(productsQuery);
 
-  const categories = Array.from(new Set(products.map(p => p.category)));
+  const categories = Array.from(new Set(products.map(p => p.category))).filter(Boolean);
   
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -66,12 +71,12 @@ export default function StorePage() {
             </Button>
             {categories.map((cat) => (
               <Button 
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                key={String(cat)}
+                onClick={() => setSelectedCategory(String(cat))}
                 variant={selectedCategory === cat ? "default" : "outline"}
                 className={`rounded-full px-10 font-black h-12 text-sm uppercase tracking-widest ${selectedCategory === cat ? 'bg-primary text-black' : 'border-primary/10 text-slate-500 hover:bg-primary/5'}`}
               >
-                {cat}
+                {String(cat)}
               </Button>
             ))}
           </div>
