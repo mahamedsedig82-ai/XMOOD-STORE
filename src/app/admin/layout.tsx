@@ -18,7 +18,13 @@ import {
   MessageSquare,
   Zap,
   Activity,
-  LogOut
+  LogOut,
+  Palette,
+  Bell,
+  Globe,
+  Database,
+  BarChart3,
+  Image as ImageIcon
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -26,9 +32,10 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from "@/fireb
 import { useEffect } from "react";
 import { doc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayoutComprehensive({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useUser();
   const db = useFirestore();
   const auth = useAuth();
@@ -39,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { data: config } = useDoc(settingsRef);
 
   useEffect(() => {
-    const allowedRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support'];
+    const allowedRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'agent'];
     if (!loading && (!profile || !allowedRoles.includes(profile.role))) {
       router.push('/'); 
     }
@@ -47,87 +54,110 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-black">
-      <div className="w-20 h-20 border-t-4 border-primary border-r-4 border-r-red-600 rounded-full animate-spin" />
+      <div className="w-24 h-24 border-t-4 border-primary border-r-4 border-r-red-600 rounded-[2rem] animate-spin" />
     </div>
   );
 
   const role = profile?.role;
 
-  const menu = [
-    { label: "الرئيسية", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'store_manager'] },
-    { label: "طلبات التصميم", icon: Wand2, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer'] },
-    { label: "المستودع", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
-    { label: "الطلبات", icon: ShoppingCart, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support'] },
-    { label: "المستخدمين", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
-    { label: "المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
-    { label: "المقالات", icon: FileText, href: "/admin/blog", roles: ['owner', 'admin', 'gm'] },
-    { label: "الإعلانات", icon: Megaphone, href: "/admin/ads", roles: ['owner', 'admin'] },
-    { label: "الذكاء الاصطناعي", icon: Sparkles, href: "/admin/ai", roles: ['owner', 'admin'] },
-    { label: "الإعدادات", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
-  ].filter(item => item.roles.includes(role || 'user'));
+  const mainSections = [
+    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
+    { label: "المعالج السيادي AI", icon: Sparkles, href: "/admin/ai", roles: ['owner', 'admin'] },
+    { label: "إدارة التصاميم", icon: Wand2, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer', 'agent'] },
+    { label: "المستودع الملكي", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
+    { label: "الطلبات والمبيعات", icon: ShoppingCart, href: "/admin/orders", roles: ['owner', 'admin', 'store_manager', 'support'] },
+  ];
+
+  const businessSections = [
+    { label: "إدارة المستخدمين", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
+    { label: "الخزانة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
+    { label: "السوق والإعلانات", icon: Megaphone, href: "/admin/ads", roles: ['owner', 'admin', 'gm'] },
+    { label: "المقالات والمدونة", icon: FileText, href: "/admin/blog", roles: ['owner', 'admin', 'gm'] },
+  ];
+
+  const systemSections = [
+    { label: "الهوية والبصريات", icon: Palette, href: "/admin/settings", roles: ['owner', 'admin'] },
+    { label: "إعدادات النظام", icon: Globe, href: "/admin/config", roles: ['owner', 'admin'] },
+    { label: "مركز الإشعارات", icon: Bell, href: "/admin/notifications", roles: ['owner', 'admin'] },
+    { label: "سجل العمليات", icon: Activity, href: "/admin/system", roles: ['owner', 'admin'] },
+  ];
+
+  const renderMenuItems = (items: typeof mainSections) => 
+    items.filter(item => item.roles.includes(role || 'user')).map((item) => (
+      <SidebarMenuItem key={item.href}>
+        <SidebarMenuButton 
+          asChild 
+          isActive={pathname === item.href}
+          className={`h-16 px-8 rounded-2xl transition-all duration-300 ${pathname === item.href ? 'bg-primary/20 text-primary border border-primary/40 shadow-xl' : 'hover:bg-white/5 text-zinc-500 hover:text-white'}`}
+        >
+          <Link href={item.href}>
+            <item.icon className={`w-6 h-6 ${pathname === item.href ? 'text-primary' : 'text-zinc-600'}`} />
+            <span className="font-bold text-sm">{item.label}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    ));
 
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-black font-body overflow-hidden text-white" dir="rtl">
         <Sidebar className="border-l border-white/5 bg-zinc-950" side="right">
-          <SidebarHeader className="p-8 border-b border-white/5">
-            <Link href="/" className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-primary/30 flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.1)]">
-                <ShieldCheck className="text-primary" size={28} />
-              </div>
-              <div className="text-right">
-                 <span className="font-headline text-2xl font-black gold-text block leading-none">XMOOD PRO</span>
-                 <p className="text-[9px] font-black uppercase text-red-600 mt-2 tracking-[0.3em]">{profile?.role}</p>
-              </div>
+          <SidebarHeader className="p-10 border-b border-white/5 bg-black/50 backdrop-blur-3xl">
+            <Link href="/" className="flex flex-col items-center gap-4 text-center">
+              <span className="decorative-logo text-3xl">{config?.siteInfo?.title || "XMOOD PRO"}</span>
+              <Badge variant="outline" className="border-red-600/30 text-red-600 px-6 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.4em]">{profile?.role}</Badge>
             </Link>
           </SidebarHeader>
-          <SidebarContent className="p-6">
+          <SidebarContent className="p-8">
+            <SidebarGroup className="mb-10">
+              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-black uppercase text-zinc-700 tracking-[0.5em]">التحكم السيادي المباشر</SidebarGroupLabel>
+              <SidebarMenu className="gap-3">
+                {renderMenuItems(mainSections)}
+              </SidebarMenu>
+            </SidebarGroup>
+
+            <SidebarGroup className="mb-10">
+              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-black uppercase text-zinc-700 tracking-[0.5em]">إدارة شؤون الإمبراطورية</SidebarGroupLabel>
+              <SidebarMenu className="gap-3">
+                {renderMenuItems(businessSections)}
+              </SidebarMenu>
+            </SidebarGroup>
+
             <SidebarGroup>
-              <SidebarGroupLabel className="text-right px-4 mb-8 text-[9px] font-black uppercase text-zinc-600 tracking-[0.4em]">النظام المركزي السيادي</SidebarGroupLabel>
-              <SidebarMenu className="gap-4">
-                {menu.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton 
-                      asChild 
-                      isActive={pathname === item.href}
-                      className={`h-14 px-8 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary/10 text-primary border border-primary/20 shadow-xl' : 'hover:bg-white/5 text-zinc-500 hover:text-white'}`}
-                    >
-                      <Link href={item.href}>
-                        <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-primary' : 'text-zinc-600'}`} />
-                        <span className="font-bold text-sm">{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-black uppercase text-zinc-700 tracking-[0.5em]">النواة وإعدادات الأساس</SidebarGroupLabel>
+              <SidebarMenu className="gap-3">
+                {renderMenuItems(systemSections)}
               </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>
-          <div className="p-8 border-t border-white/5">
+          <div className="p-10 border-t border-white/5 bg-black/30">
              <Button 
                variant="ghost" 
                onClick={() => signOut(auth!)}
-               className="w-full h-14 rounded-2xl text-red-600 hover:bg-red-600/5 gap-4 font-black text-xs uppercase tracking-widest"
+               className="w-full h-16 rounded-[1.5rem] text-red-600 hover:bg-red-600/10 gap-5 font-black text-[11px] uppercase tracking-[0.3em]"
              >
-               <LogOut size={18} /> تسجيل الخروج
+               <LogOut size={20} /> تسجيل الخروج الإداري
              </Button>
           </div>
         </Sidebar>
-        <main className="flex-1 overflow-y-auto p-12 bg-black relative">
-          {/* Dashboard Header Bar */}
+        
+        <main className="flex-1 overflow-y-auto p-16 bg-black relative">
           <div className="flex justify-between items-center mb-16 pb-12 border-b border-white/5">
-             <div className="flex items-center gap-6">
-                <Badge variant="outline" className="border-red-600/20 text-red-500 px-6 py-2 rounded-full font-black text-[9px] uppercase tracking-[0.3em] flex gap-3 animate-pulse">
-                   <Zap size={14} /> LIVE NUCLEUS
+             <div className="flex items-center gap-8">
+                <Badge variant="outline" className="border-red-600/20 text-red-500 px-8 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.4em] flex gap-4 animate-pulse">
+                   <Zap size={16} /> LIVE SOVEREIGN NUCLEUS
                 </Badge>
-                <Badge variant="outline" className="border-primary/20 text-primary px-6 py-2 rounded-full font-black text-[9px] uppercase tracking-[0.3em] flex gap-3">
-                   <Activity size={14} /> SYSTEM HEALTH: 100%
-                </Badge>
+                <div className="h-10 w-px bg-white/5" />
+                <div className="flex items-center gap-4 text-zinc-600 font-bold text-xs uppercase tracking-widest">
+                   {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </div>
              </div>
-             <div className="flex items-center gap-4 text-zinc-500 font-bold text-xs">
-                {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+             <div className="flex items-center gap-6">
+                <Button size="icon" variant="ghost" className="text-zinc-600 hover:text-primary h-12 w-12"><Activity size={24} /></Button>
+                <Button size="icon" variant="ghost" className="text-zinc-600 hover:text-red-500 h-12 w-12"><Database size={24} /></Button>
              </div>
           </div>
-          <div className="max-w-7xl mx-auto animate-fade-up">
+          <div className="max-w-[1400px] mx-auto animate-fade-up">
             {children}
           </div>
         </main>
