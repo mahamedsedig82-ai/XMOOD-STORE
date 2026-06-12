@@ -101,7 +101,7 @@ export default function AdminAiPage() {
                 )}
                 {history.map((msg, i) => (
                   <div key={i} className={`flex gap-4 ${msg.role === 'admin' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${msg.role === 'admin' ? 'bg-zinc-900' : 'bg-primary text-black'}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${msg.role === 'admin' ? 'bg-zinc-950' : 'bg-primary text-black'}`}>
                       {msg.role === 'admin' ? <ShieldCheck size={20} /> : <Cpu size={20} />}
                     </div>
                     <div className={`p-5 rounded-3xl max-w-[80%] text-base font-bold ${msg.role === 'admin' ? 'bg-zinc-900 border border-white/5 text-zinc-300' : 'bg-primary/5 border border-primary/20 text-primary'}`}>
