@@ -1,6 +1,6 @@
 import { Product, Agent } from './types';
 
-// تم تصفير كافة المنتجات بناءً على طلب المدير العام لبدء بناء المخزون الحقيقي يدوياً
+// تم تصفير كافة المنتجات بطلب من الإدارة لبدء البناء الأسطوري
 export const STORE_PRODUCTS: Product[] = [];
 
 export const MARKETPLACE_PRODUCTS: Product[] = [];
@@ -8,16 +8,16 @@ export const MARKETPLACE_PRODUCTS: Product[] = [];
 export const AGENTS: Agent[] = [
   {
     id: 'ag1',
-    name: 'أبو فهد للوساطة',
+    name: 'الوكيل الأسطوري XMOOD',
     contactType: 'WhatsApp',
     contactValue: '+966500000000',
-    availability: '24/7',
+    availability: '24/7 Sovereign Access',
   },
   {
     id: 'ag2',
-    name: 'إكسيجو تليجرام',
+    name: 'دعم النخبة التليجرام',
     contactType: 'Telegram',
-    contactValue: '@ExigoSupport',
-    availability: '10 AM - 10 PM',
+    contactValue: '@XMOOD_SOVEREIGN',
+    availability: 'Instant Response',
   },
 ];
