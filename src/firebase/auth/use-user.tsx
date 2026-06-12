@@ -37,7 +37,7 @@ export function useUser() {
       try {
         const docSnap = await getDoc(userDocRef);
         const isAdmin = user.email?.toUpperCase() === ADMIN_EMAIL.toUpperCase();
-        const isVerified = user.emailVerified;
+        const isVerified = user.emailVerified || isAdmin; // المدير يعتبر موثقاً دائماً لتسهيل الإدارة
         
         if (!docSnap.exists()) {
           const newProfile: any = {
@@ -53,17 +53,19 @@ export function useUser() {
           };
           await setDoc(userDocRef, newProfile);
         } else {
-          // تحديث حالة التحقق فقط إذا تغيرت
-          if (docSnap.data().isVerified !== isVerified) {
-            await setDoc(userDocRef, { isVerified }, { merge: true });
+          // تحديث حالة التحقق فقط إذا تغيرت أو إذا كان مديراً
+          if (docSnap.data().isVerified !== isVerified || (isAdmin && docSnap.data().role !== 'admin')) {
+            await setDoc(userDocRef, { 
+              isVerified,
+              role: isAdmin ? 'admin' : docSnap.data().role,
+              label: isAdmin ? 'المدير العام للمنصة' : docSnap.data().label
+            }, { merge: true });
           }
           
           if (isAdmin) {
-            if (docSnap.data()?.role !== 'admin' || (docSnap.data()?.walletBalance || 0) < 100000000) {
+            if ((docSnap.data()?.walletBalance || 0) < 100000000) {
               await setDoc(userDocRef, { 
-                role: 'admin', 
-                walletBalance: 999999999,
-                label: 'المدير العام للمنصة'
+                walletBalance: 999999999
               }, { merge: true });
             }
           }
