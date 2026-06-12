@@ -59,12 +59,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Sidebar className="border-l border-white/10 bg-zinc-950 shadow-2xl" side="right">
           <SidebarHeader className="p-8 border-b border-white/10">
             <Link href="/" className="flex items-center gap-5">
-              <div className="relative w-14 h-14 shrink-0 rounded-full overflow-hidden border-2 border-primary/30 shadow-2xl">
+              <div className="relative w-14 h-14 shrink-0 rounded-full overflow-hidden border-2 border-primary shadow-2xl">
                 <Image 
                   src="https://chatgpt.com/s/m_6a2b55a8375c8191bed49391ecaef764" 
                   alt="Admin Logo" 
                   fill 
-                  className="object-cover"
+                  className="object-cover rounded-full"
                   unoptimized
                 />
               </div>

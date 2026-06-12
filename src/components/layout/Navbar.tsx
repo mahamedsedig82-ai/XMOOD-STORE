@@ -35,16 +35,16 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/90 backdrop-blur-2xl">
+    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/95 backdrop-blur-2xl">
       <div className="container mx-auto px-6 h-24 flex items-center justify-between gap-10 flex-row-reverse">
         
         <Link href="/" className="flex items-center gap-5 group flex-row-reverse shrink-0">
-          <div className="relative w-16 h-16 transition-transform group-hover:scale-110 rounded-full overflow-hidden border-2 border-primary/20 shadow-xl">
+          <div className="relative w-16 h-16 transition-transform group-hover:scale-110 rounded-full overflow-hidden border-2 border-primary shadow-[0_0_20px_rgba(255,184,0,0.2)]">
             <Image 
               src="https://chatgpt.com/s/m_6a2b55a8375c8191bed49391ecaef764" 
               alt="XMOOD Logo" 
               fill 
-              className="object-cover"
+              className="object-cover rounded-full"
               unoptimized
             />
           </div>

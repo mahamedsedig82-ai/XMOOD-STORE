@@ -73,7 +73,7 @@ export function ProductCard({ product }: ProductCardProps) {
         });
 
         // Create Transaction record
-        transaction.set(doc(db, "users", user.uid, "transactions"), {
+        transaction.set(doc(collection(db, "users", user.uid, "transactions")), {
           type: 'purchase',
           amount: product.price,
           description: `شراء باقة: ${product.name}`,
@@ -164,7 +164,6 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardFooter>
       </Card>
 
-      {/* Royal Voucher Dialog */}
       <Dialog open={!!voucher} onOpenChange={() => setVoucher(null)}>
         <DialogContent className="max-w-md bg-zinc-950 border-primary/30 rounded-[3rem] p-10 text-white shadow-2xl voucher-glow overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-primary animate-pulse" />
@@ -172,8 +171,8 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/20">
               <CheckCircle size={48} className="text-primary" />
             </div>
-            <DialogTitle className="text-3xl font-headline font-bold gold-text">القسيمة الملكية</DialogTitle>
-            <DialogDescription className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] mt-2">
+            <DialogTitle className="text-3xl font-headline font-bold gold-text text-center">القسيمة الملكية</DialogTitle>
+            <DialogDescription className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] mt-2 text-center">
               Sovereign Purchase Certificate
             </DialogDescription>
           </DialogHeader>
