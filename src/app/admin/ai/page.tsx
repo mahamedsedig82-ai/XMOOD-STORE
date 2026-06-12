@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -40,10 +41,12 @@ export default function AdminAiPage() {
         actionType: result.actionType
       }]);
 
-      toast({ title: "تم تطبيق التعديل الذكي", description: result.explanation });
+      toast({ title: "تم تنفيذ الأمر الذكي", description: result.explanation });
 
     } catch (error) {
-      setHistory(prev => [...prev, { role: 'ai', content: "عذراً، واجهت مشكلة في معالجة هذا الأمر." }]);
+      console.error(error);
+      setHistory(prev => [...prev, { role: 'ai', content: "عذراً، واجهت مشكلة تقنية في معالجة هذا الأمر." }]);
+      toast({ variant: "destructive", title: "خطأ في المعالجة", description: "لم يتمكن المساعد من الوصول لقاعدة البيانات حالياً." });
     } finally {
       setIsLoading(false);
     }
@@ -51,112 +54,118 @@ export default function AdminAiPage() {
 
   const applyAction = async (res: any) => {
     const { actionType, targetId, payload } = res;
+    if (!db) return;
+    
     try {
       if (actionType === 'UPDATE_PRODUCT' && targetId) {
         await updateDoc(doc(db, "products", targetId), { ...payload, updatedAt: serverTimestamp() });
       } else if (actionType === 'CREATE_PRODUCT') {
-        await addDoc(collection(db, "products"), { ...payload, createdAt: serverTimestamp(), stock: payload.stock || 100 });
+        await addDoc(collection(db, "products"), { ...payload, createdAt: serverTimestamp(), stock: Number(payload.stock) || 100 });
       } else if (actionType === 'DELETE_PRODUCT' && targetId) {
         await deleteDoc(doc(db, "products", targetId));
       } else if (actionType === 'FINANCIAL_ADJUSTMENT' && targetId) {
-        await updateDoc(doc(db, "users", targetId), payload);
+        await updateDoc(doc(db, "users", targetId), { walletBalance: Number(payload.walletBalance) });
+      } else if (actionType === 'UPDATE_SETTINGS') {
+        // يمكن إضافة نظام إعدادات هنا
+        console.log("Settings Update Requested:", payload);
       }
     } catch (e) {
       console.error("AI Action Failed:", e);
+      throw e;
     }
   };
 
   return (
-    <div className="space-y-8 animate-fade-in" dir="rtl">
-      <header className="flex items-center gap-6">
-        <div className="w-16 h-16 bg-primary rounded-3xl flex items-center justify-center text-white shadow-2xl shadow-primary/20">
-          <Cpu size={32} />
+    <div className="space-y-10 animate-fade-in" dir="rtl">
+      <header className="flex items-center gap-8">
+        <div className="w-20 h-20 bg-primary rounded-[2rem] flex items-center justify-center text-black shadow-2xl shadow-primary/30">
+          <Cpu size={40} />
         </div>
         <div>
-          <h1 className="text-4xl font-headline font-bold gold-text">مساعد التحكم الذكي</h1>
-          <p className="text-muted-foreground mt-1 text-sm uppercase font-black tracking-widest">Master AI Console</p>
+          <h1 className="text-5xl font-headline font-bold gold-text">معالج التحكم الذكي (Sovereign AI)</h1>
+          <p className="text-slate-500 mt-2 text-sm uppercase font-black tracking-[0.4em]">Master Core Processor</p>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <Card className="lg:col-span-3 luxury-card border-none h-[700px] flex flex-col overflow-hidden">
-          <CardHeader className="bg-white/5 p-8 border-b border-white/5">
-            <CardTitle className="text-xl flex items-center gap-3">
-              <Zap size={20} className="text-primary" /> معالج الأوامر النصي (Real-time CMS)
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+        <Card className="lg:col-span-3 luxury-card border-none h-[750px] flex flex-col overflow-hidden legendary-border">
+          <CardHeader className="bg-white/5 p-10 border-b border-white/5">
+            <CardTitle className="text-2xl flex items-center gap-4 gold-text">
+              <Sparkles size={24} className="text-primary" /> مركز التحكم العصبي للمنصة
             </CardTitle>
           </CardHeader>
 
           <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
             <ScrollArea className="flex-1 p-10">
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {history.length === 0 && (
-                  <div className="text-center py-20 opacity-20">
-                    <Database size={80} className="mx-auto mb-6" />
-                    <p className="text-xl font-bold">أنا بانتظار أوامرك لإدارة الموقع...</p>
+                  <div className="text-center py-32 opacity-20">
+                    <Database size={100} className="mx-auto mb-8 text-primary" />
+                    <p className="text-3xl font-black uppercase tracking-widest">Awaiting Sovereignty Commands...</p>
                   </div>
                 )}
                 {history.map((msg, i) => (
-                  <div key={i} className={`flex gap-4 ${msg.role === 'admin' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${msg.role === 'admin' ? 'bg-white/10' : 'bg-primary text-white'}`}>
-                      {msg.role === 'admin' ? <ShieldCheck size={20} /> : <Cpu size={20} />}
+                  <div key={i} className={`flex gap-6 ${msg.role === 'admin' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xl ${msg.role === 'admin' ? 'bg-zinc-900 border border-white/10' : 'bg-primary text-black'}`}>
+                      {msg.role === 'admin' ? <ShieldCheck size={24} /> : <Cpu size={24} />}
                     </div>
-                    <div className={`p-5 rounded-[1.5rem] max-w-[80%] text-sm font-bold shadow-2xl ${msg.role === 'admin' ? 'bg-slate-900 border border-white/5' : 'bg-primary/10 border border-primary/20 text-primary'}`}>
+                    <div className={`p-8 rounded-[2.5rem] max-w-[85%] text-lg font-bold shadow-2xl ${msg.role === 'admin' ? 'bg-zinc-900 border border-white/5 text-slate-300' : 'bg-primary/10 border border-primary/20 text-primary'}`}>
                       {msg.content}
                       {msg.actionType && (
-                        <div className="mt-3 pt-3 border-t border-white/10 text-[10px] uppercase font-black tracking-tighter text-primary">
-                          تم تنفيذ إجراء: {msg.actionType}
+                        <div className="mt-4 pt-4 border-t border-primary/20 text-[10px] uppercase font-black tracking-[0.3em] text-primary">
+                          Action Executed: {msg.actionType}
                         </div>
                       )}
                     </div>
                   </div>
                 ))}
                 {isLoading && (
-                  <div className="flex gap-4 animate-pulse">
-                    <div className="w-10 h-10 rounded-2xl bg-primary/20 flex items-center justify-center">
+                  <div className="flex gap-6 animate-pulse">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
                       <Loader2 className="animate-spin text-primary" />
                     </div>
-                    <div className="p-5 bg-white/5 rounded-[1.5rem] w-48"></div>
+                    <div className="p-8 bg-white/5 rounded-[2.5rem] w-64"></div>
                   </div>
                 )}
               </div>
             </ScrollArea>
 
-            <div className="p-10 bg-black/40 border-t border-white/5">
-              <div className="relative flex gap-4">
+            <div className="p-10 bg-black/60 border-t border-white/5">
+              <div className="relative flex gap-6">
                 <Input 
                   value={command}
                   onChange={e => setCommand(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleCommand()}
-                  placeholder="مثال: 'غير سعر باقة 100 جوهرة لـ 2 دولار' أو 'أضف رصيد 50$ لمستخدم X'" 
-                  className="h-20 rounded-3xl bg-white/5 border-none px-10 font-bold text-lg shadow-inner text-white focus:ring-primary/40"
+                  placeholder="مثال: 'غير سعر باقة PUBG لـ 50 دولار' أو 'أضف رصيد 100$ للمستخدم X'..." 
+                  className="h-24 rounded-[2rem] bg-zinc-900/50 border-primary/20 px-10 font-bold text-xl text-white focus:ring-primary shadow-inner"
                 />
                 <Button 
                   onClick={handleCommand}
                   disabled={isLoading}
-                  className="w-20 h-20 rounded-3xl bg-primary hover:bg-primary/90 transition-all shrink-0 shadow-2xl shadow-primary/20"
+                  className="w-24 h-24 rounded-[2rem] royal-button shrink-0"
                 >
-                  <Send className="rtl:rotate-180" size={24} />
+                  <Send className="rtl:rotate-180" size={32} />
                 </Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
-          <Card className="luxury-card border-none p-10">
-            <h3 className="text-xs font-black uppercase tracking-[0.4em] text-primary mb-8">قدرات المساعد</h3>
-            <ul className="space-y-6">
+        <div className="space-y-8">
+          <Card className="luxury-card border-none p-10 bg-primary/5">
+            <h3 className="text-xs font-black uppercase tracking-[0.5em] text-primary mb-10">البروتوكولات النشطة</h3>
+            <ul className="space-y-8">
               {[
-                { icon: Zap, label: "تعديل الأسعار والمخزون" },
-                { icon: Database, label: "إدارة الباقات الرقمية" },
-                { icon: ShieldCheck, label: "إدارة الرتب والمستخدمين" },
-                { icon: Cpu, label: "التعديل البرمجي للـ UI" }
+                { icon: Zap, label: "إدارة السيولة الفورية" },
+                { icon: Database, label: "تعديل المستودع الرقمي" },
+                { icon: ShieldCheck, label: "التحكم في الرتب العليا" },
+                { icon: Cpu, label: "المزامنة اللحظية (Sync)" }
               ].map((item, i) => (
-                <li key={i} className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                    <item.icon size={18} />
+                <li key={i} className="flex items-center gap-6 group cursor-default">
+                  <div className="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all shadow-xl">
+                    <item.icon size={22} />
                   </div>
-                  <span className="text-sm font-bold opacity-70 group-hover:opacity-100">{item.label}</span>
+                  <span className="text-sm font-black opacity-60 group-hover:opacity-100 transition-opacity">{item.label}</span>
                 </li>
               ))}
             </ul>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -43,7 +44,10 @@ export default function AdminProducts() {
   }, [db]);
 
   const handleSubmit = async () => {
-    if (!form.name || !form.price || !db) return;
+    if (!form.name || !form.price || !db) {
+      toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إكمال الاسم والسعر على الأقل." });
+      return;
+    }
     setIsProcessing(true);
     
     const data = {
@@ -57,22 +61,22 @@ export default function AdminProducts() {
     try {
       if (editingId) {
         await updateDoc(doc(db, "products", editingId), data);
-        toast({ title: "تم التحديث الملكي", description: "تم تعديل بيانات الباقة في السجل الأسطوري." });
+        toast({ title: "تم التحديث بنجاح", description: "تم تعديل بيانات الباقة فوراً." });
       } else {
         await addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() });
-        toast({ title: "تمت الإضافة بنجاح", description: "الباقة الرقمية الآن متاحة للنخبة في المتجر." });
+        toast({ title: "تمت الإضافة", description: "الباقة متاحة الآن في المتجر." });
       }
       setIsOpen(false);
       resetForm();
     } catch (e: any) {
-      toast({ variant: "destructive", title: "خطأ سيادي", description: e.message });
+      toast({ variant: "destructive", title: "فشل الإجراء", description: "تأكد من صلاحياتك واتصالك بالإنترنت." });
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("هل تريد مسح هذا الأثر من المتجر نهائياً؟")) return;
+    if (!db || !confirm("هل تريد حذف هذه الباقة نهائياً؟")) return;
     try {
       await deleteDoc(doc(db, "products", id));
       toast({ title: "تم الحذف بنجاح" });
@@ -104,109 +108,111 @@ export default function AdminProducts() {
 
   return (
     <div className="space-y-12 animate-fade-in" dir="rtl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
         <div>
-          <h1 className="text-5xl font-headline font-bold gold-text">مستودع الأكواد المركزي</h1>
-          <p className="text-slate-500 mt-2 font-black uppercase tracking-widest text-[10px]">Inventory & Legend Protocol</p>
+          <h1 className="text-6xl font-headline font-bold gold-text">مستودع الأصول السيادية</h1>
+          <p className="text-slate-500 mt-2 font-black uppercase tracking-[0.5em] text-xs">Inventory Core Control</p>
         </div>
         <Dialog open={isOpen} onOpenChange={(val) => { setIsOpen(val); if (!val) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button className="h-16 px-10 royal-button text-lg">
-              <Plus className="ml-2" /> إضافة باقة أسطورية
+            <Button className="h-20 px-12 royal-button text-xl">
+              <Plus className="ml-3" /> إضافة باقة أسطورية
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl bg-black border-primary/20 rounded-[3rem] p-12 text-white">
+          <DialogContent className="max-w-4xl bg-black border-primary/20 rounded-[3rem] p-12 text-white shadow-2xl overflow-y-auto max-h-[90vh]">
             <DialogHeader>
-              <DialogTitle className="text-3xl font-bold flex items-center gap-3 gold-text">
-                <Box className="text-primary" /> {editingId ? 'تعديل السجل الرقمي' : 'إنشاء باقة رقمية جديدة'}
+              <DialogTitle className="text-4xl font-bold flex items-center gap-4 gold-text">
+                <Box size={32} className="text-primary" /> {editingId ? 'تعديل السجل الرقمي' : 'إنشاء باقة جديدة'}
               </DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-8 mt-10">
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-primary uppercase tracking-widest">اسم الباقة</label>
-                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="bg-white/5 border-primary/20 h-14 rounded-2xl px-6 font-bold" />
+            <div className="grid grid-cols-2 gap-10 mt-12">
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">اسم الباقة</label>
+                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-primary uppercase tracking-widest">الفئة</label>
-                <Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="bg-white/5 border-primary/20 h-14 rounded-2xl px-6 font-bold" />
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">الفئة</label>
+                <Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-primary uppercase tracking-widest">السعر الملكي (USD)</label>
-                <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="bg-white/5 border-primary/20 h-14 rounded-2xl px-6 font-bold" />
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">السعر (USD)</label>
+                <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-primary uppercase tracking-widest">المخزون الحالي</label>
-                <Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="bg-white/5 border-primary/20 h-14 rounded-2xl px-6 font-bold" />
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">المخزون</label>
+                <Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
-              <div className="col-span-2 space-y-3">
-                <label className="text-[10px] font-black text-primary uppercase tracking-widest">رابط صورة العرض</label>
-                <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} className="bg-white/5 border-primary/20 h-14 rounded-2xl px-6 font-bold" />
+              <div className="col-span-2 space-y-4">
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">رابط الصورة</label>
+                <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
-              <div className="col-span-2 space-y-3">
-                <label className="text-[10px] font-black text-primary uppercase tracking-widest">أكواد الشحن (مخزون المفاتيح الرقمية)</label>
-                <Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="bg-white/5 border-primary/20 min-h-[150px] rounded-3xl p-6 font-mono text-xs text-primary" placeholder="ضع هنا الأكواد، كود واحد لكل سطر..." />
+              <div className="col-span-2 space-y-4">
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">أكواد الشحن (مخزون المفاتيح الرقمية)</label>
+                <Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="min-h-[200px] rounded-[2rem] bg-zinc-900 border-none p-8 font-mono text-sm text-primary" placeholder="ضع الأكواد هنا، كود في كل سطر..." />
               </div>
             </div>
             <DialogFooter className="mt-12">
-              <Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-16 royal-button text-xl">
-                {isProcessing ? <Loader2 className="animate-spin" /> : editingId ? 'تحديث قاعدة البيانات المركزية' : 'نشر الباقة في المتجر فوراً'}
+              <Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-20 royal-button text-2xl">
+                {isProcessing ? <Loader2 className="animate-spin" /> : editingId ? 'تحديث السجلات المركزية' : 'نشر الباقة في المتجر'}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Card className="luxury-card border-primary/10 overflow-hidden">
-        <CardHeader className="p-10 pb-0 flex flex-row justify-between items-center">
-          <div className="relative max-w-lg flex-1">
-            <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/40 w-5 h-5" />
+      <Card className="luxury-card border-none overflow-hidden legendary-border">
+        <CardHeader className="p-12 pb-0 flex flex-row justify-between items-center bg-white/5">
+          <div className="relative max-w-xl flex-1">
+            <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/40 w-6 h-6" />
             <Input 
               placeholder="ابحث في سجلات المستودع..." 
-              className="pr-14 h-16 bg-white/5 border-primary/10 rounded-2xl text-lg text-white"
+              className="pr-16 h-16 bg-black border-none rounded-2xl text-xl text-white shadow-inner"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <Badge className="bg-primary/10 text-primary border-primary/20 h-10 px-6 rounded-full font-black text-[10px] uppercase tracking-[0.2em]">
-            Total Stock: {products.length} Items
+          <Badge className="bg-primary/10 text-primary border-primary/20 h-12 px-8 rounded-full font-black text-xs uppercase tracking-[0.3em]">
+            Stock Registry: {products.length} Units
           </Badge>
         </CardHeader>
         <CardContent className="p-0 mt-8">
           <Table>
             <TableHeader className="bg-white/5 border-b border-primary/10">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-right py-8 pr-10 font-black text-[10px] uppercase tracking-[0.3em] text-primary/60">الباقة الرقمية</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-[0.3em] text-primary/60">السعر</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-[0.3em] text-primary/60">المخزون</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-[0.3em] text-primary/60">الأكواد الجاهزة</TableHead>
-                <TableHead className="text-center font-black text-[10px] uppercase tracking-[0.3em] text-primary/60">التحكم الملكي</TableHead>
+                <TableHead className="text-right py-10 pr-12 font-black text-[10px] uppercase tracking-[0.4em] text-primary/60">باقة الأصول</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase tracking-[0.4em] text-primary/60">القيمة</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase tracking-[0.4em] text-primary/60">المخزون</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase tracking-[0.4em] text-primary/60">مفاتيح التفعيل</TableHead>
+                <TableHead className="text-center font-black text-[10px] uppercase tracking-[0.4em] text-primary/60">الإجراء السيادي</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-24"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-32"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-40 text-primary/20 font-black italic text-2xl uppercase tracking-[0.2em]">The Vault is Empty</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-60 text-primary/10 font-black italic text-4xl uppercase tracking-[0.4em]">Vault is Empty</TableCell></TableRow>
               ) : filtered.map((p) => (
                 <TableRow key={p.id} className="hover:bg-primary/5 border-b border-primary/5 transition-all">
-                  <TableCell className="py-8 pr-10 font-bold flex items-center gap-6">
-                    <img src={p.imageUrl} className="w-16 h-16 rounded-2xl object-cover shadow-[0_0_20px_rgba(251,191,36,0.2)] border border-primary/20" alt="" />
-                    <div className="flex flex-col">
-                      <span className="text-xl text-white">{p.name}</span>
-                      <span className="text-[10px] text-primary/40 font-black uppercase tracking-widest">{p.category}</span>
+                  <TableCell className="py-10 pr-12">
+                    <div className="flex items-center gap-8">
+                      <img src={p.imageUrl} className="w-20 h-20 rounded-3xl object-cover shadow-2xl border border-primary/20" alt="" />
+                      <div className="flex flex-col">
+                        <span className="text-2xl font-bold text-white">{p.name}</span>
+                        <span className="text-[10px] text-primary/60 font-black uppercase tracking-widest">{p.category}</span>
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell className="font-black text-primary text-2xl">${p.price}</TableCell>
-                  <TableCell className="font-black text-slate-400">{p.stock}</TableCell>
+                  <TableCell className="font-black text-primary text-3xl">${p.price}</TableCell>
+                  <TableCell className="font-black text-slate-500 text-xl">{p.stock}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="border-primary/20 text-primary py-1 px-4 rounded-full font-black text-[10px]">
-                      <Key size={12} className="ml-2" /> {p.shippingCodes?.split('\n').filter(Boolean).length || 0} مفتاح
+                    <Badge variant="outline" className="border-primary/20 text-primary py-2 px-6 rounded-full font-black text-[10px] bg-primary/5">
+                      <Key size={14} className="ml-3" /> {p.shippingCodes?.split('\n').filter(Boolean).length || 0} Key
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex justify-center gap-4">
-                      <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-primary hover:bg-primary/10" onClick={() => startEdit(p)}><Edit2 size={20} /></Button>
-                      <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-red-500 hover:bg-red-500/10" onClick={() => handleDelete(p.id)}><Trash2 size={20} /></Button>
+                    <div className="flex justify-center gap-6">
+                      <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-primary hover:bg-primary/10" onClick={() => startEdit(p)}><Edit2 size={24} /></Button>
+                      <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-red-500 hover:bg-red-500/10" onClick={() => handleDelete(p.id)}><Trash2 size={24} /></Button>
                     </div>
                   </TableCell>
                 </TableRow>
