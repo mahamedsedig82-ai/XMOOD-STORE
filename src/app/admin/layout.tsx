@@ -61,25 +61,25 @@ export default function AdminLayoutComprehensive({ children }: { children: React
   const role = profile?.role;
 
   const mainSections = [
-    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
-    { label: "المعالج السيادي AI", icon: Sparkles, href: "/admin/ai", roles: ['owner', 'admin'] },
-    { label: "إدارة التصاميم", icon: Wand2, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer', 'agent'] },
-    { label: "المستودع الملكي", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
-    { label: "الطلبات والمبيعات", icon: ShoppingCart, href: "/admin/orders", roles: ['owner', 'admin', 'store_manager', 'support'] },
+    { label: "لوحة التحكم", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
+    { label: "المساعد الذكي AI", icon: Sparkles, href: "/admin/ai", roles: ['owner', 'admin'] },
+    { label: "إدارة الخدمات", icon: Wand2, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer', 'agent'] },
+    { label: "المستودع الرقمي", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
+    { label: "المبيعات والطلبات", icon: ShoppingCart, href: "/admin/orders", roles: ['owner', 'admin', 'store_manager', 'support'] },
   ];
 
   const businessSections = [
-    { label: "إدارة المستخدمين", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
-    { label: "الخزانة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
-    { label: "السوق والإعلانات", icon: Megaphone, href: "/admin/ads", roles: ['owner', 'admin', 'gm'] },
-    { label: "المقالات والمدونة", icon: FileText, href: "/admin/blog", roles: ['owner', 'admin', 'gm'] },
+    { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
+    { label: "الخزانة المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
+    { label: "الإعلانات والعروض", icon: Megaphone, href: "/admin/ads", roles: ['owner', 'admin', 'gm'] },
+    { label: "المدونة والمقالات", icon: FileText, href: "/admin/blog", roles: ['owner', 'admin', 'gm'] },
   ];
 
   const systemSections = [
-    { label: "الهوية والبصريات", icon: Palette, href: "/admin/settings", roles: ['owner', 'admin'] },
+    { label: "هوية المتجر", icon: Palette, href: "/admin/settings", roles: ['owner', 'admin'] },
     { label: "إعدادات النظام", icon: Globe, href: "/admin/config", roles: ['owner', 'admin'] },
-    { label: "مركز الإشعارات", icon: Bell, href: "/admin/notifications", roles: ['owner', 'admin'] },
-    { label: "سجل العمليات", icon: Activity, href: "/admin/system", roles: ['owner', 'admin'] },
+    { label: "مركز التنبيهات", icon: Bell, href: "/admin/notifications", roles: ['owner', 'admin'] },
+    { label: "سجل النشاط", icon: Activity, href: "/admin/system", roles: ['owner', 'admin'] },
   ];
 
   const renderMenuItems = (items: typeof mainSections) => 
@@ -105,26 +105,26 @@ export default function AdminLayoutComprehensive({ children }: { children: React
           <SidebarHeader className="p-10 border-b border-white/5 bg-black/50 backdrop-blur-3xl">
             <Link href="/" className="flex flex-col items-center gap-4 text-center">
               <span className="decorative-logo text-3xl">{config?.siteInfo?.title || "XMOOD PRO"}</span>
-              <Badge variant="outline" className="border-red-600/30 text-red-600 px-6 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.4em]">{profile?.role}</Badge>
+              <Badge variant="outline" className="border-red-600/30 text-red-600 px-6 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.4em]">{profile?.role}</Badge>
             </Link>
           </SidebarHeader>
           <SidebarContent className="p-8">
             <SidebarGroup className="mb-10">
-              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-black uppercase text-zinc-700 tracking-[0.5em]">التحكم السيادي المباشر</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-bold uppercase text-zinc-700 tracking-[0.5em]">الإدارة المباشرة</SidebarGroupLabel>
               <SidebarMenu className="gap-3">
                 {renderMenuItems(mainSections)}
               </SidebarMenu>
             </SidebarGroup>
 
             <SidebarGroup className="mb-10">
-              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-black uppercase text-zinc-700 tracking-[0.5em]">إدارة شؤون الإمبراطورية</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-bold uppercase text-zinc-700 tracking-[0.5em]">إدارة العمليات</SidebarGroupLabel>
               <SidebarMenu className="gap-3">
                 {renderMenuItems(businessSections)}
               </SidebarMenu>
             </SidebarGroup>
 
             <SidebarGroup>
-              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-black uppercase text-zinc-700 tracking-[0.5em]">النواة وإعدادات الأساس</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-bold uppercase text-zinc-700 tracking-[0.5em]">إعدادات المتجر</SidebarGroupLabel>
               <SidebarMenu className="gap-3">
                 {renderMenuItems(systemSections)}
               </SidebarMenu>
@@ -134,9 +134,9 @@ export default function AdminLayoutComprehensive({ children }: { children: React
              <Button 
                variant="ghost" 
                onClick={() => signOut(auth!)}
-               className="w-full h-16 rounded-[1.5rem] text-red-600 hover:bg-red-600/10 gap-5 font-black text-[11px] uppercase tracking-[0.3em]"
+               className="w-full h-16 rounded-[1.5rem] text-red-600 hover:bg-red-600/10 gap-5 font-bold text-[11px] uppercase tracking-[0.3em]"
              >
-               <LogOut size={20} /> تسجيل الخروج الإداري
+               <LogOut size={20} /> تسجيل الخروج
              </Button>
           </div>
         </Sidebar>
@@ -144,8 +144,8 @@ export default function AdminLayoutComprehensive({ children }: { children: React
         <main className="flex-1 overflow-y-auto p-16 bg-black relative">
           <div className="flex justify-between items-center mb-16 pb-12 border-b border-white/5">
              <div className="flex items-center gap-8">
-                <Badge variant="outline" className="border-red-600/20 text-red-500 px-8 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.4em] flex gap-4 animate-pulse">
-                   <Zap size={16} /> LIVE SOVEREIGN NUCLEUS
+                <Badge variant="outline" className="border-red-600/20 text-red-500 px-8 py-3 rounded-full font-bold text-[10px] uppercase tracking-[0.4em] flex gap-4 animate-pulse">
+                   <Zap size={16} /> نظام XMOOD النشط
                 </Badge>
                 <div className="h-10 w-px bg-white/5" />
                 <div className="flex items-center gap-4 text-zinc-600 font-bold text-xs uppercase tracking-widest">

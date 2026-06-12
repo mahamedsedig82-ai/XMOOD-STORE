@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect } from "react";
-import { Sparkles, X, Cpu, Zap, ShieldCheck, Heart } from "lucide-react";
+import { Sparkles, X, Zap, Heart, MessageCircleHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
@@ -28,18 +29,18 @@ export function GuidanceBot() {
     if (config?.translations?.botGreeting) {
       setMessage(config.translations.botGreeting);
     } else {
-      setMessage("أهلاً بك في XMOOD! أنا مساعدك الذكي. كيف يمكنني جعل تجربتك أفضل اليوم؟");
+      setMessage("يا هلا بك! أنا مساعدك الذكي، موجود هنا عشان أخلي تجربتك في XMOOD سهلة وممتعة. وش حاب تعرف اليوم؟ ✨");
     }
   }, [config]);
 
   if (!isMounted) return null;
 
   const tips = [
-    "يمكنك تصفح أحدث باقات الألعاب في المتجر الآن!",
-    "هل تبحث عن تصميم خاص؟ قسم المصمم الملكي جاهز لخدمتك.",
-    "تذكر توثيق حسابك للحصول على نقاط مكافأة إضافية.",
-    "نظام الوساطة لدينا يضمن لك عمليات تبادل آمنة تماماً.",
-    "يمكنك تحويل الرصيد لأصدقائك فوراً عبر المحفظة."
+    "تبي تشحن ألعابك؟ قسم المتجر فيه كل اللي تحتاجه! 🎮",
+    "لا تنسى توثق حسابك عشان تحصل على هدايا ونقاط أكثر! 🎁",
+    "نظام التحويل صار أسرع، تقدر ترسل لأخوياك بضغطة زر! 💸",
+    "عندنا خدمات تصميم خرافية، شوفها في قسم الخدمات! 🎨",
+    "المحفظة هي مكانك الآمن لكل عملياتك الشرائية. 🔒"
   ];
 
   const handleNextTip = () => {
@@ -55,7 +56,7 @@ export function GuidanceBot() {
             initial={{ opacity: 0, scale: 0.8, y: 50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 50 }}
-            className="mb-6 w-80 luxury-card p-6 border-primary/20 relative shadow-2xl"
+            className="mb-6 w-80 luxury-card p-6 border-primary/20 relative shadow-2xl bg-zinc-950/90"
           >
             <button 
               onClick={() => setIsOpen(false)}
@@ -65,22 +66,22 @@ export function GuidanceBot() {
             </button>
             <div className="flex gap-3 mb-4 items-center">
               <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary shrink-0">
-                <Heart size={20} className="fill-primary" />
+                <MessageCircleHeart size={20} className="fill-primary" />
               </div>
-              <p className="text-[10px] font-bold text-primary uppercase tracking-widest">XMOOD AI Assistant</p>
+              <p className="text-[10px] font-bold text-primary uppercase tracking-widest">XMOOD Friendly Bot</p>
             </div>
-            <p className="text-sm font-bold leading-relaxed text-zinc-300 mb-6">
+            <p className="text-sm font-medium leading-relaxed text-zinc-300 mb-6">
               {message}
             </p>
             <div className="flex justify-between items-center">
               <Button 
                 onClick={handleNextTip}
                 variant="ghost" 
-                className="text-[9px] font-bold uppercase text-zinc-500 hover:text-primary p-0 h-auto"
+                className="text-[10px] font-bold text-zinc-500 hover:text-primary p-0 h-auto"
               >
-                نصيحة سريعة <Zap size={10} className="ml-1" />
+                عطني نصيحة ثانية 💡
               </Button>
-              <ShieldCheck size={14} className="text-primary/30" />
+              <Heart size={14} className="text-red-500 fill-red-500 animate-pulse" />
             </div>
           </motion.div>
         )}
