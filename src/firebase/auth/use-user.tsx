@@ -40,21 +40,11 @@ export function useUser() {
         const isVerified = user.emailVerified || isAdmin;
         
         if (!docSnap.exists()) {
-          const newProfile: any = {
-            uid: user.uid,
-            displayName: user.displayName || 'مستكشف XMOOD',
-            email: user.email || '',
-            walletBalance: isAdmin ? 1000000 : 0,
-            role: isAdmin ? 'owner' : 'user',
-            label: isAdmin ? 'المدير العام' : 'عضو بريميوم',
-            photoURL: user.photoURL || '',
-            createdAt: new Date().toISOString(),
-            isVerified: isVerified
-          };
-          await setDoc(userDocRef, newProfile);
+          // في حال كان المستخدم جديداً عبر قوقل ولم يكمل بياناته بعد
+          // سيتم التعامل معه في صفحة التسجيل/الدخول لإكمال رقم الهاتف
         } else {
-          // Sync crucial admin roles and verification status
           const currentData = docSnap.data();
+          // مزامنة الأدوار الهامة تلقائياً للمدير
           if (isAdmin && currentData.role !== 'owner') {
             await setDoc(userDocRef, { 
               role: 'owner', 
@@ -88,4 +78,3 @@ export function useUser() {
 
   return { user, profile, loading };
 }
-

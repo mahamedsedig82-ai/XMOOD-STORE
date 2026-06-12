@@ -11,13 +11,12 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   GoogleAuthProvider, 
-  OAuthProvider, 
   signInWithPopup,
   sendEmailVerification 
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { Loader2, Mail, Globe, UserCircle, RefreshCcw, AlertTriangle } from "lucide-react";
+import { Loader2, Mail, Globe, UserCircle, RefreshCcw, AlertTriangle, Phone } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -25,10 +24,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [securityQuestion, setSecurityQuestion] = useState("ما هو اسم مدرستك الأولى؟");
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<'auth' | 'success' | 'verify'>('auth');
+  const [step, setStep] = useState<'auth' | 'success' | 'verify' | 'complete_profile'>('auth');
   
   const auth = useAuth();
   const db = useFirestore();
@@ -37,14 +37,11 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
 
-  const handleSocialLogin = async (providerName: 'google' | 'apple') => {
+  const handleGoogleLogin = async () => {
     if (!auth || !db || loading) return;
     setLoading(true);
     try {
-      const provider = providerName === 'google' 
-        ? new GoogleAuthProvider() 
-        : new OAuthProvider('apple.com');
-      
+      const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       
       const result = await signInWithPopup(auth, provider);
@@ -52,51 +49,45 @@ export default function LoginPage() {
       
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
-          uid: user.uid,
-          displayName: user.displayName?.split(" ")[0] || "عضو",
-          fullName: user.displayName || "عضو بريميوم",
-          email: user.email,
-          walletBalance: 0,
-          role: 'user',
-          label: 'عضو موثق',
-          photoURL: user.photoURL || '',
-          createdAt: new Date().toISOString(),
-          isVerified: true,
-          affinityPoints: 100
-        });
-        setStep('success');
+        // نطلب منه إكمال رقم الهاتف
+        setStep('complete_profile');
       } else {
         router.push("/");
       }
     } catch (error: any) {
-      console.error("Social Auth Error:", error);
-      if (error.code === 'auth/popup-blocked') {
-        toast({ 
-          variant: "destructive", 
-          title: "تم حظر النافذة المنبثقة", 
-          description: "يرجى السماح بالنوافذ المنبثقة في متصفحك لإتمام تسجيل الدخول." 
-        });
-      } else if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
-        toast({ 
-          variant: "destructive", 
-          title: "عذراً، حدث خطأ في الاتصال", 
-          description: "تأكد من استقرار الإنترنت وحاول مرة أخرى." 
-        });
-      }
+      console.error("Google Auth Error:", error);
+      toast({ 
+        variant: "destructive", 
+        title: "خطأ في تسجيل الدخول", 
+        description: "تأكد من السماح بالنوافذ المنبثقة وحاول مرة أخرى." 
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResendVerification = async () => {
-    if (!auth?.currentUser || loading) return;
+  const handleFinishProfile = async () => {
+    if (!auth?.currentUser || !phone || !db) return;
     setLoading(true);
     try {
-      await sendEmailVerification(auth.currentUser);
-      toast({ title: "تم الإرسال", description: "تم إرسال رابط تفعيل جديد لبريدك الإلكتروني." });
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "فشل الإرسال", description: "يرجى المحاولة بعد قليل." });
+      const user = auth.currentUser;
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        displayName: user.displayName?.split(" ")[0] || "عضو",
+        fullName: user.displayName || "عضو بريميوم",
+        email: user.email,
+        phoneNumber: phone,
+        walletBalance: 0,
+        role: 'user',
+        label: 'عضو موثق',
+        photoURL: user.photoURL || '',
+        createdAt: new Date().toISOString(),
+        isVerified: true,
+        affinityPoints: 100
+      });
+      setStep('success');
+    } catch (e) {
+      toast({ variant: "destructive", title: "خطأ", description: "فشل حفظ البيانات." });
     } finally {
       setLoading(false);
     }
@@ -105,10 +96,6 @@ export default function LoginPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth || !db || loading) return;
-    if (fullName.trim().split(" ").length < 2) {
-      toast({ variant: "destructive", title: "تنبيه", description: "يرجى إدخال اسمك الثنائي على الأقل." });
-      return;
-    }
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -119,6 +106,7 @@ export default function LoginPage() {
         displayName: fullName.split(" ")[0],
         fullName: fullName,
         email: email,
+        phoneNumber: phone,
         walletBalance: 0,
         role: 'user',
         label: 'عضو بريميوم',
@@ -132,7 +120,7 @@ export default function LoginPage() {
       
       setStep('verify');
     } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ في إنشاء الحساب", description: error.message });
+      toast({ variant: "destructive", title: "خطأ", description: error.message });
     } finally {
       setLoading(false);
     }
@@ -143,16 +131,8 @@ export default function LoginPage() {
     if (!auth || loading) return;
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // تجاوز شرط التفعيل للمدير للاختبار
-      const isAdmin = email.toUpperCase() === "MAHAMEDFK3@GMAIL.COM";
-      
-      if (!userCredential.user.emailVerified && !isAdmin) {
-        toast({ title: "البريد غير مفعل", description: "يرجى مراجعة بريدك الإلكتروني لتفعيل حسابك." });
-        setStep('verify');
-      } else {
-        router.push("/");
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/");
     } catch (error: any) {
       toast({ variant: "destructive", title: "فشل الدخول", description: "البيانات المدخلة غير صحيحة." });
     } finally {
@@ -162,108 +142,76 @@ export default function LoginPage() {
 
   if (!isMounted) return null;
 
-  if (step === 'verify') {
+  if (step === 'complete_profile') {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
-        <Card className="w-full max-w-xl rounded-[3rem] bg-zinc-950 border border-primary/20 text-center p-12 animate-fade-in shadow-xl">
-          <Mail size={80} className="text-primary mx-auto mb-6 animate-bounce" />
-          <h2 className="text-4xl font-headline font-bold gold-text mb-4">تفعيل الحساب</h2>
-          <p className="text-zinc-400 mb-8 font-medium leading-relaxed">لقد أرسلنا رابط التفعيل إلى <b>{email}</b>. يرجى مراجعة البريد الوارد للمتابعة.</p>
-          <div className="space-y-4">
-            <Button onClick={() => setStep('auth')} className="w-full h-16 rounded-2xl bg-white text-black font-bold text-xl hover:bg-slate-200">العودة للدخول</Button>
-            <Button 
-              onClick={handleResendVerification} 
-              variant="ghost" 
-              disabled={loading}
-              className="w-full h-14 text-primary hover:bg-primary/10 gap-3 font-bold"
-            >
-              {loading ? <Loader2 className="animate-spin" /> : <><RefreshCcw size={18} /> إعادة إرسال الرابط</>}
-            </Button>
-          </div>
+        <Card className="w-full max-w-xl rounded-[3rem] bg-zinc-950 border border-primary/20 p-12 text-center">
+          <Phone size={60} className="text-primary mx-auto mb-6" />
+          <h2 className="text-3xl font-bold gold-text mb-4">خطوة أخيرة..</h2>
+          <p className="text-zinc-400 mb-8">يرجى إضافة رقم هاتفك لربطه بمحفظتك الرقمية وتأمين حسابك.</p>
+          <Input 
+            placeholder="رقم الهاتف (مع رمز الدولة)..." 
+            className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-lg mb-6"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+          />
+          <Button onClick={handleFinishProfile} disabled={loading || !phone} className="w-full h-16 royal-button text-xl">إتمام التسجيل</Button>
         </Card>
       </main>
     );
   }
 
-  if (step === 'success') {
+  if (step === 'verify') {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
-        <Card className="w-full max-w-xl rounded-[3rem] overflow-hidden bg-zinc-950 border border-primary shadow-2xl animate-fade-in text-center p-12">
-          <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-             <UserCircle size={64} className="text-green-500" />
-          </div>
-          <h2 className="text-4xl font-headline font-bold gold-text mb-4">أهلاً بك في عائلة XMOOD!</h2>
-          <p className="text-zinc-400 mb-10 text-lg">تم إعداد حسابك الحصري بنجاح. استمتع بتجربة تسوق راقية.</p>
-          <Button onClick={() => router.push("/")} className="w-full h-16 royal-button text-xl">ابدأ رحلتك</Button>
+        <Card className="w-full max-w-xl rounded-[3rem] bg-zinc-950 border border-primary/20 text-center p-12">
+          <Mail size={80} className="text-primary mx-auto mb-6 animate-bounce" />
+          <h2 className="text-4xl font-headline font-bold gold-text mb-4">تفعيل الحساب</h2>
+          <p className="text-zinc-400 mb-8 font-medium">لقد أرسلنا رابط التفعيل إلى {email}.</p>
+          <Button onClick={() => setStep('auth')} className="w-full h-16 rounded-2xl bg-white text-black font-bold text-xl">العودة للدخول</Button>
         </Card>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-black font-body" dir="rtl">
+    <main className="min-h-screen bg-black" dir="rtl">
       <Navbar />
-      <div className="container mx-auto px-4 py-20 flex justify-center items-center min-h-[calc(100vh-100px)]">
-        <Card className="w-full max-w-xl rounded-[3rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl animate-fade-in">
-          <div className="p-12 text-center bg-white/5 border-b border-white/5">
+      <div className="container mx-auto px-4 py-20 flex justify-center items-center min-h-screen pt-32">
+        <Card className="w-full max-w-xl rounded-[3rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl">
+          <div className="p-10 text-center bg-white/5 border-b border-white/5">
             <UserCircle size={56} className="text-primary mx-auto mb-6" />
-            <h2 className="text-4xl font-headline font-bold gold-text">دخول النخبة</h2>
-            <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-zinc-500 mt-4">XMOOD PREMIUM ACCESS</p>
+            <h2 className="text-4xl font-headline font-bold gold-text">دخول المتجر</h2>
           </div>
-          <CardContent className="p-12">
-            <div className="grid grid-cols-2 gap-6 mb-12">
-              <Button onClick={() => handleSocialLogin('google')} variant="outline" className="h-16 rounded-2xl border-white/10 bg-white/5 text-xs font-bold hover:bg-white/10 hover:border-primary/40 transition-all">
-                <Globe className="w-5 h-5 ml-2 text-blue-400" />
-                Google
-              </Button>
-              <Button onClick={() => handleSocialLogin('apple')} variant="outline" className="h-16 rounded-2xl border-white/10 bg-white/5 text-xs font-bold hover:bg-white/10 hover:border-primary/40 transition-all">
-                <Globe className="w-5 h-5 ml-2 text-white" />
-                Apple
-              </Button>
-            </div>
+          <CardContent className="p-10">
+            <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-16 rounded-2xl border-white/10 bg-white/5 text-lg font-bold mb-10 hover:bg-white/10">
+              <Globe className="w-6 h-6 ml-3 text-blue-400" />
+              متابعة عبر Google
+            </Button>
 
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-12 bg-white/5 rounded-full p-1.5 h-16 border border-white/5">
-                <TabsTrigger value="login" className="rounded-full font-bold text-sm">تسجيل الدخول</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full font-bold text-sm">إنشاء حساب</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-10 bg-white/5 rounded-full p-1.5 h-16">
+                <TabsTrigger value="login" className="rounded-full font-bold">تسجيل دخول</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-full font-bold">حساب جديد</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login" className="space-y-6">
                 <form onSubmit={handleLogin} className="space-y-6">
-                  <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold" value={email} onChange={e => setEmail(e.target.value)} required />
-                  <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
+                  <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
                   <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "دخول المتجر"}
+                    {loading ? <Loader2 className="animate-spin" /> : "دخول"}
                   </Button>
                 </form>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-6">
                 <form onSubmit={handleSignUp} className="space-y-6">
-                  <Input placeholder="الاسم الكامل" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold" value={fullName} onChange={e => setFullName(e.target.value)} required />
-                  <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold" value={email} onChange={e => setEmail(e.target.value)} required />
-                  <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
-                  
-                  <div className="p-6 bg-primary/5 rounded-3xl border border-primary/20 space-y-4">
-                    <div className="flex items-center gap-2 text-primary mb-2">
-                       <AlertTriangle size={14} />
-                       <label className="text-[10px] font-black uppercase tracking-widest">تأمين الحساب (مهم جداً)</label>
-                    </div>
-                    <select 
-                      className="w-full h-14 bg-black rounded-xl px-4 text-white font-medium border-none outline-none"
-                      value={securityQuestion}
-                      onChange={e => setSecurityQuestion(e.target.value)}
-                    >
-                      <option>ما هو اسم مدرستك الأولى؟</option>
-                      <option>ما هو اسم حيوانك الأليف؟</option>
-                      <option>ما هو بلدك المفضل؟</option>
-                    </select>
-                    <Input placeholder="الإجابة السرية..." className="h-14 rounded-xl bg-black border-none px-6 text-white font-bold" value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} required />
-                  </div>
-
-                  <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "تأكيد الحساب"}
-                  </Button>
+                  <Input placeholder="الاسم الكامل" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                  <Input placeholder="رقم الهاتف" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={phone} onChange={e => setPhone(e.target.value)} required />
+                  <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
+                  <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>إنشاء الحساب</Button>
                 </form>
               </TabsContent>
             </Tabs>
