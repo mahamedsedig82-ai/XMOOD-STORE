@@ -17,7 +17,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Loader2, Key, Mail, Globe, Heart, UserCircle, RefreshCcw } from "lucide-react";
+import { Loader2, Mail, Globe, UserCircle, RefreshCcw, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -55,7 +55,7 @@ export default function LoginPage() {
         await setDoc(doc(db, "users", user.uid), {
           uid: user.uid,
           displayName: user.displayName?.split(" ")[0] || "عضو",
-          fullName: user.displayName || "عضو XMOOD بريميوم",
+          fullName: user.displayName || "عضو بريميوم",
           email: user.email,
           walletBalance: 0,
           role: 'user',
@@ -71,11 +71,17 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error("Social Auth Error:", error);
-      if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
+      if (error.code === 'auth/popup-blocked') {
+        toast({ 
+          variant: "destructive", 
+          title: "تم حظر النافذة المنبثقة", 
+          description: "يرجى السماح بالنوافذ المنبثقة في متصفحك لإتمام تسجيل الدخول." 
+        });
+      } else if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
         toast({ 
           variant: "destructive", 
           title: "عذراً، حدث خطأ في الاتصال", 
-          description: "تأكد من سماح المتصفح بالنوافذ المنبثقة وحاول مرة أخرى." 
+          description: "تأكد من استقرار الإنترنت وحاول مرة أخرى." 
         });
       }
     } finally {
@@ -138,7 +144,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // السماح للمدير بالدخول حتى لو لم يفعل البريد للاختبار
+      // تجاوز شرط التفعيل للمدير للاختبار
       const isAdmin = email.toUpperCase() === "MAHAMEDFK3@GMAIL.COM";
       
       if (!userCredential.user.emailVerified && !isAdmin) {
@@ -159,10 +165,10 @@ export default function LoginPage() {
   if (step === 'verify') {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
-        <Card className="w-full max-w-xl rounded-[3rem] bg-zinc-950 border border-primary/20 text-center p-12 animate-fade-in shadow-[0_0_50px_rgba(212,175,55,0.1)]">
+        <Card className="w-full max-w-xl rounded-[3rem] bg-zinc-950 border border-primary/20 text-center p-12 animate-fade-in shadow-xl">
           <Mail size={80} className="text-primary mx-auto mb-6 animate-bounce" />
           <h2 className="text-4xl font-headline font-bold gold-text mb-4">تفعيل الحساب</h2>
-          <p className="text-zinc-400 mb-8 font-medium leading-relaxed">لقد أرسلنا رابط التفعيل إلى بريدك الإلكتروني <b>{email}</b>. يرجى مراجعة البريد الوارد (أو الرسائل غير المرغوب فيها) للمتابعة.</p>
+          <p className="text-zinc-400 mb-8 font-medium leading-relaxed">لقد أرسلنا رابط التفعيل إلى <b>{email}</b>. يرجى مراجعة البريد الوارد للمتابعة.</p>
           <div className="space-y-4">
             <Button onClick={() => setStep('auth')} className="w-full h-16 rounded-2xl bg-white text-black font-bold text-xl hover:bg-slate-200">العودة للدخول</Button>
             <Button 
@@ -183,10 +189,12 @@ export default function LoginPage() {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
         <Card className="w-full max-w-xl rounded-[3rem] overflow-hidden bg-zinc-950 border border-primary shadow-2xl animate-fade-in text-center p-12">
-          <Heart size={64} className="text-red-500 mx-auto mb-6 fill-red-500" />
-          <h2 className="text-4xl font-headline font-bold gold-text mb-4">أهلاً بك في عائلتنا!</h2>
-          <p className="text-zinc-400 mb-10 text-lg">تم إنشاء حسابك بنجاح. استمتع بتجربة تسوق راقية وحصرية.</p>
-          <Button onClick={() => router.push("/")} className="w-full h-16 royal-button text-xl">ابدأ الآن</Button>
+          <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+             <UserCircle size={64} className="text-green-500" />
+          </div>
+          <h2 className="text-4xl font-headline font-bold gold-text mb-4">أهلاً بك في عائلة XMOOD!</h2>
+          <p className="text-zinc-400 mb-10 text-lg">تم إعداد حسابك الحصري بنجاح. استمتع بتجربة تسوق راقية.</p>
+          <Button onClick={() => router.push("/")} className="w-full h-16 royal-button text-xl">ابدأ رحلتك</Button>
         </Card>
       </main>
     );
@@ -199,7 +207,7 @@ export default function LoginPage() {
         <Card className="w-full max-w-xl rounded-[3rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl animate-fade-in">
           <div className="p-12 text-center bg-white/5 border-b border-white/5">
             <UserCircle size={56} className="text-primary mx-auto mb-6" />
-            <h2 className="text-4xl font-headline font-bold gold-text">مرحباً بك في XMOOD</h2>
+            <h2 className="text-4xl font-headline font-bold gold-text">دخول النخبة</h2>
             <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-zinc-500 mt-4">XMOOD PREMIUM ACCESS</p>
           </div>
           <CardContent className="p-12">
@@ -235,8 +243,12 @@ export default function LoginPage() {
                   <Input placeholder="الاسم الكامل" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold" value={fullName} onChange={e => setFullName(e.target.value)} required />
                   <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold" value={email} onChange={e => setEmail(e.target.value)} required />
                   <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
+                  
                   <div className="p-6 bg-primary/5 rounded-3xl border border-primary/20 space-y-4">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest pr-2">سؤال الأمان (للحماية)</label>
+                    <div className="flex items-center gap-2 text-primary mb-2">
+                       <AlertTriangle size={14} />
+                       <label className="text-[10px] font-black uppercase tracking-widest">تأمين الحساب (مهم جداً)</label>
+                    </div>
                     <select 
                       className="w-full h-14 bg-black rounded-xl px-4 text-white font-medium border-none outline-none"
                       value={securityQuestion}
@@ -246,8 +258,9 @@ export default function LoginPage() {
                       <option>ما هو اسم حيوانك الأليف؟</option>
                       <option>ما هو بلدك المفضل؟</option>
                     </select>
-                    <Input placeholder="الإجابة السرية" className="h-14 rounded-xl bg-black border-none px-6 text-white font-bold" value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} required />
+                    <Input placeholder="الإجابة السرية..." className="h-14 rounded-xl bg-black border-none px-6 text-white font-bold" value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} required />
                   </div>
+
                   <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>
                     {loading ? <Loader2 className="animate-spin" /> : "تأكيد الحساب"}
                   </Button>
