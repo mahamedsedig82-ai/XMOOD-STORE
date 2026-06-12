@@ -1,12 +1,10 @@
-
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Wallet, LayoutDashboard, ShieldCheck, Sparkles, LogOut, User as UserIcon, Zap, Menu, Wand2 } from "lucide-react";
+import { Wallet, LayoutDashboard, Sparkles, LogOut, User as UserIcon, Zap, Menu, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useUser, useAuth, useFirestore, useDoc } from "@/firebase";
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc } from "firebase/firestore";
 import { 
@@ -26,7 +24,8 @@ export function Navbar() {
   const db = useFirestore();
   const pathname = usePathname();
   
-  const { data: siteSettings } = useDoc(doc(db, "settings", "global"));
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const { data: siteSettings } = useDoc(settingsRef);
 
   const handleSignOut = () => {
     if (auth) signOut(auth);
@@ -51,9 +50,7 @@ export function Navbar() {
             {logoData ? (
               <img src={logoData} alt="Site Logo" className="object-cover w-full h-full" />
             ) : (
-              <>
-                <span className="font-handwriting text-2xl font-bold text-primary relative z-10 pointer-events-none">XM</span>
-              </>
+              <span className="font-handwriting text-2xl font-bold text-primary relative z-10 pointer-events-none">XM</span>
             )}
           </div>
           <div className="flex flex-col items-end">
@@ -106,7 +103,6 @@ export function Navbar() {
                 <DropdownMenuLabel className="p-6 text-right">
                   <p className="font-black text-white gold-text text-xl mb-1">{profile?.displayName}</p>
                   <p className="text-[10px] text-zinc-500 font-bold tracking-widest uppercase">{profile?.label}</p>
-                  <p className="text-[9px] text-zinc-600 truncate mt-2">{user.email}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-white/5 mx-4" />
                 <div className="p-3 space-y-2">

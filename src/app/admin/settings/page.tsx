@@ -1,20 +1,20 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
-import { useFirestore, useDoc } from "@/firebase";
+import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Settings, Save, Upload, Image as ImageIcon, Layout, Type, Loader2 } from "lucide-react";
+import { Settings, Save, Upload, Image as ImageIcon, Type, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function AdminSettings() {
   const db = useFirestore();
-  const { data: siteSettings, loading } = useDoc(doc(db, "settings", "global"));
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const { data: siteSettings, loading } = useDoc(settingsRef);
   const [isSaving, setIsSaving] = useState(false);
   
   const [form, setForm] = useState({

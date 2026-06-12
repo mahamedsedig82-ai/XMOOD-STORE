@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useFirestore, useCollection } from "@/firebase";
-import { collection, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, doc, updateDoc, addDoc, deleteDoc } from "firebase/firestore";
 import { adminAiAssistant } from "@/ai/flows/admin-ai-flow";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Cpu, Send, Sparkles, Loader2, Database, ShieldCheck, Zap } from "lucide-react";
+import { Cpu, Send, Sparkles, Database, ShieldCheck, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function AdminAiPage() {
@@ -17,7 +17,8 @@ export default function AdminAiPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState<{ role: 'admin' | 'ai', content: string, actionType?: string }[]>([]);
   
-  const { data: products } = useCollection(collection(db, "products"));
+  const productsRef = useMemoFirebase(() => collection(db, "products"), [db]);
+  const { data: products } = useCollection(productsRef);
 
   const handleCommand = async () => {
     if (!command.trim() || !db) return;

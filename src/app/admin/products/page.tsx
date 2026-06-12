@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -24,7 +23,6 @@ export default function AdminProducts() {
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // جلب الوكلاء لربطهم بالمنتجات
   const { data: agents } = useCollection(query(collection(db, "users"), where("role", "==", "agent")));
 
   const [form, setForm] = useState({

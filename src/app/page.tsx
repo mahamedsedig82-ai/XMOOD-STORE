@@ -1,17 +1,17 @@
-
 "use client";
 
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Trophy, Cpu, HeartHandshake, Sparkles, ArrowRight, Zap } from "lucide-react";
+import { ShieldCheck, Trophy, Cpu, HeartHandshake, Sparkles, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useFirestore, useDoc } from "@/firebase";
+import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 
 export default function Home() {
   const db = useFirestore();
-  const { data: siteSettings } = useDoc(doc(db, "settings", "global"));
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const { data: siteSettings } = useDoc(settingsRef);
 
   return (
     <main className="min-h-screen bg-black text-white selection:bg-primary/30 overflow-x-hidden">

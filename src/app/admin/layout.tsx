@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -17,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useUser, useDoc, useFirestore } from "@/firebase";
+import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { doc } from "firebase/firestore";
@@ -28,7 +27,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
 
-  const { data: siteSettings } = useDoc(doc(db, "settings", "global"));
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const { data: siteSettings } = useDoc(settingsRef);
 
   useEffect(() => {
     if (!loading && (!profile || (profile.role !== 'admin' && profile.role !== 'agent'))) {

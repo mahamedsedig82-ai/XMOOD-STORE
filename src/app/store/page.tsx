@@ -1,24 +1,21 @@
-
 "use client";
 
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, LayoutGrid, Loader2, Sparkles } from "lucide-react";
+import { Search, Filter, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 export default function StorePage() {
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const { data: products, loading } = useCollection(
-    query(collection(db, "products"), orderBy("createdAt", "desc"))
-  );
+  const productsQuery = useMemoFirebase(() => query(collection(db, "products"), orderBy("createdAt", "desc")), [db]);
+  const { data: products, loading } = useCollection(productsQuery);
 
   const categories = Array.from(new Set(products.map(p => p.category)));
   
