@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Palette, Layout, Globe, Save, Loader2, Image as ImageIcon, Type, Languages, Phone, Instagram, Mail, MessageSquare, Megaphone, Sparkles } from "lucide-react";
+import { Palette, Globe, Save, Loader2, Phone, Instagram, Mail, Megaphone, Sparkles, MessageSquare, Layout } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -26,11 +26,11 @@ export default function AdminSettingsFullControl() {
       accentColor: "#dc2626",
       fontFamily: "PT Sans",
       logoUrl: "",
-      botIconUrl: "https://picsum.photos/seed/anime/200/200"
+      botIconUrl: "https://aboutmsr.com/wp-content/uploads/2025/02/IMG_1020.webp"
     },
     siteInfo: {
-      title: "XMOOD",
-      subtitle: "الوجهة الأولى للألعاب والخدمات",
+      title: "XMOOD PRO",
+      subtitle: "الوجهة الأولى للألعاب والخدمات الرقمية",
       heroTitle: "عالمك الرقمي بلمسة احترافية",
       heroDescription: "نوفر لك أفضل باقات شحن الألعاب، الحسابات النادرة، وخدمات التصميم بأعلى جودة وأمان."
     },
@@ -88,7 +88,7 @@ export default function AdminSettingsFullControl() {
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-10">
         <div>
           <h1 className="text-5xl font-headline font-bold gold-text">مركز التحكم الشامل</h1>
-          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Full Site Engine</p>
+          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD PRO Site Engine</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg">
           {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ كافة الإعدادات</>}
