@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -5,8 +6,6 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
-import { errorEmitter } from '../error-emitter';
-import { FirestorePermissionError } from '../errors';
 
 export function useUser() {
   const auth = useAuth();
@@ -38,9 +37,10 @@ export function useUser() {
       try {
         const docSnap = await getDoc(userDocRef);
         const isAdmin = user.email?.toUpperCase() === ADMIN_EMAIL.toUpperCase();
+        const isVerified = user.emailVerified;
         
         if (!docSnap.exists()) {
-          const newProfile: UserProfile = {
+          const newProfile: any = {
             uid: user.uid,
             displayName: user.displayName || 'مستخدم XMOOD',
             email: user.email || '',
@@ -49,15 +49,23 @@ export function useUser() {
             label: isAdmin ? 'المدير العام للمنصة' : 'عضو XMOOD',
             photoURL: user.photoURL || '',
             createdAt: new Date().toISOString(),
+            isVerified: isVerified
           };
           await setDoc(userDocRef, newProfile);
-        } else if (isAdmin) {
-          if (docSnap.data()?.role !== 'admin' || (docSnap.data()?.walletBalance || 0) < 100000000) {
-            await setDoc(userDocRef, { 
-              role: 'admin', 
-              walletBalance: 999999999,
-              label: 'المدير العام للمنصة'
-            }, { merge: true });
+        } else {
+          // تحديث حالة التحقق فقط إذا تغيرت
+          if (docSnap.data().isVerified !== isVerified) {
+            await setDoc(userDocRef, { isVerified }, { merge: true });
+          }
+          
+          if (isAdmin) {
+            if (docSnap.data()?.role !== 'admin' || (docSnap.data()?.walletBalance || 0) < 100000000) {
+              await setDoc(userDocRef, { 
+                role: 'admin', 
+                walletBalance: 999999999,
+                label: 'المدير العام للمنصة'
+              }, { merge: true });
+            }
           }
         }
       } catch (err) {
