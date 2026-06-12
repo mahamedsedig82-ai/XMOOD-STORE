@@ -25,7 +25,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [securityQuestion] = useState("ما هو اسم مدرستك الأولى؟");
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'auth' | 'success' | 'verify' | 'complete_profile'>('auth');
@@ -42,30 +41,39 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
+      // تأكيد اختيار الحساب لضمان ظهور النافذة بشكل صحيح
       provider.setCustomParameters({ prompt: 'select_account' });
       
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
       const userDoc = await getDoc(doc(db, "users", user.uid));
+      
       if (!userDoc.exists()) {
+        // إذا كان مستخدم جديد، نطلب منه إكمال رقم الهاتف لربط المحفظة
         setStep('complete_profile');
       } else {
+        toast({ title: "مرحباً بك مجدداً", description: "تم تسجيل الدخول بنجاح." });
         router.push("/");
       }
     } catch (error: any) {
-      // التعامل مع حالة إغلاق النافذة من قبل المستخدم
       if (error.code === 'auth/popup-closed-by-user') {
         toast({ 
-          title: "عملية معلقة", 
-          description: "تم إغلاق نافذة تسجيل الدخول، يرجى المحاولة مرة أخرى لإتمام العملية." 
+          title: "تنبيه", 
+          description: "يبدو أنك أغلقت نافذة الدخول قبل الاكتمال. يرجى المحاولة مرة أخرى." 
+        });
+      } else if (error.code === 'auth/popup-blocked') {
+        toast({ 
+          variant: "destructive",
+          title: "المتصفح حجب النافذة", 
+          description: "يرجى السماح بالنوافذ المنبثقة لهذا الموقع من إعدادات متصفحك." 
         });
       } else {
-        console.error("Google Auth Error:", error);
+        console.error("Auth Error:", error);
         toast({ 
           variant: "destructive", 
-          title: "خطأ في تسجيل الدخول", 
-          description: "تأكد من السماح بالنوافذ المنبثقة وحاول مرة أخرى." 
+          title: "فشل الدخول", 
+          description: "حدث خطأ غير متوقع، يرجى المحاولة لاحقاً." 
         });
       }
     } finally {
@@ -121,8 +129,8 @@ export default function LoginPage() {
         createdAt: new Date().toISOString(),
         isVerified: false,
         affinityPoints: 50,
-        securityQuestion,
-        securityAnswer
+        securityQuestion: "ما هو اسم مدرستك الأولى؟",
+        securityAnswer: securityAnswer
       });
       
       setStep('verify');
@@ -157,8 +165,8 @@ export default function LoginPage() {
           <h2 className="text-3xl font-bold gold-text mb-4">خطوة أخيرة..</h2>
           <p className="text-zinc-400 mb-8">يرجى إضافة رقم هاتفك لربطه بمحفظتك الرقمية وتأمين حسابك.</p>
           <Input 
-            placeholder="رقم الهاتف (مع رمز الدولة)..." 
-            className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-lg mb-6"
+            placeholder="رقم الهاتف..." 
+            className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-lg mb-6 text-center"
             value={phone}
             onChange={e => setPhone(e.target.value)}
           />
@@ -217,8 +225,8 @@ export default function LoginPage() {
 
               <TabsContent value="login" className="space-y-6">
                 <form onSubmit={handleLogin} className="space-y-6">
-                  <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={email} onChange={e => setEmail(e.target.value)} required />
-                  <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
+                  <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center" value={password} onChange={e => setPassword(e.target.value)} required />
                   <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>
                     {loading ? <Loader2 className="animate-spin" /> : "دخول"}
                   </Button>
@@ -227,10 +235,10 @@ export default function LoginPage() {
 
               <TabsContent value="signup" className="space-y-6">
                 <form onSubmit={handleSignUp} className="space-y-6">
-                  <Input placeholder="الاسم الكامل" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={fullName} onChange={e => setFullName(e.target.value)} required />
-                  <Input placeholder="رقم الهاتف" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={phone} onChange={e => setPhone(e.target.value)} required />
-                  <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={email} onChange={e => setEmail(e.target.value)} required />
-                  <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
+                  <Input placeholder="الاسم الكامل" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                  <Input placeholder="رقم الهاتف" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center" value={phone} onChange={e => setPhone(e.target.value)} required />
+                  <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center" value={password} onChange={e => setPassword(e.target.value)} required />
                   <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>إنشاء الحساب</Button>
                 </form>
               </TabsContent>

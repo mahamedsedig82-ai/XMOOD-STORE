@@ -14,6 +14,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // بريد المدير الرسمي المعتمد
   const ADMIN_EMAILS = ["MAHAMEDFK3@GMAIL.COM"];
 
   useEffect(() => {
@@ -37,23 +38,35 @@ export function useUser() {
       try {
         const docSnap = await getDoc(userDocRef);
         const isAdmin = ADMIN_EMAILS.includes(user.email?.toUpperCase() || "");
-        const isVerified = user.emailVerified || isAdmin;
         
         if (!docSnap.exists()) {
-          // في حال كان المستخدم جديداً عبر قوقل ولم يكمل بياناته بعد
-          // سيتم التعامل معه في صفحة التسجيل/الدخول لإكمال رقم الهاتف
+          // إذا كان المستخدم مديراً، ننشئ له ملفاً فورياً
+          if (isAdmin) {
+            const adminProfile: UserProfile = {
+              uid: user.uid,
+              displayName: "المدير العام",
+              fullName: "المدير العام XMOOD",
+              email: user.email || "",
+              walletBalance: 999999, // رصيد افتراضي للمدير
+              role: 'owner',
+              label: 'المدير العام للمتجر',
+              photoURL: user.photoURL || '',
+              createdAt: new Date().toISOString(),
+              isVerified: true,
+              affinityPoints: 1000
+            };
+            await setDoc(userDocRef, adminProfile);
+            setProfile(adminProfile);
+          }
         } else {
           const currentData = docSnap.data();
-          // مزامنة الأدوار الهامة تلقائياً للمدير
+          // تحديث الصلاحيات تلقائياً للمدير إذا تغير البريد
           if (isAdmin && currentData.role !== 'owner') {
             await setDoc(userDocRef, { 
               role: 'owner', 
-              label: 'المدير العام',
+              label: 'المدير العام للمتجر',
               isVerified: true 
             }, { merge: true });
-          }
-          if (currentData.isVerified !== isVerified) {
-            await setDoc(userDocRef, { isVerified }, { merge: true });
           }
         }
       } catch (err) {
