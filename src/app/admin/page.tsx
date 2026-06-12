@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart, Users, Wallet, TrendingUp, Package, AlertCircle, ShieldCheck, Cpu } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatUSD } from "@/lib/currency";
+import Link from "next/link";
 
 export default function AdminDashboard() {
   const stats = [
@@ -108,7 +110,9 @@ export default function AdminDashboard() {
             </CardContent>
           </div>
           <div className="pt-10">
-             <Button className="w-full h-14 royal-button text-lg">فتح معالج الـ AI</Button>
+             <Button asChild className="w-full h-14 royal-button text-lg">
+                <Link href="/admin/ai">فتح معالج الـ AI</Link>
+             </Button>
           </div>
         </Card>
       </div>
