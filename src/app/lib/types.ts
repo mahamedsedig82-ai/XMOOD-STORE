@@ -1,80 +1,48 @@
 
-export type UserRole = 'user' | 'admin' | 'agent' | 'vip';
+export type UserRole = 'owner' | 'admin' | 'gm' | 'store_manager' | 'design_manager' | 'designer' | 'accountant' | 'support' | 'middleman' | 'user';
 
 export interface UserProfile {
   uid: string;
   displayName: string;
-  fullName: string;
   email: string;
   walletBalance: number;
   role: UserRole;
-  label: string; 
-  photoURL: string;
-  createdAt: string;
-  emergencyCode: string;
-  bio?: string;
-  location?: string;
-  affinityPoints?: number;
+  photoURL?: string;
   isVerified?: boolean;
+  affinityPoints?: number;
+  createdAt: string;
 }
 
-export type Category = 'شحن ألعاب' | 'حسابات ألعاب' | 'خدمات رقمية' | 'خدمات تصميم' | 'وساطة وخدمات خاصة';
-export type ProductStatus = 'active' | 'out_of_stock' | 'discount' | 'inactive';
+export type DesignStatus = 'pending' | 'assigned' | 'drafting' | 'review' | 'completed' | 'cancelled';
 
-export interface Product {
+export interface DesignRequest {
   id: string;
-  name: string;
+  customerId: string;
+  customerEmail: string;
+  designType: string;
   description: string;
+  colors: string;
+  dimensions: string;
+  attachments: string[];
+  status: DesignStatus;
+  assignedTo?: string;
+  drafts: string[];
+  finalFiles: string[];
   price: number;
-  category: Category;
-  imageUrl: string;
-  stock: number;
-  status: ProductStatus;
-  shippingCodes?: string;
-  updatedAt?: string;
-  createdAt?: string;
-  vendorId?: string;
-}
-
-export interface MarketplaceListing {
-  id: string;
-  userId: string;
-  userName: string;
-  userPhoto: string;
-  title: string;
-  description: string;
-  price: number;
-  type: 'sell' | 'buy' | 'service';
-  status: 'active' | 'completed' | 'closed';
   createdAt: string;
 }
 
-export type OrderStatus = 'waiting_payment' | 'processing' | 'completed' | 'cancelled';
-
-export interface Order {
-  id: string;
-  userId: string;
-  productId: string;
-  productName: string;
-  amount: number;
-  status: OrderStatus;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type TransactionType = 'deposit' | 'purchase' | 'refund' | 'transfer_send' | 'transfer_receive';
-
-export interface Transaction {
-  id: string;
-  userId: string;
-  targetUserId?: string; 
-  senderUserId?: string;
-  targetUserName?: string;
-  senderUserName?: string;
-  targetUserPhoto?: string;
-  senderUserPhoto?: string;
-  type: TransactionType;
-  amount: number;
-  description: string;
-  createdAt: string;
+export interface AppConfig {
+  appearance: {
+    primaryColor: string;
+    backgroundColor: string;
+    fontFamily: string;
+    logoUrl: string;
+  };
+  siteInfo: {
+    title: string;
+    subtitle: string;
+    heroTitle: string;
+    heroDescription: string;
+  };
 }

@@ -2,49 +2,68 @@
 {
   "entities": {
     "UserProfile": {
-      "title": "User Profile",
-      "description": "Extended user information and wallet balance",
+      "title": "User Profile PRO",
+      "description": "Extended user info with multi-level roles and affinity metrics",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
         "displayName": { "type": "string" },
         "email": { "type": "string" },
         "walletBalance": { "type": "number" },
-        "role": { "type": "string", "enum": ["user", "admin", "agent", "vip"] },
+        "role": { 
+          "type": "string", 
+          "enum": ["owner", "admin", "gm", "store_manager", "design_manager", "designer", "accountant", "support", "middleman", "user"] 
+        },
         "photoURL": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "label": { "type": "string" },
-        "isVerified": { "type": "boolean" }
+        "isVerified": { "type": "boolean" },
+        "affinityPoints": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["uid", "email", "walletBalance", "role"]
+      "required": ["uid", "email", "role"]
     },
-    "Product": {
-      "title": "Product",
-      "description": "Service or item in store/marketplace",
+    "DesignRequest": {
+      "title": "Design Request",
+      "description": "Professional design workflow tracking",
       "type": "object",
       "properties": {
-        "name": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerEmail": { "type": "string" },
+        "designType": { "type": "string" },
         "description": { "type": "string" },
+        "colors": { "type": "string" },
+        "dimensions": { "type": "string" },
+        "attachments": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["pending", "assigned", "drafting", "review", "completed", "cancelled"] },
+        "assignedTo": { "type": "string" },
+        "drafts": { "type": "array", "items": { "type": "string" } },
+        "finalFiles": { "type": "array", "items": { "type": "string" } },
         "price": { "type": "number" },
-        "category": { "type": "string" },
-        "imageUrl": { "type": "string" },
-        "stock": { "type": "number" },
-        "shippingCodes": { "type": "string" },
-        "status": { "type": "string", "enum": ["active", "out_of_stock", "discount", "inactive"] },
-        "vendorId": { "type": "string" }
-      },
-      "required": ["name", "price", "category", "stock", "status"]
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
     },
-    "SiteSettings": {
-      "title": "Site Settings",
-      "description": "Global configuration for logo, titles and themes",
+    "AppConfiguration": {
+      "title": "App Configuration",
+      "description": "Global visual and system settings",
       "type": "object",
       "properties": {
-        "logoData": { "type": "string" },
-        "siteTitle": { "type": "string" },
-        "siteSubtitle": { "type": "string" },
-        "heroTitle": { "type": "string" },
-        "heroDescription": { "type": "string" }
+        "appearance": {
+          "type": "object",
+          "properties": {
+            "primaryColor": { "type": "string" },
+            "backgroundColor": { "type": "string" },
+            "fontFamily": { "type": "string" },
+            "logoUrl": { "type": "string" }
+          }
+        },
+        "siteInfo": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "subtitle": { "type": "string" },
+            "heroTitle": { "type": "string" },
+            "heroDescription": { "type": "string" }
+          }
+        }
       }
     }
   },
@@ -54,15 +73,15 @@
   "firestore": {
     "/users/{userId}": {
       "schema": "UserProfile",
-      "description": "Public and private user data"
+      "description": "Sovereign user profiles"
     },
-    "/products/{productId}": {
-      "schema": "Product",
-      "description": "Catalog of all services and items"
+    "/design_requests/{requestId}": {
+      "schema": "DesignRequest",
+      "description": "Design workflow tasks"
     },
     "/settings/global": {
-      "schema": "SiteSettings",
-      "description": "Global site configuration"
+      "schema": "AppConfiguration",
+      "description": "Dynamic app settings"
     }
   }
 }

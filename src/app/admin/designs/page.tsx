@@ -1,146 +1,98 @@
+
 "use client";
 
-import { useState } from "react";
-import { generateAiDesign } from "@/ai/flows/generate-design-flow";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy, doc, updateDoc } from "firebase/firestore";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Download, Wand2, Loader2, Image as ImageIcon, Zap, History, User } from "lucide-react";
+import { Wand2, Clock, CheckCircle, ExternalLink, User, MessageCircle, FileDown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useUser } from "@/firebase";
+import { formatUSD } from "@/lib/currency";
 
-export default function AiDesignPage() {
-  const { profile } = useUser();
-  const [prompt, setPrompt] = useState("");
-  const [style, setStyle] = useState("luxury gold professional");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [history, setHistory] = useState<string[]>([]);
+export default function DesignManagementPRO() {
+  const db = useFirestore();
+  const requestsQuery = useMemoFirebase(() => query(collection(db, "design_requests"), orderBy("createdAt", "desc")), [db]);
+  const { data: requests, loading } = useCollection(requestsQuery);
 
-  const handleGenerate = async () => {
-    if (!prompt.trim()) {
-      toast({ variant: "destructive", title: "وصف ناقص", description: "يرجى كتابة ما تريد تصميمه للزبون." });
-      return;
-    }
-
-    setIsGenerating(true);
+  const handleUpdateStatus = async (id: string, status: string) => {
     try {
-      const result = await generateAiDesign({ prompt, style });
-      setGeneratedImage(result.imageUrl);
-      setHistory(prev => [result.imageUrl, ...prev]);
-      toast({ title: "تم التوليد بنجاح", description: "التصميم جاهز للتقديم للزبون." });
-    } catch (error) {
-      toast({ variant: "destructive", title: "خطأ فني", description: "فشل توليد التصميم، حاول مجدداً." });
-    } finally {
-      setIsGenerating(false);
+      await updateDoc(doc(db, "design_requests", id), { status });
+      toast({ title: "تم تحديث الحالة", description: `الطلب الآن في وضع: ${status}` });
+    } catch (e) {
+      toast({ variant: "destructive", title: "خطأ", description: "فشل التحديث." });
     }
-  };
-
-  const handleDownload = () => {
-    if (!generatedImage) return;
-    const link = document.createElement('a');
-    link.href = generatedImage;
-    link.download = `xmood-design-${Date.now()}.png`;
-    link.click();
   };
 
   return (
-    <div className="space-y-12 animate-fade-in text-white" dir="rtl">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 bg-primary rounded-3xl flex items-center justify-center text-black shadow-2xl shadow-primary/20">
-            <Wand2 size={32} />
-          </div>
-          <div>
-            <h1 className="text-5xl font-headline font-bold gold-text">بيئة عمل المصمم الملكي</h1>
-            <p className="text-slate-500 text-sm font-black uppercase tracking-[0.4em] mt-1">Sovereign Designer Protocol</p>
-          </div>
+    <div className="space-y-10 animate-fade-up" dir="rtl">
+      <header className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-headline font-bold text-slate-900">إدارة تدفق التصاميم</h1>
+          <p className="text-slate-500">متابعة الطلبات، تعيين المصممين، واعتماد الملفات النهائية.</p>
         </div>
-        
-        <Card className="bg-primary/10 border-primary/20 px-6 py-3 flex items-center gap-4 rounded-2xl">
-          <User className="text-primary" />
-          <div className="text-right">
-            <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">المصمم الحالي</p>
-            <p className="font-bold text-sm">{profile?.displayName}</p>
-          </div>
-        </Card>
+        <div className="bg-primary/10 px-6 py-2 rounded-full border border-primary/20 text-primary font-bold text-sm">
+          إجمالي الطلبات: {requests?.length || 0}
+        </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <Card className="lg:col-span-1 luxury-card border-none p-10 flex flex-col justify-between">
-          <div className="space-y-8">
-            <CardHeader className="p-0">
-              <CardTitle className="text-2xl font-bold flex items-center gap-4 gold-text">
-                <Zap size={24} className="text-primary" /> معالجة الطلب
-              </CardTitle>
-              <CardDescription>اكتب وصف التصميم المطلوب من قبل الزبون بدقة.</CardDescription>
-            </CardHeader>
-
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest pr-4">وصف التصميم (AI Prompt)</label>
-                <Textarea 
-                  value={prompt}
-                  onChange={e => setPrompt(e.target.value)}
-                  placeholder="مثال: شعار ملكي لمتجر ألعاب، تاج ذهبي، خلفية سوداء فخمة، دقة عالية..."
-                  className="h-32 bg-black border-none rounded-2xl p-6 font-bold text-sm text-primary"
-                />
-              </div>
-              <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest pr-4">نمط اللمسة النهائية</label>
-                <Input 
-                  value={style}
-                  onChange={e => setStyle(e.target.value)}
-                  placeholder="luxury gold, cinematic, professional..."
-                  className="h-12 bg-black border-none rounded-xl px-6 font-bold text-white"
-                />
-              </div>
-            </div>
-          </div>
-
-          <Button 
-            onClick={handleGenerate}
-            disabled={isGenerating}
-            className="royal-button h-20 text-2xl mt-12 shadow-2xl"
-          >
-            {isGenerating ? <Loader2 className="animate-spin" /> : <><Sparkles size={28} className="ml-4" /> تنفيذ التصميم</>}
-          </Button>
-        </Card>
-
-        <Card className="lg:col-span-2 luxury-card border-none overflow-hidden flex flex-col legendary-border">
-          <div className="flex-1 relative flex items-center justify-center p-6 bg-zinc-950/50 min-h-[500px]">
-            {generatedImage ? (
-              <div className="relative group w-full h-full flex items-center justify-center">
-                <img src={generatedImage} className="max-h-[600px] w-auto rounded-3xl shadow-[0_0_100px_rgba(255,184,0,0.2)] border border-primary/20" alt="Generated" />
-                <div className="absolute top-6 left-6 flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <Button onClick={handleDownload} className="h-14 w-14 rounded-2xl bg-primary text-black p-0 shadow-2xl"><Download size={24} /></Button>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center space-y-6 opacity-10">
-                <ImageIcon size={120} className="mx-auto" />
-                <p className="text-3xl font-black uppercase tracking-[0.5em]">Awaiting Order Processing...</p>
-              </div>
-            )}
-          </div>
-          
-          {history.length > 0 && (
-            <div className="p-8 bg-black/60 border-t border-white/5">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-6 flex items-center gap-3">
-                <History size={14} /> سجل إبداعاتك الأخيرة
-              </h4>
-              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                {history.map((img, i) => (
-                  <button key={i} onClick={() => setGeneratedImage(img)} className="w-20 h-20 rounded-xl overflow-hidden border border-white/10 hover:border-primary transition-all shrink-0">
-                    <img src={img} className="w-full h-full object-cover" alt="" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </Card>
-      </div>
+      <Card className="luxury-card overflow-hidden">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader className="bg-slate-50">
+              <TableRow>
+                <TableHead className="text-right py-6 font-black text-[10px] uppercase">العميل</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase">نوع التصميم</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase">تاريخ الطلب</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase">الحالة</TableHead>
+                <TableHead className="text-center font-black text-[10px] uppercase">الإجراءات</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow><TableCell colSpan={5} className="text-center py-20">جاري تحميل البيانات السيادية...</TableCell></TableRow>
+              ) : requests?.map((req: any) => (
+                <TableRow key={req.id} className="hover:bg-primary/5 transition-colors border-b border-slate-100">
+                  <TableCell className="py-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+                        <User size={20} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-slate-900">{req.customerName}</span>
+                        <span className="text-[10px] opacity-50">{req.customerEmail}</span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-bold text-primary uppercase">{req.designType}</TableCell>
+                  <TableCell className="text-xs text-slate-500">{new Date(req.createdAt).toLocaleDateString('ar-EG')}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={`rounded-full font-bold px-4 ${
+                      req.status === 'completed' ? 'bg-green-50 text-green-600' : 
+                      req.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
+                    }`}>
+                      {req.status === 'pending' ? 'قيد الانتظار' : req.status === 'completed' ? 'مكتمل' : 'قيد التنفيذ'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-400 hover:text-primary"><MessageCircle size={18} /></Button>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-400 hover:text-primary"><FileDown size={18} /></Button>
+                      <Button 
+                        onClick={() => handleUpdateStatus(req.id, req.status === 'pending' ? 'drafting' : 'completed')}
+                        className="h-10 px-4 royal-button text-[10px]"
+                      >
+                        تغيير الحالة
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

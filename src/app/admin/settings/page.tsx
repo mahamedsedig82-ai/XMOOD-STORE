@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,56 +8,44 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Settings, Save, Upload, Image as ImageIcon, Type, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Palette, Layout, Globe, Shield, Save, Loader2, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
-export default function AdminSettings() {
+export default function AdminSettingsPRO() {
   const db = useFirestore();
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
-  const { data: siteSettings, loading } = useDoc(settingsRef);
+  const { data: config, loading } = useDoc(settingsRef);
   const [isSaving, setIsSaving] = useState(false);
   
   const [form, setForm] = useState({
-    siteTitle: "XMOOD STORE",
-    siteSubtitle: "Sovereign Store",
-    heroTitle: "XMOOD STORE",
-    heroDescription: "المنصة الأكثر فخامة في العالم الرقمي.",
-    logoData: "",
+    appearance: {
+      primaryColor: "#d4af37",
+      backgroundColor: "#ffffff",
+      fontFamily: "PT Sans",
+      logoUrl: ""
+    },
+    siteInfo: {
+      title: "XMOOD STORE",
+      subtitle: "Digital Sovereignty",
+      heroTitle: "XMOOD PRO MAX",
+      heroDescription: "المنصة الرقمية المتكاملة لإدارة الأصول والتصاميم."
+    }
   });
 
   useEffect(() => {
-    if (siteSettings) {
-      setForm({
-        siteTitle: siteSettings.siteTitle || "XMOOD STORE",
-        siteSubtitle: siteSettings.siteSubtitle || "Sovereign Store",
-        heroTitle: siteSettings.heroTitle || "XMOOD STORE",
-        heroDescription: siteSettings.heroDescription || "المنصة الأكثر فخامة في العالم الرقمي.",
-        logoData: siteSettings.logoData || "",
-      });
-    }
-  }, [siteSettings]);
+    if (config) setForm(config as any);
+  }, [config]);
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setForm(prev => ({ ...prev, logoData: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSaveSettings = async () => {
+  const handleSave = async () => {
     if (!db) return;
     setIsSaving(true);
     try {
-      await setDoc(doc(db, "settings", "global"), {
+      await setDoc(settingsRef, {
         ...form,
         updatedAt: serverTimestamp(),
       }, { merge: true });
-      toast({ title: "تم التحديث الملكي", description: "تم حفظ إعدادات الهوية بنجاح." });
+      toast({ title: "تم تحديث القالب", description: "تم تطبيق التغييرات البصرية على المنصة فوراً." });
     } catch (error) {
       toast({ variant: "destructive", title: "خطأ", description: "فشل حفظ الإعدادات." });
     } finally {
@@ -67,79 +56,78 @@ export default function AdminSettings() {
   if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-primary" size={40} /></div>;
 
   return (
-    <div className="space-y-12 animate-fade-in text-white" dir="rtl">
-      <header className="border-b border-primary/10 pb-8">
-        <h1 className="text-5xl font-headline font-bold gold-text">مركز التحكم في الهوية</h1>
-        <p className="text-slate-500 mt-2">تخصيص الشعار، العناوين، والترويصات الخاصة بالإمبراطورية.</p>
+    <div className="space-y-10 animate-fade-up" dir="rtl">
+      <header className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-headline font-bold text-slate-900">محرك القوالب PRO</h1>
+          <p className="text-slate-500">تحكم كامل في الهوية البصرية وتجربة المستخدم.</p>
+        </div>
+        <Button onClick={handleSave} disabled={isSaving} className="royal-button h-14">
+          {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={20} className="ml-2" /> حفظ التغييرات</>}
+        </Button>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <Card className="luxury-card border-none p-10">
-          <CardHeader className="p-0 mb-8">
-            <CardTitle className="text-2xl font-bold flex items-center gap-4 gold-text">
-              <ImageIcon className="text-primary" /> شعار المنصة السيادي
-            </CardTitle>
-            <CardDescription>ارفع شعاراً جديداً ليتم تطبيقه في كافة أقسام الموقع.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0 space-y-8 text-center">
-            <div className="relative group mx-auto w-48 h-48 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center bg-zinc-900 overflow-hidden shadow-2xl">
-              {form.logoData ? (
-                <img src={form.logoData} className="w-full h-full object-cover" alt="Logo Preview" />
-              ) : (
-                <div className="text-zinc-600 flex flex-col items-center">
-                  <Upload size={40} />
-                  <span className="text-[10px] font-black uppercase tracking-widest mt-2">No Logo</span>
+      <Tabs defaultValue="visual" className="w-full">
+        <TabsList className="bg-white p-1 rounded-2xl h-14 shadow-sm border mb-8">
+          <TabsTrigger value="visual" className="rounded-xl px-8 flex gap-2"><Palette size={18} /> المظهر البصري</TabsTrigger>
+          <TabsTrigger value="info" className="rounded-xl px-8 flex gap-2"><Globe size={18} /> معلومات الموقع</TabsTrigger>
+          <TabsTrigger value="system" className="rounded-xl px-8 flex gap-2"><Layout size={18} /> إعدادات النظام</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="visual">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="luxury-card p-8">
+              <CardTitle className="text-xl mb-6">الألوان والخطوط</CardTitle>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label>اللون الأساسي (Primary)</Label>
+                  <div className="flex gap-4">
+                    <Input type="color" value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-12 w-20 p-1" />
+                    <Input value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-12" />
+                  </div>
                 </div>
-              )}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <label className="cursor-pointer royal-button h-10 px-4 text-[10px]">
-                  تغيير الشعار
-                  <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
-                </label>
+                <div className="space-y-2">
+                  <Label>عائلة الخطوط</Label>
+                  <Input value={form.appearance.fontFamily} onChange={e => setForm({...form, appearance: {...form.appearance, fontFamily: e.target.value}})} className="h-12" />
+                </div>
               </div>
-            </div>
-            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">بصيغة PNG أو JPG (يفضل خلفية شفافة)</p>
-          </CardContent>
-        </Card>
+            </Card>
 
-        <Card className="luxury-card border-none p-10">
-          <CardHeader className="p-0 mb-8">
-            <CardTitle className="text-2xl font-bold flex items-center gap-4 gold-text">
-              <Type className="text-primary" /> نصوص وترويصات الموقع
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 space-y-6">
-            <div className="grid grid-cols-2 gap-6">
+            <Card className="luxury-card p-8">
+              <CardTitle className="text-xl mb-6">رابط الشعار السيادي</CardTitle>
+              <div className="space-y-6 text-center">
+                <div className="w-32 h-32 mx-auto rounded-full border-2 border-dashed border-primary/20 flex items-center justify-center bg-slate-50 overflow-hidden">
+                  {form.appearance.logoUrl ? <img src={form.appearance.logoUrl} className="object-cover" /> : <Palette size={40} className="text-slate-200" />}
+                </div>
+                <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} placeholder="رابط URL للشعار..." className="h-12" />
+              </div>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="info">
+          <Card className="luxury-card p-8 space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase text-primary">عنوان الموقع الرئيسي</Label>
-                <Input value={form.siteTitle} onChange={e => setForm({...form, siteTitle: e.target.value})} className="h-12 bg-black border-none rounded-xl font-bold" />
+                <Label>عنوان الموقع</Label>
+                <Input value={form.siteInfo.title} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, title: e.target.value}})} className="h-12" />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase text-primary">العنوان الفرعي</Label>
-                <Input value={form.siteSubtitle} onChange={e => setForm({...form, siteSubtitle: e.target.value})} className="h-12 bg-black border-none rounded-xl font-bold" />
+                <Label>العنوان الفرعي</Label>
+                <Input value={form.siteInfo.subtitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, subtitle: e.target.value}})} className="h-12" />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase text-primary">عنوان قسم الـ Hero (الصفحة الرئيسية)</Label>
-              <Input value={form.heroTitle} onChange={e => setForm({...form, heroTitle: e.target.value})} className="h-12 bg-black border-none rounded-xl font-bold" />
+              <Label>ترويصة الـ Hero</Label>
+              <Input value={form.siteInfo.heroTitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, heroTitle: e.target.value}})} className="h-12" />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase text-primary">وصف الـ Hero</Label>
-              <Textarea value={form.heroDescription} onChange={e => setForm({...form, heroDescription: e.target.value})} className="h-24 bg-black border-none rounded-xl font-bold" />
+              <Label>وصف الـ Hero</Label>
+              <Input value={form.siteInfo.heroDescription} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, heroDescription: e.target.value}})} className="h-12" />
             </div>
-          </CardContent>
-        </Card>
-
-        <div className="lg:col-span-2 flex justify-center">
-          <Button 
-            onClick={handleSaveSettings} 
-            disabled={isSaving}
-            className="royal-button h-16 px-20 text-xl shadow-2xl"
-          >
-            {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ التغييرات السيادية</>}
-          </Button>
-        </div>
-      </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
