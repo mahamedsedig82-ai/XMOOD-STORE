@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -5,8 +6,13 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Trophy, Cpu, HeartHandshake, Sparkles, ArrowRight, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useFirestore, useDoc } from "@/firebase";
+import { doc } from "firebase/firestore";
 
 export default function Home() {
+  const db = useFirestore();
+  const { data: siteSettings } = useDoc(doc(db, "settings", "global"));
+
   return (
     <main className="min-h-screen bg-black text-white selection:bg-primary/30 overflow-x-hidden">
       <Navbar />
@@ -28,11 +34,11 @@ export default function Home() {
             Sovereign Elite Registry
           </Badge>
           <h1 className="text-7xl md:text-[10rem] mb-12 tracking-tighter font-headline font-bold leading-[0.9] drop-shadow-2xl">
-             <span className="block gold-text">XMOOD STORE</span>
-             <span className="text-2xl md:text-4xl font-light text-zinc-600 mt-6 block uppercase tracking-[0.4em]">Digital Sovereignty</span>
+             <span className="block gold-text">{siteSettings?.heroTitle || "XMOOD STORE"}</span>
+             <span className="text-2xl md:text-4xl font-light text-zinc-600 mt-6 block uppercase tracking-[0.4em]">{siteSettings?.siteSubtitle || "Digital Sovereignty"}</span>
           </h1>
           <p className="text-xl md:text-2xl text-zinc-500 max-w-4xl mx-auto mb-20 leading-relaxed font-light">
-            المنصة الأكثر فخامة في العالم الرقمي. تجارة الأصول، شحن الألعاب، وحماية الوسطاء تحت نظام سيادي لا يعرف الحدود.
+            {siteSettings?.heroDescription || "المنصة الأكثر فخامة في العالم الرقمي. تجارة الأصول، شحن الألعاب، وحماية الوسطاء تحت نظام سيادي لا يعرف الحدود."}
           </p>
           
           <div className="flex flex-wrap justify-center gap-8 mb-40">
@@ -82,7 +88,7 @@ export default function Home() {
 
       <footer className="py-24 border-t border-white/5 bg-black">
         <div className="container mx-auto px-6 text-center">
-          <div className="font-handwriting text-8xl font-bold gold-text mb-10">XMOOD STORE</div>
+          <div className="font-handwriting text-8xl font-bold gold-text mb-10">{siteSettings?.siteTitle || "XMOOD STORE"}</div>
           <p className="text-zinc-600 max-w-2xl mx-auto mb-16 text-lg font-light leading-relaxed">
             حيث تلتقي التكنولوجيا بالفخامة. نحن لا نقدم خدمات فقط، نحن نبني هويات رقمية أسطورية لا تمحى.
           </p>

@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview AI Design Generation Flow using Imagen 4.
+ * @fileOverview AI Design Generation Flow using Imagen 3.
  * Generates high-quality luxury designs based on user prompts.
  */
 
@@ -34,7 +34,7 @@ const generateDesignFlow = ai.defineFlow(
     const fullPrompt = `${input.prompt}. Style: ${input.style || 'luxury professional golden finish'}`;
     
     const { media } = await ai.generate({
-      model: 'googleai/imagen-4.0-fast-generate-001',
+      model: 'googleai/imagen-3', // Use standard stable model name
       prompt: fullPrompt,
     });
 
