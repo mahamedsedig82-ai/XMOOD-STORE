@@ -1,11 +1,9 @@
-
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wallet, LayoutDashboard, ShieldCheck, Sparkles, LogOut, User as UserIcon, Search, Menu, Zap } from "lucide-react";
+import { Wallet, LayoutDashboard, ShieldCheck, Sparkles, LogOut, User as UserIcon, Zap, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useUser, useAuth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { 
@@ -30,84 +28,81 @@ export function Navbar() {
 
   const navLinks = [
     { name: "الرئيسية", href: "/" },
-    { name: "المتجر", href: "/store" },
-    { name: "السوق المفتوح", href: "/marketplace" },
-    { name: "نظام الوساطة", href: "/middleman" },
+    { name: "المتجر الملكي", href: "/store" },
+    { name: "السوق السيادي", href: "/marketplace" },
+    { name: "نظام الضمان", href: "/middleman" },
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-primary/10 bg-black/80 backdrop-blur-3xl">
-      <div className="container mx-auto px-6 h-24 flex items-center justify-between gap-10 flex-row-reverse">
+    <nav className="sticky top-0 z-50 w-full border-b border-white/5 bg-black/90 backdrop-blur-xl">
+      <div className="container mx-auto px-6 h-20 flex items-center justify-between gap-10 flex-row-reverse">
         
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-4 group flex-row-reverse shrink-0">
-          <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-black shadow-2xl shadow-primary/30 group-hover:rotate-6 transition-transform">
-            <ShieldCheck size={28} strokeWidth={2.5} />
+        <Link href="/" className="flex items-center gap-3 group flex-row-reverse shrink-0">
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-black shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
+            <ShieldCheck size={24} />
           </div>
-          <span className="font-handwriting text-4xl font-bold tracking-tight text-primary mt-1">XMOOD STORE</span>
+          <span className="font-handwriting text-3xl font-bold tracking-tight text-primary">XMOOD STORE</span>
         </Link>
 
-        {/* Navigation Links */}
-        <div className="hidden lg:flex items-center gap-10 flex-row-reverse shrink-0">
+        <div className="hidden lg:flex items-center gap-8 flex-row-reverse shrink-0">
           {navLinks.map((link) => (
             <Link 
               key={link.href} 
               href={link.href} 
-              className={`text-sm font-black uppercase tracking-widest transition-all hover:text-primary hover:scale-105 ${pathname === link.href ? 'text-primary' : 'text-slate-400'}`}
+              className={`text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:text-primary ${pathname === link.href ? 'text-primary' : 'text-zinc-500'}`}
             >
               {link.name}
             </Link>
           ))}
-          <Link href="/concierge" className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-primary bg-primary/10 px-6 py-2.5 rounded-full border border-primary/20 hover:bg-primary/20 transition-all">
-            <Sparkles size={16} /> المساعد الذكي
+          <Link href="/concierge" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.1em] text-primary bg-primary/5 px-4 py-2 rounded-full border border-primary/10 hover:bg-primary/10 transition-all">
+            <Sparkles size={14} /> المساعد الذكي
           </Link>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-6 flex-row-reverse shrink-0">
+        <div className="flex items-center gap-5 flex-row-reverse shrink-0">
           {user && profile && (
-            <div className="hidden sm:flex items-center gap-4 bg-zinc-900 px-6 py-2.5 rounded-full border border-primary/10">
-              <span className="text-lg font-black text-primary tracking-tighter">{formatUSD(profile.walletBalance || 0)}</span>
-              <Zap size={18} className="text-primary/60" />
+            <div className="hidden sm:flex items-center gap-3 bg-white/5 px-5 py-2 rounded-full border border-white/10">
+              <span className="text-sm font-black text-primary tracking-tighter">{formatUSD(profile.walletBalance || 0)}</span>
+              <Zap size={14} className="text-primary/60" />
             </div>
           )}
 
           {!user ? (
-            <Button asChild className="rounded-full h-14 px-10 font-black shadow-2xl royal-button text-lg">
+            <Button asChild className="royal-button h-11 px-8">
               <Link href="/login">بوابة الدخول</Link>
             </Button>
           ) : (
             <DropdownMenu dir="rtl">
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 h-14 w-14 rounded-[1.2rem] overflow-hidden border border-primary/20 shadow-2xl hover:scale-110 transition-transform">
+                <Button variant="ghost" className="p-0 h-11 w-11 rounded-xl overflow-hidden border border-white/10 hover:border-primary/50 transition-all">
                   <Avatar className="h-full w-full rounded-none">
-                    <AvatarImage src={user.photoURL || ""} alt={user.displayName || ""} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-black text-xl">
-                      {user.displayName?.charAt(0) || <UserIcon size={24} />}
+                    <AvatarImage src={profile?.photoURL} alt={user.displayName || ""} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-black">
+                      {profile?.displayName?.charAt(0) || <UserIcon size={18} />}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-72 mt-4 p-3 rounded-[2rem] border-primary/10 bg-zinc-950 shadow-2xl" align="start">
-                <DropdownMenuLabel className="p-6 text-right">
-                  <p className="font-black text-xl text-white gold-text">{user.displayName}</p>
-                  <p className="text-xs text-slate-500 truncate mt-1">{user.email}</p>
+              <DropdownMenuContent className="w-64 mt-3 rounded-2xl bg-zinc-950 border-white/10 shadow-2xl" align="start">
+                <DropdownMenuLabel className="p-5 text-right">
+                  <p className="font-black text-white gold-text text-lg">{profile?.displayName}</p>
+                  <p className="text-[10px] text-zinc-500 truncate mt-1">{user.email}</p>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-primary/5" />
+                <DropdownMenuSeparator className="bg-white/5" />
                 <div className="p-2 space-y-1">
                   {profile?.role === 'admin' && (
-                    <DropdownMenuItem asChild className="rounded-xl p-4 cursor-pointer text-primary font-black focus:bg-primary/10 justify-end transition-all">
-                      <Link href="/admin"><LayoutDashboard className="ml-4 w-5 h-5" /> لوحة الإدارة العليا</Link>
+                    <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer text-primary font-black justify-end">
+                      <Link href="/admin"><LayoutDashboard className="ml-3 w-4 h-4" /> لوحة الإدارة</Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem asChild className="rounded-xl p-4 cursor-pointer focus:bg-white/5 justify-end transition-all">
-                    <Link href="/wallet" className="font-bold"><Wallet className="ml-4 w-5 h-5" /> محفظتي السيادية</Link>
+                  <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer justify-end font-bold text-zinc-300">
+                    <Link href="/wallet"><Wallet className="ml-3 w-4 h-4" /> محفظتي السيادية</Link>
                   </DropdownMenuItem>
                 </div>
-                <DropdownMenuSeparator className="bg-primary/5" />
+                <DropdownMenuSeparator className="bg-white/5" />
                 <div className="p-2">
-                  <DropdownMenuItem onClick={handleSignOut} className="rounded-xl p-4 cursor-pointer text-red-500 focus:bg-red-500/10 font-black justify-end transition-all">
-                    <LogOut className="ml-4 w-5 h-5" /> تسجيل الخروج
+                  <DropdownMenuItem onClick={handleSignOut} className="rounded-xl p-3 cursor-pointer text-red-500 font-black justify-end">
+                    <LogOut className="ml-3 w-4 h-4" /> تسجيل الخروج
                   </DropdownMenuItem>
                 </div>
               </DropdownMenuContent>
@@ -115,7 +110,7 @@ export function Navbar() {
           )}
           
           <Button variant="ghost" size="icon" className="lg:hidden text-primary">
-            <Menu size={32} />
+            <Menu size={24} />
           </Button>
         </div>
       </div>
