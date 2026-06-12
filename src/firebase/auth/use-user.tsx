@@ -14,7 +14,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const ADMIN_EMAIL = "MAHAMEDFK3@GMAIL.COM";
+  const ADMIN_EMAILS = ["MAHAMEDFK3@GMAIL.COM"];
 
   useEffect(() => {
     if (!auth) return;
@@ -36,38 +36,34 @@ export function useUser() {
     const syncProfile = async () => {
       try {
         const docSnap = await getDoc(userDocRef);
-        const isAdmin = user.email?.toUpperCase() === ADMIN_EMAIL.toUpperCase();
-        const isVerified = user.emailVerified || isAdmin; // المدير يعتبر موثقاً دائماً لتسهيل الإدارة
+        const isAdmin = ADMIN_EMAILS.includes(user.email?.toUpperCase() || "");
+        const isVerified = user.emailVerified || isAdmin;
         
         if (!docSnap.exists()) {
           const newProfile: any = {
             uid: user.uid,
-            displayName: user.displayName || 'مستخدم XMOOD',
+            displayName: user.displayName || 'مستكشف XMOOD',
             email: user.email || '',
-            walletBalance: isAdmin ? 999999999 : 0,
-            role: isAdmin ? 'admin' : 'user',
-            label: isAdmin ? 'المدير العام للمنصة' : 'عضو XMOOD',
+            walletBalance: isAdmin ? 1000000 : 0,
+            role: isAdmin ? 'owner' : 'user',
+            label: isAdmin ? 'المدير العام' : 'عضو بريميوم',
             photoURL: user.photoURL || '',
             createdAt: new Date().toISOString(),
             isVerified: isVerified
           };
           await setDoc(userDocRef, newProfile);
         } else {
-          // تحديث حالة التحقق فقط إذا تغيرت أو إذا كان مديراً
-          if (docSnap.data().isVerified !== isVerified || (isAdmin && docSnap.data().role !== 'admin')) {
+          // Sync crucial admin roles and verification status
+          const currentData = docSnap.data();
+          if (isAdmin && currentData.role !== 'owner') {
             await setDoc(userDocRef, { 
-              isVerified,
-              role: isAdmin ? 'admin' : docSnap.data().role,
-              label: isAdmin ? 'المدير العام للمنصة' : docSnap.data().label
+              role: 'owner', 
+              label: 'المدير العام',
+              isVerified: true 
             }, { merge: true });
           }
-          
-          if (isAdmin) {
-            if ((docSnap.data()?.walletBalance || 0) < 100000000) {
-              await setDoc(userDocRef, { 
-                walletBalance: 999999999
-              }, { merge: true });
-            }
+          if (currentData.isVerified !== isVerified) {
+            await setDoc(userDocRef, { isVerified }, { merge: true });
           }
         }
       } catch (err) {
@@ -83,6 +79,7 @@ export function useUser() {
       }
       setLoading(false);
     }, (error) => {
+      console.error("Profile Listener Error:", error);
       setLoading(false);
     });
 
@@ -91,3 +88,4 @@ export function useUser() {
 
   return { user, profile, loading };
 }
+
