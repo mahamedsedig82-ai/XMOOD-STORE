@@ -17,7 +17,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Loader2, Camera, AlertTriangle, Key, Mail, Globe } from "lucide-react";
+import { ShieldCheck, Loader2, Key, Mail, Globe, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -38,14 +38,13 @@ export default function LoginPage() {
   useEffect(() => { setIsMounted(true); }, []);
 
   const handleSocialLogin = async (providerName: 'google' | 'apple') => {
-    if (!auth || !db) return;
+    if (!auth || !db || loading) return;
     setLoading(true);
     try {
       const provider = providerName === 'google' 
         ? new GoogleAuthProvider() 
         : new OAuthProvider('apple.com');
       
-      // Force account selection to avoid auto-login issues
       provider.setCustomParameters({ prompt: 'select_account' });
       
       const result = await signInWithPopup(auth, provider);
@@ -74,12 +73,16 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (error: any) {
-      console.error("Social Login Error:", error);
-      toast({ 
-        variant: "destructive", 
-        title: "خطأ في التوثيق الخارجي", 
-        description: "تعذر الاتصال بالمزود. يرجى التأكد من السماح بالنوافذ المنبثقة أو المحاولة لاحقاً." 
-      });
+      if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
+        // Silent ignore for user cancellation
+      } else {
+        console.error("Social Login Error:", error);
+        toast({ 
+          variant: "destructive", 
+          title: "خطأ في بروتوكول التوثيق", 
+          description: "تعذر إكمال الاتصال بالمزود الخارجي. يرجى إعادة المحاولة." 
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -87,7 +90,7 @@ export default function LoginPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !db) return;
+    if (!auth || !db || loading) return;
     if (fullName.trim().split(" ").length < 4) {
       toast({ variant: "destructive", title: "تنبيه أمني رسمي", description: "يجب إدخال الاسم الرباعي كاملاً لضمان التوثيق السيادي." });
       return;
@@ -95,7 +98,6 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // Send real verification email
       await sendEmailVerification(userCredential.user);
       
       const code = "XM-" + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -108,13 +110,13 @@ export default function LoginPage() {
         email: email,
         walletBalance: 0,
         role: 'user',
-        label: 'عضو النخبة',
+        label: 'عضو النخبة الموثق',
         photoURL: '',
         createdAt: new Date().toISOString(),
         emergencyCode: code,
         isVerified: false,
         affinityPoints: 50,
-        securityQuestions: [{ question: "ما هو اسم أول مدرسة التحقت بها؟", answer: securityAnswer }]
+        securityQuestions: [{ question: "سؤال الأمان الافتراضي", answer: securityAnswer }]
       });
       
       setStep('verify');
@@ -127,7 +129,7 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) return;
+    if (!auth || loading) return;
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -192,7 +194,7 @@ export default function LoginPage() {
           <div className="p-12 text-center bg-white/5 border-b border-white/5">
             <ShieldCheck size={56} className="text-primary mx-auto mb-6" />
             <h2 className="text-4xl font-headline font-bold gold-text">بوابة الدخول الملكية</h2>
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-4">XMOOD Sovereign Elite Access</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-4">XMOOD Sovereign Elite Access PRO</p>
           </div>
           <CardContent className="p-12">
             <div className="grid grid-cols-2 gap-6 mb-12">
@@ -217,7 +219,7 @@ export default function LoginPage() {
                   <Input type="email" placeholder="البريد الإلكتروني الرسمي" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold text-lg" value={email} onChange={e => setEmail(e.target.value)} required />
                   <Input type="password" placeholder="كلمة المرور السرية" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold text-lg" value={password} onChange={e => setPassword(e.target.value)} required />
                   <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "دخول الخزانة"}
+                    {loading ? <Loader2 className="animate-spin" /> : "دخول الخزانة الملكية"}
                   </Button>
                 </form>
               </TabsContent>
@@ -228,11 +230,11 @@ export default function LoginPage() {
                   <Input type="email" placeholder="البريد الإلكتروني الرسمي" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold text-lg" value={email} onChange={e => setEmail(e.target.value)} required />
                   <Input type="password" placeholder="تعيين كلمة مرور قوية" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold text-lg" value={password} onChange={e => setPassword(e.target.value)} required />
                   <div className="p-6 bg-primary/5 rounded-3xl border border-primary/20">
-                    <label className="text-[10px] font-black text-primary uppercase mb-3 block tracking-widest">بروتوكول الأمان: ما اسم أول مدرسة؟</label>
-                    <Input placeholder="الإجابة السرية للتوثيق" className="h-14 rounded-xl bg-black border-none px-6 text-white font-black" value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} required />
+                    <label className="text-[10px] font-black text-primary uppercase mb-3 block tracking-widest">بروتوكول الأمان: الإجابة السرية</label>
+                    <Input placeholder="اسم مدرستك الأولى أو رمزك السري" className="h-14 rounded-xl bg-black border-none px-6 text-white font-black" value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} required />
                   </div>
                   <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "تأمين الهوية والبدء"}
+                    {loading ? <Loader2 className="animate-spin" /> : "تأمين الهوية الملكية"}
                   </Button>
                 </form>
               </TabsContent>
