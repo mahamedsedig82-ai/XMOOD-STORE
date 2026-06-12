@@ -14,9 +14,9 @@ import {
   signInWithPopup,
   sendEmailVerification 
 } from "firebase/auth";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { Loader2, Mail, Globe, UserCircle, RefreshCcw, AlertTriangle, Phone } from "lucide-react";
+import { Loader2, Mail, Globe, UserCircle, Phone } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [securityQuestion, setSecurityQuestion] = useState("ما هو اسم مدرستك الأولى؟");
+  const [securityQuestion] = useState("ما هو اسم مدرستك الأولى؟");
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'auth' | 'success' | 'verify' | 'complete_profile'>('auth');
@@ -49,18 +49,25 @@ export default function LoginPage() {
       
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (!userDoc.exists()) {
-        // نطلب منه إكمال رقم الهاتف
         setStep('complete_profile');
       } else {
         router.push("/");
       }
     } catch (error: any) {
-      console.error("Google Auth Error:", error);
-      toast({ 
-        variant: "destructive", 
-        title: "خطأ في تسجيل الدخول", 
-        description: "تأكد من السماح بالنوافذ المنبثقة وحاول مرة أخرى." 
-      });
+      // التعامل مع حالة إغلاق النافذة من قبل المستخدم
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast({ 
+          title: "عملية معلقة", 
+          description: "تم إغلاق نافذة تسجيل الدخول، يرجى المحاولة مرة أخرى لإتمام العملية." 
+        });
+      } else {
+        console.error("Google Auth Error:", error);
+        toast({ 
+          variant: "destructive", 
+          title: "خطأ في تسجيل الدخول", 
+          description: "تأكد من السماح بالنوافذ المنبثقة وحاول مرة أخرى." 
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -174,6 +181,19 @@ export default function LoginPage() {
     );
   }
 
+  if (step === 'success') {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
+        <Card className="w-full max-w-xl rounded-[3rem] bg-zinc-950 border border-primary/20 text-center p-12">
+          <UserCircle size={80} className="text-primary mx-auto mb-6" />
+          <h2 className="text-4xl font-headline font-bold gold-text mb-4">أهلاً بك في XMOOD</h2>
+          <p className="text-zinc-400 mb-8 font-medium">تم إنشاء ملفك الشخصي بنجاح، أنت الآن عضو موثق في مجتمعنا.</p>
+          <Button onClick={() => router.push("/")} className="w-full h-16 rounded-2xl bg-white text-black font-bold text-xl">انطلق للمتجر</Button>
+        </Card>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-black" dir="rtl">
       <Navbar />
@@ -184,7 +204,7 @@ export default function LoginPage() {
             <h2 className="text-4xl font-headline font-bold gold-text">دخول المتجر</h2>
           </div>
           <CardContent className="p-10">
-            <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-16 rounded-2xl border-white/10 bg-white/5 text-lg font-bold mb-10 hover:bg-white/10">
+            <Button onClick={handleGoogleLogin} variant="outline" className="w-full h-16 rounded-2xl border-white/10 bg-white/5 text-lg font-bold mb-10 hover:bg-white/10" disabled={loading}>
               <Globe className="w-6 h-6 ml-3 text-blue-400" />
               متابعة عبر Google
             </Button>
