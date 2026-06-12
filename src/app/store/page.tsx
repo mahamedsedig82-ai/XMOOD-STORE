@@ -1,61 +1,69 @@
+
 "use client";
 
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
-import { STORE_PRODUCTS } from "@/app/lib/mock-data";
+import { useCollection, useFirestore } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, LayoutGrid } from "lucide-react";
+import { Search, Filter, LayoutGrid, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export default function StorePage() {
+  const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const categories = Array.from(new Set(STORE_PRODUCTS.map(p => p.category)));
+  const { data: products, loading } = useCollection(
+    query(collection(db, "products"), orderBy("createdAt", "desc"))
+  );
+
+  const categories = Array.from(new Set(products.map(p => p.category)));
   
-  const filteredProducts = STORE_PRODUCTS.filter(p => {
+  const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory ? p.category === selectedCategory : true;
     return matchesSearch && matchesCategory;
   });
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-black">
       <Navbar />
       <div className="container mx-auto px-4 py-16">
-        <header className="mb-16 space-y-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <header className="mb-24 space-y-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
             <div className="text-right">
-              <div className="flex items-center gap-2 text-primary mb-2 font-bold tracking-widest uppercase text-xs">
-                <LayoutGrid size={16} />
-                <span>XMOOD Official Catalog</span>
+              <div className="flex items-center gap-3 text-primary mb-4 font-black tracking-[0.4em] uppercase text-[10px]">
+                <Sparkles size={16} />
+                <span>XMOOD Sovereign Catalog</span>
               </div>
-              <h1 className="text-5xl font-headline font-bold mb-3">متجر الخدمات الرقمية</h1>
-              <p className="text-muted-foreground text-lg max-w-xl font-light">تصفح أفضل باقات الشحن للألعاب العالمية والخدمات الرقمية الحصرية.</p>
+              <h1 className="text-6xl font-headline font-bold gold-text leading-tight">مستودع الأصول الرقمية</h1>
+              <p className="text-slate-500 text-xl font-light mt-4">تصفح أرقى الخدمات والباقات الرقمية المعتمدة سيادياً.</p>
             </div>
             
-            <div className="flex w-full md:w-auto gap-3">
-              <div className="relative flex-1 md:w-80">
-                <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+            <div className="flex w-full md:w-auto gap-4">
+              <div className="relative flex-1 md:w-96">
+                <Search className="absolute right-6 top-1/2 -translate-y-1/2 w-6 h-6 text-primary/40" />
                 <Input 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="ابحث عن شدات، جواهر، أو نقاط..." 
-                  className="pr-12 h-14 rounded-2xl border-slate-100 bg-slate-50 shadow-inner focus:ring-primary" 
+                  placeholder="ابحث عن أصل رقمي..." 
+                  className="pr-16 h-18 rounded-[1.5rem] border-primary/10 bg-zinc-900 text-white shadow-inner focus:ring-primary" 
                 />
               </div>
-              <Button variant="outline" className="h-14 w-14 rounded-2xl border-slate-100 bg-slate-50 flex items-center justify-center p-0">
-                <Filter className="w-5 h-5 text-slate-400" />
+              <Button variant="outline" className="h-18 w-18 rounded-[1.5rem] border-primary/10 bg-zinc-900 flex items-center justify-center p-0">
+                <Filter className="w-6 h-6 text-primary/40" />
               </Button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-4">
             <Button 
               onClick={() => setSelectedCategory(null)}
               variant={selectedCategory === null ? "default" : "outline"}
-              className={`rounded-full px-6 font-bold h-10 ${selectedCategory === null ? 'bg-primary' : 'border-slate-100 text-slate-500'}`}
+              className={`rounded-full px-10 font-black h-12 text-sm uppercase tracking-widest ${selectedCategory === null ? 'bg-primary text-black' : 'border-primary/10 text-slate-500 hover:bg-primary/5'}`}
             >
               الكل
             </Button>
@@ -64,7 +72,7 @@ export default function StorePage() {
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
                 variant={selectedCategory === cat ? "default" : "outline"}
-                className={`rounded-full px-6 font-bold h-10 ${selectedCategory === cat ? 'bg-primary' : 'border-slate-100 text-slate-500'}`}
+                className={`rounded-full px-10 font-black h-12 text-sm uppercase tracking-widest ${selectedCategory === cat ? 'bg-primary text-black' : 'border-primary/10 text-slate-500 hover:bg-primary/5'}`}
               >
                 {cat}
               </Button>
@@ -72,21 +80,25 @@ export default function StorePage() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
+        {loading ? (
+          <div className="flex justify-center py-60">
+            <Loader2 className="animate-spin text-primary" size={60} />
+          </div>
+        ) : filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
+            {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
-            ))
-          ) : (
-            <div className="col-span-full py-32 text-center bg-slate-50 rounded-[3rem] border border-dashed border-slate-200">
-              <div className="text-slate-200 mb-4 flex justify-center">
-                <Search size={64} />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-400">لم نجد ما تبحث عنه</h3>
-              <p className="text-slate-400 text-sm">حاول البحث بكلمات أخرى أو اختر فئة مختلفة</p>
+            ))}
+          </div>
+        ) : (
+          <div className="py-60 text-center luxury-card rounded-[4rem] border-dashed border-primary/10">
+            <div className="text-primary/10 mb-10 flex justify-center">
+              <Search size={120} />
             </div>
-          )}
-        </div>
+            <h3 className="text-4xl font-bold gold-text mb-4">لا توجد أصول متاحة</h3>
+            <p className="text-slate-500 text-lg">لم نتمكن من العثور على أي باقات تطابق معاييرك حالياً.</p>
+          </div>
+        )}
       </div>
     </main>
   );

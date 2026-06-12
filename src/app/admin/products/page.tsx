@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit2, Trash2, Loader2, Search, Image as ImageIcon, Key, Sparkles, Box } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, Search, Key, Box, ShoppingBag } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -61,25 +61,25 @@ export default function AdminProducts() {
     try {
       if (editingId) {
         await updateDoc(doc(db, "products", editingId), data);
-        toast({ title: "تم التحديث بنجاح", description: "تم تعديل بيانات الباقة فوراً." });
+        toast({ title: "تم التحديث الملكي", description: "تم تعديل السجلات الرقمية فوراً." });
       } else {
         await addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() });
-        toast({ title: "تمت الإضافة", description: "الباقة متاحة الآن في المتجر." });
+        toast({ title: "تم النشر بنجاح", description: "الباقة الأسطورية متاحة الآن للعملاء." });
       }
       setIsOpen(false);
       resetForm();
     } catch (e: any) {
-      toast({ variant: "destructive", title: "فشل الإجراء", description: "تأكد من صلاحياتك واتصالك بالإنترنت." });
+      toast({ variant: "destructive", title: "فشل الإجراء", description: "تأكد من صلاحياتك واتصالك بالمنصة." });
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!db || !confirm("هل تريد حذف هذه الباقة نهائياً؟")) return;
+    if (!db || !confirm("هل تريد حذف هذه الباقة نهائياً من المستودع السيادي؟")) return;
     try {
       await deleteDoc(doc(db, "products", id));
-      toast({ title: "تم الحذف بنجاح" });
+      toast({ title: "تم حذف الأصل الرقمي" });
     } catch (e) {
       toast({ variant: "destructive", title: "فشل الحذف" });
     }
@@ -111,12 +111,12 @@ export default function AdminProducts() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
         <div>
           <h1 className="text-6xl font-headline font-bold gold-text">مستودع الأصول السيادية</h1>
-          <p className="text-slate-500 mt-2 font-black uppercase tracking-[0.5em] text-xs">Inventory Core Control</p>
+          <p className="text-slate-500 mt-2 font-black uppercase tracking-[0.5em] text-xs">Sovereign Asset Registry</p>
         </div>
         <Dialog open={isOpen} onOpenChange={(val) => { setIsOpen(val); if (!val) resetForm(); }}>
           <DialogTrigger asChild>
             <Button className="h-20 px-12 royal-button text-xl">
-              <Plus className="ml-3" /> إضافة باقة أسطورية
+              <Plus className="ml-3" /> إضافة باقة ملكية
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl bg-black border-primary/20 rounded-[3rem] p-12 text-white shadow-2xl overflow-y-auto max-h-[90vh]">
@@ -127,7 +127,7 @@ export default function AdminProducts() {
             </DialogHeader>
             <div className="grid grid-cols-2 gap-10 mt-12">
               <div className="space-y-4">
-                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">اسم الباقة</label>
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">اسم المنتج</label>
                 <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
               <div className="space-y-4">
@@ -139,21 +139,21 @@ export default function AdminProducts() {
                 <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
               <div className="space-y-4">
-                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">المخزون</label>
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">المخزون المتوفر</label>
                 <Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
               <div className="col-span-2 space-y-4">
-                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">رابط الصورة</label>
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">رابط الصورة (URL)</label>
                 <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
               <div className="col-span-2 space-y-4">
-                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">أكواد الشحن (مخزون المفاتيح الرقمية)</label>
-                <Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="min-h-[200px] rounded-[2rem] bg-zinc-900 border-none p-8 font-mono text-sm text-primary" placeholder="ضع الأكواد هنا، كود في كل سطر..." />
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">أكواد الشحن والمفاتيح (كود في كل سطر)</label>
+                <Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="min-h-[200px] rounded-[2rem] bg-zinc-900 border-none p-8 font-mono text-sm text-primary" placeholder="ضع الأكواد هنا للبيع الآلي..." />
               </div>
             </div>
             <DialogFooter className="mt-12">
               <Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-20 royal-button text-2xl">
-                {isProcessing ? <Loader2 className="animate-spin" /> : editingId ? 'تحديث السجلات المركزية' : 'نشر الباقة في المتجر'}
+                {isProcessing ? <Loader2 className="animate-spin" /> : editingId ? 'تحديث السجلات' : 'نشر في المتجر الملكي'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -165,32 +165,32 @@ export default function AdminProducts() {
           <div className="relative max-w-xl flex-1">
             <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/40 w-6 h-6" />
             <Input 
-              placeholder="ابحث في سجلات المستودع..." 
+              placeholder="البحث في المستودع..." 
               className="pr-16 h-16 bg-black border-none rounded-2xl text-xl text-white shadow-inner"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
           <Badge className="bg-primary/10 text-primary border-primary/20 h-12 px-8 rounded-full font-black text-xs uppercase tracking-[0.3em]">
-            Stock Registry: {products.length} Units
+            Active Assets: {products.length}
           </Badge>
         </CardHeader>
         <CardContent className="p-0 mt-8">
           <Table>
             <TableHeader className="bg-white/5 border-b border-primary/10">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-right py-10 pr-12 font-black text-[10px] uppercase tracking-[0.4em] text-primary/60">باقة الأصول</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-[0.4em] text-primary/60">القيمة</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-[0.4em] text-primary/60">المخزون</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase tracking-[0.4em] text-primary/60">مفاتيح التفعيل</TableHead>
-                <TableHead className="text-center font-black text-[10px] uppercase tracking-[0.4em] text-primary/60">الإجراء السيادي</TableHead>
+                <TableHead className="text-right py-10 pr-12 font-black text-[10px] uppercase text-primary/60">المنتج</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase text-primary/60">القيمة</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase text-primary/60">المخزون</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase text-primary/60">الأكواد</TableHead>
+                <TableHead className="text-center font-black text-[10px] uppercase text-primary/60">الإجراء</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow><TableCell colSpan={5} className="text-center py-32"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-60 text-primary/10 font-black italic text-4xl uppercase tracking-[0.4em]">Vault is Empty</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-60 text-primary/10 font-black text-4xl uppercase tracking-[0.4em]">The Vault is Empty</TableCell></TableRow>
               ) : filtered.map((p) => (
                 <TableRow key={p.id} className="hover:bg-primary/5 border-b border-primary/5 transition-all">
                   <TableCell className="py-10 pr-12">
@@ -206,7 +206,7 @@ export default function AdminProducts() {
                   <TableCell className="font-black text-slate-500 text-xl">{p.stock}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="border-primary/20 text-primary py-2 px-6 rounded-full font-black text-[10px] bg-primary/5">
-                      <Key size={14} className="ml-3" /> {p.shippingCodes?.split('\n').filter(Boolean).length || 0} Key
+                      <Key size={14} className="ml-3" /> {p.shippingCodes?.split('\n').filter(Boolean).length || 0} مفتاح
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
