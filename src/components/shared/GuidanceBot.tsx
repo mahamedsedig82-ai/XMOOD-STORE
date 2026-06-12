@@ -1,8 +1,8 @@
 
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
-import { Sparkles, MessageCircle, X, Cpu, Zap, ShieldCheck } from "lucide-react";
+import { Sparkles, X, Cpu, Zap, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
