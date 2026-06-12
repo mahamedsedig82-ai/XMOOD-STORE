@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from "react";
@@ -21,7 +22,7 @@ export function GuidanceBot() {
     setIsMounted(true);
     const timer = setTimeout(() => {
       if (!isOpen) setIsOpen(true);
-    }, 5000);
+    }, 4000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -29,7 +30,7 @@ export function GuidanceBot() {
     if (config?.bot?.greeting) {
       setMessage(config.bot.greeting);
     } else {
-      setMessage("يا هلا بك! أنا مساعدك الذكي في XMOOD. كيف أقدر أخدمك اليوم؟ ✨");
+      setMessage("يا هلا بك! أنا مساعدك الذكي في XMOOD. كيف أقدر أساعدك اليوم في رحلة تسوقك؟ ✨");
     }
   }, [config]);
 
@@ -40,9 +41,9 @@ export function GuidanceBot() {
     config.bot.tip2,
     config.bot.tip3
   ].filter(Boolean) : [
-    "تبي تشحن ألعابك؟ تصفح قسم المتجر لآخر العروض! 🎮",
-    "تأكد من توثيق حسابك للاستفادة من كامل مميزاتنا! 🎁",
-    "التحويل بين المستخدمين سهل وسريع، جربه الآن! 💸"
+    "تبي تشحن ألعابك؟ تصفح قسم المتجر لآخر العروض الحصرية! 🎮",
+    "تأكد من شحن محفظتك للاستفادة من المبيعات السريعة! 💸",
+    "نظام التحويل بين المستخدمين سهل وسريع ومجاني! 🚀"
   ];
 
   const handleNextTip = () => {
@@ -70,13 +71,19 @@ export function GuidanceBot() {
               <X size={14} />
             </button>
             <div className="flex gap-4 mb-4 items-center">
-              <Avatar className="w-12 h-12 border-2 border-primary/40 shadow-xl">
-                <AvatarImage src={botIcon} className="object-cover" />
-                <AvatarFallback className="bg-zinc-900 text-primary"><Sparkles size={16} /></AvatarFallback>
-              </Avatar>
+              <div className="w-12 h-12 rounded-full border-2 border-primary/40 shadow-xl overflow-hidden">
+                <Image 
+                  src={botIcon} 
+                  alt="AI Assistant" 
+                  width={48} 
+                  height={48} 
+                  className="object-cover w-full h-full"
+                  unoptimized
+                />
+              </div>
               <div className="text-right">
                  <p className="text-[10px] font-black text-primary uppercase tracking-widest">XMOOD AI BOT</p>
-                 <p className="text-[8px] text-zinc-500 font-bold">مساعدك الذكي</p>
+                 <p className="text-[8px] text-zinc-500 font-bold">مساعدك الرقمي</p>
               </div>
             </div>
             <p className="text-xs font-bold leading-relaxed text-zinc-300 mb-6 min-h-[3rem]">
@@ -100,14 +107,20 @@ export function GuidanceBot() {
         whileHover={{ scale: 1.1, rotate: 5 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-18 h-18 bg-zinc-950 rounded-full flex items-center justify-center shadow-2xl shadow-primary/20 border-2 border-primary/40 group overflow-hidden"
+        className="relative w-16 h-16 bg-zinc-950 rounded-full flex items-center justify-center shadow-2xl shadow-primary/20 border-2 border-primary/40 group overflow-hidden"
       >
-        <Avatar className="w-full h-full rounded-none">
-          <AvatarImage src={botIcon} className="object-cover group-hover:scale-110 transition-transform duration-500" />
-          <AvatarFallback className="bg-zinc-900 text-primary font-black"><Sparkles size={24} /></AvatarFallback>
-        </Avatar>
+        <Image 
+          src={botIcon} 
+          alt="AI Assistant" 
+          width={64} 
+          height={64} 
+          className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+          unoptimized
+        />
         <div className="absolute inset-0 bg-primary/5 group-hover:bg-transparent transition-all" />
       </motion.button>
     </div>
   );
 }
+
+import Image from "next/image";
