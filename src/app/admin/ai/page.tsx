@@ -9,8 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Cpu, Send, Sparkles, Database, ShieldCheck, Zap, Terminal } from "lucide-react";
+import { Cpu, Send, Sparkles, Database, ShieldCheck, Zap, Terminal, Activity } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminAiPage() {
   const db = useFirestore();
@@ -48,7 +49,7 @@ export default function AdminAiPage() {
         actionType: result.actionType
       }]);
 
-      toast({ title: "تم تنفيذ الإجراء السيادي", description: result.explanation });
+      toast({ title: "تم تنفيذ البروتوكول السيادي", description: "النواة الذكية استجابت للأمر بنجاح." });
 
     } catch (error) {
       console.error(error);
@@ -94,7 +95,11 @@ export default function AdminAiPage() {
             <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.5em] mt-2 italic">Sovereign Artificial Intelligence Nucleus</p>
           </div>
         </div>
-        <Badge variant="outline" className="border-primary/20 text-primary px-6 py-2 rounded-full font-black animate-pulse">SYSTEM ONLINE</Badge>
+        <div className="flex items-center gap-4">
+          <Badge variant="outline" className="border-primary/20 text-primary px-6 py-2 rounded-full font-black animate-pulse flex gap-2">
+            <Activity size={14} /> SYSTEM ONLINE
+          </Badge>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

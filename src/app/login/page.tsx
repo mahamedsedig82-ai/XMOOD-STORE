@@ -45,6 +45,7 @@ export default function LoginPage() {
         ? new GoogleAuthProvider() 
         : new OAuthProvider('apple.com');
       
+      // Force account selection to avoid auto-login issues
       provider.setCustomParameters({ prompt: 'select_account' });
       
       const result = await signInWithPopup(auth, provider);
@@ -94,6 +95,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Send real verification email
       await sendEmailVerification(userCredential.user);
       
       const code = "XM-" + Math.random().toString(36).substring(2, 10).toUpperCase();

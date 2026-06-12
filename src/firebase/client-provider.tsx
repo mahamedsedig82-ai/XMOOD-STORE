@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo } from 'react';
@@ -8,10 +9,11 @@ import { firebaseConfig } from './config';
 import { FirebaseProvider } from './provider';
 
 /**
- * Initializes Firebase services on the client side.
+ * Initializes Firebase services on the client side with singleton pattern.
  */
 export function initializeFirebase() {
   const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  // Ensure we only get the firestore instance once per client lifecycle
   const firestore = getFirestore(firebaseApp);
   const auth = getAuth(firebaseApp);
 
@@ -21,11 +23,15 @@ export function initializeFirebase() {
 export const FirebaseClientProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  // Initialize Firebase once on the client to avoid hydration issues
-  const { firebaseApp, firestore, auth } = useMemo(() => initializeFirebase(), []);
+  // Use useMemo to ensure firebase services are only initialized once on the client
+  const services = useMemo(() => initializeFirebase(), []);
 
   return (
-    <FirebaseProvider firebaseApp={firebaseApp} firestore={firestore} auth={auth}>
+    <FirebaseProvider 
+      firebaseApp={services.firebaseApp} 
+      firestore={services.firestore} 
+      auth={services.auth}
+    >
       {children}
     </FirebaseProvider>
   );
