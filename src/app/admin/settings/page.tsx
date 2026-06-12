@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Palette, Layout, Globe, Save, Loader2, Image as ImageIcon, Type, Languages } from "lucide-react";
+import { Palette, Layout, Globe, Save, Loader2, Image as ImageIcon, Type, Languages, Phone, Instagram, Mail, MessageSquare, Megaphone, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 
-export default function AdminSettingsVisualPRO() {
+export default function AdminSettingsFullControl() {
   const db = useFirestore();
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config, loading } = useDoc(settingsRef);
@@ -22,21 +23,37 @@ export default function AdminSettingsVisualPRO() {
     appearance: {
       primaryColor: "#d4af37",
       backgroundColor: "#09090b",
+      accentColor: "#dc2626",
       fontFamily: "PT Sans",
-      logoUrl: ""
+      logoUrl: "",
+      botIconUrl: "https://picsum.photos/seed/anime/200/200"
     },
     siteInfo: {
       title: "XMOOD",
-      subtitle: "Digital Excellence",
-      heroTitle: "وجهتك الرقمية الفاخرة",
-      heroDescription: "نقدم لك أرقى باقات شحن الألعاب، الحسابات المميزة، والخدمات الرقمية والاحترافية بأعلى معايير الأمان والسرعة."
+      subtitle: "الوجهة الأولى للألعاب والخدمات",
+      heroTitle: "عالمك الرقمي بلمسة احترافية",
+      heroDescription: "نوفر لك أفضل باقات شحن الألعاب، الحسابات النادرة، وخدمات التصميم بأعلى جودة وأمان."
     },
-    translations: {
-      storeTitle: "متجر الخدمات الرقمية",
-      marketTitle: "مجتمع اللاعبين",
-      supportTitle: "المساعد الذكي",
-      footerDesc: "نجمع بين الجودة الرقمية والاحترافية الإبداعية لمنحك أفضل الخدمات في عالم الألعاب والتصميم.",
-      botGreeting: "أهلاً بك في XMOOD! أنا مساعدك الذكي. كيف يمكنني جعل تجربتك أفضل اليوم؟"
+    contact: {
+      email: "XMOODSTORE.SUPPORT@GMAIL.COM",
+      phone: "+249999484771",
+      instagram: "X3O_D",
+      whatsapp: "+249999484771",
+      telegram: "XMOOD_SUPPORT"
+    },
+    promotions: {
+      banner1Title: "خصم 20% على شحن UC",
+      banner1Subtitle: "لفترة محدودة فقط لعملاء بريميوم",
+      banner1Link: "/store",
+      banner2Title: "هوية بصرية كاملة",
+      banner2Subtitle: "اطلب تصميمك الآن بأرقى المعايير",
+      banner2Link: "/designs/request"
+    },
+    bot: {
+      greeting: "يا هلا بك! أنا مساعدك الذكي من XMOOD. كيف أقدر أساعدك اليوم؟ ✨",
+      tip1: "تأكد من شحن محفظتك للاستفادة من العروض السريعة!",
+      tip2: "نظام التحويل بين المستخدمين آمن ومجاني بالكامل.",
+      tip3: "تابعنا على إنستقرام لمعرفة أحدث الحسابات النادرة."
     }
   });
 
@@ -52,9 +69,9 @@ export default function AdminSettingsVisualPRO() {
         ...form,
         updatedAt: serverTimestamp(),
       }, { merge: true });
-      toast({ title: "تم تحديث الإعدادات", description: "تم تطبيق التغييرات على المتجر بنجاح." });
+      toast({ title: "تم تحديث النظام", description: "تم تطبيق كافة التغييرات على المتجر بنجاح." });
     } catch (error) {
-      toast({ variant: "destructive", title: "فشل الحفظ", description: "حدث خطأ أثناء الاتصال بالنظام." });
+      toast({ variant: "destructive", title: "فشل الحفظ", description: "تأكد من اتصالك بالإنترنت وصلاحياتك." });
     } finally {
       setIsSaving(false);
     }
@@ -67,88 +84,136 @@ export default function AdminSettingsVisualPRO() {
   );
 
   return (
-    <div className="space-y-12 animate-fade-up" dir="rtl">
+    <div className="space-y-12 animate-fade-in" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-10">
         <div>
-          <h1 className="text-5xl font-headline font-bold gold-text">إعدادات المتجر</h1>
-          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">Store Identity Engine</p>
+          <h1 className="text-5xl font-headline font-bold gold-text">مركز التحكم الشامل</h1>
+          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Full Site Engine</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg">
-          {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ التغييرات</>}
+          {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ كافة الإعدادات</>}
         </Button>
       </header>
 
       <Tabs defaultValue="visual" className="w-full">
-        <TabsList className="bg-zinc-950 p-1 rounded-3xl h-18 border border-white/5 mb-10 flex gap-4 px-3">
-          <TabsTrigger value="visual" className="flex-1 rounded-2xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">
-            <Palette size={18} className="ml-2" /> المظهر
+        <TabsList className="bg-zinc-950 p-2 rounded-3xl h-20 border border-white/5 mb-10 flex gap-2 px-4 overflow-x-auto">
+          <TabsTrigger value="visual" className="flex-1 rounded-2xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
+            <Palette size={16} className="ml-2" /> المظهر
           </TabsTrigger>
-          <TabsTrigger value="texts" className="flex-1 rounded-2xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-red-600 data-[state=active]:text-white transition-all">
-            <Languages size={18} className="ml-2" /> النصوص
+          <TabsTrigger value="site" className="flex-1 rounded-2xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-red-600 data-[state=active]:text-white">
+            <Globe size={16} className="ml-2" /> الموقع
           </TabsTrigger>
-          <TabsTrigger value="hero" className="flex-1 rounded-2xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-black transition-all">
-            <Layout size={18} className="ml-2" /> الواجهة
+          <TabsTrigger value="contact" className="flex-1 rounded-2xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-zinc-800 data-[state=active]:text-white">
+            <Phone size={16} className="ml-2" /> التواصل
+          </TabsTrigger>
+          <TabsTrigger value="ads" className="flex-1 rounded-2xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-amber-600 data-[state=active]:text-white">
+            <Megaphone size={16} className="ml-2" /> الإعلانات
+          </TabsTrigger>
+          <TabsTrigger value="bot" className="flex-1 rounded-2xl font-bold text-xs uppercase tracking-widest data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <Sparkles size={16} className="ml-2" /> المساعد
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="visual" className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card className="luxury-card p-10">
-              <CardTitle className="text-2xl mb-8 gold-text flex items-center gap-4"><Palette className="text-primary" /> الألوان</CardTitle>
-              <div className="space-y-10">
-                <div className="space-y-4">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 pr-4">اللون الأساسي (Gold)</Label>
-                  <div className="flex gap-4">
-                    <Input type="color" value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-16 w-24 p-2 bg-zinc-900 border-none rounded-xl" />
-                    <Input value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-16 bg-zinc-900 border-none rounded-xl px-6 font-mono" />
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="luxury-card p-10">
-              <CardTitle className="text-2xl mb-8 gold-text flex items-center gap-4"><ImageIcon className="text-primary" /> شعار المتجر</CardTitle>
-              <div className="space-y-8">
-                <div className="space-y-4">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 pr-4">رابط اللوغو (URL)</Label>
-                  <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} placeholder="أدخل رابط الصورة..." className="h-16 bg-zinc-900 border-none rounded-xl px-6" />
-                </div>
-              </div>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="texts">
-          <Card className="luxury-card p-10 space-y-10">
-            <CardTitle className="text-3xl gold-text flex items-center gap-4"><Type className="text-red-600" /> إدارة محتوى المتجر</CardTitle>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-4">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 pr-4">اسم المتجر</Label>
-                <Input value={form.translations.storeTitle} onChange={e => setForm({...form, translations: {...form.translations, storeTitle: e.target.value}})} className="h-16 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
-              </div>
-              <div className="space-y-4">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 pr-4">ترحيب المساعد الذكي</Label>
-                <Input value={form.translations.botGreeting} onChange={e => setForm({...form, translations: {...form.translations, botGreeting: e.target.value}})} className="h-16 bg-zinc-900 border-none rounded-xl px-6" />
-              </div>
-              <div className="col-span-2 space-y-4">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 pr-4">وصف التذييل</Label>
-                <Textarea value={form.translations.footerDesc} onChange={e => setForm({...form, translations: {...form.translations, footerDesc: e.target.value}})} className="min-h-[120px] bg-zinc-900 border-none rounded-3xl p-8" />
-              </div>
+          <Card className="luxury-card p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4">اللون الأساسي (ذهبي)</Label>
+              <Input type="color" value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-14 w-full bg-zinc-900 border-none rounded-xl" />
+            </div>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4">لون التنبيهات (أحمر)</Label>
+              <Input type="color" value={form.appearance.accentColor} onChange={e => setForm({...form, appearance: {...form.appearance, accentColor: e.target.value}})} className="h-14 w-full bg-zinc-900 border-none rounded-xl" />
+            </div>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4">رابط الشعار</Label>
+              <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} placeholder="URL اللوغو..." className="h-14 bg-zinc-900 border-none rounded-xl px-6" />
+            </div>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4">أيقونة المساعد (Anime URL)</Label>
+              <Input value={form.appearance.botIconUrl} onChange={e => setForm({...form, appearance: {...form.appearance, botIconUrl: e.target.value}})} placeholder="رابط صورة الأنمي..." className="h-14 bg-zinc-900 border-none rounded-xl px-6" />
             </div>
           </Card>
         </TabsContent>
 
-        <TabsContent value="hero">
-          <Card className="luxury-card p-10 space-y-10">
-            <CardTitle className="text-3xl gold-text flex items-center gap-4"><Layout className="text-primary" /> الواجهة الرئيسية</CardTitle>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="col-span-2 space-y-4">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 pr-4">العنوان الرئيسي</Label>
-                <Input value={form.siteInfo.heroTitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, heroTitle: e.target.value}})} className="h-20 bg-zinc-900 border-none rounded-2xl px-8 font-black text-3xl gold-text" />
+        <TabsContent value="site" className="space-y-8">
+          <Card className="luxury-card p-10 space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4">عنوان الموقع</Label>
+                <Input value={form.siteInfo.title} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, title: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6" />
               </div>
-              <div className="col-span-2 space-y-4">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 pr-4">الوصف التسويقي</Label>
-                <Textarea value={form.siteInfo.heroDescription} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, heroDescription: e.target.value}})} className="min-h-[150px] bg-zinc-900 border-none rounded-3xl p-8 text-lg" />
+              <div className="space-y-4">
+                <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4">العنوان الفرعي</Label>
+                <Input value={form.siteInfo.subtitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, subtitle: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6" />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4">عنوان الهيرو الرئيسي</Label>
+              <Input value={form.siteInfo.heroTitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, heroTitle: e.target.value}})} className="h-16 bg-zinc-900 border-none rounded-xl px-8 font-black text-2xl" />
+            </div>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4">وصف المتجر التسويقي</Label>
+              <Textarea value={form.siteInfo.heroDescription} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, heroDescription: e.target.value}})} className="min-h-[120px] bg-zinc-900 border-none rounded-2xl p-6" />
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="contact" className="space-y-8">
+          <Card className="luxury-card p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4 flex items-center gap-2"><Mail size={12} /> البريد الرسمي</Label>
+              <Input value={form.contact.email} onChange={e => setForm({...form, contact: {...form.contact, email: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6" />
+            </div>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4 flex items-center gap-2"><Phone size={12} /> رقم الهاتف</Label>
+              <Input value={form.contact.phone} onChange={e => setForm({...form, contact: {...form.contact, phone: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6" />
+            </div>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4 flex items-center gap-2"><Instagram size={12} /> يوزر الإنستقرام</Label>
+              <Input value={form.contact.instagram} onChange={e => setForm({...form, contact: {...form.contact, instagram: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6" />
+            </div>
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4">رقم الواتساب</Label>
+              <Input value={form.contact.whatsapp} onChange={e => setForm({...form, contact: {...form.contact, whatsapp: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6" />
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ads" className="space-y-8">
+          <Card className="luxury-card p-10 space-y-10">
+            <div className="p-8 bg-zinc-900/50 rounded-3xl border border-white/5 space-y-6">
+              <h4 className="text-primary font-bold">إعلان الواجهة 1</h4>
+              <Input value={form.promotions.banner1Title} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Title: e.target.value}})} placeholder="العنوان" className="h-12 bg-black border-none px-6" />
+              <Input value={form.promotions.banner1Subtitle} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Subtitle: e.target.value}})} placeholder="الوصف" className="h-12 bg-black border-none px-6" />
+              <Input value={form.promotions.banner1Link} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Link: e.target.value}})} placeholder="الرابط" className="h-12 bg-black border-none px-6" />
+            </div>
+            <div className="p-8 bg-zinc-900/50 rounded-3xl border border-white/5 space-y-6">
+              <h4 className="text-primary font-bold">إعلان الواجهة 2</h4>
+              <Input value={form.promotions.banner2Title} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Title: e.target.value}})} placeholder="العنوان" className="h-12 bg-black border-none px-6" />
+              <Input value={form.promotions.banner2Subtitle} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Subtitle: e.target.value}})} placeholder="الوصف" className="h-12 bg-black border-none px-6" />
+              <Input value={form.promotions.banner2Link} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Link: e.target.value}})} placeholder="الرابط" className="h-12 bg-black border-none px-6" />
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="bot" className="space-y-8">
+          <Card className="luxury-card p-10 space-y-8">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-zinc-500 pr-4">ترحيب المساعد</Label>
+              <Input value={form.bot.greeting} onChange={e => setForm({...form, bot: {...form.bot, greeting: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-zinc-500">النصيحة 1</Label>
+                <Input value={form.bot.tip1} onChange={e => setForm({...form, bot: {...form.bot, tip1: e.target.value}})} className="bg-zinc-900 border-none" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-zinc-500">النصيحة 2</Label>
+                <Input value={form.bot.tip2} onChange={e => setForm({...form, bot: {...form.bot, tip2: e.target.value}})} className="bg-zinc-900 border-none" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-zinc-500">النصيحة 3</Label>
+                <Input value={form.bot.tip3} onChange={e => setForm({...form, bot: {...form.bot, tip3: e.target.value}})} className="bg-zinc-900 border-none" />
               </div>
             </div>
           </Card>
