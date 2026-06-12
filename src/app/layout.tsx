@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
@@ -6,8 +5,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { GuidanceBot } from '@/components/shared/GuidanceBot';
 
 export const metadata: Metadata = {
-  title: 'XMOOD PRO MAX | منصة السيادة الرقمية',
-  description: 'الوجهة الأولى لشحن الألعاب، شراء الحسابات، والخدمات الرقمية الآمنة بنسق ملكي سيادي.',
+  title: 'XMOOD | متجرك الرقمي المتكامل',
+  description: 'وجهتك الأولى لشحن الألعاب، الحسابات المميزة، والخدمات الرقمية بأعلى جودة وأمان.',
 };
 
 export default function RootLayout({

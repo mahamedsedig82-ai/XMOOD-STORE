@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState, useEffect } from "react";
-import { Sparkles, X, Cpu, Zap, ShieldCheck } from "lucide-react";
+import { Sparkles, X, Cpu, Zap, ShieldCheck, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
@@ -21,7 +20,7 @@ export function GuidanceBot() {
     setIsMounted(true);
     const timer = setTimeout(() => {
       if (!isOpen) setIsOpen(true);
-    }, 5000);
+    }, 4000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -29,18 +28,18 @@ export function GuidanceBot() {
     if (config?.translations?.botGreeting) {
       setMessage(config.translations.botGreeting);
     } else {
-      setMessage("أهلاً بك أيها القائد! أنا 'نواة-X' مرشدك الذكي. تذكر: لا تشارك رمز الطوارئ الخاص بك مع أي شخص!");
+      setMessage("أهلاً بك في XMOOD! أنا مساعدك الذكي. كيف يمكنني جعل تجربتك أفضل اليوم؟");
     }
   }, [config]);
 
   if (!isMounted) return null;
 
   const tips = [
-    "يمكنك شحن رصيدك عبر الوكلاء المعتمدين في قسم 'المحفظة'.",
-    "نظام الوساطة لدينا يضمن حقك بنسبة 100% في العمليات الكبرى.",
-    "استخدم استوديو التصميم لتوليد صور احترافية بذكاء Imagen 4.",
-    "تحقق من نقاط أفضليتك في السوق لرفع رتبتك الاجتماعية.",
-    "تأكد من مراجعة سجل التدفقات المالية بانتظام في محفظتك."
+    "يمكنك تصفح أحدث باقات الألعاب في المتجر الآن!",
+    "هل تبحث عن تصميم خاص؟ قسم المصمم الملكي جاهز لخدمتك.",
+    "تذكر توثيق حسابك للحصول على نقاط مكافأة إضافية.",
+    "نظام الوساطة لدينا يضمن لك عمليات تبادل آمنة تماماً.",
+    "يمكنك تحويل الرصيد لأصدقائك فوراً عبر المحفظة."
   ];
 
   const handleNextTip = () => {
@@ -56,19 +55,19 @@ export function GuidanceBot() {
             initial={{ opacity: 0, scale: 0.8, y: 50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 50 }}
-            className="mb-6 w-80 luxury-card p-8 border-primary/30 relative"
+            className="mb-6 w-80 luxury-card p-6 border-primary/20 relative shadow-2xl"
           >
             <button 
               onClick={() => setIsOpen(false)}
-              className="absolute top-4 right-4 text-zinc-600 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors"
             >
               <X size={16} />
             </button>
-            <div className="flex gap-4 mb-4">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-black shrink-0 animate-pulse">
-                <Cpu size={20} />
+            <div className="flex gap-3 mb-4 items-center">
+              <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary shrink-0">
+                <Heart size={20} className="fill-primary" />
               </div>
-              <p className="text-[11px] font-black text-primary uppercase tracking-widest">نواة-X الذكي</p>
+              <p className="text-[10px] font-bold text-primary uppercase tracking-widest">XMOOD AI Assistant</p>
             </div>
             <p className="text-sm font-bold leading-relaxed text-zinc-300 mb-6">
               {message}
@@ -77,11 +76,11 @@ export function GuidanceBot() {
               <Button 
                 onClick={handleNextTip}
                 variant="ghost" 
-                className="text-[9px] font-black uppercase text-zinc-500 hover:text-primary p-0 h-auto"
+                className="text-[9px] font-bold uppercase text-zinc-500 hover:text-primary p-0 h-auto"
               >
-                نصيحة أخرى <Zap size={10} className="ml-1" />
+                نصيحة سريعة <Zap size={10} className="ml-1" />
               </Button>
-              <ShieldCheck size={14} className="text-primary/40" />
+              <ShieldCheck size={14} className="text-primary/30" />
             </div>
           </motion.div>
         )}
@@ -91,7 +90,7 @@ export function GuidanceBot() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-black shadow-[0_0_40px_rgba(255,184,0,0.3)] border-4 border-black"
+        className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-black shadow-lg shadow-primary/20 border-4 border-zinc-950"
       >
         <Sparkles size={28} />
       </motion.button>
