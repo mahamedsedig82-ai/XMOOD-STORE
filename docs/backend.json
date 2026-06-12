@@ -36,21 +36,18 @@
       },
       "required": ["name", "price", "category", "stock", "status"]
     },
-    "Order": {
-      "title": "Order",
-      "description": "Purchase transaction record",
+    "SiteSettings": {
+      "title": "Site Settings",
+      "description": "Global configuration for logo, titles and themes",
       "type": "object",
       "properties": {
-        "userId": { "type": "string" },
-        "productId": { "type": "string" },
-        "productName": { "type": "string" },
-        "amount": { "type": "number" },
-        "status": { "type": "string", "enum": ["waiting_payment", "processing", "completed", "cancelled", "refunded"] },
-        "shippingCodeSent": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "updatedAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "productId", "amount", "status", "createdAt"]
+        "logoData": { "type": "string", "description": "Base64 logo image data" },
+        "siteTitle": { "type": "string" },
+        "siteSubtitle": { "type": "string" },
+        "heroTitle": { "type": "string" },
+        "heroDescription": { "type": "string" },
+        "footerText": { "type": "string" }
+      }
     },
     "Transaction": {
       "title": "Transaction",
@@ -58,7 +55,7 @@
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
-        "type": { "type": "string", "enum": ["deposit", "purchase", "refund", "withdrawal", "exchange", "transfer_send", "transfer_receive"] },
+        "type": { "type": "string", "enum": ["deposit", "purchase", "refund", "withdrawal", "exchange", "transfer_send", "transfer_receive", "ai_service"] },
         "amount": { "type": "number" },
         "description": { "type": "string" },
         "targetUserId": { "type": "string" },
@@ -83,13 +80,13 @@
       "schema": "Order",
       "description": "All customer orders across the platform"
     },
+    "/settings/global": {
+      "schema": "SiteSettings",
+      "description": "Global site configuration"
+    },
     "/users/{userId}/transactions/{transactionId}": {
       "schema": "Transaction",
       "description": "Immutable ledger of user wallet activity"
-    },
-    "/transactions/{transactionId}": {
-      "schema": "Transaction",
-      "description": "Global transaction logs for admin monitoring"
     }
   }
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -6,29 +7,29 @@ import {
   Package, 
   ShoppingCart, 
   Users, 
-  ShieldCheck, 
   Wallet, 
   Settings, 
   ArrowRight, 
-  Coins, 
   Sparkles,
-  Lock,
   Star,
-  Cpu
+  Cpu,
+  Wand2
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useUser } from "@/firebase";
+import { useUser, useDoc, useFirestore } from "@/firebase";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { doc } from "firebase/firestore";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useUser();
+  const db = useFirestore();
   const pathname = usePathname();
   const router = useRouter();
 
-  const logoUrl = "https://chatgpt.com/s/m_6a2b55a8375c8191bed49391ecaef764";
+  const { data: siteSettings } = useDoc(doc(db, "settings", "global"));
 
   useEffect(() => {
     if (!loading && (!profile || profile.role !== 'admin')) {
@@ -47,13 +48,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const menuItems = [
     { label: "الرئيسية الذكية", icon: LayoutDashboard, href: "/admin" },
     { label: "معالج الـ AI", icon: Sparkles, href: "/admin/ai", highlight: true },
+    { label: "المصمم الملكي", icon: Wand2, href: "/admin/designs", highlight: true },
     { label: "مستودع الأصول", icon: Package, href: "/admin/products" },
     { label: "سجل الطلبات", icon: ShoppingCart, href: "/admin/orders" },
     { label: "إدارة النخبة", icon: Users, href: "/admin/users" },
     { label: "البنك المركزي", icon: Wallet, href: "/admin/finance" },
     { label: "إدارة السوق", icon: Star, href: "/admin/marketplace" },
-    { label: "إعدادات النظام", icon: Settings, href: "/admin/settings" },
+    { label: "إعدادات الهوية", icon: Settings, href: "/admin/settings" },
   ];
+
+  const logoData = siteSettings?.logoData;
 
   return (
     <SidebarProvider>
@@ -62,14 +66,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarHeader className="p-8 border-b border-white/10">
             <Link href="/" className="flex items-center gap-5">
               <div className="relative w-14 h-14 shrink-0 rounded-full overflow-hidden border-2 border-primary shadow-2xl bg-zinc-900 flex items-center justify-center">
-                <Image 
-                  src={logoUrl} 
-                  alt="Admin Logo" 
-                  fill 
-                  className="object-cover rounded-full"
-                  unoptimized
-                />
-                <span className="font-handwriting text-xl font-bold text-primary relative z-10">XM</span>
+                {logoData ? (
+                  <img src={logoData} alt="Admin Logo" className="object-cover w-full h-full" />
+                ) : (
+                  <>
+                    <span className="font-handwriting text-xl font-bold text-primary relative z-10">XM</span>
+                  </>
+                )}
               </div>
               <div className="text-right">
                  <span className="font-headline text-2xl font-bold text-primary block leading-none gold-text">ADMIN</span>

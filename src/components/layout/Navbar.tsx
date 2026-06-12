@@ -1,12 +1,14 @@
+
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Wallet, LayoutDashboard, ShieldCheck, Sparkles, LogOut, User as UserIcon, Zap, Menu } from "lucide-react";
+import { Wallet, LayoutDashboard, ShieldCheck, Sparkles, LogOut, User as UserIcon, Zap, Menu, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useUser, useAuth } from "@/firebase";
+import { useUser, useAuth, useFirestore, useDoc } from "@/firebase";
 import { signOut } from "firebase/auth";
+import { doc } from "firebase/firestore";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -21,7 +23,10 @@ import { formatUSD } from "@/lib/currency";
 export function Navbar() {
   const { user, profile } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   const pathname = usePathname();
+  
+  const { data: siteSettings } = useDoc(doc(db, "settings", "global"));
 
   const handleSignOut = () => {
     if (auth) signOut(auth);
@@ -31,10 +36,11 @@ export function Navbar() {
     { name: "الرئيسية", href: "/" },
     { name: "المتجر الملكي", href: "/store" },
     { name: "السوق السيادي", href: "/marketplace" },
-    { name: "نظام الضمان", href: "/middleman" },
+    { name: "المصمم الذكي", href: "/admin/designs", icon: Wand2 },
   ];
 
-  const logoUrl = "https://chatgpt.com/s/m_6a2b55a8375c8191bed49391ecaef764";
+  const logoData = siteSettings?.logoData;
+  const siteTitle = siteSettings?.siteTitle || "XMOOD";
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/95 backdrop-blur-2xl">
@@ -42,21 +48,17 @@ export function Navbar() {
         
         <Link href="/" className="flex items-center gap-5 group flex-row-reverse shrink-0">
           <div className="relative w-16 h-16 transition-transform group-hover:scale-110 rounded-full overflow-hidden border-2 border-primary shadow-[0_0_20px_rgba(255,184,0,0.2)] bg-zinc-900 flex items-center justify-center">
-            <Image 
-              src={logoUrl} 
-              alt="XMOOD Logo" 
-              fill 
-              className="object-cover rounded-full"
-              unoptimized
-              onError={(e) => {
-                // Fallback handled by the container if image fails
-              }}
-            />
-            <span className="font-handwriting text-2xl font-bold text-primary relative z-10 pointer-events-none">XM</span>
+            {logoData ? (
+              <img src={logoData} alt="Site Logo" className="object-cover w-full h-full" />
+            ) : (
+              <>
+                <span className="font-handwriting text-2xl font-bold text-primary relative z-10 pointer-events-none">XM</span>
+              </>
+            )}
           </div>
           <div className="flex flex-col items-end">
-            <span className="font-headline text-3xl font-bold tracking-tighter gold-text leading-none">XMOOD</span>
-            <span className="text-[10px] font-black tracking-[0.3em] text-primary uppercase">Sovereign Store</span>
+            <span className="font-headline text-3xl font-bold tracking-tighter gold-text leading-none">{siteTitle}</span>
+            <span className="text-[10px] font-black tracking-[0.3em] text-primary uppercase">{siteSettings?.siteSubtitle || "Sovereign Store"}</span>
           </div>
         </Link>
 
@@ -65,8 +67,9 @@ export function Navbar() {
             <Link 
               key={link.href} 
               href={link.href} 
-              className={`text-[12px] font-black uppercase tracking-[0.25em] transition-all hover:text-primary ${pathname === link.href ? 'text-primary' : 'text-zinc-400'}`}
+              className={`text-[12px] font-black uppercase tracking-[0.25em] transition-all hover:text-primary flex items-center gap-2 ${pathname === link.href ? 'text-primary' : 'text-zinc-400'}`}
             >
+              {link.icon && <link.icon size={14} />}
               {link.name}
             </Link>
           ))}

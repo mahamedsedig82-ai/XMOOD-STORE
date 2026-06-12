@@ -1,127 +1,144 @@
 
 "use client";
 
+import { useState, useEffect } from "react";
+import { useFirestore, useDoc } from "@/firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Settings, Save, Globe, DollarSign, Bell, Shield, Database, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Settings, Save, Upload, Image as ImageIcon, Layout, Type, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useFirestore } from "@/firebase";
-import { collection, addDoc, getDocs, deleteDoc } from "firebase/firestore";
-import { STORE_PRODUCTS } from "@/app/lib/mock-data";
 
 export default function AdminSettings() {
   const db = useFirestore();
-  const [exchangeRate, setExchangeRate] = useState("5400");
-  const [isMaintenance, setIsMaintenance] = useState(false);
-  const [isSeeding, setIsSeeding] = useState(false);
+  const { data: siteSettings, loading } = useDoc(doc(db, "settings", "global"));
+  const [isSaving, setIsSaving] = useState(false);
+  
+  const [form, setForm] = useState({
+    siteTitle: "XMOOD STORE",
+    siteSubtitle: "Sovereign Store",
+    heroTitle: "XMOOD STORE",
+    heroDescription: "المنصة الأكثر فخامة في العالم الرقمي.",
+    logoData: "",
+  });
 
-  const handleSave = () => {
-    toast({ title: "تم الحفظ", description: "تم تحديث إعدادات المتجر بنجاح" });
-  };
+  useEffect(() => {
+    if (siteSettings) {
+      setForm({
+        siteTitle: siteSettings.siteTitle || "XMOOD STORE",
+        siteSubtitle: siteSettings.siteSubtitle || "Sovereign Store",
+        heroTitle: siteSettings.heroTitle || "XMOOD STORE",
+        heroDescription: siteSettings.heroDescription || "المنصة الأكثر فخامة في العالم الرقمي.",
+        logoData: siteSettings.logoData || "",
+      });
+    }
+  }, [siteSettings]);
 
-  const handleSeedProducts = async () => {
-    setIsSeeding(true);
-    try {
-      for (const product of STORE_PRODUCTS) {
-        await addDoc(collection(db, "products"), {
-          ...product,
-          createdAt: new Date().toISOString(),
-          status: 'active'
-        });
-      }
-      toast({ title: "تمت التهيئة", description: "تم رفع المنتجات الافتراضية بنجاح" });
-    } catch (error) {
-      toast({ variant: "destructive", title: "خطأ", description: "فشل رفع المنتجات" });
-    } finally {
-      setIsSeeding(false);
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm(prev => ({ ...prev, logoData: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
+  const handleSaveSettings = async () => {
+    if (!db) return;
+    setIsSaving(true);
+    try {
+      await setDoc(doc(db, "settings", "global"), {
+        ...form,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+      toast({ title: "تم التحديث الملكي", description: "تم حفظ إعدادات الهوية بنجاح." });
+    } catch (error) {
+      toast({ variant: "destructive", title: "خطأ", description: "فشل حفظ الإعدادات." });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-primary" size={40} /></div>;
+
   return (
-    <div className="space-y-8 animate-fade-in" dir="rtl">
-      <header>
-        <h1 className="text-3xl font-headline font-bold mb-1">إعدادات النظام الشاملة</h1>
-        <p className="text-muted-foreground text-sm">التحكم في أسعار الصرف، تهيئة البيانات، وحالة المنصة.</p>
+    <div className="space-y-12 animate-fade-in text-white" dir="rtl">
+      <header className="border-b border-primary/10 pb-8">
+        <h1 className="text-5xl font-headline font-bold gold-text">مركز التحكم في الهوية</h1>
+        <p className="text-slate-500 mt-2">تخصيص الشعار، العناوين، والترويصات الخاصة بالإمبراطورية.</p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="border-none shadow-sm rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-primary/5 p-8">
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="text-primary" /> الإعدادات المالية والعملات
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <Card className="luxury-card border-none p-10">
+          <CardHeader className="p-0 mb-8">
+            <CardTitle className="text-2xl font-bold flex items-center gap-4 gold-text">
+              <ImageIcon className="text-primary" /> شعار المنصة السيادي
             </CardTitle>
-            <CardDescription>تعديل سعر صرف العملة المحلية (SDG) مقابل الدولار.</CardDescription>
+            <CardDescription>ارفع شعاراً جديداً ليتم تطبيقه في كافة أقسام الموقع.</CardDescription>
           </CardHeader>
-          <CardContent className="p-8 space-y-6">
-            <div className="space-y-4">
-              <Label className="font-bold">سعر صرف الدولار (SDG)</Label>
-              <div className="flex gap-4 items-center">
-                <Input 
-                  value={exchangeRate} 
-                  onChange={(e) => setExchangeRate(e.target.value)}
-                  className="h-14 rounded-2xl bg-slate-50 border-none text-2xl font-black text-center" 
-                />
-                <span className="font-bold text-slate-400">SDG</span>
+          <CardContent className="p-0 space-y-8 text-center">
+            <div className="relative group mx-auto w-48 h-48 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center bg-zinc-900 overflow-hidden shadow-2xl">
+              {form.logoData ? (
+                <img src={form.logoData} className="w-full h-full object-cover" alt="Logo Preview" />
+              ) : (
+                <div className="text-zinc-600 flex flex-col items-center">
+                  <Upload size={40} />
+                  <span className="text-[10px] font-black uppercase tracking-widest mt-2">No Logo</span>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <label className="cursor-pointer royal-button h-10 px-4 text-[10px]">
+                  تغيير الشعار
+                  <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
+                </label>
               </div>
             </div>
-            <Button onClick={handleSave} className="h-14 w-full rounded-2xl bg-primary text-white font-bold gap-2 shadow-lg shadow-primary/20">
-              <Save size={18} /> حفظ تحديث السعر
-            </Button>
+            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">بصيغة PNG أو JPG (يفضل خلفية شفافة)</p>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-slate-900 text-white p-8">
-            <CardTitle className="flex items-center gap-2">
-              <Database className="text-primary" /> تهيئة البيانات (Setup)
+        <Card className="luxury-card border-none p-10">
+          <CardHeader className="p-0 mb-8">
+            <CardTitle className="text-2xl font-bold flex items-center gap-4 gold-text">
+              <Type className="text-primary" /> نصوص وترويصات الموقع
             </CardTitle>
-            <CardDescription className="text-slate-400">رفع المنتجات الافتراضية وإدارة قاعدة البيانات.</CardDescription>
           </CardHeader>
-          <CardContent className="p-8 space-y-6">
-            <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-              <p className="text-xs text-muted-foreground mb-4">سيؤدي هذا الإجراء إلى رفع كافة باقات فري فاير وببجي المخزنة في النظام إلى Firestore.</p>
-              <Button 
-                onClick={handleSeedProducts} 
-                disabled={isSeeding}
-                variant="outline" 
-                className="w-full h-12 rounded-xl border-primary text-primary font-bold hover:bg-primary/5"
-              >
-                {isSeeding ? "جاري الرفع..." : "رفع المنتجات الافتراضية"}
-              </Button>
+          <CardContent className="p-0 space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-primary">عنوان الموقع الرئيسي</Label>
+                <Input value={form.siteTitle} onChange={e => setForm({...form, siteTitle: e.target.value})} className="h-12 bg-black border-none rounded-xl font-bold" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-primary">العنوان الفرعي</Label>
+                <Input value={form.siteSubtitle} onChange={e => setForm({...form, siteSubtitle: e.target.value})} className="h-12 bg-black border-none rounded-xl font-bold" />
+              </div>
             </div>
-            <Button variant="destructive" className="w-full h-12 rounded-xl font-bold gap-2">
-              <Trash2 size={18} /> مسح الكاش المؤقت
-            </Button>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase text-primary">عنوان قسم الـ Hero (الصفحة الرئيسية)</Label>
+              <Input value={form.heroTitle} onChange={e => setForm({...form, heroTitle: e.target.value})} className="h-12 bg-black border-none rounded-xl font-bold" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase text-primary">وصف الـ Hero</Label>
+              <Textarea value={form.heroDescription} onChange={e => setForm({...form, heroDescription: e.target.value})} className="h-24 bg-black border-none rounded-xl font-bold" />
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-[2.5rem] overflow-hidden lg:col-span-2">
-          <CardHeader className="p-8 border-b">
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="text-primary" /> حماية النظام والوصول
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex items-center justify-between p-6 bg-slate-50 rounded-2xl">
-              <div className="space-y-1 text-right">
-                <Label className="font-bold text-lg">وضع الصيانة</Label>
-                <p className="text-xs text-muted-foreground">إغلاق المتجر مؤقتاً لإجراء تحديثات.</p>
-              </div>
-              <Switch checked={isMaintenance} onCheckedChange={setIsMaintenance} />
-            </div>
-            <div className="flex items-center justify-between p-6 bg-slate-50 rounded-2xl">
-              <div className="space-y-1 text-right">
-                <Label className="font-bold text-lg">سوق التداول (P2P)</Label>
-                <p className="text-xs text-muted-foreground">تفعيل أو تعطيل قسم تبادل المستخدمين.</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-2 flex justify-center">
+          <Button 
+            onClick={handleSaveSettings} 
+            disabled={isSaving}
+            className="royal-button h-16 px-20 text-xl shadow-2xl"
+          >
+            {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ التغييرات السيادية</>}
+          </Button>
+        </div>
       </div>
     </div>
   );
