@@ -29,7 +29,7 @@ export function GuidanceBot() {
     if (config?.bot?.greeting) {
       setMessage(config.bot.greeting);
     } else {
-      setMessage("يا هلا بك! أنا المحلل الذكي لمتجر XMOOD. كيف يمكنني مساعدتك في تحليل خياراتك اليوم؟ ✨");
+      setMessage("مرحباً بك! أنا المحلل الذكي لمتجر XMOOD. كيف يمكنني مساعدتك في تحليل خياراتك اليوم؟ ✨");
     }
   }, [config]);
 
