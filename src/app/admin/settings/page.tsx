@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -24,14 +25,13 @@ export default function AdminSettingsFullControl() {
       backgroundColor: "#09090b",
       accentColor: "#dc2626",
       fontFamily: "PT Sans",
-      logoUrl: "",
-      botIconUrl: "https://aboutmsr.com/wp-content/uploads/2025/02/IMG_1020.webp"
+      logoUrl: ""
     },
     siteInfo: {
       title: "XMOOD STORE",
       subtitle: "الوجهة الأولى للألعاب والخدمات الرقمية",
       heroTitle: "عالمك الرقمي بلمسة احترافية",
-      heroDescription: "نوفر لك أفضل باقات شحن الألعاب، الحسابات النادرة، وخدمات التصميم بأعلى جودة وأمان."
+      heroDescription: "نقدم لك أفضل باقات شحن الألعاب، الحسابات المميزة، والخدمات الاحترافية بأعلى معايير الأمان والسرعة."
     },
     contact: {
       email: "XMOODSTORE.SUPPORT@GMAIL.COM",
@@ -49,15 +49,25 @@ export default function AdminSettingsFullControl() {
       banner2Link: "/designs/request"
     },
     bot: {
-      greeting: "يا هلا بك! أنا مساعدك الذكي من XMOOD. كيف أقدر أساعدك اليوم؟ ✨",
-      tip1: "تأكد من شحن محفظتك للاستفادة من العروض السريعة!",
-      tip2: "نظام التحويل بين المستخدمين آمن ومجاني بالكامل.",
-      tip3: "تابعنا على إنستقرام لمعرفة أحدث الحسابات النادرة."
+      greeting: "مرحباً بك! أنا المحلل الذكي لمتجر XMOOD. كيف يمكنني مساعدتك في تحليل خياراتك اليوم؟ ✨",
+      tip1: "بناءً على تحليل المبيعات، قسم شحن الألعاب هو الأكثر طلباً حالياً.",
+      tip2: "أنصحك بشحن المحفظة مسبقاً لتفادي ضياع العروض المحدودة.",
+      tip3: "نظام التحويل لدينا يخضع لبروتوكول أمان عالٍ لضمان سلامة رصيدك."
     }
   });
 
   useEffect(() => {
-    if (config) setForm(prev => ({ ...prev, ...config }));
+    if (config) {
+      setForm(prev => ({
+        ...prev,
+        ...config,
+        appearance: { ...prev.appearance, ...config.appearance },
+        siteInfo: { ...prev.siteInfo, ...config.siteInfo },
+        contact: { ...prev.contact, ...config.contact },
+        promotions: { ...prev.promotions, ...config.promotions },
+        bot: { ...prev.bot, ...config.bot }
+      }));
+    }
   }, [config]);
 
   const handleSave = async () => {
@@ -87,7 +97,7 @@ export default function AdminSettingsFullControl() {
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-10">
         <div className="text-right">
           <h1 className="text-5xl font-headline font-bold gold-text">مركز التحكم الشامل</h1>
-          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Engine: 20+ Control Points</p>
+          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Engine: 20+ Global Control Points</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg">
           {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ كافة الإعدادات</>}
@@ -123,13 +133,9 @@ export default function AdminSettingsFullControl() {
               <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">لون التنبيهات</Label>
               <Input type="color" value={form.appearance.accentColor} onChange={e => setForm({...form, appearance: {...form.appearance, accentColor: e.target.value}})} className="h-14 w-full bg-zinc-900 border-none rounded-xl" />
             </div>
-            <div className="space-y-4">
+            <div className="col-span-2 space-y-4">
               <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">رابط الشعار الرئيسي</Label>
               <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} placeholder="URL..." className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
-            </div>
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">أيقونة المساعد (Anime URL)</Label>
-              <Input value={form.appearance.botIconUrl} onChange={e => setForm({...form, appearance: {...form.appearance, botIconUrl: e.target.value}})} placeholder="رابط الصورة..." className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
             </div>
           </Card>
         </TabsContent>
@@ -198,20 +204,20 @@ export default function AdminSettingsFullControl() {
         <TabsContent value="bot" className="space-y-8">
           <Card className="luxury-card p-10 space-y-8">
             <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">رسالة ترحيب المساعد</Label>
+              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">رسالة ترحيب المساعد (التحليلية)</Label>
               <Input value={form.bot.greeting} onChange={e => setForm({...form, bot: {...form.bot, greeting: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold text-primary" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <Label className="text-[10px] font-black text-zinc-500 uppercase">نصيحة ذكية 1</Label>
+                <Label className="text-[10px] font-black text-zinc-500 uppercase">نصيحة تحليلية 1</Label>
                 <Input value={form.bot.tip1} onChange={e => setForm({...form, bot: {...form.bot, tip1: e.target.value}})} className="bg-zinc-900 border-none font-bold" />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black text-zinc-500 uppercase">نصيحة ذكية 2</Label>
+                <Label className="text-[10px] font-black text-zinc-500 uppercase">نصيحة تحليلية 2</Label>
                 <Input value={form.bot.tip2} onChange={e => setForm({...form, bot: {...form.bot, tip2: e.target.value}})} className="bg-zinc-900 border-none font-bold" />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black text-zinc-500 uppercase">نصيحة ذكية 3</Label>
+                <Label className="text-[10px] font-black text-zinc-500 uppercase">نصيحة تحليلية 3</Label>
                 <Input value={form.bot.tip3} onChange={e => setForm({...form, bot: {...form.bot, tip3: e.target.value}})} className="bg-zinc-900 border-none font-bold" />
               </div>
             </div>

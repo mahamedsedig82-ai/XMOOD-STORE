@@ -24,7 +24,6 @@ export interface AppConfig {
     accentColor: string;
     fontFamily: string;
     logoUrl: string;
-    botIconUrl: string;
   };
   siteInfo: {
     title: string;
