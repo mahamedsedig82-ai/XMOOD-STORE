@@ -1,25 +1,23 @@
-
 export type UserRole = 'user' | 'admin' | 'agent' | 'vip';
 
 export interface UserProfile {
   uid: string;
   displayName: string;
-  fullName?: string; // الاسم الرباعي
+  fullName: string;
   email: string;
   walletBalance: number;
   role: UserRole;
-  label?: string; 
-  photoURL?: string;
+  label: string; 
+  photoURL: string;
   createdAt: string;
-  lastLogin?: string;
-  securityQuestions?: {
+  emergencyCode: string;
+  securityQuestions: {
     question: string;
     answer: string;
   }[];
-  emergencyCode?: string; // رمز الطوارئ
 }
 
-export type Category = 'شحن ألعاب' | 'حسابات ألعاب' | 'خدمات رقمية' | 'خدمات تصميم' | 'وساطة وخدمات خاصة' | 'تبادل عملات';
+export type Category = 'شحن ألعاب' | 'حسابات ألعاب' | 'خدمات رقمية' | 'خدمات تصميم' | 'وساطة وخدمات خاصة';
 export type ProductStatus = 'active' | 'out_of_stock' | 'discount' | 'inactive';
 
 export interface Product {
@@ -31,13 +29,12 @@ export interface Product {
   imageUrl: string;
   stock: number;
   status: ProductStatus;
-  discountPrice?: number;
-  isP2P?: boolean;
-  vendorId?: string;
-  rating?: number;
+  shippingCodes?: string;
+  updatedAt?: string;
+  createdAt?: string;
 }
 
-export type OrderStatus = 'waiting_payment' | 'processing' | 'completed' | 'cancelled' | 'refunded';
+export type OrderStatus = 'waiting_payment' | 'processing' | 'completed' | 'cancelled';
 
 export interface Order {
   id: string;
@@ -50,7 +47,7 @@ export interface Order {
   updatedAt: string;
 }
 
-export type TransactionType = 'deposit' | 'purchase' | 'refund' | 'withdrawal' | 'exchange' | 'transfer_send' | 'transfer_receive';
+export type TransactionType = 'deposit' | 'purchase' | 'refund' | 'transfer_send' | 'transfer_receive';
 
 export interface Transaction {
   id: string;
@@ -64,16 +61,5 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   description: string;
-  agentId?: string;
-  orderId?: string;
   createdAt: string;
-  status?: 'success' | 'failed' | 'refunded';
-}
-
-export interface Agent {
-  id: string;
-  name: string;
-  contactType: 'WhatsApp' | 'Telegram';
-  contactValue: string;
-  availability: string;
 }
