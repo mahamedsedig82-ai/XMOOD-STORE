@@ -4,13 +4,19 @@ export type UserRole = 'user' | 'admin' | 'agent' | 'vip';
 export interface UserProfile {
   uid: string;
   displayName: string;
+  fullName?: string; // الاسم الرباعي
   email: string;
   walletBalance: number;
   role: UserRole;
-  label?: string; // مسمى المستخدم (مثلاً: تاجر معتمد، عميل VIP)
+  label?: string; 
   photoURL?: string;
   createdAt: string;
   lastLogin?: string;
+  securityQuestions?: {
+    question: string;
+    answer: string;
+  }[];
+  emergencyCode?: string; // رمز الطوارئ
 }
 
 export type Category = 'شحن ألعاب' | 'حسابات ألعاب' | 'خدمات رقمية' | 'خدمات تصميم' | 'وساطة وخدمات خاصة' | 'تبادل عملات';
@@ -49,7 +55,12 @@ export type TransactionType = 'deposit' | 'purchase' | 'refund' | 'withdrawal' |
 export interface Transaction {
   id: string;
   userId: string;
-  targetUserId?: string; // في حال التحويل
+  targetUserId?: string; 
+  senderUserId?: string;
+  targetUserName?: string;
+  senderUserName?: string;
+  targetUserPhoto?: string;
+  senderUserPhoto?: string;
   type: TransactionType;
   amount: number;
   description: string;

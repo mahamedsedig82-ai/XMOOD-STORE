@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -30,6 +31,14 @@
 @layer base {
   * { @apply border-border; }
   body { @apply bg-background text-foreground antialiased selection:bg-primary/30 font-body; }
+  
+  /* تحسين وضوح النصوص */
+  h1, h2, h3, h4 {
+    @apply font-headline tracking-tight leading-tight text-white;
+  }
+  p {
+    @apply text-slate-400 font-medium;
+  }
 }
 
 .luxury-card {

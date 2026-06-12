@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -15,117 +16,97 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Chrome, Loader2, KeyRound, Mail, Sparkles } from "lucide-react";
+import { ShieldCheck, Chrome, Loader2, KeyRound, User, Camera, Lock, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [securityAnswer, setSecurityAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   
-  const [showPinEntry, setShowPinEntry] = useState(false);
-  const [pin, setPin] = useState("");
-  const [generatedPin, setGeneratedPin] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [step, setStep] = useState<'auth' | 'security' | 'emergency'>('auth');
+  const [emergencyCode, setEmergencyCode] = useState("");
   
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
 
-  const ADMIN_EMAIL = "MAHAMEDFK3@GMAIL.COM";
-
-  const handleStartVerification = (userEmail: string) => {
-    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedPin(newPin);
-    setShowPinEntry(true);
-    toast({ 
-      title: "رمز التحقق الأمني", 
-      description: `تم إرسال الرمز ${newPin} إلى بريدك (محاكاة). يرجى إدخاله للمتابعة.`,
-      duration: 10000
-    });
-  };
-
-  const handlePinSubmit = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsVerifying(true);
-    setTimeout(() => {
-      if (pin === generatedPin || pin === "2025") {
-        toast({ title: "تم التحقق", description: "مرحباً بك في XMOOD STORE." });
-        router.push("/");
-      } else {
-        toast({ variant: "destructive", title: "رمز خاطئ", description: "يرجى إدخال الرمز الصحيح." });
-      }
-      setIsVerifying(false);
-    }, 1000);
-  };
-
-  async function handleGoogleLogin() {
     if (!auth || !db) return;
+    if (fullName.split(" ").length < 4) {
+      toast({ variant: "destructive", title: "تنبيه أمني", description: "يجب إدخال الاسم الرباعي كاملاً للمتابعة." });
+      return;
+    }
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, new GoogleAuthProvider());
-      handleStartVerification(result.user.email!);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const code = "XM-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+      setEmergencyCode(code);
+      
+      const userProfile = {
+        uid: userCredential.user.uid,
+        displayName: fullName.split(" ")[0],
+        fullName: fullName,
+        email: email,
+        walletBalance: 0,
+        role: 'user',
+        label: 'عضو XMOOD',
+        photoURL: '',
+        createdAt: new Date().toISOString(),
+        securityQuestions: [{ question: "ما هو اسم أول مدرسة التحقت بها؟", answer: securityAnswer }],
+        emergencyCode: code
+      };
+      
+      await setDoc(doc(db, "users", userCredential.user.uid), userProfile);
+      setStep('emergency');
     } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ", description: "فشل الدخول عبر جوجل." });
+      toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message });
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  async function handleEmailLogin(e: React.FormEvent) {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      handleStartVerification(email);
+      router.push("/");
     } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ", description: "البريد أو كلمة المرور غير صحيحة." });
+      toast({ variant: "destructive", title: "خطأ في الدخول", description: "البريد أو كلمة المرور غير صحيحة." });
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  async function handleSignUp(e: React.FormEvent) {
-    e.preventDefault();
-    if (!auth || !db) return;
-    setLoading(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: name });
-      handleStartVerification(email);
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ", description: error.message });
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (showPinEntry) {
+  if (step === 'emergency') {
     return (
-      <main className="min-h-screen bg-slate-950 flex items-center justify-center p-6" dir="rtl">
-        <Card className="w-full max-w-lg rounded-[4rem] overflow-hidden bg-white shadow-2xl animate-fade-in">
+      <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
+        <Card className="w-full max-w-2xl rounded-[3rem] overflow-hidden bg-white shadow-2xl animate-fade-in border-4 border-primary">
           <div className="bg-primary p-12 text-center text-white">
-            <KeyRound size={48} className="mx-auto mb-6 animate-pulse" />
-            <h2 className="text-3xl font-headline font-bold">بوابة التحقق</h2>
-            <p className="text-xs opacity-70 mt-2">يرجى إدخال الرمز المرسل لبريدك</p>
+            <Camera size={64} className="mx-auto mb-6 animate-bounce" />
+            <h2 className="text-4xl font-headline font-bold">بروتوكول الأمان النهائي</h2>
+            <p className="text-sm opacity-90 mt-4">يجب القيام بتصوير الشاشة (Screenshot) لهذا الرمز الآن!</p>
           </div>
-          <CardContent className="p-12">
-            <form onSubmit={handlePinSubmit} className="space-y-8">
-              <Input 
-                type="text" 
-                maxLength={4} 
-                className="h-20 text-center text-5xl font-black rounded-3xl bg-slate-50 border-none text-primary"
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                autoFocus
-              />
-              <Button disabled={isVerifying} type="submit" className="w-full h-16 bg-slate-950 hover:bg-primary rounded-2xl font-bold text-lg">
-                {isVerifying ? <Loader2 className="animate-spin" /> : "تأكيد والدخول"}
-              </Button>
-            </form>
+          <CardContent className="p-12 space-y-8 text-center">
+            <div className="bg-slate-100 p-10 rounded-[2rem] border-4 border-dashed border-primary/30">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">Emergency Recovery Code</p>
+              <span className="text-5xl font-black text-slate-900 tracking-tighter">{emergencyCode}</span>
+            </div>
+            <div className="flex items-start gap-4 p-6 bg-amber-50 rounded-2xl text-amber-800 text-right">
+              <AlertTriangle className="shrink-0" />
+              <p className="text-xs font-bold leading-relaxed">
+                هذا الرمز هو وسيلتك الوحيدة لاستعادة الحساب في حال فقدان الوصول. لا تتركه يضيع، قم بتصوير الشاشة فوراً.
+              </p>
+            </div>
+            <Button onClick={() => router.push("/")} className="w-full h-20 royal-button text-2xl">
+              تم التصوير، دخول المنصة
+            </Button>
           </CardContent>
         </Card>
       </main>
@@ -136,40 +117,56 @@ export default function LoginPage() {
     <main className="min-h-screen bg-slate-50 font-body" dir="rtl">
       <Navbar />
       <div className="container mx-auto px-4 py-20 flex justify-center">
-        <Card className="w-full max-w-xl rounded-[4rem] overflow-hidden bg-white shadow-2xl border-none animate-fade-in">
-          <div className="bg-slate-950 p-12 text-center text-white relative">
+        <Card className="w-full max-w-2xl rounded-[4rem] overflow-hidden bg-white shadow-2xl border-none animate-fade-in">
+          <div className="bg-black p-12 text-center text-white">
             <ShieldCheck size={64} className="text-primary mx-auto mb-6" />
-            <h2 className="text-4xl font-headline font-bold">بوابة XMOOD</h2>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mt-2">Royal Identity Access</p>
+            <h2 className="text-4xl font-headline font-bold gold-text">بوابة XMOOD السيادية</h2>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60 mt-2">Elite Access Protocol</p>
           </div>
           
           <CardContent className="p-12">
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-10 bg-slate-100 rounded-full p-1 h-14">
-                <TabsTrigger value="login" className="rounded-full font-bold">دخول</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full font-bold">تسجيل</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-12 bg-slate-100 rounded-full p-1 h-16">
+                <TabsTrigger value="login" className="rounded-full font-black text-lg">دخول</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-full font-black text-lg">تسجيل ملكي</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login" className="space-y-6">
-                <form onSubmit={handleEmailLogin} className="space-y-4">
-                  <Input placeholder="البريد الإلكتروني" type="email" className="h-14 rounded-xl bg-slate-50" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                  <Input type="password" placeholder="كلمة المرور" className="h-14 rounded-xl bg-slate-50" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-16 rounded-xl" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "إرسال رمز الأمان"}
-                  </Button>
-                  <Button type="button" variant="outline" onClick={handleGoogleLogin} className="w-full h-14 rounded-xl border-slate-200 font-bold flex gap-3 justify-center items-center">
-                    <Chrome size={20} className="text-red-500" /> جوجل
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black pr-4 opacity-50">البريد الإلكتروني</label>
+                    <Input type="email" className="h-16 rounded-2xl bg-slate-50 border-none px-6" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black pr-4 opacity-50">كلمة المرور</label>
+                    <Input type="password" className="h-16 rounded-2xl bg-slate-50 border-none px-6" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  </div>
+                  <Button type="submit" className="w-full royal-button h-20 text-xl" disabled={loading}>
+                    {loading ? <Loader2 className="animate-spin" /> : "دخول الخزانة"}
                   </Button>
                 </form>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-6">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <Input placeholder="الاسم" className="h-14 rounded-xl bg-slate-50" value={name} onChange={(e) => setName(e.target.value)} required />
-                  <Input type="email" placeholder="البريد" className="h-14 rounded-xl bg-slate-50" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                  <Input type="password" placeholder="كلمة المرور" className="h-14 rounded-xl bg-slate-50" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                  <Button type="submit" className="w-full bg-slate-950 hover:bg-primary text-white font-bold h-16 rounded-xl" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "إنشاء حساب"}
+                <form onSubmit={handleSignUp} className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black pr-4 opacity-50">الاسم الرباعي كاملاً</label>
+                    <Input placeholder="أدخل اسمك الرباعي هنا..." className="h-16 rounded-2xl bg-slate-50 border-none px-6" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black pr-4 opacity-50">البريد الإلكتروني</label>
+                    <Input type="email" className="h-16 rounded-2xl bg-slate-50 border-none px-6" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black pr-4 opacity-50">كلمة المرور (8 رموز على الأقل)</label>
+                    <Input type="password" className="h-16 rounded-2xl bg-slate-50 border-none px-6" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black pr-4 text-primary uppercase">سؤال الأمان: ما هو اسم أول مدرسة التحقت بها؟</label>
+                    <Input placeholder="إجابتك السرية..." className="h-16 rounded-2xl bg-primary/5 border-primary/20 px-6 font-bold" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)} required />
+                  </div>
+                  <Button type="submit" className="w-full royal-button h-20 text-xl" disabled={loading}>
+                    {loading ? <Loader2 className="animate-spin" /> : "تأمين الحساب والبدء"}
                   </Button>
                 </form>
               </TabsContent>
