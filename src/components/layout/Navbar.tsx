@@ -3,7 +3,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wallet, LayoutDashboard, Sparkles, LogOut, User as UserIcon, Zap, Menu } from "lucide-react";
+import { 
+  Wallet, 
+  LayoutDashboard, 
+  Sparkles, 
+  LogOut, 
+  User as UserIcon, 
+  Zap, 
+  Menu,
+  ShoppingBag,
+  ArrowRightLeft,
+  Settings,
+  ShieldCheck,
+  MessageSquare,
+  HelpCircle
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { signOut } from "firebase/auth";
@@ -14,7 +28,8 @@ import {
   DropdownMenuItem, 
   DropdownMenuLabel, 
   DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuGroup
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatUSD } from "@/lib/currency";
@@ -35,8 +50,8 @@ export function Navbar() {
   const navLinks = [
     { name: "الرئيسية", href: "/" },
     { name: "المتجر", href: "/store" },
-    { name: "السوق", href: "/marketplace" },
-    { name: "الوساطة", href: "/middleman" },
+    { name: "السوق الاجتماعي", href: "/marketplace" },
+    { name: "الوساطة المضمونة", href: "/middleman" },
   ];
 
   const siteTitle = siteSettings?.siteInfo?.title || "XMOOD PRO";
@@ -48,7 +63,7 @@ export function Navbar() {
         {/* Brand Section */}
         <Link href="/" className="flex flex-col items-end group">
           <span className="decorative-logo text-3xl group-hover:scale-105 transition-transform">{siteTitle}</span>
-          <span className="text-[8px] font-bold tracking-[0.4em] text-red-600 uppercase opacity-60">Digital Excellence</span>
+          <span className="text-[8px] font-bold tracking-[0.4em] text-red-600 uppercase opacity-60">Premium Experience</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -63,7 +78,7 @@ export function Navbar() {
             </Link>
           ))}
           <Link href="/concierge" className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.1em] text-red-500 bg-red-600/5 px-6 py-2 rounded-full border border-red-600/10 hover:bg-red-600/10 transition-all">
-            <Sparkles size={14} /> المساعد الذكي
+            <Sparkles size={14} /> المحلل الذكي
           </Link>
         </div>
 
@@ -83,7 +98,7 @@ export function Navbar() {
           ) : (
             <DropdownMenu dir="rtl">
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 h-12 w-12 rounded-xl overflow-hidden border border-primary/30 hover:border-primary transition-all shadow-xl">
+                <Button variant="ghost" className="p-0 h-12 w-12 rounded-xl overflow-hidden border border-primary/30 hover:border-primary transition-all shadow-xl group">
                   <Avatar className="h-full w-full rounded-none">
                     <AvatarImage src={profile?.photoURL} alt={user.displayName || ""} />
                     <AvatarFallback className="bg-zinc-950 text-primary font-black text-xl">
@@ -92,24 +107,69 @@ export function Navbar() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-80 mt-4 rounded-[2rem] bg-zinc-950 border border-white/10 shadow-2xl p-4" align="start">
-                <DropdownMenuLabel className="p-6 text-right bg-white/5 rounded-2xl mb-2">
-                  <p className="font-headline text-2xl font-bold gold-text mb-1 leading-none">{profile?.displayName}</p>
-                  <p className="text-[9px] text-red-600 font-bold tracking-widest uppercase">{profile?.label || "بريميوم"}</p>
+              <DropdownMenuContent className="w-80 mt-4 rounded-[2.5rem] bg-zinc-950/95 backdrop-blur-3xl border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] p-4" align="start">
+                <DropdownMenuLabel className="p-6 text-right bg-white/5 rounded-3xl mb-4 border border-white/5">
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge variant="outline" className="border-primary/20 text-primary text-[7px] px-3 py-0.5 rounded-full uppercase font-black">{profile?.label || "عضو بريميوم"}</Badge>
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">معرف: {user.uid.substring(0,8)}</p>
+                  </div>
+                  <p className="font-headline text-2xl font-bold gold-text leading-none">{profile?.displayName}</p>
                 </DropdownMenuLabel>
-                <div className="space-y-1">
-                  <DropdownMenuItem asChild className="rounded-xl p-4 cursor-pointer justify-end font-bold text-zinc-400 hover:bg-primary/10 hover:text-primary transition-all">
-                    <Link href="/wallet"><Wallet className="ml-3 w-5 h-5 text-red-600" /> المحفظة الشخصية</Link>
+                
+                <DropdownMenuGroup className="space-y-1">
+                  <DropdownMenuLabel className="text-[9px] font-black uppercase text-zinc-600 pr-4 mb-2 tracking-widest">إدارة الحساب والمالية</DropdownMenuLabel>
+                  <DropdownMenuItem asChild className="rounded-2xl p-4 cursor-pointer justify-end font-bold text-zinc-400 hover:bg-primary/10 hover:text-primary transition-all group">
+                    <Link href="/wallet">
+                      <span className="ml-3">المحفظة الشخصية</span>
+                      <Wallet className="w-5 h-5 text-red-600 group-hover:scale-110 transition-transform" />
+                    </Link>
                   </DropdownMenuItem>
-                  {['owner', 'admin', 'gm', 'store_manager'].includes(profile?.role || '') && (
-                    <DropdownMenuItem asChild className="rounded-xl p-4 cursor-pointer text-primary font-bold justify-end hover:bg-primary/20">
-                      <Link href="/admin"><LayoutDashboard className="ml-3 w-5 h-5" /> لوحة التحكم PRO</Link>
-                    </DropdownMenuItem>
-                  )}
-                </div>
-                <DropdownMenuSeparator className="bg-white/5 my-3" />
-                <DropdownMenuItem onClick={handleSignOut} className="rounded-xl p-4 cursor-pointer text-red-600 font-bold justify-end hover:bg-red-600/10">
-                  <LogOut className="ml-3 w-5 h-5" /> تسجيل الخروج
+                  <DropdownMenuItem asChild className="rounded-2xl p-4 cursor-pointer justify-end font-bold text-zinc-400 hover:bg-primary/10 hover:text-primary transition-all group">
+                    <Link href="/wallet/transfer">
+                      <span className="ml-3">تحويل سريع للأموال</span>
+                      <ArrowRightLeft className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" />
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+
+                <DropdownMenuSeparator className="bg-white/5 my-4" />
+
+                <DropdownMenuGroup className="space-y-1">
+                  <DropdownMenuLabel className="text-[9px] font-black uppercase text-zinc-600 pr-4 mb-2 tracking-widest">الخدمات والدعم</DropdownMenuLabel>
+                  <DropdownMenuItem asChild className="rounded-2xl p-4 cursor-pointer justify-end font-bold text-zinc-400 hover:bg-primary/10 hover:text-primary transition-all group">
+                    <Link href="/designs/request">
+                      <span className="ml-3">طلب تصميم جديد</span>
+                      <ShoppingBag className="w-5 h-5 text-blue-500 group-hover:scale-110 transition-transform" />
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="rounded-2xl p-4 cursor-pointer justify-end font-bold text-zinc-400 hover:bg-primary/10 hover:text-primary transition-all group">
+                    <Link href="/concierge">
+                      <span className="ml-3">المحلل الذكي X-AI</span>
+                      <Sparkles className="w-5 h-5 text-primary group-hover:animate-pulse" />
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+
+                {['owner', 'admin', 'gm', 'store_manager', 'design_manager'].includes(profile?.role || '') && (
+                  <>
+                    <DropdownMenuSeparator className="bg-white/5 my-4" />
+                    <DropdownMenuGroup className="space-y-1">
+                      <DropdownMenuLabel className="text-[9px] font-black uppercase text-zinc-600 pr-4 mb-2 tracking-widest">أدوات الإدارة</DropdownMenuLabel>
+                      <DropdownMenuItem asChild className="rounded-2xl p-4 cursor-pointer text-primary font-black justify-end bg-primary/5 hover:bg-primary/20 transition-all border border-primary/10">
+                        <Link href="/admin">
+                          <span className="ml-3">لوحة التحكم PRO</span>
+                          <LayoutDashboard className="w-5 h-5" />
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </>
+                )}
+
+                <DropdownMenuSeparator className="bg-white/5 my-4" />
+                
+                <DropdownMenuItem onClick={handleSignOut} className="rounded-2xl p-4 cursor-pointer text-red-600 font-bold justify-end hover:bg-red-600/10 transition-all group">
+                  <span className="ml-3">تسجيل الخروج</span>
+                  <LogOut className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -123,4 +183,3 @@ export function Navbar() {
     </nav>
   );
 }
-
