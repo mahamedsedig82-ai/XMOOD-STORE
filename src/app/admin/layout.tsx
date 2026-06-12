@@ -28,6 +28,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
 
+  const logoUrl = "https://chatgpt.com/s/m_6a2b55a8375c8191bed49391ecaef764";
+
   useEffect(() => {
     if (!loading && (!profile || profile.role !== 'admin')) {
       router.push('/'); 
@@ -36,8 +38,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
-        <Cpu className="w-20 h-20 text-primary animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-black text-primary">
+        <Cpu className="w-20 h-20 animate-spin" />
       </div>
     );
   }
@@ -59,14 +61,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Sidebar className="border-l border-white/10 bg-zinc-950 shadow-2xl" side="right">
           <SidebarHeader className="p-8 border-b border-white/10">
             <Link href="/" className="flex items-center gap-5">
-              <div className="relative w-14 h-14 shrink-0 rounded-full overflow-hidden border-2 border-primary shadow-2xl">
+              <div className="relative w-14 h-14 shrink-0 rounded-full overflow-hidden border-2 border-primary shadow-2xl bg-zinc-900 flex items-center justify-center">
                 <Image 
-                  src="https://chatgpt.com/s/m_6a2b55a8375c8191bed49391ecaef764" 
+                  src={logoUrl} 
                   alt="Admin Logo" 
                   fill 
                   className="object-cover rounded-full"
                   unoptimized
                 />
+                <span className="font-handwriting text-xl font-bold text-primary relative z-10">XM</span>
               </div>
               <div className="text-right">
                  <span className="font-headline text-2xl font-bold text-primary block leading-none gold-text">ADMIN</span>
