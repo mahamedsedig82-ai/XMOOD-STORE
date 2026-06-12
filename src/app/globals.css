@@ -36,7 +36,7 @@
   }
 
   p, span, div {
-    @apply leading-relaxed;
+    @apply leading-relaxed text-zinc-300;
   }
 }
 

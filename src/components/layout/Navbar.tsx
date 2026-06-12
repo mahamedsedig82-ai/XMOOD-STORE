@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Wallet, LayoutDashboard, ShieldCheck, Sparkles, LogOut, User as UserIcon, Zap, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,11 +38,17 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b border-white/5 bg-black/90 backdrop-blur-xl">
       <div className="container mx-auto px-6 h-20 flex items-center justify-between gap-10 flex-row-reverse">
         
-        <Link href="/" className="flex items-center gap-3 group flex-row-reverse shrink-0">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-black shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
-            <ShieldCheck size={24} />
+        <Link href="/" className="flex items-center gap-4 group flex-row-reverse shrink-0">
+          <div className="relative w-12 h-12 transition-transform group-hover:scale-110">
+            <Image 
+              src="https://chatgpt.com/s/m_6a2b55a8375c8191bed49391ecaef764" 
+              alt="XMOOD Logo" 
+              fill 
+              className="object-contain"
+              unoptimized
+            />
           </div>
-          <span className="font-handwriting text-3xl font-bold tracking-tight text-primary">XMOOD STORE</span>
+          <span className="font-headline text-3xl font-bold tracking-tight gold-text">XMOOD STORE</span>
         </Link>
 
         <div className="hidden lg:flex items-center gap-8 flex-row-reverse shrink-0">
@@ -49,7 +56,7 @@ export function Navbar() {
             <Link 
               key={link.href} 
               href={link.href} 
-              className={`text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:text-primary ${pathname === link.href ? 'text-primary' : 'text-zinc-500'}`}
+              className={`text-[12px] font-black uppercase tracking-[0.2em] transition-all hover:text-primary ${pathname === link.href ? 'text-primary' : 'text-zinc-400'}`}
             >
               {link.name}
             </Link>

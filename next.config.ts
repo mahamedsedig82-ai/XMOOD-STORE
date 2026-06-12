@@ -25,6 +25,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'aboutmsr.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'chatgpt.com',
+      },
     ],
   },
 };

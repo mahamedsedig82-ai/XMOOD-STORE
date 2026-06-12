@@ -16,6 +16,7 @@ import {
   Star
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@/firebase";
 import { useEffect } from "react";
@@ -57,11 +58,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Sidebar className="border-l border-white/5 bg-zinc-950 shadow-2xl" side="right">
           <SidebarHeader className="p-8 border-b border-white/5">
             <Link href="/" className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-black shadow-lg shadow-primary/20">
-                <ShieldCheck size={24} />
+              <div className="relative w-10 h-10 shrink-0">
+                <Image 
+                  src="https://chatgpt.com/s/m_6a2b55a8375c8191bed49391ecaef764" 
+                  alt="Admin Logo" 
+                  fill 
+                  className="object-contain"
+                  unoptimized
+                />
               </div>
               <div>
-                 <span className="font-handwriting text-2xl font-bold text-primary block leading-none">Admin Core</span>
+                 <span className="font-headline text-xl font-bold text-primary block leading-none">Admin Core</span>
                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-600 mt-1">XMOOD Sovereign</p>
               </div>
             </Link>
