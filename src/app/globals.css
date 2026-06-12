@@ -5,26 +5,26 @@
 
 @layer base {
   :root {
-    --background: 40 33% 98%; /* White/Cream Luxury */
-    --foreground: 20 10% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 20 10% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 10% 10%;
-    --primary: 43 70% 50%; /* Pure Gold */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 43 20% 90%;
-    --secondary-foreground: 43 70% 30%;
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 43 70% 50%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 43 20% 85%;
-    --input: 43 20% 90%;
+    --background: 240 10% 4%; /* Black Deep Zinc */
+    --foreground: 0 0% 98%;
+    --card: 240 10% 4%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 4%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 43 70% 50%; /* Gold */
+    --primary-foreground: 240 10% 4%;
+    --secondary: 0 72% 51%; /* Crimson Red */
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 0 72% 51%; /* Red Accent */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
     --ring: 43 70% 50%;
-    --radius: 1.5rem;
+    --radius: 1.25rem;
   }
 }
 
@@ -32,25 +32,39 @@
   * { @apply border-border; }
   body { 
     @apply bg-background text-foreground antialiased selection:bg-primary/30 font-body;
-    background-image: radial-gradient(circle at top right, #fffaf0 0%, #fdfcfb 100%);
+    background-image: 
+      radial-gradient(circle at 0% 0%, rgba(220, 38, 38, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
     background-attachment: fixed;
   }
   
   h1, h2, h3, h4 {
-    @apply font-headline tracking-tight text-slate-900;
+    @apply font-headline tracking-tight text-white;
   }
 }
 
-.gold-gradient-text {
-  @apply bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 bg-clip-text text-transparent font-black;
+.gold-text {
+  @apply bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent font-black;
+}
+
+.red-glow {
+  @apply shadow-[0_0_20px_rgba(220,38,38,0.2)];
 }
 
 .luxury-card {
-  @apply bg-white border border-primary/10 shadow-[0_10px_40px_-15px_rgba(212,175,55,0.15)] rounded-[2rem] transition-all duration-500 hover:shadow-[0_20px_50px_-10px_rgba(212,175,55,0.25)] hover:border-primary/30;
+  @apply bg-zinc-950/50 backdrop-blur-xl border border-white/5 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.5)] rounded-[2.5rem] transition-all duration-500 hover:border-primary/20;
 }
 
 .royal-button {
-  @apply bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-bold rounded-full px-10 py-4 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 uppercase tracking-widest text-xs;
+  @apply bg-gradient-to-r from-amber-500 to-yellow-600 text-black font-black rounded-full px-10 py-4 shadow-xl shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-all duration-300 uppercase tracking-widest text-[10px];
+}
+
+.accent-button {
+  @apply bg-gradient-to-r from-red-600 to-red-800 text-white font-black rounded-full px-10 py-4 shadow-xl shadow-red-600/10 hover:scale-[1.02] active:scale-95 transition-all duration-300 uppercase tracking-widest text-[10px];
+}
+
+.legendary-border {
+  @apply border border-primary/20 relative before:absolute before:inset-0 before:rounded-[inherit] before:border before:border-red-600/10 before:pointer-events-none;
 }
 
 .animate-fade-up {
