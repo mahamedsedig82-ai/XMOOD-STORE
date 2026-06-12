@@ -1,3 +1,4 @@
+
 export type UserRole = 'user' | 'admin' | 'agent' | 'vip';
 
 export interface UserProfile {
@@ -11,10 +12,10 @@ export interface UserProfile {
   photoURL: string;
   createdAt: string;
   emergencyCode: string;
-  securityQuestions: {
-    question: string;
-    answer: string;
-  }[];
+  bio?: string;
+  location?: string;
+  affinityPoints?: number;
+  isVerified?: boolean;
 }
 
 export type Category = 'شحن ألعاب' | 'حسابات ألعاب' | 'خدمات رقمية' | 'خدمات تصميم' | 'وساطة وخدمات خاصة';
@@ -32,6 +33,20 @@ export interface Product {
   shippingCodes?: string;
   updatedAt?: string;
   createdAt?: string;
+  vendorId?: string;
+}
+
+export interface MarketplaceListing {
+  id: string;
+  userId: string;
+  userName: string;
+  userPhoto: string;
+  title: string;
+  description: string;
+  price: number;
+  type: 'sell' | 'buy' | 'service';
+  status: 'active' | 'completed' | 'closed';
+  createdAt: string;
 }
 
 export type OrderStatus = 'waiting_payment' | 'processing' | 'completed' | 'cancelled';

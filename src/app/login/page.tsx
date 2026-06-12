@@ -17,7 +17,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Loader2, Camera, AlertTriangle, Key, Mail } from "lucide-react";
+import { ShieldCheck, Loader2, Camera, AlertTriangle, Key, Mail, Globe } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -34,7 +34,6 @@ export default function LoginPage() {
   const db = useFirestore();
   const router = useRouter();
 
-  // منع مشاكل الهيدريشن (Hydration)
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
 
@@ -46,10 +45,11 @@ export default function LoginPage() {
         ? new GoogleAuthProvider() 
         : new OAuthProvider('apple.com');
       
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
-      // التحقق من وجود بروفايل
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (!userDoc.exists()) {
         const code = "XM-" + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -60,11 +60,12 @@ export default function LoginPage() {
           email: user.email,
           walletBalance: 0,
           role: 'user',
-          label: 'عضو XMOOD',
+          label: 'عضو XMOOD الموثق',
           photoURL: user.photoURL || '',
           createdAt: new Date().toISOString(),
           emergencyCode: code,
-          isVerified: true
+          isVerified: true,
+          affinityPoints: 100
         });
         setEmergencyCode(code);
         setStep('emergency');
@@ -72,7 +73,12 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (error: any) {
-      toast({ variant: "destructive", title: "فشل الدخول", description: "تعذر الاتصال بالمزود الخارجي." });
+      console.error("Social Login Error:", error);
+      toast({ 
+        variant: "destructive", 
+        title: "خطأ في التوثيق الخارجي", 
+        description: "تعذر الاتصال بالمزود. يرجى التأكد من السماح بالنوافذ المنبثقة أو المحاولة لاحقاً." 
+      });
     } finally {
       setLoading(false);
     }
@@ -82,7 +88,7 @@ export default function LoginPage() {
     e.preventDefault();
     if (!auth || !db) return;
     if (fullName.trim().split(" ").length < 4) {
-      toast({ variant: "destructive", title: "تنبيه أمني", description: "يجب إدخال الاسم الرباعي كاملاً للمتابعة." });
+      toast({ variant: "destructive", title: "تنبيه أمني رسمي", description: "يجب إدخال الاسم الرباعي كاملاً لضمان التوثيق السيادي." });
       return;
     }
     setLoading(true);
@@ -100,17 +106,18 @@ export default function LoginPage() {
         email: email,
         walletBalance: 0,
         role: 'user',
-        label: 'عضو XMOOD',
+        label: 'عضو النخبة',
         photoURL: '',
         createdAt: new Date().toISOString(),
         emergencyCode: code,
         isVerified: false,
+        affinityPoints: 50,
         securityQuestions: [{ question: "ما هو اسم أول مدرسة التحقت بها؟", answer: securityAnswer }]
       });
       
       setStep('verify');
     } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message });
+      toast({ variant: "destructive", title: "خطأ في إنشاء الهوية", description: error.message });
     } finally {
       setLoading(false);
     }
@@ -123,13 +130,13 @@ export default function LoginPage() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       if (!userCredential.user.emailVerified) {
-        toast({ title: "البريد غير مفعل", description: "يرجى مراجعة بريدك الإلكتروني لتفعيل الحساب." });
+        toast({ title: "الهوية غير موثقة", description: "يرجى مراجعة البريد الإلكتروني لتفعيل حسابك الرسمي." });
         setStep('verify');
       } else {
         router.push("/");
       }
     } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ في الدخول", description: "البيانات غير صحيحة." });
+      toast({ variant: "destructive", title: "فشل الدخول الملكي", description: "بيانات الدخول غير مطابقة للسجلات الرسمية." });
     } finally {
       setLoading(false);
     }
@@ -140,11 +147,11 @@ export default function LoginPage() {
   if (step === 'verify') {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
-        <Card className="w-full max-w-xl rounded-[3rem] bg-zinc-950 border-2 border-primary text-center p-12 animate-fade-in">
+        <Card className="w-full max-w-xl rounded-[3rem] bg-zinc-950 border-2 border-primary text-center p-12 animate-fade-in shadow-[0_0_100px_rgba(255,184,0,0.1)]">
           <Mail size={80} className="text-primary mx-auto mb-6" />
-          <h2 className="text-4xl font-headline font-bold gold-text mb-4">تفعيل الحساب الملكي</h2>
-          <p className="text-zinc-400 mb-8 font-bold">لقد أرسلنا رابط تفعيل إلى بريدك الرسمي. يرجى الضغط عليه للمتابعة.</p>
-          <Button onClick={() => setStep('auth')} className="w-full royal-button h-16 text-xl">العودة لتسجيل الدخول</Button>
+          <h2 className="text-4xl font-headline font-bold gold-text mb-4">تفعيل الهوية الرسمية</h2>
+          <p className="text-zinc-400 mb-8 font-bold leading-relaxed">لقد تم إرسال بروتوكول التفعيل إلى بريدك الإلكتروني. يرجى الضغط على الرابط المرفق للمتابعة.</p>
+          <Button onClick={() => setStep('auth')} className="w-full royal-button h-16 text-xl">العودة لبوابة الدخول</Button>
         </Card>
       </main>
     );
@@ -155,20 +162,20 @@ export default function LoginPage() {
       <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
         <Card className="w-full max-w-xl rounded-[3rem] overflow-hidden bg-zinc-950 border-2 border-primary shadow-2xl animate-fade-in">
           <div className="bg-primary p-10 text-center text-black">
-            <Camera size={48} className="mx-auto mb-4" />
-            <h2 className="text-3xl font-headline font-bold">بروتوكول الأمان السيادي</h2>
-            <p className="text-sm font-bold mt-2">قم بتصوير الشاشة لهذا الرمز فوراً!</p>
+            <Key size={48} className="mx-auto mb-4" />
+            <h2 className="text-3xl font-headline font-bold">مفتاح الاستعادة السيادي</h2>
+            <p className="text-sm font-black mt-2">يرجى حفظ هذا الرمز في مكان آمن فوراً</p>
           </div>
           <CardContent className="p-10 space-y-8 text-center">
             <div className="bg-white/5 p-8 rounded-3xl border border-primary/20">
-              <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">Emergency Recovery Key</p>
-              <span className="text-4xl font-black text-white tracking-widest">{emergencyCode}</span>
+              <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4 italic">Sovereign Recovery Shield</p>
+              <span className="text-5xl font-black text-white tracking-[0.2em]">{emergencyCode}</span>
             </div>
-            <div className="p-4 bg-amber-500/10 rounded-2xl text-amber-500 flex gap-3 text-right">
-              <AlertTriangle className="shrink-0" />
-              <p className="text-xs font-bold">هذا الرمز هو الضمان الوحيد لاستعادة حسابك. لا تشاركه مع أحد.</p>
+            <div className="p-6 bg-amber-500/10 rounded-2xl text-amber-500 flex gap-4 text-right border border-amber-500/20">
+              <AlertTriangle className="shrink-0" size={24} />
+              <p className="text-xs font-bold leading-relaxed">هذا الرمز هو الضمان الوحيد للوصول إلى أصولك في حال فقدان كلمة المرور. لن تتمكن الإدارة من استعادته لك.</p>
             </div>
-            <Button onClick={() => router.push("/")} className="w-full h-16 royal-button text-xl">دخول المنصة</Button>
+            <Button onClick={() => router.push("/")} className="w-full h-16 royal-button text-xl">دخول الإمبراطورية</Button>
           </CardContent>
         </Card>
       </main>
@@ -178,52 +185,52 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-black font-body" dir="rtl">
       <Navbar />
-      <div className="container mx-auto px-4 py-20 flex justify-center">
+      <div className="container mx-auto px-4 py-20 flex justify-center items-center min-h-[calc(100vh-100px)]">
         <Card className="w-full max-w-xl rounded-[3rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl animate-fade-in">
-          <div className="p-10 text-center bg-white/5 border-b border-white/5">
-            <ShieldCheck size={48} className="text-primary mx-auto mb-4" />
-            <h2 className="text-3xl font-headline font-bold gold-text">بوابة الدخول الملكية</h2>
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mt-2">XMOOD Elite Access</p>
+          <div className="p-12 text-center bg-white/5 border-b border-white/5">
+            <ShieldCheck size={56} className="text-primary mx-auto mb-6" />
+            <h2 className="text-4xl font-headline font-bold gold-text">بوابة الدخول الملكية</h2>
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-4">XMOOD Sovereign Elite Access</p>
           </div>
-          <CardContent className="p-10">
-            <div className="grid grid-cols-2 gap-4 mb-10">
-              <Button onClick={() => handleSocialLogin('google')} variant="outline" className="h-14 rounded-2xl border-white/10 bg-white/5 text-xs font-black uppercase tracking-widest hover:bg-white/10">
-                <svg className="w-5 h-5 ml-2" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.94 0 3.51.68 4.75 1.81l3.5-3.5C18.16 1.42 15.34.5 12 .5 7.31.5 3.29 3.2 1.25 7.14l4.13 3.21c1-2.97 3.77-5.31 6.62-5.31z"/><path fill="#4285F4" d="M23.49 12.27c0-.85-.07-1.67-.21-2.47H12v4.69h6.44c-.28 1.48-1.12 2.74-2.38 3.59l3.7 2.87c2.16-2 3.44-4.94 3.44-8.68z"/><path fill="#FBBC05" d="M5.38 10.35l-4.13-3.21C.47 8.65 0 10.28 0 12c0 1.72.47 3.35 1.25 4.86l4.13-3.21c-.28-.85-.43-1.77-.43-2.65 0-.91.15-1.83.43-2.65z"/><path fill="#34A853" d="M12 23.5c3.24 0 5.95-1.07 7.94-2.91l-3.7-2.87c-1.11.75-2.54 1.21-4.24 1.21-3.21 0-5.94-2.17-6.91-5.09l-4.13 3.21c2.04 3.94 6.06 6.45 10.74 6.45z"/></svg>
+          <CardContent className="p-12">
+            <div className="grid grid-cols-2 gap-6 mb-12">
+              <Button onClick={() => handleSocialLogin('google')} variant="outline" className="h-16 rounded-2xl border-white/10 bg-white/5 text-xs font-black uppercase tracking-widest hover:bg-white/10 hover:border-primary/40 transition-all">
+                <Globe className="w-5 h-5 ml-2 text-blue-400" />
                 Google
               </Button>
-              <Button onClick={() => handleSocialLogin('apple')} variant="outline" className="h-14 rounded-2xl border-white/10 bg-white/5 text-xs font-black uppercase tracking-widest hover:bg-white/10">
-                <svg className="w-5 h-5 ml-2" viewBox="0 0 24 24"><path fill="currentColor" d="M17.05 20.28c-.96.95-2.11 1.72-3.4 1.72s-1.95-.73-3.32-.73c-1.37 0-2.18.73-3.34.73-1.28 0-2.3-.77-3.36-1.72-2.13-2.13-3.74-6.02-3.74-9.39 0-3.36 1.71-6.23 4.23-6.23 1.26 0 2.24.81 3.23.81.99 0 2.22-.81 3.38-.81 1.15 0 2.14.49 3 1.3-2.22 1.35-1.85 4.67.43 5.72-1.01 2.45-2.13 5.05-3.11 6.9zM12.03 5.37c-.12-2.42 1.85-4.57 4.14-4.87.27 2.47-1.86 4.74-4.14 4.87z"/></svg>
+              <Button onClick={() => handleSocialLogin('apple')} variant="outline" className="h-16 rounded-2xl border-white/10 bg-white/5 text-xs font-black uppercase tracking-widest hover:bg-white/10 hover:border-primary/40 transition-all">
+                <Globe className="w-5 h-5 ml-2 text-white" />
                 Apple
               </Button>
             </div>
 
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-10 bg-white/5 rounded-full p-1 h-14">
-                <TabsTrigger value="login" className="rounded-full font-black text-sm uppercase">دخول</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full font-black text-sm uppercase">تسجيل</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-12 bg-white/5 rounded-full p-1.5 h-16 border border-white/5">
+                <TabsTrigger value="login" className="rounded-full font-black text-sm uppercase tracking-widest">تسجيل الدخول</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-full font-black text-sm uppercase tracking-widest">إنشاء هوية</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="login" className="space-y-4">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <Input type="email" placeholder="البريد الإلكتروني" className="h-14 rounded-2xl bg-white/5 border-none px-6 text-white" value={email} onChange={e => setEmail(e.target.value)} required />
-                  <Input type="password" placeholder="كلمة المرور" className="h-14 rounded-2xl bg-white/5 border-none px-6 text-white" value={password} onChange={e => setPassword(e.target.value)} required />
-                  <Button type="submit" className="w-full royal-button h-16 text-lg" disabled={loading}>
+              <TabsContent value="login" className="space-y-6">
+                <form onSubmit={handleLogin} className="space-y-6">
+                  <Input type="email" placeholder="البريد الإلكتروني الرسمي" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold text-lg" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="كلمة المرور السرية" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold text-lg" value={password} onChange={e => setPassword(e.target.value)} required />
+                  <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>
                     {loading ? <Loader2 className="animate-spin" /> : "دخول الخزانة"}
                   </Button>
                 </form>
               </TabsContent>
 
-              <TabsContent value="signup" className="space-y-4">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <Input placeholder="الاسم الرباعي كاملاً" className="h-14 rounded-2xl bg-white/5 border-none px-6 text-white" value={fullName} onChange={e => setFullName(e.target.value)} required />
-                  <Input type="email" placeholder="البريد الإلكتروني" className="h-14 rounded-2xl bg-white/5 border-none px-6 text-white" value={email} onChange={e => setEmail(e.target.value)} required />
-                  <Input type="password" placeholder="كلمة المرور" className="h-14 rounded-2xl bg-white/5 border-none px-6 text-white" value={password} onChange={e => setPassword(e.target.value)} required />
-                  <div className="p-4 bg-primary/5 rounded-2xl border border-primary/20">
-                    <label className="text-[10px] font-black text-primary uppercase mb-2 block">سؤال الأمان: ما اسم أول مدرسة؟</label>
-                    <Input placeholder="إجابتك السرية" className="h-12 rounded-xl bg-black border-none px-4 text-white font-bold" value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} required />
+              <TabsContent value="signup" className="space-y-6">
+                <form onSubmit={handleSignUp} className="space-y-6">
+                  <Input placeholder="الاسم الرباعي الرسمي" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold text-lg" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                  <Input type="email" placeholder="البريد الإلكتروني الرسمي" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold text-lg" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="تعيين كلمة مرور قوية" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 text-white font-bold text-lg" value={password} onChange={e => setPassword(e.target.value)} required />
+                  <div className="p-6 bg-primary/5 rounded-3xl border border-primary/20">
+                    <label className="text-[10px] font-black text-primary uppercase mb-3 block tracking-widest">بروتوكول الأمان: ما اسم أول مدرسة؟</label>
+                    <Input placeholder="الإجابة السرية للتوثيق" className="h-14 rounded-xl bg-black border-none px-6 text-white font-black" value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} required />
                   </div>
-                  <Button type="submit" className="w-full royal-button h-16 text-lg" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "تأمين الحساب والبدء"}
+                  <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>
+                    {loading ? <Loader2 className="animate-spin" /> : "تأمين الهوية والبدء"}
                   </Button>
                 </form>
               </TabsContent>
