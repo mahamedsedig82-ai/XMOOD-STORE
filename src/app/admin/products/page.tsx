@@ -2,17 +2,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useFirestore } from "@/firebase";
-import { collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { useFirestore, useCollection } from "@/firebase";
+import { collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy, serverTimestamp, where } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit2, Trash2, Loader2, Search, Key, Box, ShoppingBag } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, Search, Key, Box, User } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AdminProducts() {
   const db = useFirestore();
@@ -23,6 +24,9 @@ export default function AdminProducts() {
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  // جلب الوكلاء لربطهم بالمنتجات
+  const { data: agents } = useCollection(query(collection(db, "users"), where("role", "==", "agent")));
+
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -30,7 +34,8 @@ export default function AdminProducts() {
     stock: "100",
     imageUrl: "https://picsum.photos/seed/xmood/800/600",
     description: "",
-    shippingCodes: ""
+    shippingCodes: "",
+    vendorId: ""
   });
 
   useEffect(() => {
@@ -86,7 +91,7 @@ export default function AdminProducts() {
   };
 
   const resetForm = () => {
-    setForm({ name: "", price: "", category: "شحن ألعاب", stock: "100", imageUrl: "https://picsum.photos/seed/xmood/800/600", description: "", shippingCodes: "" });
+    setForm({ name: "", price: "", category: "شحن ألعاب", stock: "100", imageUrl: "https://picsum.photos/seed/xmood/800/600", description: "", shippingCodes: "", vendorId: "" });
     setEditingId(null);
   };
 
@@ -98,7 +103,8 @@ export default function AdminProducts() {
       stock: p.stock.toString(),
       imageUrl: p.imageUrl,
       description: p.description || "",
-      shippingCodes: p.shippingCodes || ""
+      shippingCodes: p.shippingCodes || "",
+      vendorId: p.vendorId || ""
     });
     setEditingId(p.id);
     setIsOpen(true);
@@ -143,6 +149,20 @@ export default function AdminProducts() {
                 <Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
               <div className="col-span-2 space-y-4">
+                <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">الوكيل المسؤول (لخدمات التصميم والوساطة)</label>
+                <Select value={form.vendorId} onValueChange={(val) => setForm({...form, vendorId: val})}>
+                  <SelectTrigger className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold">
+                    <SelectValue placeholder="اختر وكيلاً معتمداً..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-950 border-white/10" dir="rtl">
+                    <SelectItem value="none">بدون وكيل (إدارة عامة)</SelectItem>
+                    {agents?.map((a: any) => (
+                      <SelectItem key={a.id} value={a.id}>{a.displayName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2 space-y-4">
                 <label className="text-[10px] font-black text-primary uppercase tracking-widest pr-4">رابط الصورة (URL)</label>
                 <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold" />
               </div>
@@ -181,8 +201,8 @@ export default function AdminProducts() {
               <TableRow className="hover:bg-transparent">
                 <TableHead className="text-right py-10 pr-12 font-black text-[10px] uppercase text-primary/60">المنتج</TableHead>
                 <TableHead className="text-right font-black text-[10px] uppercase text-primary/60">القيمة</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase text-primary/60">الوكيل</TableHead>
                 <TableHead className="text-right font-black text-[10px] uppercase text-primary/60">المخزون</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase text-primary/60">الأكواد</TableHead>
                 <TableHead className="text-center font-black text-[10px] uppercase text-primary/60">الإجراء</TableHead>
               </TableRow>
             </TableHeader>
@@ -191,32 +211,40 @@ export default function AdminProducts() {
                 <TableRow><TableCell colSpan={5} className="text-center py-32"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow><TableCell colSpan={5} className="text-center py-60 text-primary/10 font-black text-4xl uppercase tracking-[0.4em]">The Vault is Empty</TableCell></TableRow>
-              ) : filtered.map((p) => (
-                <TableRow key={p.id} className="hover:bg-primary/5 border-b border-primary/5 transition-all">
-                  <TableCell className="py-10 pr-12">
-                    <div className="flex items-center gap-8">
-                      <img src={p.imageUrl} className="w-20 h-20 rounded-3xl object-cover shadow-2xl border border-primary/20" alt="" />
-                      <div className="flex flex-col">
-                        <span className="text-2xl font-bold text-white">{p.name}</span>
-                        <span className="text-[10px] text-primary/60 font-black uppercase tracking-widest">{p.category}</span>
+              ) : filtered.map((p) => {
+                const agent = agents?.find((a: any) => a.id === p.vendorId);
+                return (
+                  <TableRow key={p.id} className="hover:bg-primary/5 border-b border-primary/5 transition-all">
+                    <TableCell className="py-10 pr-12">
+                      <div className="flex items-center gap-8">
+                        <img src={p.imageUrl} className="w-20 h-20 rounded-3xl object-cover shadow-2xl border border-primary/20" alt="" />
+                        <div className="flex flex-col">
+                          <span className="text-2xl font-bold text-white">{p.name}</span>
+                          <span className="text-[10px] text-primary/60 font-black uppercase tracking-widest">{p.category}</span>
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-black text-primary text-3xl">${p.price}</TableCell>
-                  <TableCell className="font-black text-slate-500 text-xl">{p.stock}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="border-primary/20 text-primary py-2 px-6 rounded-full font-black text-[10px] bg-primary/5">
-                      <Key size={14} className="ml-3" /> {p.shippingCodes?.split('\n').filter(Boolean).length || 0} مفتاح
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex justify-center gap-6">
-                      <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-primary hover:bg-primary/10" onClick={() => startEdit(p)}><Edit2 size={24} /></Button>
-                      <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-red-500 hover:bg-red-500/10" onClick={() => handleDelete(p.id)}><Trash2 size={24} /></Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell className="font-black text-primary text-3xl">${p.price}</TableCell>
+                    <TableCell>
+                      {agent ? (
+                        <div className="flex items-center gap-2">
+                          <User size={14} className="text-primary" />
+                          <span className="text-xs font-bold text-slate-300">{agent.displayName}</span>
+                        </div>
+                      ) : (
+                        <Badge variant="outline" className="opacity-40">عام</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="font-black text-slate-500 text-xl">{p.stock}</TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex justify-center gap-6">
+                        <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-primary hover:bg-primary/10" onClick={() => startEdit(p)}><Edit2 size={24} /></Button>
+                        <Button size="icon" variant="ghost" className="h-14 w-14 rounded-2xl text-red-500 hover:bg-red-500/10" onClick={() => handleDelete(p.id)}><Trash2 size={24} /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>

@@ -16,7 +16,6 @@ import {
   Wand2
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser, useDoc, useFirestore } from "@/firebase";
 import { useEffect } from "react";
@@ -32,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { data: siteSettings } = useDoc(doc(db, "settings", "global"));
 
   useEffect(() => {
-    if (!loading && (!profile || profile.role !== 'admin')) {
+    if (!loading && (!profile || (profile.role !== 'admin' && profile.role !== 'agent'))) {
       router.push('/'); 
     }
   }, [profile, loading, router]);
@@ -45,17 +44,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  const isAdmin = profile?.role === 'admin';
+  const isAgent = profile?.role === 'agent';
+
   const menuItems = [
-    { label: "الرئيسية الذكية", icon: LayoutDashboard, href: "/admin" },
-    { label: "معالج الـ AI", icon: Sparkles, href: "/admin/ai", highlight: true },
-    { label: "المصمم الملكي", icon: Wand2, href: "/admin/designs", highlight: true },
-    { label: "مستودع الأصول", icon: Package, href: "/admin/products" },
-    { label: "سجل الطلبات", icon: ShoppingCart, href: "/admin/orders" },
-    { label: "إدارة النخبة", icon: Users, href: "/admin/users" },
-    { label: "البنك المركزي", icon: Wallet, href: "/admin/finance" },
-    { label: "إدارة السوق", icon: Star, href: "/admin/marketplace" },
-    { label: "إعدادات الهوية", icon: Settings, href: "/admin/settings" },
-  ];
+    { label: "الرئيسية الذكية", icon: LayoutDashboard, href: "/admin", show: isAdmin || isAgent },
+    { label: "المصمم الملكي", icon: Wand2, href: "/admin/designs", highlight: true, show: isAdmin || isAgent },
+    { label: "معالج الـ AI", icon: Sparkles, href: "/admin/ai", highlight: true, show: isAdmin },
+    { label: "مستودع الأصول", icon: Package, href: "/admin/products", show: isAdmin },
+    { label: "سجل الطلبات", icon: ShoppingCart, href: "/admin/orders", show: isAdmin || isAgent },
+    { label: "إدارة النخبة", icon: Users, href: "/admin/users", show: isAdmin },
+    { label: "البنك المركزي", icon: Wallet, href: "/admin/finance", show: isAdmin },
+    { label: "إدارة السوق", icon: Star, href: "/admin/marketplace", show: isAdmin },
+    { label: "إعدادات الهوية", icon: Settings, href: "/admin/settings", show: isAdmin },
+  ].filter(item => item.show);
 
   const logoData = siteSettings?.logoData;
 
@@ -75,14 +77,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 )}
               </div>
               <div className="text-right">
-                 <span className="font-headline text-2xl font-bold text-primary block leading-none gold-text">ADMIN</span>
-                 <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mt-1">Sovereign Core</p>
+                 <span className="font-headline text-2xl font-bold text-primary block leading-none gold-text">CONTROL</span>
+                 <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mt-1">{profile?.role === 'admin' ? 'Master Core' : 'Agent Protocol'}</p>
               </div>
             </Link>
           </SidebarHeader>
           <SidebarContent className="p-4">
             <SidebarGroup>
-              <SidebarGroupLabel className="text-right px-6 mb-8 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Master Protocols</SidebarGroupLabel>
+              <SidebarGroupLabel className="text-right px-6 mb-8 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Active Protocols</SidebarGroupLabel>
               <SidebarMenu className="gap-3">
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
@@ -105,7 +107,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                <Button asChild variant="ghost" className="w-full justify-start gap-5 text-zinc-600 hover:text-primary rounded-2xl h-14 transition-all">
                   <Link href="/">
                     <ArrowRight className="w-6 h-6" />
-                    <span className="font-black text-[11px] uppercase tracking-[0.3em]">Exit Protocol</span>
+                    <span className="font-black text-[11px] uppercase tracking-[0.3em]">Exit Interface</span>
                   </Link>
                </Button>
             </div>
