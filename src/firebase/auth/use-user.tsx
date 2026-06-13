@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 
@@ -14,7 +14,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // القائمة الذهبية للمديرين السياديين - أضف بريدك هنا للتجربة
+  // القائمة الذهبية للمديرين السياديين
   const MASTER_ADMINS = [
     "MAHAMEDFK3@GMAIL.COM", 
     "XMOODSTORE.SUPPORT@GMAIL.COM",
@@ -44,8 +44,6 @@ export function useUser() {
     const syncProfile = async () => {
       try {
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
-        const isVerified = user.emailVerified;
-        
         const docSnap = await getDoc(userDocRef);
         
         if (!docSnap.exists()) {
@@ -59,7 +57,7 @@ export function useUser() {
             label: isMaster ? 'المالك السيادي للمنصة' : 'عضو بريميوم',
             photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
             createdAt: new Date().toISOString(),
-            isVerified: isVerified,
+            isVerified: user.emailVerified,
             affinityPoints: isMaster ? 1000 : 50
           };
           await setDoc(userDocRef, initialProfile);
@@ -68,14 +66,11 @@ export function useUser() {
           const currentData = docSnap.data() as UserProfile;
           // تحديث الصلاحيات إذا كان البريد في قائمة الماستر
           if (isMaster && currentData.role !== 'owner') {
-            await setDoc(userDocRef, { 
+            await updateDoc(userDocRef, { 
               role: 'owner', 
               label: 'المالك السيادي للمنصة',
               isVerified: true 
-            }, { merge: true });
-          }
-          if (currentData.isVerified !== isVerified) {
-            await setDoc(userDocRef, { isVerified }, { merge: true });
+            });
           }
           setProfile({ ...currentData, uid: user.uid });
         }
@@ -92,10 +87,6 @@ export function useUser() {
       if (snapshot.exists()) {
         setProfile(snapshot.data() as UserProfile);
       }
-      setLoading(false);
-    }, (error) => {
-      console.error("Profile Listener Error:", error);
-      setLoading(false);
     });
 
     return () => unsubscribeProfile();
@@ -106,6 +97,6 @@ export function useUser() {
     profile, 
     loading, 
     isVerified: user?.emailVerified || false,
-    isAdmin: ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'accountant'].includes(profile?.role || '')
+    isAdmin: ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile?.role || '')
   };
 }

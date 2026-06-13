@@ -3,22 +3,25 @@
 
 import { useState } from "react";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, where, doc, updateDoc, orderBy } from "firebase/firestore";
+import { collection, query, where, doc, updateDoc, orderBy, getDocs, limit } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck, Zap, Loader2, MapPin, Smartphone, UserPlus, Clock } from "lucide-react";
+import { ShieldCheck, Zap, Loader2, MapPin, Smartphone, UserPlus, Clock, Search } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 
 export default function AdminAgentsManagement() {
   const db = useFirestore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [editingAgent, setEditingAgent] = useState<any>(null);
+  const [searchEmail, setSearchEmail] = useState("");
+  const [foundUser, setFoundUser] = useState<any>(null);
+  const [isAddingAgent, setIsAddingAgent] = useState(false);
 
   const agentsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -26,6 +29,40 @@ export default function AdminAgentsManagement() {
   }, [db]);
 
   const { data: agents, loading } = useCollection(agentsQuery);
+
+  const handleSearchUser = async () => {
+    if (!searchEmail.trim() || !db) return;
+    setIsProcessing(true);
+    try {
+      const q = query(collection(db, "users"), where("email", "==", searchEmail.trim().toLowerCase()), limit(1));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        setFoundUser({ id: snap.docs[0].id, ...snap.docs[0].data() });
+      } else {
+        toast({ variant: "destructive", title: "غير موجود", description: "لم نجد عضواً بهذا البريد الإلكتروني." });
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const promoteToAgent = async () => {
+    if (!foundUser || !db) return;
+    setIsProcessing(true);
+    try {
+      await updateDoc(doc(db, "users", foundUser.id), {
+        role: "agent",
+        label: "وكيل معتمد",
+        middlemanInfo: { services: ["charging"], isAvailable: true }
+      });
+      setIsAddingAgent(false);
+      setFoundUser(null);
+      setSearchEmail("");
+      toast({ title: "تمت الترقية", description: "تم تعيين العضو كوكيل شحن معتمد." });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleUpdateAgent = async () => {
     if (!editingAgent || !db) return;
@@ -47,7 +84,7 @@ export default function AdminAgentsManagement() {
   };
 
   const toggleService = (service: string) => {
-    const currentServices = editingAgent.middlemanInfo?.services || [];
+    const currentServices = editingAgent?.middlemanInfo?.services || [];
     const newServices = currentServices.includes(service)
       ? currentServices.filter((s: string) => s !== service)
       : [...currentServices, service];
@@ -55,7 +92,7 @@ export default function AdminAgentsManagement() {
     setEditingAgent({
       ...editingAgent,
       middlemanInfo: {
-        ...(editingAgent.middlemanInfo || {}),
+        ...(editingAgent?.middlemanInfo || {}),
         services: newServices
       }
     });
@@ -68,6 +105,39 @@ export default function AdminAgentsManagement() {
           <h1 className="text-5xl font-headline font-bold gold-text">إدارة شؤون الوكلاء</h1>
           <p className="text-zinc-500 mt-2 font-bold uppercase tracking-widest text-[10px]">Elite Agents & Escrow Logistics Control</p>
         </div>
+        <Dialog open={isAddingAgent} onOpenChange={setIsAddingAgent}>
+           <DialogTrigger asChild>
+              <Button className="royal-button h-16 px-10"><UserPlus size={20} className="ml-3" /> تعيين وكيل جديد</Button>
+           </DialogTrigger>
+           <DialogContent className="bg-zinc-950 border border-primary/20 rounded-[2.5rem] p-10 text-white shadow-2xl">
+              <DialogHeader>
+                 <DialogTitle className="text-3xl font-bold gold-text flex items-center gap-4"><UserPlus size={28} /> بحث وتعيين</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6 mt-8">
+                 <div className="flex gap-4">
+                    <Input 
+                      placeholder="البريد الإلكتروني للعضو..." 
+                      value={searchEmail}
+                      onChange={e => setSearchEmail(e.target.value)}
+                      className="h-14 bg-zinc-900 border-none rounded-xl px-6" 
+                    />
+                    <Button onClick={handleSearchUser} disabled={isProcessing} className="h-14 w-14 rounded-xl p-0 bg-primary text-black"><Search size={24} /></Button>
+                 </div>
+                 {foundUser && (
+                    <div className="p-6 bg-primary/5 rounded-2xl border border-primary/10 flex items-center justify-between">
+                       <div className="flex items-center gap-4">
+                          <img src={foundUser.photoURL} className="w-12 h-12 rounded-xl" alt="" />
+                          <div>
+                             <p className="font-bold">{foundUser.displayName}</p>
+                             <p className="text-xs text-zinc-500">{foundUser.email}</p>
+                          </div>
+                       </div>
+                       <Button onClick={promoteToAgent} disabled={isProcessing} className="bg-primary text-black font-bold h-10 px-6 rounded-lg">تعيين كوكيل</Button>
+                    </div>
+                 )}
+              </div>
+           </DialogContent>
+        </Dialog>
       </header>
 
       <div className="grid grid-cols-1 gap-10">
@@ -112,7 +182,6 @@ export default function AdminAgentsManagement() {
                             {s === 'escrow' ? 'الوساطة' : s === 'charging' ? 'شحن المحفظة' : s}
                           </Badge>
                         ))}
-                        {(!m.middlemanInfo?.services || m.middlemanInfo.services.length === 0) && <span className="text-[10px] text-zinc-700">لم يتم تحديد مهام</span>}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -168,7 +237,7 @@ export default function AdminAgentsManagement() {
                   </div>
                   <Switch 
                     checked={editingAgent?.middlemanInfo?.isAvailable} 
-                    onCheckedChange={(val) => setEditingAgent({...editingAgent, middlemanInfo: {...(editingAgent.middlemanInfo || {}), isAvailable: val}})}
+                    onCheckedChange={(val) => setEditingAgent({...editingAgent, middlemanInfo: {...(editingAgent?.middlemanInfo || {}), isAvailable: val}})}
                   />
                </div>
 
@@ -188,16 +257,6 @@ export default function AdminAgentsManagement() {
                        </div>
                      ))}
                   </div>
-               </div>
-
-               <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-zinc-500 uppercase pr-3">ساعات العمل / ملاحظات إضافية</label>
-                  <Input 
-                    value={editingAgent?.middlemanInfo?.workHours || ""} 
-                    onChange={e => setEditingAgent({...editingAgent, middlemanInfo: {...(editingAgent.middlemanInfo || {}), workHours: e.target.value}})}
-                    placeholder="مثال: متاح من 4 مساءً حتى 11 مساءً" 
-                    className="h-12 bg-zinc-900 border-none rounded-xl px-4" 
-                  />
                </div>
             </div>
             <DialogFooter className="mt-10">

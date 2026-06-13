@@ -12,7 +12,8 @@ import {
   Palette,
   ShieldCheck,
   Activity,
-  LogOut
+  LogOut,
+  ArrowLeft
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -55,6 +56,18 @@ export default function AdminLayoutComprehensive({ children }: { children: React
     </div>
   );
 
+  if (!profile && !loading) {
+     return (
+       <div className="flex items-center justify-center min-h-screen bg-black text-white p-6 text-center">
+          <div className="space-y-6">
+             <h2 className="text-3xl font-headline font-bold gold-text">خطأ في الهوية السيادية</h2>
+             <p className="text-zinc-500">لم نتمكن من العثور على صلاحياتك. يرجى تسجيل الخروج والدخول مرة أخرى.</p>
+             <Button onClick={() => signOut(auth!)} className="royal-button">تسجيل الخروج</Button>
+          </div>
+       </div>
+     );
+  }
+
   const role = profile?.role;
 
   const mainSections = [
@@ -76,7 +89,7 @@ export default function AdminLayoutComprehensive({ children }: { children: React
   ];
 
   const renderMenuItems = (items: any[]) => 
-    items.filter(item => item.roles.includes(role || 'user')).map((item) => (
+    items.filter(item => (role === 'owner' || item.roles.includes(role))).map((item) => (
       <SidebarMenuItem key={item.href}>
         <SidebarMenuButton 
           asChild 
@@ -127,13 +140,16 @@ export default function AdminLayoutComprehensive({ children }: { children: React
             </SidebarContent>
           </ScrollArea>
 
-          <div className="p-6 border-t border-white/5 bg-black/30">
+          <div className="p-6 border-t border-white/5 bg-black/30 flex flex-col gap-2">
+             <Button asChild variant="outline" className="w-full h-10 rounded-xl border-white/10 text-zinc-400 gap-2 text-[9px] uppercase tracking-widest">
+               <Link href="/"><ArrowLeft size={14} /> العودة للموقع</Link>
+             </Button>
              <Button 
                variant="ghost" 
                onClick={() => signOut(auth!)}
-               className="w-full h-12 rounded-xl text-red-600 hover:bg-red-600/10 gap-4 font-black text-[10px] uppercase tracking-[0.2em]"
+               className="w-full h-10 rounded-xl text-red-600 hover:bg-red-600/10 gap-2 font-black text-[9px] uppercase tracking-[0.2em]"
              >
-               <LogOut size={18} /> تسجيل الخروج
+               <LogOut size={14} /> تسجيل الخروج
              </Button>
           </div>
         </Sidebar>
