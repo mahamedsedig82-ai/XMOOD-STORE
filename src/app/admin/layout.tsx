@@ -10,7 +10,7 @@ import {
   Wallet, 
   Settings, 
   Sparkles,
-  Wand2,
+  Palette,
   FileText,
   ShieldCheck,
   Megaphone,
@@ -19,7 +19,6 @@ import {
   Zap,
   Activity,
   LogOut,
-  Palette,
   Bell,
   Globe,
   Database,
@@ -47,7 +46,6 @@ export default function AdminLayoutComprehensive({ children }: { children: React
   const { data: config } = useDoc(settingsRef);
 
   useEffect(() => {
-    // قائمة الأدوار المسموح لها بدخول لوحة الإدارة
     const allowedRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'];
     
     if (!loading) {
@@ -72,8 +70,7 @@ export default function AdminLayoutComprehensive({ children }: { children: React
 
   const mainSections = [
     { label: "لوحة التحكم", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
-    { label: "المساعد الذكي AI", icon: Sparkles, href: "/admin/ai", roles: ['owner', 'admin'] },
-    { label: "إدارة الخدمات", icon: Wand2, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer', 'agent'] },
+    { label: "إدارة المعرض", icon: Palette, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer'] },
     { label: "المستودع الرقمي", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
     { label: "المبيعات والطلبات", icon: ShoppingCart, href: "/admin/orders", roles: ['owner', 'admin', 'store_manager', 'support'] },
   ];
@@ -82,12 +79,10 @@ export default function AdminLayoutComprehensive({ children }: { children: React
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
     { label: "الخزانة المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "إدارة الوساطة", icon: ShieldCheck, href: "/admin/middleman", roles: ['owner', 'admin', 'middleman'] },
-    { label: "الإعلانات والعروض", icon: Megaphone, href: "/admin/ads", roles: ['owner', 'admin', 'gm'] },
   ];
 
   const systemSections = [
-    { label: "هوية المتجر", icon: Palette, href: "/admin/settings", roles: ['owner', 'admin'] },
-    { label: "إعدادات النظام", icon: Globe, href: "/admin/config", roles: ['owner', 'admin'] },
+    { label: "هوية المتجر", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
     { label: "سجل النشاط", icon: Activity, href: "/admin/system", roles: ['owner', 'admin'] },
   ];
 
@@ -155,21 +150,6 @@ export default function AdminLayoutComprehensive({ children }: { children: React
         </Sidebar>
         
         <main className="flex-1 overflow-y-auto p-8 lg:p-12 bg-black relative">
-          <div className="flex justify-between items-center mb-12 pb-8 border-b border-white/5">
-             <div className="flex items-center gap-6">
-                <Badge variant="outline" className="border-red-600/20 text-red-500 px-6 py-2 rounded-full font-black text-[9px] uppercase tracking-[0.3em] flex gap-3 animate-pulse">
-                   <Zap size={14} /> نظام XMOOD النشط
-                </Badge>
-                <div className="hidden md:block h-8 w-px bg-white/5" />
-                <div className="hidden md:flex items-center gap-3 text-zinc-600 font-bold text-[10px] uppercase tracking-widest">
-                   {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                </div>
-             </div>
-             <div className="flex items-center gap-4">
-                <Button size="icon" variant="ghost" className="text-zinc-600 hover:text-primary h-10 w-10"><Activity size={20} /></Button>
-                <Button size="icon" variant="ghost" className="text-zinc-600 hover:text-red-500 h-10 w-10"><Database size={20} /></Button>
-             </div>
-          </div>
           <div className="max-w-[1400px] mx-auto animate-fade-up">
             {children}
           </div>

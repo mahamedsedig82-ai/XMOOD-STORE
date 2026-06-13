@@ -24,6 +24,19 @@
       },
       "required": ["uid", "email", "role"]
     },
+    "GalleryItem": {
+      "title": "Gallery Design",
+      "description": "A showcase item for the designer portfolio",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "imageUrl"]
+    },
     "AgentRequest": {
       "title": "Agent Request",
       "description": "User application to become a certified charging agent",
@@ -71,19 +84,6 @@
         "content": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       }
-    },
-    "MiddlemanRequest": {
-      "title": "Middleman Request",
-      "type": "object",
-      "properties": {
-        "listingId": { "type": "string" },
-        "buyerId": { "type": "string" },
-        "sellerId": { "type": "string" },
-        "middlemanId": { "type": "string" },
-        "status": { "type": "string", "enum": ["pending", "active", "completed", "cancelled"] },
-        "amount": { "type": "number" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      }
     }
   },
   "auth": {
@@ -93,6 +93,10 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Sovereign user profiles"
+    },
+    "/gallery/{itemId}": {
+      "schema": "GalleryItem",
+      "description": "Designer portfolio items"
     },
     "/agent_requests/{requestId}": {
       "schema": "AgentRequest",
@@ -105,10 +109,6 @@
     "/marketplace_listings/{postId}/comments/{commentId}": {
       "schema": "Comment",
       "description": "Post interaction comments"
-    },
-    "/middleman_requests/{requestId}": {
-      "schema": "MiddlemanRequest",
-      "description": "Escrow transaction tracking"
     }
   }
 }
