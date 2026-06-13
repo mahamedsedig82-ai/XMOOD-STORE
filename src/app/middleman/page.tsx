@@ -16,7 +16,7 @@ import { useMemo } from "react";
 export default function AgentsDirectoryPage() {
   const db = useFirestore();
   
-  // استعلام بسيط لتجنب أخطاء الفهارس
+  // Simplified query to avoid index errors
   const agentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, "users"), where("role", "in", ["middleman", "agent", "owner"]));
@@ -24,8 +24,9 @@ export default function AgentsDirectoryPage() {
 
   const { data: rawAgents, loading } = useCollection(agentsQuery);
 
-  // فرز الوكلاء برمجياً حسب الصفقات المكتملة
+  // Manual sorting by deal count
   const agents = useMemo(() => {
+    if (!rawAgents) return [];
     return [...rawAgents].sort((a: any, b: any) => (b.completedDeals || 0) - (a.completedDeals || 0));
   }, [rawAgents]);
 

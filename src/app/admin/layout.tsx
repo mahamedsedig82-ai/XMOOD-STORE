@@ -89,7 +89,7 @@ export default function AdminLayoutComprehensive({ children }: { children: React
   ];
 
   const renderMenuItems = (items: any[]) => 
-    items.filter(item => (role === 'owner' || item.roles.includes(role))).map((item) => (
+    items.filter(item => (role === 'owner' || (role && item.roles.includes(role)))).map((item) => (
       <SidebarMenuItem key={item.href}>
         <SidebarMenuButton 
           asChild 

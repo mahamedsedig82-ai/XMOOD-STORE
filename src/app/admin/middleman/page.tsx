@@ -23,7 +23,7 @@ export default function AdminAgentsManagement() {
   const [foundUser, setFoundUser] = useState<any>(null);
   const [isAddingAgent, setIsAddingAgent] = useState(false);
 
-  // تم تبسيط الاستعلام لإزالة الخطأ الخاص بالفهارس المفقودة
+  // Simplified query to avoid index errors
   const agentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, "users"), where("role", "in", ["middleman", "agent", "owner"]));
@@ -31,8 +31,9 @@ export default function AdminAgentsManagement() {
 
   const { data: rawAgents, loading } = useCollection(agentsQuery);
 
-  // فرز الوكلاء برمجياً لضمان الاستقرار
+  // Client-side sorting for stability
   const agents = useMemo(() => {
+    if (!rawAgents) return [];
     return [...rawAgents].sort((a: any, b: any) => 
       new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
@@ -61,11 +62,11 @@ export default function AdminAgentsManagement() {
       await updateDoc(doc(db, "users", foundUser.id), {
         role: "agent",
         label: "وكيل معتمد",
-        residence: foundUser.residence || "غير محدد",
+        residence: foundUser.residence || "المنطقة السيادية",
         phoneNumber: foundUser.phoneNumber || "",
         completedDeals: foundUser.completedDeals || 0,
         middlemanInfo: { 
-          services: ["charging"], 
+          services: ["charging", "escrow"], 
           isAvailable: true,
           workHours: "24/7 Sovereign Access"
         }
@@ -73,7 +74,7 @@ export default function AdminAgentsManagement() {
       setIsAddingAgent(false);
       setFoundUser(null);
       setSearchEmail("");
-      toast({ title: "تمت الترقية", description: "تم تعيين العضو كوكيل شحن معتمد." });
+      toast({ title: "تمت الترقية", description: "تم تعيين العضو كوكيل معتمد بنجاح." });
     } finally {
       setIsProcessing(false);
     }
@@ -141,7 +142,7 @@ export default function AdminAgentsManagement() {
                  {foundUser && (
                     <div className="p-6 bg-primary/5 rounded-2xl border border-primary/10 flex items-center justify-between">
                        <div className="flex items-center gap-4">
-                          <img src={foundUser.photoURL || `https://picsum.photos/seed/${foundUser.uid}/100/100`} className="w-12 h-12 rounded-xl" alt="" />
+                          <img src={foundUser.photoURL || `https://picsum.photos/seed/${foundUser.uid}/100/100`} className="w-12 h-12 rounded-xl object-cover" alt="" />
                           <div>
                              <p className="font-bold">{foundUser.displayName}</p>
                              <p className="text-xs text-zinc-500">{foundUser.email}</p>
