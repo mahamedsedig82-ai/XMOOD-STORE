@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function AdminProducts() {
   const db = useFirestore();
@@ -76,10 +76,10 @@ export default function AdminProducts() {
     try {
       if (editingId) {
         await updateDoc(doc(db, "products", editingId), data);
-        toast({ title: "تم التحديث" });
+        toast({ title: "تم التحديث بنجاح" });
       } else {
         await addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() });
-        toast({ title: "تم النشر" });
+        toast({ title: "تم النشر في المتجر" });
       }
       setIsOpen(false);
       resetForm();
@@ -122,22 +122,22 @@ export default function AdminProducts() {
   const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
-    <div className="space-y-8 md:space-y-12 animate-fade-in" dir="rtl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-10">
+    <div className="space-y-8 animate-fade-in" dir="rtl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-3xl md:text-5xl font-headline font-bold gold-text">مستودع الأصول</h1>
-          <p className="text-zinc-500 mt-2 font-bold uppercase tracking-widest text-[9px] md:text-xs">Digital Asset Management</p>
+          <h1 className="text-4xl font-headline font-bold gold-text">مستودع الأصول الرقمية</h1>
+          <p className="text-zinc-500 mt-2 font-bold uppercase tracking-widest text-[10px]">Professional Digital Asset Management</p>
         </div>
         <Dialog open={isOpen} onOpenChange={(val) => { setIsOpen(val); if (!val) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button className="h-14 md:h-16 px-8 md:px-10 royal-button text-sm md:text-lg w-full md:w-auto shadow-primary/20">
+            <Button className="h-14 px-8 royal-button text-sm shadow-primary/20">
               <Plus className="ml-2" /> إضافة منتج جديد
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl bg-zinc-950 border-primary/20 rounded-[2.5rem] p-8 md:p-12 text-white shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
+          <DialogContent className="max-w-4xl bg-zinc-950 border-primary/20 rounded-[2.5rem] p-10 text-white shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
             <DialogHeader>
               <DialogTitle className="text-3xl font-bold flex items-center gap-4 gold-text">
-                <Box size={32} className="text-primary" /> {editingId ? 'تعديل المنتج السيادي' : 'إنشاء منتج جديد'}
+                <Box size={32} className="text-primary" /> {editingId ? 'تعديل بيانات المنتج' : 'إنشاء منتج احترافي'}
               </DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
@@ -154,7 +154,7 @@ export default function AdminProducts() {
                 <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-14 rounded-xl bg-zinc-900 border-none px-6 font-bold" />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3">المخزون الاحتياطي</label>
+                <label className="text-[10px] font-bold text-primary uppercase pr-3">المخزون المتوفر</label>
                 <Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="h-14 rounded-xl bg-zinc-900 border-none px-6 font-bold" />
               </div>
               
@@ -166,7 +166,7 @@ export default function AdminProducts() {
                        <TabsTrigger value="upload" className="flex-1 gap-2"><Upload size={14}/> رفع من الجهاز</TabsTrigger>
                     </TabsList>
                     <TabsContent value="url">
-                       <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-14 bg-zinc-900 border-none" />
+                       <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-14 bg-zinc-900 border-none rounded-xl" />
                     </TabsContent>
                     <TabsContent value="upload">
                        <Input type="file" accept="image/*" onChange={handleImageUpload} className="h-14 bg-zinc-900 border-none pt-4" />
@@ -188,13 +188,13 @@ export default function AdminProducts() {
                   value={form.shippingCodes} 
                   onChange={e => setForm({...form, shippingCodes: e.target.value})} 
                   className="min-h-[120px] rounded-[2rem] bg-zinc-900 border-none p-6 font-mono text-sm text-primary" 
-                  placeholder="XMD-001..." 
+                  placeholder="CODE-123..." 
                 />
               </div>
             </div>
             <DialogFooter className="mt-12">
               <Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-18 royal-button text-xl">
-                {isProcessing ? <Loader2 className="animate-spin" /> : editingId ? 'تحديث البيانات المركزية' : 'تأكيد ونشر المنتج'}
+                {isProcessing ? <Loader2 className="animate-spin" /> : editingId ? 'تحديث البيانات' : 'تأكيد ونشر المنتج'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -202,11 +202,11 @@ export default function AdminProducts() {
       </div>
 
       <Card className="luxury-card border-none overflow-hidden bg-zinc-950/40 shadow-2xl">
-        <CardHeader className="p-8 md:p-12 pb-0 flex flex-col md:flex-row justify-between items-center gap-6">
+        <CardHeader className="p-10 pb-0 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="relative w-full md:max-w-xl">
             <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/40 w-5 h-5" />
             <Input 
-              placeholder="البحث في المستودع الرقمي..." 
+              placeholder="البحث في المستودع..." 
               className="pr-14 h-14 bg-black border-none rounded-2xl text-lg text-white"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
@@ -214,8 +214,8 @@ export default function AdminProducts() {
           </div>
           <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-black uppercase px-6 py-2 rounded-full tracking-widest">{filtered.length} ACTIVE ASSETS</Badge>
         </CardHeader>
-        <CardContent className="p-0 mt-10 overflow-x-auto custom-scrollbar">
-          <Table className="min-w-[700px]">
+        <CardContent className="p-0 mt-10 responsive-table">
+          <Table>
             <TableHeader className="bg-white/5 border-b border-white/5">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="text-right py-8 pr-12 font-black text-[10px] uppercase text-zinc-500">المنتج والتصنيف</TableHead>
@@ -229,7 +229,7 @@ export default function AdminProducts() {
                 <TableRow><TableCell colSpan={4} className="text-center py-40"><Loader2 className="animate-spin mx-auto text-primary" size={40}/></TableCell></TableRow>
               ) : filtered.map((p) => (
                 <TableRow key={p.id} className="hover:bg-primary/5 border-b border-white/5 transition-all group">
-                  <TableCell className="py-8 pr-12">
+                  <TableCell className="py-8 pr-12" data-label="المنتج">
                     <div className="flex items-center gap-6">
                       <img src={p.imageUrl || "https://picsum.photos/seed/p/200/200"} className="w-16 h-16 rounded-2xl object-cover shadow-2xl border border-white/5 group-hover:scale-110 transition-transform" alt="" />
                       <div className="flex flex-col">
@@ -238,11 +238,11 @@ export default function AdminProducts() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="font-black text-primary text-2xl tracking-tighter">${p.price}</TableCell>
-                  <TableCell className="font-black text-zinc-400">
+                  <TableCell className="font-black text-primary text-2xl tracking-tighter" data-label="السعر">${p.price}</TableCell>
+                  <TableCell className="font-black text-zinc-400" data-label="المخزون">
                      <Badge variant="outline" className={`border-zinc-800 ${p.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>{p.stock}</Badge>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center" data-label="الإجراءات">
                     <div className="flex justify-center gap-4 px-6">
                       <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-primary hover:bg-primary/10 border border-white/5" onClick={() => startEdit(p)}><Edit2 size={20} /></Button>
                       <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-red-500 hover:bg-red-500/10 border border-white/5" onClick={() => handleDelete(p.id)}><Trash2 size={20} /></Button>

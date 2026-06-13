@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -18,12 +17,10 @@ import {
   Building2, 
   CreditCard, 
   Bitcoin, 
-  HelpCircle,
   Award,
   TrendingUp,
   CheckCircle,
-  Mail,
-  UserCircle
+  Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -38,10 +35,10 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
-export default function SovereignWalletPage() {
+export default function ProfessionalWalletPage() {
   const { profile, user, loading: userLoading, isVerified } = useUser();
   const db = useFirestore();
   
@@ -89,7 +86,7 @@ export default function SovereignWalletPage() {
         updatedAt: new Date().toISOString()
       });
       setIsEditing(false);
-      toast({ title: "تم التحديث" });
+      toast({ title: "تم تحديث الملف الشخصي" });
     } catch (e) {
       toast({ variant: "destructive", title: "فشل التحديث" });
     } finally {
@@ -111,7 +108,7 @@ export default function SovereignWalletPage() {
         createdAt: new Date().toISOString()
       });
       setIsAgentDialogOpen(false);
-      toast({ title: "تم إرسال الطلب", description: "طلبك قيد المراجعة حالياً." });
+      toast({ title: "تم إرسال الطلب", description: "طلبك قيد المراجعة حالياً من قبل الإدارة." });
     } catch (e) {
       toast({ variant: "destructive", title: "فشل الإرسال" });
     } finally {
@@ -121,203 +118,144 @@ export default function SovereignWalletPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: "تم النسخ" });
+    toast({ title: "تم النسخ بنجاح" });
   };
 
   if (userLoading) return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="w-12 h-12 border-t-2 border-primary rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   const balance = profile?.walletBalance || 0;
 
-  const paymentMethods = [
-    { name: "بنكك (Bankak)", icon: Building2, desc: "التحويل المحلي في السودان.", color: "text-green-500" },
-    { name: "Binance (USDT)", icon: Bitcoin, desc: "شحن عالمي عبر الكريبتو.", color: "text-yellow-500" },
-    { name: "فوري (Fawry)", icon: CreditCard, desc: "شبكة فوري المصرية.", color: "text-blue-500" },
-    { name: "ماي سوداني", icon: Smartphone, desc: "الدفع عبر الرصيد.", color: "text-red-500" }
-  ];
-
   return (
-    <main className="min-h-screen bg-black text-white pb-20" dir="rtl">
+    <main className="min-h-screen bg-background text-foreground pb-20" dir="rtl">
       <Navbar />
-      <div className="container mx-auto px-4 md:px-6 py-24 md:py-32 max-w-6xl animate-fade-in">
+      <div className="container mx-auto px-4 py-32 max-w-5xl animate-fade-in">
         
-        {/* Profile Card */}
-        <Card className="luxury-card border-none overflow-hidden mb-8 md:mb-12 p-6 md:p-16 relative bg-zinc-950/40">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-primary to-red-600" />
-          
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-10 relative z-10">
-            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 text-center md:text-right flex-1">
-              <div className="relative group cursor-pointer" onClick={() => setIsEditing(!isEditing)}>
-                <Avatar className="w-28 h-28 md:w-40 md:h-40 rounded-2xl md:rounded-[3.5rem] border-4 border-primary/20 shadow-2xl overflow-hidden transition-all group-hover:border-primary/50">
-                  <AvatarImage src={profile?.photoURL} />
-                  <AvatarFallback className="bg-zinc-900 text-primary text-4xl md:text-5xl font-black">
-                    {profile?.displayName?.charAt(0) || "X"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-2 -right-2 bg-primary text-black p-2 md:p-3 rounded-xl border-2 border-black shadow-2xl">
-                  <Award size={18} className="md:w-6 md:h-6" />
-                </div>
-              </div>
-
-              <div className="space-y-4 md:space-y-6">
-                <div>
-                  <h1 className="text-3xl md:text-6xl font-headline font-bold gold-text mb-2 leading-tight">{profile?.displayName}</h1>
-                  <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                    <Badge className="bg-red-600/20 text-red-500 border-red-600/30 px-4 py-1 text-[8px] md:text-[9px] font-black uppercase tracking-widest">{profile?.role}</Badge>
-                    <Badge variant="outline" className="border-primary/20 text-primary text-[8px] md:text-[9px] px-4 py-1 font-black uppercase tracking-widest">{profile?.label || "MEMBER"}</Badge>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center gap-3">
-                    <Mail size={14} className="text-red-500" />
-                    <span className="text-[10px] md:text-xs font-bold text-zinc-400 truncate max-w-[120px]">{profile?.email}</span>
-                  </div>
-                  <div className="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center gap-3">
-                    <Smartphone size={14} className="text-primary" />
-                    <span className="text-[10px] md:text-xs font-bold text-zinc-400">{profile?.phoneNumber || "رقم مفقود"}</span>
-                  </div>
-                </div>
+        {/* Modern Profile Header */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          <Card className="luxury-card border-none p-8 lg:col-span-2 bg-white dark:bg-zinc-900 flex flex-col md:flex-row items-center gap-8">
+            <div className="relative group cursor-pointer" onClick={() => setIsEditing(!isEditing)}>
+              <Avatar className="w-32 h-32 rounded-2xl border-4 border-zinc-50 dark:border-zinc-800 shadow-xl overflow-hidden transition-all group-hover:border-primary/30">
+                <AvatarImage src={profile?.photoURL} />
+                <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-primary text-4xl font-bold">
+                  {profile?.displayName?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-2 -right-2 bg-primary text-white p-2 rounded-lg shadow-lg">
+                <Settings size={16} />
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 w-full md:w-64">
-              <Button onClick={() => setIsEditing(!isEditing)} variant="outline" className="h-12 md:h-14 rounded-xl border-white/10 bg-white/5 text-[9px] md:text-[10px] font-black uppercase tracking-widest gap-2">
-                <Settings size={16} /> {isEditing ? "إلغاء التعديل" : "تعديل الهوية"}
-              </Button>
-              <Button asChild className="royal-button h-14 md:h-18 px-6 text-sm md:text-base">
-                <Link href="/wallet/transfer"><ArrowRightLeft className="ml-2 md:ml-4" size={20} /> تحويل رصيد</Link>
-              </Button>
-              {!currentAgentRequest && profile?.role !== 'agent' && (
-                <Button onClick={() => setIsAgentDialogOpen(true)} variant="ghost" className="text-zinc-500 hover:text-primary text-[8px] md:text-[9px] font-black uppercase tracking-widest">
-                   طلب رتبة وكيل
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <AnimatePresence>
-            {isEditing && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="mt-8 pt-8 border-t border-white/5 overflow-hidden">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase text-zinc-500 pr-2">الاسم السيادي</label>
-                    <Input value={newDisplayName} onChange={e => setNewDisplayName(e.target.value)} className="h-12 bg-black border-primary/20 rounded-xl font-bold" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase text-zinc-500 pr-2">رقم الهاتف الدولي</label>
-                    <Input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="h-12 bg-black border-primary/20 rounded-xl font-bold text-left" placeholder="+966" />
-                  </div>
-                  <div className="col-span-1 md:col-span-2 space-y-2">
-                    <label className="text-[9px] font-black uppercase text-zinc-500 pr-2">رابط الصورة الشخصية</label>
-                    <Input value={newPhotoURL} onChange={e => setNewPhotoURL(e.target.value)} placeholder="https://..." className="h-12 bg-black border-primary/20 rounded-xl" />
-                  </div>
+            <div className="flex-1 text-center md:text-right space-y-4">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">{profile?.displayName}</h1>
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                  <Badge className="bg-primary/10 text-primary border-none text-[10px] px-3 font-bold uppercase">{profile?.role}</Badge>
+                  <Badge variant="outline" className="text-[10px] px-3 font-bold uppercase">{profile?.label || "MEMBER"}</Badge>
                 </div>
-                <Button onClick={handleUpdateProfile} disabled={isUpdating} className="royal-button h-12 px-10 text-xs">
-                  {isUpdating ? <Loader2 className="animate-spin" /> : "حفظ التغييرات"}
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Card>
-        
-        {/* Balance Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-10 mb-12">
-          <Card className="luxury-card border-none relative overflow-hidden p-8 md:p-12 bg-zinc-950 min-h-[250px] flex flex-col justify-center">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full" />
-            <div className="relative z-10 text-center md:text-right">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-6 flex items-center justify-center md:justify-start gap-2">
-                <TrendingUp size={14} /> الرصيد الكلي
-              </p>
-              <div className="text-5xl md:text-7xl font-black text-white mb-4 tracking-tighter leading-none">{formatUSD(balance)}</div>
-              <div className="text-sm md:text-base font-bold text-zinc-500 bg-white/5 inline-block px-4 py-1.5 rounded-full border border-white/5 uppercase tracking-widest">
-                {formatSDG(balance)}
               </div>
+              <div className="flex flex-col md:flex-row gap-4 items-center">
+                 <div className="flex items-center gap-2 text-zinc-500 text-xs font-bold">
+                    <Mail size={14} className="text-zinc-400" /> {profile?.email}
+                 </div>
+                 <div className="flex items-center gap-2 text-zinc-500 text-xs font-bold">
+                    <Smartphone size={14} className="text-zinc-400" /> {profile?.phoneNumber || "---"}
+                 </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-2 w-full md:w-auto">
+               <Button asChild className="royal-button w-full md:w-auto">
+                 <Link href="/wallet/transfer"><ArrowRightLeft size={16} className="ml-2" /> تحويل فوري</Link>
+               </Button>
+               {!currentAgentRequest && profile?.role !== 'agent' && (
+                <Button onClick={() => setIsAgentDialogOpen(true)} variant="outline" className="text-[10px] font-bold uppercase h-10 rounded-xl">
+                   طلب رتبة وكيل معتمد
+                </Button>
+               )}
             </div>
           </Card>
 
-          <Card className="lg:col-span-2 luxury-card border-none overflow-hidden p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 bg-zinc-950">
-            <div className="flex-1 space-y-6 text-center md:text-right">
-               <h3 className="text-2xl md:text-3xl font-bold gold-text flex items-center justify-center md:justify-start gap-3">
-                  <Zap size={24} className="animate-pulse" /> بروتوكول الشحن
-               </h3>
-               <p className="text-zinc-400 text-xs md:text-sm font-medium leading-relaxed max-w-lg">
-                 استخدم معرفك السيادي (UID) الموضح أدناه لتزويد محفظتك بالرصيد عبر وكلائنا المعتمدين فوراً.
-               </p>
-               <div className="bg-black px-6 py-4 rounded-2xl border border-dashed border-primary/30 flex items-center justify-between gap-4 cursor-pointer hover:bg-primary/5 transition-all group" onClick={() => copyToClipboard(user?.uid || "")}>
-                  <div className="flex flex-col text-right">
-                    <span className="text-[7px] text-zinc-600 font-black uppercase mb-1">SOVEREIGN UID</span>
-                    <span className="font-mono font-black text-sm md:text-lg text-primary tracking-widest uppercase truncate max-w-[200px] md:max-w-none">{user?.uid}</span>
-                  </div>
-                  <Copy size={20} className="text-zinc-700 group-hover:text-primary shrink-0" />
-               </div>
-            </div>
-            
-            <div className="w-full md:w-56 p-8 bg-black/60 rounded-3xl text-center border border-white/5 flex flex-col items-center justify-center gap-4">
-              {isVerified ? (
-                <CheckCircle size={56} className="text-green-500" />
-              ) : (
-                <ShieldCheck size={56} className="text-red-500 animate-pulse" />
-              )}
-              <div>
-                <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-2">حالة التوثيق</p>
-                <Badge className={`px-4 py-1 rounded-full font-black text-[8px] uppercase tracking-widest ${isVerified ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
-                  {isVerified ? 'Verified' : 'Unverified'}
-                </Badge>
-              </div>
-            </div>
+          <Card className="luxury-card border-none p-8 bg-zinc-900 text-white dark:bg-zinc-900 flex flex-col justify-center text-center">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4">الرصيد الكلي المتوفر</p>
+            <div className="text-5xl font-bold mb-3 tracking-tighter">{formatUSD(balance)}</div>
+            <div className="text-xs font-bold text-zinc-400 opacity-60 uppercase">{formatSDG(balance)}</div>
           </Card>
         </div>
 
-        {/* Financial History */}
-        <Card className="luxury-card border-none overflow-hidden bg-zinc-950/40">
-          <CardHeader className="p-6 md:p-10 border-b border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <CardTitle className="text-xl md:text-3xl font-bold flex items-center gap-3 md:gap-5">
-              <History size={24} className="md:w-8 md:h-8 text-red-600" /> سجل التدفقات المالية
+        {/* User Identity Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+           <Card className="luxury-card p-8 flex flex-col justify-between">
+              <div>
+                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-zinc-900 dark:text-white">
+                    <Zap size={20} className="text-primary" /> بروتوكول الشحن المباشر
+                 </h3>
+                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 font-medium leading-relaxed">
+                    استخدم معرفك الرقمي الموحد (UID) أدناه لتزويد محفظتك بالرصيد عبر وكلائنا المعتمدين فوراً وبأعلى درجات الأمان.
+                 </p>
+              </div>
+              <div className="bg-zinc-50 dark:bg-zinc-800 px-5 py-4 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 flex items-center justify-between gap-4 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-all" onClick={() => copyToClipboard(user?.uid || "")}>
+                 <div className="flex flex-col text-right overflow-hidden">
+                    <span className="text-[8px] text-zinc-400 font-bold uppercase mb-1">DIGITAL IDENTIFIER (UID)</span>
+                    <span className="font-mono font-bold text-sm md:text-base text-primary truncate">{user?.uid}</span>
+                 </div>
+                 <Copy size={18} className="text-zinc-400 shrink-0" />
+              </div>
+           </Card>
+
+           <Card className="luxury-card p-8 flex items-center gap-6">
+              <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center">
+                 {isVerified ? (
+                   <CheckCircle size={40} className="text-green-500" />
+                 ) : (
+                   <ShieldCheck size={40} className="text-zinc-300 animate-pulse" />
+                 )}
+              </div>
+              <div className="flex-1">
+                 <h4 className="font-bold text-lg mb-1">حالة توثيق الهوية</h4>
+                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">الحسابات الموثقة تحصل على حماية إضافية وميزات شراء حصرية.</p>
+                 <Badge className={`px-4 py-1 rounded-full font-bold text-[9px] uppercase ${isVerified ? 'bg-green-100 text-green-600 dark:bg-green-900/20' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800'}`}>
+                    {isVerified ? 'Verified Account' : 'Action Required: Verify Email'}
+                 </Badge>
+              </div>
+           </Card>
+        </div>
+
+        {/* Professional Transaction Ledger */}
+        <Card className="luxury-card border-none overflow-hidden">
+          <CardHeader className="p-8 border-b flex flex-row items-center justify-between">
+            <CardTitle className="text-xl font-bold flex items-center gap-4">
+              <History size={24} className="text-primary" /> سجل التدفقات المالية
             </CardTitle>
-            <Badge variant="outline" className="border-primary/20 text-primary uppercase text-[8px] font-black px-4 py-1.5 rounded-full">Live Sovereign Ledger</Badge>
+            <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wide">Live Transaction Ledger</Badge>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="max-h-[500px] custom-scrollbar">
-              <div className="md:hidden space-y-2 p-4">
-                {transactions?.map((t: any) => (
-                  <div key={t.id} className="p-4 bg-white/5 rounded-2xl border border-white/5 flex justify-between items-center">
-                    <div className="space-y-1">
-                      <p className="font-bold text-[11px] text-zinc-200 line-clamp-1">{t.description}</p>
-                      <p className="text-[8px] text-zinc-500 font-bold">{new Date(t.createdAt).toLocaleDateString('ar-EG')}</p>
-                    </div>
-                    <div className="text-left">
-                       <p className={`font-black text-lg ${t.type === 'deposit' || t.type === 'transfer_receive' ? 'text-green-500' : 'text-red-500'}`}>
-                         {t.type === 'deposit' || t.type === 'transfer_receive' ? '+' : '-'}${t.amount}
-                       </p>
-                       <Badge className="text-[6px] px-2 py-0">{t.type}</Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Table className="hidden md:table">
-                <TableHeader className="bg-black/60 sticky top-0 z-20 border-b border-white/5">
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-right py-6 pr-10 font-black uppercase text-[10px] text-zinc-500">العملية</TableHead>
-                    <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500">التصنيف</TableHead>
-                    <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500">المبلغ</TableHead>
-                    <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500 pr-10">التوقيت</TableHead>
+            <ScrollArea className="max-h-[500px] responsive-table">
+              <Table>
+                <TableHeader className="bg-zinc-50 dark:bg-zinc-900/50 sticky top-0 z-20">
+                  <TableRow>
+                    <TableHead className="text-right py-5 pr-10 font-bold uppercase text-[10px]">العملية</TableHead>
+                    <TableHead className="text-right font-bold uppercase text-[10px]">التصنيف</TableHead>
+                    <TableHead className="text-right font-bold uppercase text-[10px]">المبلغ</TableHead>
+                    <TableHead className="text-right font-bold uppercase text-[10px] pr-10">التوقيت</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {transLoading ? (
                     <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                  ) : transactions?.length === 0 ? (
+                    <TableRow><TableCell colSpan={4} className="text-center py-40 text-zinc-400 font-bold">لا توجد عمليات مسجلة حالياً</TableCell></TableRow>
                   ) : transactions?.map((t: any) => (
-                    <TableRow key={t.id} className="hover:bg-primary/5 transition-all border-b border-white/5 group">
-                      <TableCell className="py-6 pr-10 font-bold text-sm text-zinc-200">{t.description}</TableCell>
-                      <TableCell><Badge className="text-[8px] font-black uppercase">{t.type}</Badge></TableCell>
-                      <TableCell className={`font-black text-xl ${t.type === 'deposit' || t.type === 'transfer_receive' ? 'text-green-500' : 'text-red-500'}`}>
+                    <TableRow key={t.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-all border-b">
+                      <TableCell className="py-5 pr-10 font-bold text-sm" data-label="العملية">{t.description}</TableCell>
+                      <TableCell data-label="التصنيف"><Badge variant="secondary" className="text-[9px] font-bold uppercase px-3">{t.type}</Badge></TableCell>
+                      <TableCell data-label="المبلغ" className={`font-bold text-lg ${t.type === 'deposit' || t.type === 'transfer_receive' ? 'text-green-500' : 'text-red-500'}`}>
                         {t.type === 'deposit' || t.type === 'transfer_receive' ? `+${formatUSD(t.amount)}` : `-${formatUSD(t.amount)}`}
                       </TableCell>
-                      <TableCell className="text-zinc-500 text-[10px] font-bold pr-10">{new Date(t.createdAt).toLocaleString('ar-EG')}</TableCell>
+                      <TableCell data-label="التوقيت" className="text-zinc-500 text-[10px] font-bold pr-10">{new Date(t.createdAt).toLocaleString('ar-EG')}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -329,34 +267,66 @@ export default function SovereignWalletPage() {
 
       {/* Agent Request Dialog */}
       <Dialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen}>
-        <DialogContent className="bg-zinc-950 border border-primary/20 rounded-2xl md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl max-w-lg">
+        <DialogContent className="max-w-lg bg-card border-none rounded-2xl p-8 shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl md:text-3xl font-headline font-bold gold-text flex items-center gap-4">
-              <UserCheck className="text-primary" /> طلب رتبة وكيل
+            <DialogTitle className="text-2xl font-bold flex items-center gap-4">
+              <UserCheck className="text-primary" /> طلب رتبة وكيل معتمد
             </DialogTitle>
-            <DialogDescription className="text-zinc-500 font-bold mt-2">انضم لنخبة وكلاء XMOOD الرسميين.</DialogDescription>
+            <DialogDescription className="mt-2 font-medium">كن جزءاً من فريق العمل الرسمي وساهم في تقديم الخدمات الرقمية.</DialogDescription>
           </DialogHeader>
           <div className="space-y-6 mt-6">
              <div className="space-y-2">
-                <label className="text-[9px] font-bold text-primary uppercase pr-2">الاسم الكامل</label>
-                <Input value={profile?.fullName || ""} disabled className="bg-zinc-900 border-none rounded-xl" />
+                <label className="text-[10px] font-bold uppercase text-zinc-500 pr-2">الاسم بالكامل</label>
+                <Input value={profile?.fullName || ""} disabled className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl font-bold" />
              </div>
              <div className="space-y-2">
-                <label className="text-[9px] font-bold text-primary uppercase pr-2">لماذا تود الانضمام؟</label>
-                <Textarea value={agentReason} onChange={e => setAgentReason(e.target.value)} placeholder="اشرح لنا..." className="bg-zinc-900 border-none rounded-xl min-h-[100px] p-4" />
+                <label className="text-[10px] font-bold uppercase text-zinc-500 pr-2">لماذا تود الانضمام إلينا كوكيل؟</label>
+                <Textarea value={agentReason} onChange={e => setAgentReason(e.target.value)} placeholder="اشرح لنا دوافعك..." className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl min-h-[100px] p-4 font-medium" />
              </div>
              <div className="space-y-2">
-                <label className="text-[9px] font-bold text-primary uppercase pr-2">الخبرات السابقة</label>
-                <Textarea value={agentExperience} onChange={e => setAgentExperience(e.target.value)} placeholder="اذكر خبراتك..." className="bg-zinc-900 border-none rounded-xl min-h-[80px] p-4" />
+                <label className="text-[10px] font-bold uppercase text-zinc-500 pr-2">الخبرات السابقة في تقديم الخدمات الرقمية</label>
+                <Textarea value={agentExperience} onChange={e => setAgentExperience(e.target.value)} placeholder="اذكر أهم خبراتك..." className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl min-h-[80px] p-4 font-medium" />
              </div>
           </div>
-          <DialogFooter className="mt-8">
-             <Button onClick={handleAgentRequest} disabled={isSubmittingAgent} className="royal-button w-full h-14 md:h-16 text-lg">
-                {isSubmittingAgent ? <Loader2 className="animate-spin" /> : "تقديم الطلب للسيادة"}
+          <DialogFooter className="mt-10">
+             <Button onClick={handleAgentRequest} disabled={isSubmittingAgent} className="royal-button w-full h-14 text-base">
+                {isSubmittingAgent ? <Loader2 className="animate-spin" /> : "تقديم الطلب للمراجعة"}
              </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Profile Dialog Content Integrated in Card via isEditing */}
+      <AnimatePresence>
+        {isEditing && (
+          <Dialog open={isEditing} onOpenChange={setIsEditing}>
+             <DialogContent className="max-w-lg bg-card border-none rounded-2xl p-8 shadow-2xl">
+                <DialogHeader>
+                   <DialogTitle className="text-2xl font-bold flex items-center gap-3"><Settings className="text-primary" /> تحديث بيانات الحساب</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6 mt-6">
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-zinc-500">اسم المستخدم</label>
+                      <Input value={newDisplayName} onChange={e => setNewDisplayName(e.target.value)} className="h-12 bg-zinc-50 dark:bg-zinc-900 border-none rounded-xl font-bold" />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-zinc-500">رقم الهاتف الدولي</label>
+                      <Input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="h-12 bg-zinc-50 dark:bg-zinc-900 border-none rounded-xl font-bold text-left" placeholder="+966" />
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-zinc-500">رابط الصورة الشخصية</label>
+                      <Input value={newPhotoURL} onChange={e => setNewPhotoURL(e.target.value)} placeholder="https://..." className="h-12 bg-zinc-50 dark:bg-zinc-900 border-none rounded-xl" />
+                   </div>
+                </div>
+                <DialogFooter className="mt-10">
+                   <Button onClick={handleUpdateProfile} disabled={isUpdating} className="royal-button w-full h-12">
+                      {isUpdating ? <Loader2 className="animate-spin" /> : "حفظ التغييرات"}
+                   </Button>
+                </DialogFooter>
+             </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

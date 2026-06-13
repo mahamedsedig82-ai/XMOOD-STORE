@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -32,8 +31,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [profile, loading, user, router]);
 
   if (!isClient || loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-black">
-      <div className="w-12 h-12 border-t-2 border-primary rounded-full animate-spin" />
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -42,12 +41,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "إدارة المجتمع", icon: MessageSquare, href: "/admin/community", roles: ['owner', 'admin', 'community_admin', 'community_mod'] },
     { label: "الطلبات", icon: ShoppingBag, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager'] },
     { label: "المستودع", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
-    { label: "الوكلاء", icon: ShieldCheck, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
-    { label: "معرض التصاميم", icon: Palette, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer'] },
+    { label: "الوكلاء المعتمدون", icon: ShieldCheck, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
+    { label: "معرض الأعمال", icon: Palette, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer'] },
+    { label: "الخدمات الإضافية", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent'] },
   ];
 
   const businessSections = [
-    { label: "الخزانة المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
+    { label: "السجل المالي", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "إدارة المستخدمين", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
@@ -58,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <SidebarMenuButton 
           asChild 
           isActive={pathname === item.href}
-          className={`h-12 px-4 rounded-xl transition-all ${pathname === item.href ? 'bg-primary/10 text-primary border border-primary/20' : 'hover:bg-white/5'}`}
+          className={`h-11 px-4 rounded-lg transition-all ${pathname === item.href ? 'bg-primary/10 text-primary border-l-4 border-l-primary' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
         >
           <Link href={item.href} className="flex flex-row-reverse items-center gap-3 w-full">
             <item.icon size={18} />
@@ -71,32 +71,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background" dir="rtl">
-        <Sidebar className="border-l border-white/5 bg-zinc-950/80 backdrop-blur-xl" side="right">
-          <SidebarHeader className="p-8 border-b border-white/5 text-center">
-            <span className="decorative-logo block mb-1">XMOOD PRO</span>
-            <Badge variant="outline" className="text-[7px] uppercase tracking-widest border-primary/20 text-primary px-3">{profile?.role}</Badge>
+        <Sidebar className="border-l bg-card" side="right">
+          <SidebarHeader className="p-6 border-b text-center">
+            <span className="decorative-logo block mb-1">XMOOD Admin</span>
+            <Badge variant="outline" className="text-[9px] uppercase font-bold border-primary/20 text-primary px-3">{profile?.role}</Badge>
           </SidebarHeader>
           <ScrollArea className="flex-1 p-4">
             <SidebarGroup className="mb-6">
-               <SidebarGroupLabel className="text-right px-4 mb-2 text-[7px] font-black uppercase text-zinc-500 tracking-[0.2em]">العمليات والرقابة</SidebarGroupLabel>
+               <SidebarGroupLabel className="text-right px-4 mb-2 text-[10px] font-bold uppercase text-zinc-500">إدارة العمليات</SidebarGroupLabel>
                <SidebarMenu className="gap-1">{renderMenuItems(mainSections)}</SidebarMenu>
             </SidebarGroup>
             <SidebarGroup>
-               <SidebarGroupLabel className="text-right px-4 mb-2 text-[7px] font-black uppercase text-zinc-500 tracking-[0.2em]">الإدارة والأصول</SidebarGroupLabel>
+               <SidebarGroupLabel className="text-right px-4 mb-2 text-[10px] font-bold uppercase text-zinc-500">الأدوات المركزية</SidebarGroupLabel>
                <SidebarMenu className="gap-1">{renderMenuItems(businessSections)}</SidebarMenu>
             </SidebarGroup>
           </ScrollArea>
-          <div className="p-4 border-t border-white/5 bg-zinc-950 space-y-2">
-            <Button asChild variant="outline" className="w-full h-10 rounded-xl text-[10px] gap-2 border-white/10 hover:bg-white/5">
-              <Link href="/"><ArrowLeft size={14} /> الرجوع للموقع</Link>
+          <div className="p-4 border-t bg-zinc-50 dark:bg-zinc-900/50 space-y-2">
+            <Button asChild variant="outline" className="w-full h-10 rounded-lg text-xs gap-2 border-zinc-200">
+              <Link href="/"><ArrowLeft size={14} /> العودة للموقع</Link>
             </Button>
-            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-10 rounded-xl text-red-500 font-bold text-[10px] gap-2 hover:bg-red-500/10">
-              <LogOut size={14} /> خروج آمن
+            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-10 rounded-lg text-red-500 font-bold text-xs gap-2 hover:bg-red-50">
+              <LogOut size={14} /> تسجيل الخروج
             </Button>
           </div>
         </Sidebar>
-        <main className="flex-1 overflow-y-auto p-10 animate-fade-up scroll-smooth">
-          <div className="max-w-[1400px] mx-auto pb-20">{children}</div>
+        <main className="flex-1 overflow-y-auto p-6 md:p-10 animate-fade-in">
+          <div className="max-w-6xl mx-auto pb-20">{children}</div>
         </main>
       </div>
     </SidebarProvider>

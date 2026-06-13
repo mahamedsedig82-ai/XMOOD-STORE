@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Palette, Globe, Save, Loader2, Phone, Instagram, 
   Mail, Megaphone, Sparkles, Layout, MessageSquare, 
-  ShieldCheck, Zap, Activity, Facebook, Youtube, Video, MapPin, Clock 
+  ShieldCheck, Zap, Activity, Facebook, Youtube, Video, MapPin, Clock,
+  Share2, Send
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,11 +32,11 @@ export default function AdminSettingsFullControl() {
     },
     siteInfo: {
       title: "XMOOD STORE",
-      subtitle: "الوجهة الأولى للألعاب والخدمات الرقمية",
+      subtitle: "الوجهة الأولى للخدمات الرقمية الموثوقة",
       heroTitle: "عالمك الرقمي بلمسة احترافية",
       heroDescription: "نقدم لك أفضل باقات شحن الألعاب، الحسابات المميزة، والخدمات الاحترافية بأعلى معايير الأمان والسرعة.",
       description: "متجر XMOOD هو المنصة الرائدة في تقديم الحلول الرقمية المتكاملة.",
-      copyright: "© 2025 XMOOD PREMIUM SERVICES. ALL RIGHTS RESERVED."
+      copyright: "© 2025 XMOOD PROFESSIONAL SERVICES. ALL RIGHTS RESERVED."
     },
     contact: {
       email: "XMOODSTORE.SUPPORT@GMAIL.COM",
@@ -47,12 +47,12 @@ export default function AdminSettingsFullControl() {
       facebook: "",
       tiktok: "",
       youtube: "",
-      address: "المنطقة السيادية، المكتب الرئيسي",
-      workHours: "24/7 Sovereign Access"
+      address: "مركز الخدمات الرقمية، المكتب الرئيسي",
+      workHours: "24/7 Professional Access"
     },
     promotions: {
       banner1Title: "خصم حصري على شحن UC",
-      banner1Subtitle: "لفترة محدودة فقط لعملاء بريميوم",
+      banner1Subtitle: "لفترة محدودة فقط لعملاء النخبة",
       banner1Link: "/store",
       banner2Title: "هوية بصرية كاملة",
       banner2Subtitle: "اطلب تصميمك الآن بأرقى المعايير",
@@ -99,8 +99,8 @@ export default function AdminSettingsFullControl() {
     <div className="space-y-12 animate-fade-in" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-10">
         <div className="text-right">
-          <h1 className="text-5xl font-headline font-bold gold-text">سيادة المتجر: تحكم مطلق</h1>
-          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Engine: 30+ Control Points Active</p>
+          <h1 className="text-5xl font-headline font-bold gold-text">إعدادات المنصة الاحترافية</h1>
+          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Engine: Total Control Center</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg">
           {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ الإعدادات الكلية</>}
@@ -205,7 +205,7 @@ export default function AdminSettingsFullControl() {
                  </div>
                  <div className="space-y-3">
                     <Label className="text-[10px] font-black text-zinc-500 uppercase flex items-center gap-2"><Clock size={12}/> ساعات العمل</Label>
-                    <Input value={form.contact.workHours} onChange={e => setForm({...form, contact: {...form.contact, workHours: e.target.value}})} className="h-12 bg-zinc-900 border-none rounded-xl" />
+                    <Input value={form.contact.workHours} onChange={setForm({...form, contact: {...form.contact, workHours: e.target.value}})} className="h-12 bg-zinc-900 border-none rounded-xl" />
                  </div>
               </div>
            </Card>
@@ -214,5 +214,3 @@ export default function AdminSettingsFullControl() {
     </div>
   );
 }
-
-import { Share2 } from "lucide-react";

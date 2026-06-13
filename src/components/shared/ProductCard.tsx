@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -35,7 +34,7 @@ export function ProductCard({ product }: ProductCardProps) {
     }
 
     if (!isVerified) {
-      toast({ variant: "destructive", title: "حساب غير مفعل", description: "يرجى تفعيل بريدك الإلكتروني لتتمكن من الشراء." });
+      toast({ variant: "destructive", title: "حساب غير مفعل", description: "يرجى تفعيل البريد الإلكتروني لتتمكن من الشراء." });
       return;
     }
 
@@ -106,11 +105,10 @@ export function ProductCard({ product }: ProductCardProps) {
         return selectedCode;
       }).then((code) => {
         setVoucher({ id: orderId, code: code as string });
-        toast({ title: "تم الشراء بنجاح", description: "تم استخراج قسيمة التفعيل الخاصة بك." });
+        toast({ title: "تم الشراء بنجاح", description: "تم استخراج كود التفعيل الخاص بك." });
       });
 
     } catch (e: any) {
-      console.error(e);
       toast({ variant: "destructive", title: "فشل العملية", description: e.message || "حدث خطأ أثناء معالجة الطلب." });
     } finally {
       setIsProcessing(false);
@@ -119,92 +117,86 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <Card className={`group overflow-hidden border-none bg-zinc-950 shadow-2xl hover:shadow-primary/10 transition-all duration-500 rounded-[2.5rem] flex flex-col border border-white/5 ${isOutOfStock ? 'opacity-75' : ''}`}>
-        <CardHeader className="p-0 relative aspect-square overflow-hidden bg-zinc-900">
+      <Card className={`group overflow-hidden border bg-card shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl flex flex-col ${isOutOfStock ? 'opacity-70' : ''}`}>
+        <CardHeader className="p-0 relative aspect-video overflow-hidden bg-zinc-100 dark:bg-zinc-800">
           <Image 
-            src={product.imageUrl} 
+            src={product.imageUrl || "https://picsum.photos/seed/product/400/225"} 
             alt={product.name}
             fill
-            className={`object-cover transition-transform duration-700 ${!isOutOfStock ? 'group-hover:scale-110' : ''}`}
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             unoptimized
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60" />
-          
           {isAdmin && (
-            <Button asChild variant="secondary" className="absolute top-5 left-5 h-12 w-12 rounded-2xl p-0 shadow-2xl z-20 hover:scale-110 transition-transform bg-black/60 border border-white/10 backdrop-blur-md">
+            <Button asChild variant="secondary" className="absolute top-3 left-3 h-8 w-8 rounded-lg p-0 shadow-md z-20 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm">
               <Link href={`/admin/products`}>
-                <Edit size={20} className="text-primary" />
+                <Edit size={14} className="text-primary" />
               </Link>
             </Button>
           )}
-
-          <div className="absolute top-5 right-5 flex flex-col gap-2 items-end">
-            <Badge className={`font-black text-[10px] px-5 py-1.5 rounded-full border-none shadow-2xl ${isOutOfStock ? 'bg-zinc-800 text-zinc-500' : 'bg-primary text-black'}`}>
-              {isOutOfStock ? 'نفد المخزون' : 'باقة حصرية'}
-            </Badge>
-          </div>
+          <Badge className={`absolute top-3 right-3 font-bold text-[10px] px-3 py-1 rounded-full border-none shadow-md ${isOutOfStock ? 'bg-zinc-500 text-white' : 'bg-primary text-white'}`}>
+            {isOutOfStock ? 'نفد المخزون' : 'باقة معتمدة'}
+          </Badge>
         </CardHeader>
         
-        <CardContent className="p-8 text-right flex-1 flex flex-col">
-          <div className="flex flex-col gap-2 mb-6">
-            <span className="text-[10px] uppercase font-black text-primary/60 tracking-[0.3em]">{product.category}</span>
-            <CardTitle className="text-2xl font-headline font-bold line-clamp-2 leading-tight group-hover:gold-text transition-all min-h-[4rem]">
+        <CardContent className="p-6 text-right flex-1 flex flex-col">
+          <div className="flex flex-col gap-1 mb-4">
+            <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">{product.category}</span>
+            <CardTitle className="text-lg font-bold line-clamp-2 leading-snug group-hover:text-primary transition-colors">
               {product.name}
             </CardTitle>
           </div>
           
-          <div className="mt-auto pt-6 flex flex-row-reverse items-center justify-between border-t border-white/5">
-            <div className="flex flex-col items-end">
-              <span className="font-black text-3xl text-primary tracking-tighter">{formatUSD(product.price)}</span>
-              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{formatSDG(product.price)}</span>
+          <div className="mt-auto pt-4 flex items-center justify-between border-t">
+            <div className="flex flex-col">
+              <span className="font-bold text-xl text-primary">{formatUSD(product.price)}</span>
+              <span className="text-[9px] text-zinc-400 font-bold uppercase">{formatSDG(product.price)}</span>
             </div>
-            <div className="bg-primary/5 text-primary p-3.5 rounded-2xl border border-primary/10 group-hover:bg-primary group-hover:text-black transition-all">
-               {!isVerified && user ? <Lock size={20} className="text-red-500" /> : <Zap size={24} />}
+            <div className="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 p-2 rounded-lg group-hover:bg-primary group-hover:text-white transition-all">
+               {!isVerified && user ? <Lock size={16} /> : <Zap size={18} />}
             </div>
           </div>
         </CardContent>
 
-        <CardFooter className="p-8 pt-0">
+        <CardFooter className="p-6 pt-0">
           <Button 
             onClick={handlePurchase}
             disabled={isOutOfStock || isProcessing}
-            className={`w-full font-black h-16 rounded-2xl shadow-2xl transition-all text-lg ${
+            className={`w-full font-bold h-12 rounded-xl transition-all ${
               isOutOfStock 
-              ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5' 
+              ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed' 
               : 'royal-button'
             }`}
           >
             {isProcessing ? (
               <Loader2 className="animate-spin" />
             ) : !isVerified && user ? (
-              <><Lock size={20} className="ml-3" /> فعل بريدك للشراء</>
+              <><Lock size={16} className="ml-2" /> فعل حسابك للشراء</>
             ) : isOutOfStock ? (
-              <><AlertCircle size={20} className="ml-3" /> غير متوفر</>
+              <><AlertCircle size={16} className="ml-2" /> غير متوفر</>
             ) : (
-              <><ShoppingBag size={20} className="ml-3" /> شراء الآن</>
+              <><ShoppingBag size={16} className="ml-2" /> شراء الآن</>
             )}
           </Button>
         </CardFooter>
       </Card>
 
       <Dialog open={!!voucher} onOpenChange={() => setVoucher(null)}>
-        <DialogContent className="max-w-md bg-zinc-950 border-primary/30 rounded-[3rem] p-10 text-white shadow-2xl overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
+        <DialogContent className="max-w-md bg-card border-none rounded-2xl p-8 shadow-2xl">
           <DialogHeader className="text-center">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/20">
-              <CheckCircle size={48} className="text-primary" />
+            <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle size={32} className="text-green-500" />
             </div>
-            <DialogTitle className="text-3xl font-headline font-bold gold-text text-center">قسيمة التفعيل</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-center">تمت العملية بنجاح</DialogTitle>
+            <DialogDescription className="text-center">إليك كود تفعيل الخدمة الخاص بك:</DialogDescription>
           </DialogHeader>
 
-          <div className="mt-8 space-y-6 relative">
-            <div className="bg-white/5 p-8 rounded-3xl border border-dashed border-primary/40 text-center">
-              <p className="text-[10px] font-black text-primary uppercase tracking-[0.5em] mb-4">كود التفعيل / المفتاح</p>
-              <div className="text-3xl font-black text-white tracking-widest bg-black/60 p-4 rounded-xl border border-white/5 shadow-inner select-all">
+          <div className="mt-6 space-y-6">
+            <div className="bg-zinc-50 dark:bg-zinc-900 p-6 rounded-xl border border-dashed border-primary/40 text-center">
+              <div className="text-2xl font-bold text-foreground tracking-widest select-all uppercase">
                 {voucher?.code}
               </div>
             </div>
-            <Button onClick={() => setVoucher(null)} className="w-full h-14 rounded-2xl bg-white text-black font-black">إغلاق</Button>
+            <Button onClick={() => setVoucher(null)} className="w-full h-12 rounded-xl bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white font-bold">إغلاق</Button>
           </div>
         </DialogContent>
       </Dialog>
