@@ -117,42 +117,43 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <Card className={`luxury-card overflow-hidden group flex flex-col ${isOutOfStock ? 'opacity-70 grayscale-[0.5]' : ''}`}>
-        <CardHeader className="p-0 relative aspect-video overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+      <Card className={`luxury-card flex flex-col group ${isOutOfStock ? 'opacity-70 grayscale' : ''}`}>
+        <CardHeader className="p-0 relative aspect-video bg-muted">
           <Image 
-            src={product.imageUrl || "https://picsum.photos/seed/product/400/225"} 
+            src={product.imageUrl || "https://picsum.photos/seed/product/600/400"} 
             alt={product.name}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-110"
             unoptimized
           />
-          {isAdmin && (
-            <Button asChild variant="secondary" className="absolute top-4 left-4 h-10 w-10 rounded-2xl p-0 shadow-2xl z-20 bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-border/50">
-              <Link href={`/admin/products`}>
-                <Edit size={18} className="text-primary" />
-              </Link>
-            </Button>
-          )}
-          <Badge className={`absolute top-4 right-4 font-black text-[10px] px-4 py-1.5 rounded-full border-none shadow-2xl uppercase tracking-widest ${isOutOfStock ? 'bg-zinc-600 text-white' : 'bg-primary text-black'}`}>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          
+          <Badge className={`absolute top-4 right-4 font-black text-[9px] px-4 py-1.5 rounded-full border-none shadow-2xl uppercase tracking-widest ${isOutOfStock ? 'bg-zinc-600 text-white' : 'bg-primary text-black'}`}>
             {isOutOfStock ? 'نفد المخزون' : 'باقة معتمدة'}
           </Badge>
+
+          {isAdmin && (
+            <Button asChild variant="secondary" className="absolute top-4 left-4 h-10 w-10 rounded-xl p-0 glass-morphism z-20">
+              <Link href={`/admin/products`}><Edit size={16} className="text-primary" /></Link>
+            </Button>
+          )}
         </CardHeader>
         
-        <CardContent className="p-8 text-right flex-1 flex flex-col">
-          <div className="flex flex-col gap-2 mb-6">
-            <span className="text-[10px] uppercase font-black text-zinc-400 tracking-[0.3em]">{product.category}</span>
-            <CardTitle className="text-2xl font-bold leading-tight group-hover:gold-text transition-colors">
+        <CardContent className="p-8 flex-1 flex flex-col">
+          <div className="mb-6">
+            <span className="text-[10px] uppercase font-black text-muted-foreground tracking-[0.2em] block mb-1">{product.category}</span>
+            <CardTitle className="text-2xl font-bold group-hover:gold-text transition-colors leading-tight">
               {product.name}
             </CardTitle>
           </div>
           
-          <div className="mt-auto pt-6 flex items-center justify-between border-t border-border/50">
+          <div className="mt-auto pt-6 flex items-center justify-between border-t">
             <div className="flex flex-col">
               <span className="font-black text-3xl text-primary tracking-tighter">{formatUSD(product.price)}</span>
-              <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">{formatSDG(product.price)}</span>
+              <span className="text-[9px] text-muted-foreground font-black uppercase mt-1">{formatSDG(product.price)}</span>
             </div>
-            <div className="bg-primary/5 text-primary p-4 rounded-2xl group-hover:bg-primary group-hover:text-black transition-all border border-primary/10">
-               {!isVerified && user ? <Lock size={22} /> : <Zap size={24} className="animate-pulse" />}
+            <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
+               <Zap size={20} className={!isOutOfStock ? "animate-pulse" : ""} />
             </div>
           </div>
         </CardContent>
@@ -163,40 +164,38 @@ export function ProductCard({ product }: ProductCardProps) {
             disabled={isOutOfStock || isProcessing}
             className={`w-full h-16 rounded-2xl transition-all shadow-xl ${
               isOutOfStock 
-              ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-400 cursor-not-allowed border-none' 
+              ? 'bg-muted text-muted-foreground cursor-not-allowed border-none' 
               : 'royal-button'
             }`}
           >
             {isProcessing ? (
               <Loader2 className="animate-spin" />
-            ) : !isVerified && user ? (
-              <><Lock size={20} className="ml-3" /> تفعيل الحساب مطلوب</>
             ) : isOutOfStock ? (
-              <><AlertCircle size={20} className="ml-3" /> الباقة غير متوفرة</>
+              <><AlertCircle size={18} className="ml-2" /> غير متوفر حالياً</>
             ) : (
-              <><ShoppingBag size={20} className="ml-3" /> شراء الباقة الآن</>
+              <><ShoppingBag size={18} className="ml-2" /> اطلب الخدمة الآن</>
             )}
           </Button>
         </CardFooter>
       </Card>
 
       <Dialog open={!!voucher} onOpenChange={() => setVoucher(null)}>
-        <DialogContent className="max-w-md bg-card border-none rounded-[3rem] p-10 shadow-2xl">
+        <DialogContent className="max-w-md glass-morphism border-none rounded-[2.5rem] p-12 shadow-2xl">
           <DialogHeader className="text-center">
-            <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20">
-              <CheckCircle size={48} className="text-green-500" />
+            <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-primary/20">
+              <CheckCircle size={40} className="text-primary" />
             </div>
-            <DialogTitle className="text-3xl font-black text-center mb-2">تمت العملية بنجاح</DialogTitle>
-            <DialogDescription className="text-center text-zinc-500 font-medium">إليك كود تفعيل الخدمة الخاص بك، يرجى حفظه فوراً:</DialogDescription>
+            <DialogTitle className="text-3xl font-black mb-2">تم تأكيد الطلب</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium">إليك كود التفعيل المخصص لك، يرجى حفظه فوراً:</DialogDescription>
           </DialogHeader>
 
-          <div className="mt-8 space-y-8">
-            <div className="bg-zinc-50 dark:bg-zinc-900 p-8 rounded-[2rem] border-2 border-dashed border-primary/40 text-center shadow-inner">
-              <div className="text-3xl font-black text-foreground tracking-[0.2em] select-all uppercase">
+          <div className="mt-10 space-y-8">
+            <div className="bg-muted p-8 rounded-[2rem] border-2 border-dashed border-primary/40 text-center">
+              <div className="text-3xl font-black tracking-[0.2em] select-all uppercase gold-text">
                 {voucher?.code}
               </div>
             </div>
-            <Button onClick={() => setVoucher(null)} className="w-full h-16 rounded-2xl bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white font-black text-lg shadow-xl uppercase tracking-widest">إتمام المهمة</Button>
+            <Button onClick={() => setVoucher(null)} className="royal-button w-full h-16 text-lg">العودة للمتجر</Button>
           </div>
         </DialogContent>
       </Dialog>
