@@ -25,7 +25,7 @@
     },
     "MarketplaceListing": {
       "title": "Marketplace Listing",
-      "description": "User generated posts for selling, buying or services",
+      "description": "User generated posts with mandatory contact for escrow safety",
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
@@ -35,11 +35,14 @@
         "description": { "type": "string" },
         "price": { "type": "number" },
         "type": { "type": "string", "enum": ["sell", "buy", "service"] },
+        "contactMethod": { "type": "string", "enum": ["whatsapp", "telegram", "email", "onsite"] },
+        "contactValue": { "type": "string" },
         "likes": { "type": "array", "items": { "type": "string" } },
         "commentCount": { "type": "number" },
         "status": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
-      }
+      },
+      "required": ["userId", "title", "contactMethod", "contactValue"]
     },
     "Comment": {
       "title": "Post Comment",

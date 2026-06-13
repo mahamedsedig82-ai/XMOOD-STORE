@@ -10,7 +10,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, MessageSquare, Share2, Trash2, ShieldCheck, Send, Loader2, BadgeCheck, Clock, Zap } from "lucide-react";
+import { 
+  Heart, 
+  MessageSquare, 
+  Share2, 
+  Trash2, 
+  ShieldCheck, 
+  Send, 
+  Loader2, 
+  BadgeCheck, 
+  Clock, 
+  Zap, 
+  Phone, 
+  AtSign, 
+  Copy,
+  ExternalLink
+} from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,7 +34,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 interface MarketplacePostProps {
-  post: MarketplaceListing;
+  post: any; // Using any for extended fields like contactMethod
 }
 
 export function MarketplacePost({ post }: MarketplacePostProps) {
@@ -36,7 +51,7 @@ export function MarketplacePost({ post }: MarketplacePostProps) {
 
   const { data: comments } = useCollection(commentsQuery);
 
-  // Safely handle likes array to prevent "includes is not a function" error
+  // Safety handling for likes array to prevent Runtime TypeError
   const likesArray = Array.isArray(post.likes) ? post.likes : [];
   const isLiked = user ? likesArray.includes(user.uid) : false;
 
@@ -79,7 +94,6 @@ export function MarketplacePost({ post }: MarketplacePostProps) {
           commentCount: (post.commentCount || 0) + 1
         });
         setNewComment("");
-        toast({ title: "تم إضافة التعليق", description: "تعليقك السيادي متاح الآن." });
       })
       .catch(async (e) => {
         const permissionError = new FirestorePermissionError({
@@ -108,8 +122,29 @@ export function MarketplacePost({ post }: MarketplacePostProps) {
     });
   };
 
-  const handleRequestMiddleman = () => {
-    toast({ title: "طلب وساطة", description: "سيقوم وسيط معتمد بالتواصل معك ومع البائع فوراً." });
+  const handleContactAction = () => {
+    const value = post.contactValue;
+    const method = post.contactMethod;
+
+    if (method === 'whatsapp') {
+      window.open(`https://wa.me/${value.replace(/\+/g, '').replace(/\s/g, '')}`, '_blank');
+    } else if (method === 'telegram') {
+      window.open(`https://t.me/${value.replace('@', '')}`, '_blank');
+    } else if (method === 'email') {
+      window.location.href = `mailto:${value}`;
+    } else {
+      navigator.clipboard.writeText(value);
+      toast({ title: "تم النسخ", description: "تم نسخ معرف التواصل للحافظة." });
+    }
+  };
+
+  const getContactIcon = () => {
+    switch(post.contactMethod) {
+      case 'whatsapp': return <Phone size={16} className="text-green-500" />;
+      case 'telegram': return <Send size={16} className="text-blue-400" />;
+      case 'email': return <AtSign size={16} className="text-red-400" />;
+      default: return <ShieldCheck size={16} className="text-primary" />;
+    }
   };
 
   return (
@@ -156,17 +191,33 @@ export function MarketplacePost({ post }: MarketplacePostProps) {
               <p className="text-base text-zinc-400 font-light leading-relaxed whitespace-pre-wrap">{post.description}</p>
            </div>
            
-           <div className="bg-white/5 p-6 rounded-[2rem] flex flex-col md:flex-row justify-between items-center gap-6 border border-white/5">
-              <div className="text-right">
-                 <p className="text-[9px] text-zinc-600 font-black uppercase mb-1 flex items-center gap-2 justify-end">السعر المطلوب <Zap size={10} className="text-primary" /></p>
-                 <p className="text-4xl font-black text-primary tracking-tighter">{formatUSD(post.price)}</p>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white/5 p-6 rounded-[2rem] border border-white/5 flex flex-col justify-center">
+                 <p className="text-[9px] text-zinc-600 font-black uppercase mb-1 flex items-center gap-2">السعر المطلوب <Zap size={10} className="text-primary" /></p>
+                 <p className="text-4xl font-black text-primary tracking-tighter">{formatUSD(post.price || 0)}</p>
               </div>
-              <div className="flex gap-3 w-full md:w-auto">
-                <Button onClick={handleRequestMiddleman} className="accent-button h-12 px-8 flex-1 md:flex-none">
-                  <ShieldCheck size={18} className="ml-2" /> طلب وسيط
-                </Button>
-                <Button className="royal-button h-12 px-8 flex-1 md:flex-none">تواصل</Button>
+              
+              <div className="bg-primary/5 p-6 rounded-[2rem] border border-primary/10 space-y-4">
+                 <div className="flex items-center justify-between">
+                    <p className="text-[9px] text-zinc-500 font-black uppercase tracking-widest flex items-center gap-2">
+                       {getContactIcon()} معلومات التواصل
+                    </p>
+                    <Badge variant="outline" className="text-[6px] border-primary/20 text-primary font-bold px-2 uppercase">{post.contactMethod}</Badge>
+                 </div>
+                 <div className="flex items-center justify-between gap-4">
+                    <span className="font-mono font-bold text-sm text-zinc-200 truncate flex-1">{post.contactValue}</span>
+                    <Button onClick={handleContactAction} size="sm" className="h-9 px-4 royal-button text-[9px] gap-2">
+                       {post.contactMethod === 'onsite' ? <Copy size={12} /> : <ExternalLink size={12} />}
+                       تواصل
+                    </Button>
+                 </div>
               </div>
+           </div>
+
+           <div className="pt-4 border-t border-white/5">
+              <Button onClick={() => toast({ title: "طلب وساطة", description: "سيقوم وكيل معتمد بفتح غرفة عمليات مؤمنة فوراً." })} className="accent-button w-full h-14 text-xs gap-3">
+                <ShieldCheck size={20} /> طلب وسيط معتمد للصفقة
+              </Button>
            </div>
         </CardContent>
 
@@ -192,7 +243,7 @@ export function MarketplacePost({ post }: MarketplacePostProps) {
            </div>
            <Badge className="bg-green-500/10 text-green-500 border-green-500/20 px-3 py-1 rounded-full text-[7px] font-black uppercase flex gap-1.5 items-center">
              <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
-             متاح
+             متاح سيادياً
            </Badge>
         </div>
 
@@ -252,9 +303,6 @@ export function MarketplacePost({ post }: MarketplacePostProps) {
                          </div>
                       </div>
                     ))}
-                    {comments?.length === 0 && (
-                      <p className="text-center text-zinc-700 font-bold text-[10px] uppercase tracking-widest py-6">لا توجد تعليقات</p>
-                    )}
                  </div>
               </div>
             </motion.div>

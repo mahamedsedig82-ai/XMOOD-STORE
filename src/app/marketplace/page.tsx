@@ -4,27 +4,24 @@
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { useUser, useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit, addDoc, doc, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, limit, addDoc } from "firebase/firestore";
 import { 
   ShieldCheck, 
   Search,
   Zap,
   Megaphone,
   Plus,
-  MessageSquare,
-  Heart,
-  Share2,
   Users,
-  Star,
   CheckCircle,
-  Clock,
-  ExternalLink
+  Phone,
+  MessageSquare,
+  AtSign,
+  Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { formatUSD } from "@/lib/currency";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -33,6 +30,7 @@ import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { MarketplacePost } from "@/components/marketplace/MarketplacePost";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function MarketplaceSocial() {
   const { profile, user } = useUser();
@@ -44,7 +42,9 @@ export default function MarketplaceSocial() {
     title: "",
     description: "",
     price: "",
-    type: 'sell' as 'sell' | 'buy' | 'service'
+    type: 'sell' as 'sell' | 'buy' | 'service',
+    contactMethod: 'whatsapp' as 'whatsapp' | 'telegram' | 'email' | 'onsite',
+    contactValue: ""
   });
 
   const listingsQuery = useMemoFirebase(() => {
@@ -64,8 +64,13 @@ export default function MarketplaceSocial() {
 
   const handleCreateListing = async () => {
     if (!user || !profile || !db) return;
-    if (!listingForm.title || !listingForm.description) {
-      toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى كتابة عنوان ووصف للعرض." });
+    
+    if (!listingForm.title || !listingForm.description || !listingForm.contactValue) {
+      toast({ 
+        variant: "destructive", 
+        title: "بيانات ناقصة", 
+        description: "يجب إكمال العنوان، الوصف، ووسيلة التواصل لنشر العرض." 
+      });
       return;
     }
 
@@ -77,18 +82,20 @@ export default function MarketplaceSocial() {
         userLabel: profile.label || "عضو موثق",
         title: listingForm.title,
         description: listingForm.description,
-        price: Number(listingForm.price),
+        price: Number(listingForm.price) || 0,
         type: listingForm.type,
+        contactMethod: listingForm.contactMethod,
+        contactValue: listingForm.contactValue,
         status: 'active',
         likes: [],
         commentCount: 0,
         createdAt: new Date().toISOString()
       });
       setIsListingOpen(false);
-      setListingForm({ title: "", description: "", price: "", type: 'sell' });
-      toast({ title: "تم النشر بنجاح", description: "عرضك متاح الآن في مجتمع XMOOD." });
+      setListingForm({ title: "", description: "", price: "", type: 'sell', contactMethod: 'whatsapp', contactValue: "" });
+      toast({ title: "تم النشر بنجاح", description: "عرضك متاح الآن في مجتمع XMOOD ببيانات تواصل موثقة." });
     } catch (e) {
-      toast({ variant: "destructive", title: "خطأ", description: "فشل نشر العرض." });
+      toast({ variant: "destructive", title: "خطأ", description: "فشل نشر العرض. يرجى المحاولة لاحقاً." });
     }
   };
 
@@ -116,7 +123,6 @@ export default function MarketplaceSocial() {
       <div className="container mx-auto px-6 pb-40">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 -mt-12">
           
-          {/* Sidebar: User Info & Middlemen */}
           <aside className="lg:col-span-1 space-y-6">
             <Card className="luxury-card p-8 border-none sticky top-36">
               {user ? (
@@ -177,65 +183,98 @@ export default function MarketplaceSocial() {
                        </div>
                     </Link>
                   ))}
-                  {(!middlemen || middlemen.length === 0) && (
-                    <p className="text-[10px] text-center text-zinc-600 italic">لا يوجد وسطاء متاحون حالياً</p>
-                  )}
                </div>
             </Card>
           </aside>
 
-          {/* Feed Content */}
           <section className="lg:col-span-3 space-y-10">
-            
-            {/* Search & Post Action */}
             <div className="flex flex-col md:flex-row gap-4 items-center">
-               <div className="relative flex-1">
+               <div className="relative flex-1 w-full">
                   <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/30" size={20} />
                   <Input 
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    placeholder="ابحث عن حسابات، أصول، أو خدمات..." 
+                    placeholder="ابحث عن عروض في المجتمع..." 
                     className="h-16 bg-zinc-950 border-none rounded-2xl pr-14 text-lg text-white placeholder:text-zinc-700" 
                   />
                </div>
                <Dialog open={isListingOpen} onOpenChange={setIsListingOpen}>
                   <DialogTrigger asChild>
-                    <Button className="h-16 px-10 royal-button text-lg flex gap-3 shadow-primary/20"><Plus size={24} /> نشر عرض جديد</Button>
+                    <Button className="h-16 px-10 royal-button text-lg flex gap-3 shadow-primary/20 w-full md:w-auto"><Plus size={24} /> نشر عرض جديد</Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-zinc-950 border border-primary/20 rounded-[2.5rem] p-10 text-white shadow-2xl">
+                  <DialogContent className="bg-zinc-950 border border-primary/20 rounded-[2.5rem] p-10 text-white shadow-2xl overflow-y-auto max-h-[90vh]">
                     <DialogHeader>
-                      <DialogTitle className="text-3xl font-headline font-bold gold-text flex items-center gap-4"><Megaphone size={28} /> نشر عرض في المجتمع</DialogTitle>
+                      <DialogTitle className="text-3xl font-headline font-bold gold-text flex items-center gap-4"><Megaphone size={28} /> نشر عرض سيادي</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-6 mt-8">
                        <div className="space-y-2">
                           <Label className="text-[10px] font-bold text-primary uppercase pr-3">عنوان العرض</Label>
-                          <Input placeholder="مثال: حساب ببجي مستويات عالية، شحن رصيد..." className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" value={listingForm.title} onChange={e => setListingForm({...listingForm, title: e.target.value})} />
+                          <Input placeholder="مثال: حساب ببجي مستويات عالية..." className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" value={listingForm.title} onChange={e => setListingForm({...listingForm, title: e.target.value})} />
                        </div>
                        <div className="space-y-2">
                           <Label className="text-[10px] font-bold text-primary uppercase pr-3">التفاصيل الكاملة</Label>
-                          <Textarea placeholder="اشرح تفاصيل عرضك بدقة، الشروط، وكيفية التواصل..." className="min-h-[120px] bg-zinc-900 border-none rounded-2xl p-6 font-bold leading-relaxed" value={listingForm.description} onChange={e => setListingForm({...listingForm, description: e.target.value})} />
+                          <Textarea placeholder="اشرح تفاصيل عرضك بدقة..." className="min-h-[120px] bg-zinc-900 border-none rounded-2xl p-6 font-bold leading-relaxed" value={listingForm.description} onChange={e => setListingForm({...listingForm, description: e.target.value})} />
                        </div>
-                       <div className="grid grid-cols-2 gap-4">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label className="text-[10px] font-bold text-primary uppercase pr-3">السعر المتوقع (USD)</Label>
                             <Input type="number" placeholder="0.00" className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" value={listingForm.price} onChange={e => setListingForm({...listingForm, price: e.target.value})} />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-[10px] font-bold text-primary uppercase pr-3">التصنيف</Label>
-                            <select className="w-full h-14 bg-zinc-900 border-none rounded-xl px-6 text-white font-bold appearance-none cursor-pointer" value={listingForm.type} onChange={e => setListingForm({...listingForm, type: e.target.value as any})}>
-                              <option value="sell">عرض بيع أصل</option>
-                              <option value="buy">طلب شراء أصل</option>
-                              <option value="service">خدمة / وساطة فنية</option>
-                            </select>
+                            <Select onValueChange={(val: any) => setListingForm({...listingForm, type: val})} defaultValue="sell">
+                               <SelectTrigger className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold">
+                                  <SelectValue />
+                               </SelectTrigger>
+                               <SelectContent className="bg-zinc-950 border-white/10 text-white">
+                                  <SelectItem value="sell">عرض بيع أصل</SelectItem>
+                                  <SelectItem value="buy">طلب شراء أصل</SelectItem>
+                                  <SelectItem value="service">خدمة / وساطة فنية</SelectItem>
+                               </SelectContent>
+                            </Select>
                           </div>
                        </div>
+
+                       <div className="p-8 bg-primary/5 rounded-[2rem] border border-primary/10 space-y-6">
+                          <h4 className="text-primary font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                             <ShieldCheck size={14} /> بيانات التواصل الإلزامية
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-zinc-500 uppercase pr-3">طريقة التواصل</Label>
+                                <Select onValueChange={(val: any) => setListingForm({...listingForm, contactMethod: val})} defaultValue="whatsapp">
+                                   <SelectTrigger className="h-12 bg-black border-white/5 rounded-xl px-4 font-bold">
+                                      <SelectValue />
+                                   </SelectTrigger>
+                                   <SelectContent className="bg-zinc-950 border-white/10 text-white">
+                                      <SelectItem value="whatsapp">واتساب</SelectItem>
+                                      <SelectItem value="telegram">تيليجرام</SelectItem>
+                                      <SelectItem value="email">البريد الإلكتروني</SelectItem>
+                                      <SelectItem value="onsite">داخل الموقع (معرفك)</SelectItem>
+                                   </SelectContent>
+                                </Select>
+                             </div>
+                             <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-zinc-500 uppercase pr-3">المعرف / الرقم</Label>
+                                <Input 
+                                  placeholder="أدخل وسيلة التواصل هنا..." 
+                                  className="h-12 bg-black border-white/5 rounded-xl px-4 font-bold" 
+                                  value={listingForm.contactValue} 
+                                  onChange={e => setListingForm({...listingForm, contactValue: e.target.value})} 
+                                />
+                             </div>
+                          </div>
+                          <p className="text-[8px] text-zinc-600 font-bold uppercase italic text-center">
+                            * لن يتم نشر العرض بدون وسيلة تواصل صحيحة تظهر للوسطاء والمشترين.
+                          </p>
+                       </div>
+
                        <Button onClick={handleCreateListing} className="w-full h-16 royal-button text-lg mt-4">تأكيد ونشر العرض الآن</Button>
                     </div>
                   </DialogContent>
                </Dialog>
             </div>
 
-            {/* Posts Grid */}
             <div className="space-y-10">
               <AnimatePresence>
                 {filteredListings?.map((post: any) => (
@@ -247,7 +286,6 @@ export default function MarketplaceSocial() {
                 <div className="py-48 text-center luxury-card border-dashed border-white/5 opacity-50">
                    <Users size={80} className="mx-auto text-zinc-900 mb-6" />
                    <h3 className="text-2xl font-bold text-zinc-700 uppercase tracking-[0.3em]">بانتظار العروض الأولى..</h3>
-                   <p className="text-zinc-800 text-sm mt-2">كن أول من ينشر في مجتمع XMOOD</p>
                 </div>
               )}
             </div>
