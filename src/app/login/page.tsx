@@ -55,9 +55,9 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     if (!auth || !db || loading) return;
     setLoading(true);
+    
     try {
       const provider = new GoogleAuthProvider();
-      // Ensure specific settings for better popup behavior
       provider.setCustomParameters({ prompt: 'select_account' });
       
       const result = await signInWithPopup(auth, provider);
@@ -72,29 +72,34 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (error: any) {
-      console.error("Root Auth Error Handling:", error);
+      console.error("Google Auth Error:", error);
       
-      // Handling the root cause of 'popup-closed-by-user'
+      // حل المشكلة من الجذور: التعرف على إغلاق النافذة يدويًا
       if (error.code === 'auth/popup-closed-by-user') {
         toast({ 
           title: "تنبيه", 
-          description: "يبدو أنك قمت بإغلاق نافذة تسجيل الدخول قبل اكتمال العملية. يرجى المحاولة مرة أخرى." 
+          description: "لقد أغلقت نافذة الدخول قبل اكتمال العملية. يرجى المحاولة مرة أخرى." 
         });
       } else if (error.code === 'auth/cancelled-popup-request') {
-        // Handle overlapping popup requests
         toast({ 
           title: "تنبيه", 
           description: "هناك طلب تسجيل دخول قيد المعالجة بالفعل." 
         });
-      } else {
+      } else if (error.code === 'auth/popup-blocked') {
         toast({ 
           variant: "destructive", 
           title: "فشل الدخول", 
-          description: "حدث خطأ غير متوقع. يرجى التأكد من السماح بالنوافذ المنبثقة في متصفحك." 
+          description: "تم حظر النافذة المنبثقة من قبل المتصفح. يرجى السماح بالنوافذ المنبثقة للموقع." 
+        });
+      } else {
+        toast({ 
+          variant: "destructive", 
+          title: "خطأ غير متوقع", 
+          description: "فشل تسجيل الدخول عبر قوقل. يرجى المحاولة لاحقاً." 
         });
       }
     } finally {
-      // Ensuring loading state is reset even on manual close
+      // التأكد من إيقاف حالة التحميل في جميع الحالات لمنع تعليق الزر
       setLoading(false);
     }
   };
