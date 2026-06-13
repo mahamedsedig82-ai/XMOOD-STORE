@@ -18,7 +18,9 @@ import {
   ChevronDown,
   X,
   Settings,
-  Activity
+  Activity,
+  User as UserIcon,
+  ShieldAlert
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -67,6 +69,7 @@ export function Navbar() {
   ];
 
   const siteTitle = siteSettings?.siteInfo?.title || "XMOOD STORE";
+  const isAdmin = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'accountant'].includes(profile?.role || '');
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-white/5 bg-black/80 backdrop-blur-3xl shadow-2xl">
@@ -144,7 +147,7 @@ export function Navbar() {
 
                 <DropdownMenuSeparator className="bg-white/5 my-2" />
 
-                {['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile?.role || '') && (
+                {isAdmin && (
                   <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer text-primary font-black justify-end bg-primary/5 hover:bg-primary/20 border border-primary/10">
                     <Link href="/admin" className="flex items-center w-full justify-end">
                       <span className="ml-3 text-[10px] uppercase">لوحة الإدارة PRO</span>
@@ -218,7 +221,7 @@ export function Navbar() {
                       <p className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.4em] pr-2 mb-4">العمليات الشخصية</p>
                       <SheetClose asChild><Link href="/wallet" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-zinc-400 hover:bg-white/5"><Wallet size={20} className="text-red-600" /><span className="font-bold text-sm">المحفظة والملف</span></Link></SheetClose>
                       <SheetClose asChild><Link href="/wallet/transfer" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-zinc-400 hover:bg-white/5"><ArrowRightLeft size={20} className="text-amber-500" /><span className="font-bold text-sm">تحويل الرصيد</span></Link></SheetClose>
-                      {['owner', 'admin', 'gm'].includes(profile?.role || '') && (
+                      {isAdmin && (
                          <SheetClose asChild><Link href="/admin" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-primary bg-primary/5 border border-primary/10"><LayoutDashboard size={20} /><span className="font-bold text-sm">لوحة الإدارة PRO</span></Link></SheetClose>
                       )}
                     </div>

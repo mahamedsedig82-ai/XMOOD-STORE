@@ -14,7 +14,12 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const MASTER_ADMINS = ["MAHAMEDFK3@GMAIL.COM", "XMOODSTORE.SUPPORT@GMAIL.COM"];
+  // القائمة الذهبية للمديرين السياديين - أضف بريدك هنا للتجربة
+  const MASTER_ADMINS = [
+    "MAHAMEDFK3@GMAIL.COM", 
+    "XMOODSTORE.SUPPORT@GMAIL.COM",
+    "ADMIN@XMOOD.COM"
+  ];
 
   useEffect(() => {
     if (!auth) return;
@@ -61,6 +66,7 @@ export function useUser() {
           setProfile(initialProfile);
         } else {
           const currentData = docSnap.data() as UserProfile;
+          // تحديث الصلاحيات إذا كان البريد في قائمة الماستر
           if (isMaster && currentData.role !== 'owner') {
             await setDoc(userDocRef, { 
               role: 'owner', 
@@ -71,6 +77,7 @@ export function useUser() {
           if (currentData.isVerified !== isVerified) {
             await setDoc(userDocRef, { isVerified }, { merge: true });
           }
+          setProfile({ ...currentData, uid: user.uid });
         }
       } catch (err) {
         console.error("Profile Sync Error:", err);
@@ -99,6 +106,6 @@ export function useUser() {
     profile, 
     loading, 
     isVerified: user?.emailVerified || false,
-    isAdmin: ['owner', 'admin', 'gm'].includes(profile?.role || '')
+    isAdmin: ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'accountant'].includes(profile?.role || '')
   };
 }

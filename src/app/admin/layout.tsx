@@ -34,9 +34,10 @@ import { doc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function AdminLayoutComprehensive({ children }: { children: React.ReactNode }) {
-  const { profile, loading } = useUser();
+  const { profile, loading, user } = useUser();
   const db = useFirestore();
   const auth = useAuth();
   const pathname = usePathname();
@@ -46,15 +47,24 @@ export default function AdminLayoutComprehensive({ children }: { children: React
   const { data: config } = useDoc(settingsRef);
 
   useEffect(() => {
+    // قائمة الأدوار المسموح لها بدخول لوحة الإدارة
     const allowedRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'];
-    if (!loading && (!profile || !allowedRoles.includes(profile.role))) {
-      router.push('/'); 
+    
+    if (!loading) {
+      if (!user) {
+        router.push('/login');
+      } else if (profile && !allowedRoles.includes(profile.role)) {
+        router.push('/'); 
+      }
     }
-  }, [profile, loading, router]);
+  }, [profile, loading, user, router]);
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-black">
-      <div className="w-24 h-24 border-t-4 border-primary border-r-4 border-r-red-600 rounded-[2rem] animate-spin" />
+      <div className="flex flex-col items-center gap-6">
+        <div className="w-20 h-20 border-t-4 border-primary border-r-4 border-r-red-600 rounded-[2rem] animate-spin" />
+        <p className="text-primary font-black uppercase tracking-[0.5em] text-[10px] animate-pulse">Sovereign Link Active...</p>
+      </div>
     </div>
   );
 
@@ -87,11 +97,11 @@ export default function AdminLayoutComprehensive({ children }: { children: React
         <SidebarMenuButton 
           asChild 
           isActive={pathname === item.href}
-          className={`h-16 px-8 rounded-2xl transition-all duration-300 ${pathname === item.href ? 'bg-primary/20 text-primary border border-primary/40 shadow-xl' : 'hover:bg-white/5 text-zinc-500 hover:text-white'}`}
+          className={`h-14 px-6 rounded-xl transition-all duration-300 ${pathname === item.href ? 'bg-primary/20 text-primary border border-primary/40 shadow-xl' : 'hover:bg-white/5 text-zinc-500 hover:text-white'}`}
         >
           <Link href={item.href}>
-            <item.icon className={`w-6 h-6 ${pathname === item.href ? 'text-primary' : 'text-zinc-600'}`} />
-            <span className="font-bold text-sm">{item.label}</span>
+            <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-primary' : 'text-zinc-600'}`} />
+            <span className="font-bold text-xs">{item.label}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -101,59 +111,63 @@ export default function AdminLayoutComprehensive({ children }: { children: React
     <SidebarProvider>
       <div className="flex h-screen w-full bg-black font-body overflow-hidden text-white" dir="rtl">
         <Sidebar className="border-l border-white/5 bg-zinc-950" side="right">
-          <SidebarHeader className="p-10 border-b border-white/5 bg-black/50 backdrop-blur-3xl">
-            <Link href="/" className="flex flex-col items-center gap-4 text-center">
-              <span className="decorative-logo text-3xl">{config?.siteInfo?.title || "XMOOD PRO"}</span>
-              <Badge variant="outline" className="border-red-600/30 text-red-600 px-6 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.4em]">{profile?.role}</Badge>
+          <SidebarHeader className="p-8 border-b border-white/5 bg-black/50 backdrop-blur-3xl">
+            <Link href="/" className="flex flex-col items-center gap-3 text-center">
+              <span className="decorative-logo text-2xl">{config?.siteInfo?.title || "XMOOD PRO"}</span>
+              <Badge variant="outline" className="border-red-600/30 text-red-600 px-4 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.3em]">{profile?.role}</Badge>
             </Link>
           </SidebarHeader>
-          <SidebarContent className="p-8">
-            <SidebarGroup className="mb-10">
-              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-bold uppercase text-zinc-700 tracking-[0.5em]">الإدارة المباشرة</SidebarGroupLabel>
-              <SidebarMenu className="gap-3">
-                {renderMenuItems(mainSections)}
-              </SidebarMenu>
-            </SidebarGroup>
+          
+          <ScrollArea className="flex-1">
+            <SidebarContent className="p-6">
+              <SidebarGroup className="mb-8">
+                <SidebarGroupLabel className="text-right px-4 mb-4 text-[8px] font-black uppercase text-zinc-700 tracking-[0.4em]">الإدارة المباشرة</SidebarGroupLabel>
+                <SidebarMenu className="gap-2">
+                  {renderMenuItems(mainSections)}
+                </SidebarMenu>
+              </SidebarGroup>
 
-            <SidebarGroup className="mb-10">
-              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-bold uppercase text-zinc-700 tracking-[0.5em]">إدارة العمليات</SidebarGroupLabel>
-              <SidebarMenu className="gap-3">
-                {renderMenuItems(businessSections)}
-              </SidebarMenu>
-            </SidebarGroup>
+              <SidebarGroup className="mb-8">
+                <SidebarGroupLabel className="text-right px-4 mb-4 text-[8px] font-black uppercase text-zinc-700 tracking-[0.4em]">إدارة العمليات</SidebarGroupLabel>
+                <SidebarMenu className="gap-2">
+                  {renderMenuItems(businessSections)}
+                </SidebarMenu>
+              </SidebarGroup>
 
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-bold uppercase text-zinc-700 tracking-[0.5em]">إعدادات المتجر</SidebarGroupLabel>
-              <SidebarMenu className="gap-3">
-                {renderMenuItems(systemSections)}
-              </SidebarMenu>
-            </SidebarGroup>
-          </SidebarContent>
-          <div className="p-10 border-t border-white/5 bg-black/30">
+              <SidebarGroup>
+                <SidebarGroupLabel className="text-right px-4 mb-4 text-[8px] font-black uppercase text-zinc-700 tracking-[0.4em]">إعدادات المتجر</SidebarGroupLabel>
+                <SidebarMenu className="gap-2">
+                  {renderMenuItems(systemSections)}
+                </SidebarMenu>
+              </SidebarGroup>
+            </SidebarContent>
+          </ScrollArea>
+
+          <div className="p-6 border-t border-white/5 bg-black/30">
              <Button 
                variant="ghost" 
                onClick={() => signOut(auth!)}
-               className="w-full h-16 rounded-[1.5rem] text-red-600 hover:bg-red-600/10 gap-5 font-bold text-[11px] uppercase tracking-[0.3em]"
+               className="w-full h-12 rounded-xl text-red-600 hover:bg-red-600/10 gap-4 font-black text-[10px] uppercase tracking-[0.2em]"
              >
-               <LogOut size={20} /> تسجيل الخروج
+               <LogOut size={18} /> تسجيل الخروج
              </Button>
           </div>
         </Sidebar>
         
-        <main className="flex-1 overflow-y-auto p-16 bg-black relative">
-          <div className="flex justify-between items-center mb-16 pb-12 border-b border-white/5">
-             <div className="flex items-center gap-8">
-                <Badge variant="outline" className="border-red-600/20 text-red-500 px-8 py-3 rounded-full font-bold text-[10px] uppercase tracking-[0.4em] flex gap-4 animate-pulse">
-                   <Zap size={16} /> نظام XMOOD النشط
+        <main className="flex-1 overflow-y-auto p-8 lg:p-12 bg-black relative">
+          <div className="flex justify-between items-center mb-12 pb-8 border-b border-white/5">
+             <div className="flex items-center gap-6">
+                <Badge variant="outline" className="border-red-600/20 text-red-500 px-6 py-2 rounded-full font-black text-[9px] uppercase tracking-[0.3em] flex gap-3 animate-pulse">
+                   <Zap size={14} /> نظام XMOOD النشط
                 </Badge>
-                <div className="h-10 w-px bg-white/5" />
-                <div className="flex items-center gap-4 text-zinc-600 font-bold text-xs uppercase tracking-widest">
+                <div className="hidden md:block h-8 w-px bg-white/5" />
+                <div className="hidden md:flex items-center gap-3 text-zinc-600 font-bold text-[10px] uppercase tracking-widest">
                    {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </div>
              </div>
-             <div className="flex items-center gap-6">
-                <Button size="icon" variant="ghost" className="text-zinc-600 hover:text-primary h-12 w-12"><Activity size={24} /></Button>
-                <Button size="icon" variant="ghost" className="text-zinc-600 hover:text-red-500 h-12 w-12"><Database size={24} /></Button>
+             <div className="flex items-center gap-4">
+                <Button size="icon" variant="ghost" className="text-zinc-600 hover:text-primary h-10 w-10"><Activity size={20} /></Button>
+                <Button size="icon" variant="ghost" className="text-zinc-600 hover:text-red-500 h-10 w-10"><Database size={20} /></Button>
              </div>
           </div>
           <div className="max-w-[1400px] mx-auto animate-fade-up">
