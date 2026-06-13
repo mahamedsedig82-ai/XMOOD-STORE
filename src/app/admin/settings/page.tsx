@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Palette, Globe, Save, Loader2, Phone, Instagram, Mail, Megaphone, Sparkles, Layout, MessageSquare, ShieldCheck, Zap } from "lucide-react";
+import { Palette, Globe, Save, Loader2, Phone, Instagram, Mail, Megaphone, Sparkles, Layout, MessageSquare, ShieldCheck, Zap, Activity } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -46,13 +46,17 @@ export default function AdminSettingsFullControl() {
       banner1Link: "/store",
       banner2Title: "هوية بصرية كاملة",
       banner2Subtitle: "اطلب تصميمك الآن بأرقى المعايير",
-      banner2Link: "/designs/request"
+      banner2Link: "/designs/request",
+      banner3Title: "وساطة مضمونة 100%",
+      banner3Subtitle: "اضمن حقك مع نظام الوساطة المبتكر",
+      banner3Link: "/middleman"
     },
     bot: {
       greeting: "مرحباً بك! أنا المحلل الذكي لمتجر XMOOD. كيف يمكنني مساعدتك في تحليل خياراتك اليوم؟ ✨",
       tip1: "بناءً على تحليل المبيعات، قسم شحن الألعاب هو الأكثر طلباً حالياً.",
       tip2: "أنصحك بشحن المحفظة مسبقاً لتفادي ضياع العروض المحدودة.",
-      tip3: "نظام التحويل لدينا يخضع لبروتوكول أمان عالٍ لضمان سلامة رصيدك."
+      tip3: "نظام التحويل لدينا يخضع لبروتوكول أمان عالٍ لضمان سلامة رصيدك.",
+      analysisStyle: "professional_analytical"
     }
   });
 
@@ -96,11 +100,11 @@ export default function AdminSettingsFullControl() {
     <div className="space-y-12 animate-fade-in" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-10">
         <div className="text-right">
-          <h1 className="text-5xl font-headline font-bold gold-text">مركز التحكم الشامل</h1>
-          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Engine: 20+ Global Control Points</p>
+          <h1 className="text-5xl font-headline font-bold gold-text">سيادة المتجر: تحكم مطلق</h1>
+          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Engine: 25 Global Control Points Active</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg">
-          {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ كافة الإعدادات</>}
+          {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ الإعدادات الكلية</>}
         </Button>
       </header>
 
@@ -126,15 +130,15 @@ export default function AdminSettingsFullControl() {
         <TabsContent value="visual" className="space-y-8">
           <Card className="luxury-card p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">اللون الأساسي</Label>
+              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">اللون الأساسي (Primary)</Label>
               <Input type="color" value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-14 w-full bg-zinc-900 border-none rounded-xl" />
             </div>
             <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">لون التنبيهات</Label>
+              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">لون اللمسات (Accent)</Label>
               <Input type="color" value={form.appearance.accentColor} onChange={e => setForm({...form, appearance: {...form.appearance, accentColor: e.target.value}})} className="h-14 w-full bg-zinc-900 border-none rounded-xl" />
             </div>
             <div className="col-span-2 space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">رابط الشعار الرئيسي</Label>
+              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">رابط الشعار الرئيسي (Logo URL)</Label>
               <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} placeholder="URL..." className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
             </div>
           </Card>
@@ -144,20 +148,20 @@ export default function AdminSettingsFullControl() {
           <Card className="luxury-card p-10 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">اسم المتجر الرسمي</Label>
+                <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">عنوان الموقع</Label>
                 <Input value={form.siteInfo.title} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, title: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
               </div>
               <div className="space-y-4">
-                <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">وصف مختصر (Slogan)</Label>
+                <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">الوصف الفرعي (Subtitle)</Label>
                 <Input value={form.siteInfo.subtitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, subtitle: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
               </div>
             </div>
             <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">عنوان الواجهة الرئيسي</Label>
+              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">عنوان الهيرو الرئيسي</Label>
               <Input value={form.siteInfo.heroTitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, heroTitle: e.target.value}})} className="h-16 bg-zinc-900 border-none rounded-xl px-8 font-black text-2xl text-primary" />
             </div>
             <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">وصف المتجر التفصيلي</Label>
+              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">وصف الهيرو التفصيلي</Label>
               <Textarea value={form.siteInfo.heroDescription} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, heroDescription: e.target.value}})} className="min-h-[120px] bg-zinc-900 border-none rounded-2xl p-6 font-bold leading-relaxed" />
             </div>
           </Card>
@@ -170,7 +174,7 @@ export default function AdminSettingsFullControl() {
               <Input value={form.contact.email} onChange={e => setForm({...form, contact: {...form.contact, email: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
             </div>
             <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4 flex items-center gap-2"><Phone size={12} /> رقم التواصل المباشر</Label>
+              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4 flex items-center gap-2"><Phone size={12} /> رقم التواصل والواتساب</Label>
               <Input value={form.contact.phone} onChange={e => setForm({...form, contact: {...form.contact, phone: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
             </div>
             <div className="space-y-4">
@@ -178,8 +182,8 @@ export default function AdminSettingsFullControl() {
               <Input value={form.contact.instagram} onChange={e => setForm({...form, contact: {...form.contact, instagram: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
             </div>
             <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">رقم الواتساب الرسمي</Label>
-              <Input value={form.contact.whatsapp} onChange={e => setForm({...form, contact: {...form.contact, whatsapp: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
+              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4 flex items-center gap-2"><Activity size={12} /> معرف التليجرام</Label>
+              <Input value={form.contact.telegram} onChange={e => setForm({...form, contact: {...form.contact, telegram: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
             </div>
           </Card>
         </TabsContent>
@@ -187,16 +191,16 @@ export default function AdminSettingsFullControl() {
         <TabsContent value="ads" className="space-y-8">
           <Card className="luxury-card p-10 space-y-10">
             <div className="p-8 bg-zinc-900/50 rounded-3xl border border-white/5 space-y-6">
-              <h4 className="text-primary font-black uppercase text-xs tracking-widest">إعلان الواجهة الأول</h4>
-              <Input value={form.promotions.banner1Title} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Title: e.target.value}})} placeholder="عنوان الإعلان" className="h-12 bg-black border-none px-6 font-bold" />
-              <Input value={form.promotions.banner1Subtitle} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Subtitle: e.target.value}})} placeholder="الوصف الفرعي" className="h-12 bg-black border-none px-6" />
-              <Input value={form.promotions.banner1Link} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Link: e.target.value}})} placeholder="رابط التحويل" className="h-12 bg-black border-none px-6" />
+              <h4 className="text-primary font-black uppercase text-xs tracking-widest">إعلان الواجهة 1</h4>
+              <Input value={form.promotions.banner1Title} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Title: e.target.value}})} placeholder="العنوان" className="h-12 bg-black border-none px-6 font-bold" />
+              <Input value={form.promotions.banner1Subtitle} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Subtitle: e.target.value}})} placeholder="الوصف" className="h-12 bg-black border-none px-6" />
+              <Input value={form.promotions.banner1Link} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Link: e.target.value}})} placeholder="الرابط" className="h-12 bg-black border-none px-6" />
             </div>
             <div className="p-8 bg-zinc-900/50 rounded-3xl border border-white/5 space-y-6">
-              <h4 className="text-primary font-black uppercase text-xs tracking-widest">إعلان الواجهة الثاني</h4>
-              <Input value={form.promotions.banner2Title} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Title: e.target.value}})} placeholder="عنوان الإعلان" className="h-12 bg-black border-none px-6 font-bold" />
-              <Input value={form.promotions.banner2Subtitle} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Subtitle: e.target.value}})} placeholder="الوصف الفرعي" className="h-12 bg-black border-none px-6" />
-              <Input value={form.promotions.banner2Link} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Link: e.target.value}})} placeholder="رابط التحويل" className="h-12 bg-black border-none px-6" />
+              <h4 className="text-primary font-black uppercase text-xs tracking-widest">إعلان الواجهة 2</h4>
+              <Input value={form.promotions.banner2Title} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Title: e.target.value}})} placeholder="العنوان" className="h-12 bg-black border-none px-6 font-bold" />
+              <Input value={form.promotions.banner2Subtitle} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Subtitle: e.target.value}})} placeholder="الوصف" className="h-12 bg-black border-none px-6" />
+              <Input value={form.promotions.banner2Link} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Link: e.target.value}})} placeholder="الرابط" className="h-12 bg-black border-none px-6" />
             </div>
           </Card>
         </TabsContent>

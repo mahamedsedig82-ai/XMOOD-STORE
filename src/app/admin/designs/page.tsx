@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 export default function DesignManagementPRO() {
   const { profile } = useUser();
   const db = useFirestore();
-  const [designerWhatsapp, setDesignerWhatsapp] = useState("");
+  const [designerWhatsapp, setDesignerWhatsapp] = useState(profile?.phoneNumber || "");
   
   const requestsQuery = useMemoFirebase(() => query(collection(db, "design_requests"), orderBy("createdAt", "desc")), [db]);
   const { data: requests, loading } = useCollection(requestsQuery);
@@ -25,7 +25,7 @@ export default function DesignManagementPRO() {
       await updateDoc(doc(db, "design_requests", id), { 
         status, 
         assignedTo: profile?.uid,
-        designerPhone: designerWhatsapp || profile?.phoneNumber || ""
+        designerPhone: designerWhatsapp
       });
       toast({ title: "تم التحديث", description: `الحالة الجديدة: ${status}` });
     } catch (e) {
@@ -35,12 +35,15 @@ export default function DesignManagementPRO() {
 
   const getWhatsappLink = (req: any) => {
     const text = `مرحباً، أنا المصمم من متجر XMOOD. بخصوص طلبك لخدمة: ${req.designType}.
-الوصف: ${req.description}
-الألوان: ${req.colors}
-المقاسات: ${req.dimensions}
+- العميل: ${req.customerName}
+- الوصف: ${req.description}
+- الألوان: ${req.colors || "غير محدد"}
+- المقاسات: ${req.dimensions || "غير محدد"}
 رقم الطلب: ${req.id.substring(0,8)}`;
     
-    return `https://wa.me/${req.customerPhone || ""}?text=${encodeURIComponent(text)}`;
+    // Check if customer phone exists
+    const phone = req.customerPhone?.replace(/\+/g, '').replace(/\s/g, '') || "";
+    return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
   };
 
   return (
@@ -48,11 +51,11 @@ export default function DesignManagementPRO() {
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h1 className="text-4xl font-headline font-bold text-white gold-text">إدارة تدفق التصاميم</h1>
-          <p className="text-zinc-500">متابعة طلبات العملاء وتوجيهها للمصممين.</p>
+          <p className="text-zinc-500">متابعة طلبات العملاء وتوجيهها للمصممين المحترفين.</p>
         </div>
         <div className="flex gap-4 items-center">
            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-primary uppercase pr-2">رقم واتساب المصمم (للتواصل)</label>
+              <label className="text-[10px] font-bold text-primary uppercase pr-2">رقم واتساب المشرف (للتواصل)</label>
               <Input 
                 value={designerWhatsapp} 
                 onChange={e => setDesignerWhatsapp(e.target.value)} 
@@ -96,7 +99,7 @@ export default function DesignManagementPRO() {
                   <TableCell className="font-bold text-primary">{req.designType}</TableCell>
                   <TableCell className="max-w-xs">
                     <p className="text-xs text-zinc-400 line-clamp-1">{req.description}</p>
-                    <span className="text-[9px] text-zinc-600">الألوان: {req.colors}</span>
+                    <span className="text-[9px] text-zinc-600">الألوان: {req.colors} | المقاس: {req.dimensions}</span>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={`rounded-full ${

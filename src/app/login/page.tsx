@@ -12,13 +12,14 @@ import {
   createUserWithEmailAndPassword, 
   GoogleAuthProvider, 
   signInWithPopup,
-  sendEmailVerification 
+  sendEmailVerification,
+  onAuthStateChanged
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { Loader2, Mail, Globe, UserCircle, Phone } from "lucide-react";
+import { Loader2, Mail, Globe, UserCircle, Phone, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -33,8 +34,21 @@ export default function LoginPage() {
   const db = useFirestore();
   const router = useRouter();
 
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => { setIsMounted(true); }, []);
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user && db) {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists()) {
+          setStep('complete_profile');
+        } else {
+          // User exists, but might be mid-auth flow
+          if (step === 'auth') router.push("/");
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [auth, db, router]);
 
   const handleGoogleLogin = async () => {
     if (!auth || !db || loading) return;
@@ -71,7 +85,7 @@ export default function LoginPage() {
         toast({ 
           variant: "destructive", 
           title: "فشل الدخول", 
-          description: "حدث خطأ غير متوقع، يرجى المحاولة لاحقاً." 
+          description: "حدث خطأ في الاتصال، يرجى المحاولة لاحقاً." 
         });
       }
     } finally {
@@ -153,8 +167,6 @@ export default function LoginPage() {
     }
   };
 
-  if (!isMounted) return null;
-
   if (step === 'complete_profile') {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
@@ -191,7 +203,7 @@ export default function LoginPage() {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
         <Card className="w-full max-w-xl rounded-[3rem] bg-zinc-950 border border-primary/20 text-center p-12">
-          <UserCircle size={80} className="text-primary mx-auto mb-6" />
+          <ShieldCheck size={80} className="text-primary mx-auto mb-6" />
           <h2 className="text-4xl font-headline font-bold gold-text mb-4">أهلاً بك في XMOOD</h2>
           <p className="text-zinc-400 mb-8 font-medium">تم إنشاء ملفك الشخصي بنجاح، أنت الآن عضو موثق في مجتمعنا.</p>
           <Button onClick={() => router.push("/")} className="w-full h-16 rounded-2xl bg-white text-black font-bold text-xl">انطلق للمتجر</Button>

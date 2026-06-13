@@ -4,6 +4,7 @@ export type UserRole = 'owner' | 'admin' | 'gm' | 'store_manager' | 'design_mana
 export interface UserProfile {
   uid: string;
   displayName: string;
+  fullName?: string;
   email: string;
   phoneNumber?: string;
   walletBalance: number;
@@ -13,10 +14,9 @@ export interface UserProfile {
   affinityPoints?: number;
   createdAt: string;
   label?: string;
-  fullName?: string;
+  securityQuestion?: string;
+  securityAnswer?: string;
 }
-
-export type DesignStatus = 'pending' | 'assigned' | 'drafting' | 'review' | 'completed' | 'cancelled';
 
 export interface AppConfig {
   appearance: {
@@ -46,11 +46,15 @@ export interface AppConfig {
     banner2Title: string;
     banner2Subtitle: string;
     banner2Link: string;
+    banner3Title?: string;
+    banner3Subtitle?: string;
+    banner3Link?: string;
   };
   bot: {
     greeting: string;
     tip1: string;
     tip2: string;
     tip3: string;
+    analysisStyle: string;
   };
 }
