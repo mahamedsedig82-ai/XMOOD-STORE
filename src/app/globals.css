@@ -28,11 +28,11 @@
   }
 
   .dark {
-    --background: 240 10% 4%;
+    --background: 240 10% 6%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 6%;
+    --card: 240 10% 8%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 5%;
+    --popover: 240 10% 7%;
     --popover-foreground: 0 0% 98%;
     --primary: 43 70% 45%;
     --primary-foreground: 240 10% 4%;
@@ -44,8 +44,8 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 12%;
-    --input: 240 3.7% 12%;
+    --border: 240 3.7% 15%;
+    --input: 240 3.7% 15%;
     --ring: 43 70% 45%;
   }
 }
@@ -67,11 +67,11 @@
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-sm flex items-center justify-center gap-2 uppercase tracking-wide;
+  @apply bg-primary text-primary-foreground font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-widest;
 }
 
 .accent-button {
-  @apply bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-sm flex items-center justify-center gap-2 uppercase tracking-wide;
+  @apply bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-widest;
 }
 
 .decorative-logo {
@@ -113,3 +113,8 @@
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+
+/* Fixed Theme Issues for Modals/Sheets */
+[data-state=open] {
+  @apply overflow-hidden;
+}
