@@ -151,7 +151,7 @@ export function Navbar() {
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
 
-                {['owner', 'admin', 'gm', 'store_manager', 'design_manager'].includes(profile?.role || '') && (
+                {['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer'].includes(profile?.role || '') && (
                   <>
                     <DropdownMenuSeparator className="bg-white/5 my-4" />
                     <DropdownMenuGroup className="space-y-1">
