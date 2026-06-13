@@ -14,47 +14,43 @@ export interface UserProfile {
   affinityPoints?: number;
   createdAt: string;
   label?: string;
-  securityQuestion?: string;
-  securityAnswer?: string;
+  bio?: string;
+  completedDeals?: number;
 }
 
-export interface AppConfig {
-  appearance: {
-    primaryColor: string;
-    backgroundColor: string;
-    accentColor: string;
-    fontFamily: string;
-    logoUrl: string;
-  };
-  siteInfo: {
-    title: string;
-    subtitle: string;
-    heroTitle: string;
-    heroDescription: string;
-  };
-  contact: {
-    email: string;
-    phone: string;
-    instagram: string;
-    whatsapp: string;
-    telegram: string;
-  };
-  promotions: {
-    banner1Title: string;
-    banner1Subtitle: string;
-    banner1Link: string;
-    banner2Title: string;
-    banner2Subtitle: string;
-    banner2Link: string;
-    banner3Title?: string;
-    banner3Subtitle?: string;
-    banner3Link?: string;
-  };
-  bot: {
-    greeting: string;
-    tip1: string;
-    tip2: string;
-    tip3: string;
-    analysisStyle: string;
-  };
+export interface MarketplaceListing {
+  id: string;
+  userId: string;
+  userName: string;
+  userPhoto: string;
+  userLabel?: string;
+  title: string;
+  description: string;
+  price: number;
+  type: 'sell' | 'buy' | 'service';
+  likes: string[];
+  commentCount: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface Comment {
+  id: string;
+  postId: string;
+  userId: string;
+  userName: string;
+  userPhoto: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface MiddlemanRequest {
+  id: string;
+  listingId: string;
+  buyerId: string;
+  sellerId: string;
+  middlemanId: string;
+  status: 'pending' | 'active' | 'completed' | 'cancelled';
+  amount: number;
+  createdAt: string;
 }

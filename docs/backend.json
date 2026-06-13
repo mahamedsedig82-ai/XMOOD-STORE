@@ -17,71 +17,75 @@
         "photoURL": { "type": "string" },
         "isVerified": { "type": "boolean" },
         "affinityPoints": { "type": "number" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "bio": { "type": "string" },
+        "completedDeals": { "type": "number" }
       },
       "required": ["uid", "email", "role"]
     },
-    "DesignRequest": {
-      "title": "Design Request",
-      "description": "Professional design workflow tracking",
+    "MarketplaceListing": {
+      "title": "Marketplace Listing",
+      "description": "User generated posts for selling, buying or services",
       "type": "object",
       "properties": {
-        "customerId": { "type": "string" },
-        "customerEmail": { "type": "string" },
-        "designType": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "title": { "type": "string" },
         "description": { "type": "string" },
-        "colors": { "type": "string" },
-        "dimensions": { "type": "string" },
-        "attachments": { "type": "array", "items": { "type": "string" } },
-        "status": { "type": "string", "enum": ["pending", "assigned", "drafting", "review", "completed", "cancelled"] },
-        "assignedTo": { "type": "string" },
-        "drafts": { "type": "array", "items": { "type": "string" } },
-        "finalFiles": { "type": "array", "items": { "type": "string" } },
         "price": { "type": "number" },
+        "type": { "type": "string", "enum": ["sell", "buy", "service"] },
+        "likes": { "type": "array", "items": { "type": "string" } },
+        "commentCount": { "type": "number" },
+        "status": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       }
     },
-    "AppConfiguration": {
-      "title": "App Configuration",
-      "description": "Global visual and system settings",
+    "Comment": {
+      "title": "Post Comment",
       "type": "object",
       "properties": {
-        "appearance": {
-          "type": "object",
-          "properties": {
-            "primaryColor": { "type": "string" },
-            "backgroundColor": { "type": "string" },
-            "fontFamily": { "type": "string" },
-            "logoUrl": { "type": "string" }
-          }
-        },
-        "siteInfo": {
-          "type": "object",
-          "properties": {
-            "title": { "type": "string" },
-            "subtitle": { "type": "string" },
-            "heroTitle": { "type": "string" },
-            "heroDescription": { "type": "string" }
-          }
-        }
+        "postId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "MiddlemanRequest": {
+      "title": "Middleman Request",
+      "type": "object",
+      "properties": {
+        "listingId": { "type": "string" },
+        "buyerId": { "type": "string" },
+        "sellerId": { "type": "string" },
+        "middlemanId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "active", "completed", "cancelled"] },
+        "amount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
       }
     }
   },
   "auth": {
-    "providers": ["google.com", "apple.com", "password"]
+    "providers": ["password"]
   },
   "firestore": {
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Sovereign user profiles"
     },
-    "/design_requests/{requestId}": {
-      "schema": "DesignRequest",
-      "description": "Design workflow tasks"
+    "/marketplace_listings/{postId}": {
+      "schema": "MarketplaceListing",
+      "description": "Social marketplace posts"
     },
-    "/settings/global": {
-      "schema": "AppConfiguration",
-      "description": "Dynamic app settings"
+    "/marketplace_listings/{postId}/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Post interaction comments"
+    },
+    "/middleman_requests/{requestId}": {
+      "schema": "MiddlemanRequest",
+      "description": "Escrow transaction tracking"
     }
   }
 }
