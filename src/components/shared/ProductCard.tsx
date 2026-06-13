@@ -8,10 +8,10 @@ import { Product } from "@/app/lib/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Star, Zap, AlertCircle, Edit, CheckCircle, Download, Share2, Loader2 } from "lucide-react";
+import { ShoppingBag, Star, Zap, AlertCircle, Edit, CheckCircle, Download, Share2, Loader2, Lock } from "lucide-react";
 import { formatUSD, formatSDG } from "@/lib/currency";
 import { useUser, useFirestore } from "@/firebase";
-import { doc, runTransaction, collection, serverTimestamp } from "firebase/firestore";
+import { doc, runTransaction, collection } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
@@ -20,7 +20,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { profile, user } = useUser();
+  const { profile, user, isVerified } = useUser();
   const db = useFirestore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [voucher, setVoucher] = useState<{ id: string, code: string } | null>(null);
@@ -31,6 +31,11 @@ export function ProductCard({ product }: ProductCardProps) {
   const handlePurchase = async () => {
     if (!user || !profile || !db) {
       toast({ variant: "destructive", title: "تنبيه", description: "يجب تسجيل الدخول أولاً للمتابعة." });
+      return;
+    }
+
+    if (!isVerified) {
+      toast({ variant: "destructive", title: "حساب غير مفعل", description: "يرجى تفعيل بريدك الإلكتروني لتتمكن من الشراء." });
       return;
     }
 
@@ -72,7 +77,6 @@ export function ProductCard({ product }: ProductCardProps) {
           status: newStock <= 0 ? 'out_of_stock' : currentProdData.status
         });
 
-        // إنشاء سجل الطلب
         transaction.set(doc(db, "orders", orderId), {
           userId: user.uid,
           userEmail: user.email,
@@ -84,7 +88,6 @@ export function ProductCard({ product }: ProductCardProps) {
           createdAt: new Date().toISOString()
         });
 
-        // تسجيل العملية المالية للعميل
         transaction.set(doc(collection(db, "users", user.uid, "transactions")), {
           type: 'purchase',
           amount: product.price,
@@ -92,7 +95,6 @@ export function ProductCard({ product }: ProductCardProps) {
           createdAt: new Date().toISOString()
         });
 
-        // تسجيل العملية في السجل العام
         transaction.set(doc(collection(db, "transactions")), {
           userId: user.uid,
           amount: -product.price,
@@ -141,11 +143,6 @@ export function ProductCard({ product }: ProductCardProps) {
               {isOutOfStock ? 'نفد المخزون' : 'باقة حصرية'}
             </Badge>
           </div>
-
-          <div className="absolute bottom-5 left-5 bg-black/80 backdrop-blur-xl px-4 py-1.5 rounded-full flex items-center gap-2 border border-white/10 shadow-xl">
-             <Star size={14} className="fill-primary text-primary" />
-             <span className="text-xs font-black text-white uppercase tracking-tighter">Premium Service</span>
-          </div>
         </CardHeader>
         
         <CardContent className="p-8 text-right flex-1 flex flex-col">
@@ -162,7 +159,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{formatSDG(product.price)}</span>
             </div>
             <div className="bg-primary/5 text-primary p-3.5 rounded-2xl border border-primary/10 group-hover:bg-primary group-hover:text-black transition-all">
-               <Zap size={24} />
+               {!isVerified && user ? <Lock size={20} className="text-red-500" /> : <Zap size={24} />}
             </div>
           </div>
         </CardContent>
@@ -179,6 +176,8 @@ export function ProductCard({ product }: ProductCardProps) {
           >
             {isProcessing ? (
               <Loader2 className="animate-spin" />
+            ) : !isVerified && user ? (
+              <><Lock size={20} className="ml-3" /> فعل بريدك للشراء</>
             ) : isOutOfStock ? (
               <><AlertCircle size={20} className="ml-3" /> غير متوفر</>
             ) : (
@@ -196,9 +195,6 @@ export function ProductCard({ product }: ProductCardProps) {
               <CheckCircle size={48} className="text-primary" />
             </div>
             <DialogTitle className="text-3xl font-headline font-bold gold-text text-center">قسيمة التفعيل</DialogTitle>
-            <DialogDescription className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] mt-2 text-center">
-              Premium Activation Voucher
-            </DialogDescription>
           </DialogHeader>
 
           <div className="mt-8 space-y-6 relative">
@@ -208,31 +204,8 @@ export function ProductCard({ product }: ProductCardProps) {
                 {voucher?.code}
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4 text-sm font-bold">
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                <p className="text-[8px] text-zinc-500 uppercase mb-1">المنتج</p>
-                <p className="truncate text-xs">{product.name}</p>
-              </div>
-              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                <p className="text-[8px] text-zinc-500 uppercase mb-1">رقم الطلب</p>
-                <p className="font-mono text-[10px] text-primary">{voucher?.id}</p>
-              </div>
-            </div>
-
-            <div className="pt-6 flex gap-3">
-              <Button className="flex-1 h-14 rounded-2xl bg-primary text-black font-black gap-2">
-                <Download size={18} /> حفظ القسيمة
-              </Button>
-              <Button variant="outline" className="w-14 h-14 rounded-2xl border-white/10 hover:bg-white/5">
-                <Share2 size={20} />
-              </Button>
-            </div>
+            <Button onClick={() => setVoucher(null)} className="w-full h-14 rounded-2xl bg-white text-black font-black">إغلاق</Button>
           </div>
-          
-          <p className="text-[8px] text-center mt-10 text-zinc-600 font-black uppercase tracking-[0.4em]">
-            شكراً لثقتكم بمتجر XMOOD الرقمي
-          </p>
         </DialogContent>
       </Dialog>
     </>

@@ -39,6 +39,9 @@ export function useUser() {
         const docSnap = await getDoc(userDocRef);
         const isAdmin = ADMIN_EMAILS.includes(user.email?.toUpperCase() || "");
         
+        // التحقق من أن البريد مفعل للوصول الكامل
+        const isEmailVerified = user.emailVerified;
+
         if (!docSnap.exists()) {
           // إذا كان المستخدم مديراً، ننشئ له ملفاً فورياً
           if (isAdmin) {
@@ -47,7 +50,7 @@ export function useUser() {
               displayName: "المدير العام",
               fullName: "المدير العام XMOOD",
               email: user.email || "",
-              walletBalance: 999999, // رصيد افتراضي للمدير
+              walletBalance: 999999,
               role: 'owner',
               label: 'المدير العام للمتجر',
               photoURL: user.photoURL || '',
@@ -89,5 +92,10 @@ export function useUser() {
     return () => unsubscribeProfile();
   }, [user, db]);
 
-  return { user, profile, loading };
+  return { 
+    user, 
+    profile, 
+    loading, 
+    isVerified: user?.emailVerified || false 
+  };
 }
