@@ -11,13 +11,14 @@ import {
   User as UserIcon, 
   Zap, 
   Menu,
-  ShoppingBag,
   ArrowRightLeft,
   Home,
   Store,
   Users,
   ShieldCheck,
-  ChevronDown
+  ChevronDown,
+  ShoppingBag,
+  History
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -167,55 +168,64 @@ export function Navbar() {
                 <Menu size={24} />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-black border-l border-white/10 p-0 text-white flex flex-col">
-              <SheetHeader className="p-6 border-b border-white/5 bg-zinc-950">
+            <SheetContent side="right" className="w-80 bg-black border-l border-white/10 p-0 text-white flex flex-col">
+              <SheetHeader className="p-8 border-b border-white/5 bg-zinc-950">
                 <SheetTitle className="text-right">
-                  <span className="decorative-logo text-xl">{siteTitle}</span>
+                  <span className="decorative-logo text-2xl">{siteTitle}</span>
                 </SheetTitle>
               </SheetHeader>
               
               <ScrollArea className="flex-1 p-6">
-                <div className="space-y-6">
+                <div className="space-y-8">
                   {user && profile && (
-                    <div className="p-5 bg-white/5 rounded-2xl border border-white/5 space-y-4">
-                      <div className="flex items-center gap-3 flex-row-reverse">
-                        <Avatar className="w-12 h-12 border border-primary/20"><AvatarImage src={profile.photoURL} /><AvatarFallback>{profile.displayName?.charAt(0)}</AvatarFallback></Avatar>
-                        <div className="text-right"><p className="font-bold text-sm gold-text">{profile.displayName}</p><Badge variant="outline" className="text-[7px] uppercase">{profile.label}</Badge></div>
+                    <div className="p-6 bg-white/5 rounded-[2rem] border border-white/5 space-y-6">
+                      <div className="flex items-center gap-4 flex-row-reverse">
+                        <Avatar className="w-14 h-14 border-2 border-primary/20 shadow-xl">
+                          <AvatarImage src={profile.photoURL} />
+                          <AvatarFallback className="bg-zinc-900 text-primary">{profile.displayName?.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="text-right">
+                          <p className="font-bold text-lg gold-text">{profile.displayName}</p>
+                          <Badge variant="outline" className="text-[8px] uppercase tracking-widest border-primary/20 text-primary">{profile.label}</Badge>
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center bg-black/40 p-3 rounded-lg"><span className="text-[9px] text-zinc-500 font-bold uppercase">الرصيد</span><span className="text-lg font-black text-primary">{formatUSD(profile.walletBalance || 0)}</span></div>
+                      <div className="flex justify-between items-center bg-black/60 p-4 rounded-2xl border border-white/5">
+                        <span className="text-[10px] text-zinc-500 font-bold uppercase">الرصيد</span>
+                        <span className="text-xl font-black text-primary">{formatUSD(profile.walletBalance || 0)}</span>
+                      </div>
                     </div>
                   )}
 
-                  <div className="space-y-1">
-                    <p className="text-[9px] font-black text-zinc-700 uppercase tracking-widest pr-2 mb-2">التنقل</p>
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.4em] pr-2 mb-4">قائمة التنقل السيادية</p>
                     {navLinks.map((link) => (
                       <SheetClose asChild key={link.href}>
-                        <Link href={link.href} className={`flex items-center flex-row-reverse gap-4 p-3 rounded-xl transition-all ${pathname === link.href ? 'bg-primary/10 text-primary border border-primary/20' : 'text-zinc-400'}`}>
-                          <link.icon size={18} /><span className="font-bold text-xs">{link.name}</span>
+                        <Link href={link.href} className={`flex items-center flex-row-reverse gap-5 p-4 rounded-2xl transition-all ${pathname === link.href ? 'bg-primary/10 text-primary border border-primary/20 shadow-lg' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}>
+                          <link.icon size={20} /><span className="font-bold text-sm">{link.name}</span>
                         </Link>
                       </SheetClose>
                     ))}
                     <SheetClose asChild>
-                      <Link href="/concierge" className="flex items-center flex-row-reverse gap-4 p-3 rounded-xl text-red-500 bg-red-600/5 border border-red-600/10">
-                        <Sparkles size={18} /><span className="font-bold text-xs">المحلل الذكي</span>
+                      <Link href="/concierge" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-red-500 bg-red-600/5 border border-red-600/10 mt-2">
+                        <Sparkles size={20} /><span className="font-bold text-sm">المحلل الذكي</span>
                       </Link>
                     </SheetClose>
                   </div>
 
                   {user && (
-                    <div className="space-y-1">
-                      <p className="text-[9px] font-black text-zinc-700 uppercase tracking-widest pr-2 mb-2">الحساب</p>
-                      <SheetClose asChild><Link href="/wallet" className="flex items-center flex-row-reverse gap-4 p-3 rounded-xl text-zinc-400"><Wallet size={18} className="text-red-600" /><span className="font-bold text-xs">المحفظة</span></Link></SheetClose>
-                      <SheetClose asChild><Link href="/wallet/transfer" className="flex items-center flex-row-reverse gap-4 p-3 rounded-xl text-zinc-400"><ArrowRightLeft size={18} className="text-amber-500" /><span className="font-bold text-xs">التحويل</span></Link></SheetClose>
+                    <div className="space-y-2 pt-4 border-t border-white/5">
+                      <p className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.4em] pr-2 mb-4">مركز العمليات الشخصي</p>
+                      <SheetClose asChild><Link href="/wallet" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-zinc-400 hover:bg-white/5"><Wallet size={20} className="text-red-600" /><span className="font-bold text-sm">المحفظة الرقمية</span></Link></SheetClose>
+                      <SheetClose asChild><Link href="/wallet/transfer" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-zinc-400 hover:bg-white/5"><ArrowRightLeft size={20} className="text-amber-500" /><span className="font-bold text-sm">تحويل الرصيد</span></Link></SheetClose>
                     </div>
                   )}
                 </div>
               </ScrollArea>
 
               {user && (
-                <div className="p-6 border-t border-white/5 bg-zinc-950 mt-auto">
-                  <Button variant="ghost" onClick={handleSignOut} className="w-full h-12 rounded-xl text-red-600 hover:bg-red-600/10 gap-3 font-bold text-xs flex flex-row-reverse items-center justify-center border border-red-600/20">
-                    <LogOut size={18} /> خروج سيادي
+                <div className="p-8 border-t border-white/5 bg-zinc-950 mt-auto">
+                  <Button variant="ghost" onClick={handleSignOut} className="w-full h-14 rounded-2xl text-red-600 hover:bg-red-600/10 gap-4 font-bold text-sm flex flex-row-reverse items-center justify-center border border-red-600/20 shadow-2xl">
+                    <LogOut size={20} /> خروج سيادي من النظام
                   </Button>
                 </div>
               )}

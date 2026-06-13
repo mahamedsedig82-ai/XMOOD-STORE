@@ -16,7 +16,7 @@ import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 interface MarketplacePostProps {
   post: MarketplaceListing;
@@ -36,9 +36,11 @@ export function MarketplacePost({ post }: MarketplacePostProps) {
 
   const { data: comments } = useCollection(commentsQuery);
 
-  const isLiked = user ? post.likes?.includes(user.uid) : false;
+  // Safely handle likes array to prevent "includes is not a function" error
+  const likesArray = Array.isArray(post.likes) ? post.likes : [];
+  const isLiked = user ? likesArray.includes(user.uid) : false;
 
-  const handleLike = async () => {
+  const handleLike = () => {
     if (!user) {
       toast({ variant: "destructive", title: "تنبيه", description: "يجب تسجيل الدخول للتفاعل." });
       return;
@@ -51,7 +53,7 @@ export function MarketplacePost({ post }: MarketplacePostProps) {
         path: postRef.path,
         operation: 'update',
         requestResourceData: data,
-      });
+      } satisfies SecurityRuleContext);
       errorEmitter.emit('permission-error', permissionError);
     });
   };
@@ -69,29 +71,41 @@ export function MarketplacePost({ post }: MarketplacePostProps) {
       createdAt: new Date().toISOString()
     };
 
-    try {
-      await addDoc(collection(db, "marketplace_listings", post.id, "comments"), commentData);
-      await updateDoc(doc(db, "marketplace_listings", post.id), {
-        commentCount: (post.commentCount || 0) + 1
+    const commentsRef = collection(db, "marketplace_listings", post.id, "comments");
+    addDoc(commentsRef, commentData)
+      .then(async () => {
+        const postRef = doc(db, "marketplace_listings", post.id);
+        await updateDoc(postRef, {
+          commentCount: (post.commentCount || 0) + 1
+        });
+        setNewComment("");
+        toast({ title: "تم إضافة التعليق", description: "تعليقك السيادي متاح الآن." });
+      })
+      .catch(async (e) => {
+        const permissionError = new FirestorePermissionError({
+          path: commentsRef.path,
+          operation: 'create',
+          requestResourceData: commentData,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
-      setNewComment("");
-      toast({ title: "تم إضافة التعليق", description: "تعليقك السيادي متاح الآن." });
-    } catch (e: any) {
-      toast({ variant: "destructive", title: "فشل التعليق", description: "تأكد من صلاحيات حسابك." });
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const handleDeletePost = async () => {
     if (!user || (user.uid !== post.userId && profile?.role !== 'owner')) return;
     if (!confirm("هل أنت متأكد من حذف هذا العرض؟")) return;
-    try {
-      await deleteDoc(doc(db, "marketplace_listings", post.id));
-      toast({ title: "تم الحذف بنجاح" });
-    } catch (e) {
-      toast({ variant: "destructive", title: "خطأ في الحذف" });
-    }
+    
+    const postRef = doc(db, "marketplace_listings", post.id);
+    deleteDoc(postRef).catch(async (err) => {
+      const permissionError = new FirestorePermissionError({
+        path: postRef.path,
+        operation: 'delete',
+      } satisfies SecurityRuleContext);
+      errorEmitter.emit('permission-error', permissionError);
+    });
   };
 
   const handleRequestMiddleman = () => {
@@ -163,7 +177,7 @@ export function MarketplacePost({ post }: MarketplacePostProps) {
                 className={`flex items-center gap-2 transition-all duration-300 font-black text-xs uppercase ${isLiked ? 'text-red-500' : 'text-zinc-600 hover:text-red-500'}`}
               >
                  <Heart size={20} className={isLiked ? 'fill-current' : ''} />
-                 <span>{post.likes?.length || 0}</span>
+                 <span>{likesArray.length}</span>
               </button>
               <button 
                 onClick={() => setShowComments(!showComments)}
