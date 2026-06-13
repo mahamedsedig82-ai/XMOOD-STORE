@@ -17,10 +17,11 @@ import {
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { Loader2, Mail, ShieldCheck, Key, RefreshCw, AlertCircle } from "lucide-react";
+import { Loader2, Mail, ShieldCheck, Key, RefreshCw, AlertCircle, UserCircle, Phone } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -54,14 +55,14 @@ export default function LoginPage() {
     if (!auth || !db || loading) return;
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       await sendEmailVerification(userCredential.user);
       
       await setDoc(doc(db, "users", userCredential.user.uid), {
         uid: userCredential.user.uid,
         displayName: fullName.split(" ")[0],
         fullName: fullName,
-        email: email,
+        email: email.trim().toLowerCase(),
         phoneNumber: phone,
         walletBalance: 0,
         role: 'user',
@@ -88,7 +89,7 @@ export default function LoginPage() {
     if (!auth || loading) return;
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       if (!userCredential.user.emailVerified) {
         setStep('verify_pending');
         toast({ variant: "destructive", title: "تنبيه", description: "يرجى تفعيل بريدك الإلكتروني أولاً." });
@@ -106,7 +107,7 @@ export default function LoginPage() {
     if (!auth || !resetEmail) return;
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, resetEmail);
+      await sendPasswordResetEmail(auth, resetEmail.trim());
       toast({ title: "تم الإرسال", description: "تحقق من بريدك لإعادة تعيين كلمة المرور." });
     } catch (e) {
       toast({ variant: "destructive", title: "خطأ", description: "فشل إرسال رابط الاستعادة." });
@@ -165,7 +166,7 @@ export default function LoginPage() {
           <div className="p-10 text-center bg-white/5 border-b border-white/5">
             <ShieldCheck size={56} className="text-primary mx-auto mb-6" />
             <h2 className="text-4xl font-headline font-bold gold-text">دخول XMOOD STORE</h2>
-            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mt-2">Secure Access Protocol</p>
+            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mt-2">Secure Sovereign Access</p>
           </div>
           <CardContent className="p-10">
             <Tabs defaultValue="login" className="w-full">
@@ -177,8 +178,14 @@ export default function LoginPage() {
               <TabsContent value="login" className="space-y-6">
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div className="space-y-4">
-                    <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center text-lg" value={email} onChange={e => setEmail(e.target.value)} required />
-                    <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center text-lg" value={password} onChange={e => setPassword(e.target.value)} required />
+                    <div className="relative">
+                      <Mail className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={20} />
+                      <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none pr-14 font-bold text-lg text-white" value={email} onChange={e => setEmail(e.target.value)} required />
+                    </div>
+                    <div className="relative">
+                      <Key className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={20} />
+                      <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none pr-14 font-bold text-lg text-white" value={password} onChange={e => setPassword(e.target.value)} required />
+                    </div>
                   </div>
                   
                   <div className="text-left">
@@ -193,7 +200,7 @@ export default function LoginPage() {
                           </DialogTitle>
                         </DialogHeader>
                         <div className="space-y-6 mt-6">
-                          <Input placeholder="أدخل بريدك الإلكتروني" className="h-14 bg-zinc-900 border-none rounded-xl" value={resetEmail} onChange={e => setResetEmail(e.target.value)} />
+                          <Input placeholder="أدخل بريدك الإلكتروني" className="h-14 bg-zinc-900 border-none rounded-xl px-6" value={resetEmail} onChange={e => setResetEmail(e.target.value)} />
                           <Button onClick={handleResetPassword} disabled={loading} className="w-full royal-button h-14">
                             إرسال رابط الاستعادة
                           </Button>
@@ -203,7 +210,7 @@ export default function LoginPage() {
                   </div>
 
                   <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin" /> : "دخول آمن"}
+                    {loading ? <Loader2 className="animate-spin" /> : "دخول آمن للمتجر"}
                   </Button>
                 </form>
               </TabsContent>
@@ -211,10 +218,22 @@ export default function LoginPage() {
               <TabsContent value="signup" className="space-y-6">
                 <form onSubmit={handleSignUp} className="space-y-6">
                   <div className="space-y-4">
-                    <Input placeholder="الاسم الكامل" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center text-lg" value={fullName} onChange={e => setFullName(e.target.value)} required />
-                    <Input placeholder="رقم الهاتف" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center text-lg" value={phone} onChange={e => setPhone(e.target.value)} required />
-                    <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center text-lg" value={email} onChange={e => setEmail(e.target.value)} required />
-                    <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none px-8 font-bold text-center text-lg" value={password} onChange={e => setPassword(e.target.value)} required />
+                    <div className="relative">
+                      <UserCircle className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={20} />
+                      <Input placeholder="الاسم الكامل" className="h-16 rounded-2xl bg-zinc-900 border-none pr-14 font-bold text-lg text-white" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                    </div>
+                    <div className="relative">
+                      <Phone className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={20} />
+                      <Input placeholder="رقم الهاتف" className="h-16 rounded-2xl bg-zinc-900 border-none pr-14 font-bold text-lg text-white" value={phone} onChange={e => setPhone(e.target.value)} required />
+                    </div>
+                    <div className="relative">
+                      <Mail className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={20} />
+                      <Input type="email" placeholder="البريد الإلكتروني" className="h-16 rounded-2xl bg-zinc-900 border-none pr-14 font-bold text-lg text-white" value={email} onChange={e => setEmail(e.target.value)} required />
+                    </div>
+                    <div className="relative">
+                      <Key className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={20} />
+                      <Input type="password" placeholder="كلمة المرور" className="h-16 rounded-2xl bg-zinc-900 border-none pr-14 font-bold text-lg text-white" value={password} onChange={e => setPassword(e.target.value)} required />
+                    </div>
                   </div>
                   <Button type="submit" className="w-full royal-button h-18 text-xl" disabled={loading}>إنشاء حساب وتفعيل</Button>
                 </form>
