@@ -16,6 +16,11 @@ export interface UserProfile {
   label?: string;
   bio?: string;
   completedDeals?: number;
+  middlemanInfo?: {
+    services: string[]; // e.g. ["escrow", "charging"]
+    isAvailable: boolean;
+    workHours?: string;
+  }
 }
 
 export interface MarketplaceListing {
@@ -43,16 +48,5 @@ export interface Comment {
   userName: string;
   userPhoto: string;
   content: string;
-  createdAt: string;
-}
-
-export interface MiddlemanRequest {
-  id: string;
-  listingId: string;
-  buyerId: string;
-  sellerId: string;
-  middlemanId: string;
-  status: 'pending' | 'active' | 'completed' | 'cancelled';
-  amount: number;
   createdAt: string;
 }

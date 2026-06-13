@@ -3,7 +3,7 @@
   "entities": {
     "UserProfile": {
       "title": "User Profile PRO",
-      "description": "Extended user info with multi-level roles and affinity metrics",
+      "description": "Extended user info with multi-level roles and middleman metadata",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
@@ -20,7 +20,15 @@
         "createdAt": { "type": "string", "format": "date-time" },
         "bio": { "type": "string" },
         "completedDeals": { "type": "number" },
-        "phoneNumber": { "type": "string" }
+        "phoneNumber": { "type": "string" },
+        "middlemanInfo": {
+          "type": "object",
+          "properties": {
+            "services": { "type": "array", "items": { "type": "string" } },
+            "isAvailable": { "type": "boolean" },
+            "workHours": { "type": "string" }
+          }
+        }
       },
       "required": ["uid", "email", "role"]
     },
