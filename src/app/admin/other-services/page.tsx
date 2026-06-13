@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Edit2, Zap, Loader2, Save, Image as ImageIcon, Smartphone, Eye } from "lucide-react";
+import { Plus, Trash2, Edit2, Zap, Loader2, Save, Image as ImageIcon, Smartphone, Eye, Upload, Link as LinkIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AdminOtherServices() {
   const { profile } = useUser();
@@ -38,6 +39,17 @@ export default function AdminOtherServices() {
   }, [db]);
 
   const { data: services, loading } = useCollection(servicesQuery);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm({ ...form, imageUrl: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!form.name || !form.price || !form.whatsapp || !db) {
@@ -101,52 +113,64 @@ export default function AdminOtherServices() {
 
   return (
     <div className="space-y-12" dir="rtl">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 bg-card p-10 rounded-[3rem] border shadow-2xl">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 bg-zinc-950 p-10 rounded-[3rem] border border-white/5 shadow-2xl">
         <div>
           <h1 className="text-5xl font-headline font-bold gold-text">إدارة سوق الخدمات</h1>
-          <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-2">Elite Managed Services Marketplace Control</p>
+          <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-2">Elite Managed Services Marketplace Control</p>
         </div>
         <Dialog open={isOpen} onOpenChange={(v) => { setIsOpen(v); if(!v) resetForm(); }}>
           <DialogTrigger asChild>
             <Button className="royal-button h-16 px-12 text-lg shadow-primary/20"><Plus size={24} className="ml-3" /> إضافة خدمة جديدة</Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border-primary/20 rounded-[3rem] max-w-4xl p-10 max-h-[90vh] overflow-y-auto custom-scrollbar">
+          <DialogContent className="bg-zinc-950 border-primary/20 rounded-[3rem] max-w-4xl p-12 max-h-[90vh] overflow-y-auto custom-scrollbar text-white">
             <DialogHeader>
               <DialogTitle className="text-3xl font-bold gold-text flex items-center gap-4">
-                <Zap className="text-primary" /> {editingId ? 'تعديل بيانات الخدمة' : 'إنشاء خدمة احترافية'}
+                <Zap className="text-primary" size={32} /> {editingId ? 'تعديل بيانات الخدمة' : 'إنشاء خدمة احترافية'}
               </DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">اسم الخدمة</label>
-                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-bold" />
+                <label className="text-[10px] font-black uppercase text-zinc-500 pr-4 tracking-widest">اسم الخدمة</label>
+                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="h-14 rounded-2xl bg-zinc-900 border-none px-6 font-bold" />
               </div>
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">التصنيف (مثلاً: تصميم، برمجة)</label>
-                <Input value={form.type} onChange={e => setForm({...form, type: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-bold" />
+                <label className="text-[10px] font-black uppercase text-zinc-500 pr-4 tracking-widest">التصنيف</label>
+                <Input value={form.type} onChange={e => setForm({...form, type: e.target.value})} className="h-14 rounded-2xl bg-zinc-900 border-none px-6 font-bold" />
               </div>
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">السعر المبدئي (USD)</label>
-                <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-black text-primary text-xl" />
+                <label className="text-[10px] font-black uppercase text-zinc-500 pr-4 tracking-widest">السعر (USD)</label>
+                <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-14 rounded-2xl bg-zinc-900 border-none px-6 font-black text-primary text-xl" />
               </div>
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest flex items-center gap-2"><Smartphone size={12}/> رقم واتساب التواصل</label>
-                <Input value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} placeholder="+966..." className="h-14 rounded-2xl bg-muted border-none px-6 font-bold text-left" />
+                <label className="text-[10px] font-black uppercase text-zinc-500 pr-4 tracking-widest flex items-center gap-2"><Smartphone size={12}/> واتساب التواصل</label>
+                <Input value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} placeholder="+966..." className="h-14 rounded-2xl bg-zinc-900 border-none px-6 font-bold text-left" />
               </div>
+
               <div className="col-span-1 md:col-span-2 space-y-4">
-                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest flex items-center gap-2"><ImageIcon size={12}/> رابط صورة الخدمة</label>
-                <div className="flex gap-4">
-                   <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-14 rounded-2xl bg-muted border-none px-6 font-bold flex-1" />
-                   {form.imageUrl && (
-                     <div className="w-14 h-14 rounded-xl overflow-hidden border">
-                       <img src={form.imageUrl} className="w-full h-full object-cover" alt="Preview" />
-                     </div>
-                   )}
-                </div>
+                 <label className="text-[10px] font-black text-zinc-500 uppercase pr-4 tracking-widest">إدارة صور الخدمة</label>
+                 <Tabs defaultValue="url" className="w-full">
+                    <TabsList className="bg-zinc-900 p-1 rounded-xl mb-4">
+                       <TabsTrigger value="url" className="flex-1 gap-2"><LinkIcon size={14}/> رابط خارجي</TabsTrigger>
+                       <TabsTrigger value="upload" className="flex-1 gap-2"><Upload size={14}/> رفع من الجهاز</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="url">
+                       <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-14 bg-zinc-900 border-none rounded-xl px-6" />
+                    </TabsContent>
+                    <TabsContent value="upload">
+                       <Input type="file" accept="image/*" onChange={handleImageUpload} className="h-14 bg-zinc-900 border-none pt-4" />
+                    </TabsContent>
+                 </Tabs>
+                 {form.imageUrl && (
+                   <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-primary/20 shadow-2xl">
+                      <img src={form.imageUrl} className="w-full h-full object-cover" alt="Preview" />
+                      <div className="absolute top-4 left-4 bg-black/60 px-4 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest">Image Preview</div>
+                   </div>
+                 )}
               </div>
+
               <div className="col-span-1 md:col-span-2 space-y-3">
-                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">وصف تفصيلي للخدمة</label>
-                <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="rounded-3xl bg-muted border-none min-h-[150px] p-6 font-bold leading-relaxed" />
+                <label className="text-[10px] font-black uppercase text-zinc-500 pr-4 tracking-widest">وصف تفصيلي</label>
+                <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="rounded-3xl bg-zinc-900 border-none min-h-[150px] p-6 font-bold leading-relaxed" />
               </div>
             </div>
             <DialogFooter className="mt-12">
@@ -158,14 +182,14 @@ export default function AdminOtherServices() {
         </Dialog>
       </header>
 
-      <Card className="luxury-card border-none overflow-hidden shadow-2xl">
+      <Card className="luxury-card border-none overflow-hidden shadow-2xl bg-zinc-950/40">
         <Table>
-          <TableHeader className="bg-muted/50 border-b">
+          <TableHeader className="bg-white/5 border-b border-white/5">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="text-right py-8 pr-10 font-black text-[10px] uppercase tracking-widest">الخدمة والناشر</TableHead>
-              <TableHead className="text-right font-black text-[10px] uppercase tracking-widest">السعر</TableHead>
-              <TableHead className="text-right font-black text-[10px] uppercase tracking-widest">الواتساب</TableHead>
-              <TableHead className="text-center font-black text-[10px] uppercase tracking-widest">الإجراءات</TableHead>
+              <TableHead className="text-right py-8 pr-12 font-black text-[10px] uppercase tracking-widest text-zinc-500">الخدمة والناشر</TableHead>
+              <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-zinc-500">القيمة</TableHead>
+              <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-zinc-500">الواتساب</TableHead>
+              <TableHead className="text-center font-black text-[10px] uppercase tracking-widest text-zinc-500">العمليات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -174,22 +198,22 @@ export default function AdminOtherServices() {
             ) : services?.length === 0 ? (
               <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold uppercase tracking-widest">No Services Found</TableCell></TableRow>
             ) : services?.map((s: any) => (
-              <TableRow key={s.id} className="hover:bg-primary/5 transition-all border-b border-muted">
-                <TableCell className="py-8 pr-10">
+              <TableRow key={s.id} className="hover:bg-primary/5 transition-all border-b border-white/5">
+                <TableCell className="py-8 pr-12">
                    <div className="flex items-center gap-6">
-                      <img src={s.imageUrl || "https://picsum.photos/seed/service/200/200"} className="w-16 h-16 rounded-2xl object-cover border" alt="" />
+                      <img src={s.imageUrl || "https://picsum.photos/seed/service/200/200"} className="w-16 h-16 rounded-2xl object-cover border border-white/5 shadow-2xl" alt="" />
                       <div>
-                         <p className="font-bold text-xl">{s.name}</p>
-                         <p className="text-[10px] text-muted-foreground font-black uppercase mt-1">بواسطة: {s.agentName}</p>
+                         <p className="font-bold text-xl text-white group-hover:gold-text">{s.name}</p>
+                         <p className="text-[10px] text-zinc-500 font-black uppercase mt-1">بواسطة: {s.agentName}</p>
                       </div>
                    </div>
                 </TableCell>
                 <TableCell className="font-black text-2xl text-primary tracking-tighter">${s.price}</TableCell>
-                <TableCell className="font-mono font-bold text-xs text-muted-foreground">{s.whatsapp}</TableCell>
+                <TableCell className="font-mono font-bold text-xs text-zinc-400">{s.whatsapp}</TableCell>
                 <TableCell className="text-center">
                   <div className="flex justify-center gap-4">
-                    <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-primary hover:bg-primary/10" onClick={() => startEdit(s)}><Edit2 size={20} /></Button>
-                    <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-red-500 hover:bg-red-500/10" onClick={() => handleDelete(s.id)}><Trash2 size={20} /></Button>
+                    <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-primary hover:bg-primary/10 border border-white/5" onClick={() => startEdit(s)}><Edit2 size={20} /></Button>
+                    <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-red-500 hover:bg-red-500/10 border border-white/5" onClick={() => handleDelete(s.id)}><Trash2 size={20} /></Button>
                   </div>
                 </TableCell>
               </TableRow>

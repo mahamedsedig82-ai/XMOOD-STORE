@@ -9,7 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Palette, Globe, Save, Loader2, Phone, Instagram, Mail, Megaphone, Sparkles, Layout, MessageSquare, ShieldCheck, Zap, Activity } from "lucide-react";
+import { 
+  Palette, Globe, Save, Loader2, Phone, Instagram, 
+  Mail, Megaphone, Sparkles, Layout, MessageSquare, 
+  ShieldCheck, Zap, Activity, Facebook, Youtube, Video, MapPin, Clock 
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -24,21 +28,27 @@ export default function AdminSettingsFullControl() {
       primaryColor: "#d4af37",
       backgroundColor: "#09090b",
       accentColor: "#dc2626",
-      fontFamily: "PT Sans",
       logoUrl: ""
     },
     siteInfo: {
       title: "XMOOD STORE",
       subtitle: "الوجهة الأولى للألعاب والخدمات الرقمية",
       heroTitle: "عالمك الرقمي بلمسة احترافية",
-      heroDescription: "نقدم لك أفضل باقات شحن الألعاب، الحسابات المميزة، والخدمات الاحترافية بأعلى معايير الأمان والسرعة."
+      heroDescription: "نقدم لك أفضل باقات شحن الألعاب، الحسابات المميزة، والخدمات الاحترافية بأعلى معايير الأمان والسرعة.",
+      description: "متجر XMOOD هو المنصة الرائدة في تقديم الحلول الرقمية المتكاملة.",
+      copyright: "© 2025 XMOOD PREMIUM SERVICES. ALL RIGHTS RESERVED."
     },
     contact: {
       email: "XMOODSTORE.SUPPORT@GMAIL.COM",
       phone: "+249999484771",
-      instagram: "X3O_D",
       whatsapp: "+249999484771",
-      telegram: "XMOOD_SUPPORT"
+      telegram: "XMOOD_SUPPORT",
+      instagram: "X3O_D",
+      facebook: "",
+      tiktok: "",
+      youtube: "",
+      address: "المنطقة السيادية، المكتب الرئيسي",
+      workHours: "24/7 Sovereign Access"
     },
     promotions: {
       banner1Title: "خصم حصري على شحن UC",
@@ -46,17 +56,7 @@ export default function AdminSettingsFullControl() {
       banner1Link: "/store",
       banner2Title: "هوية بصرية كاملة",
       banner2Subtitle: "اطلب تصميمك الآن بأرقى المعايير",
-      banner2Link: "/designs/request",
-      banner3Title: "وساطة مضمونة 100%",
-      banner3Subtitle: "اضمن حقك مع نظام الوساطة المبتكر",
-      banner3Link: "/middleman"
-    },
-    bot: {
-      greeting: "مرحباً بك! أنا المحلل الذكي لمتجر XMOOD. كيف يمكنني مساعدتك في تحليل خياراتك اليوم؟ ✨",
-      tip1: "بناءً على تحليل المبيعات، قسم شحن الألعاب هو الأكثر طلباً حالياً.",
-      tip2: "أنصحك بشحن المحفظة مسبقاً لتفادي ضياع العروض المحدودة.",
-      tip3: "نظام التحويل لدينا يخضع لبروتوكول أمان عالٍ لضمان سلامة رصيدك.",
-      analysisStyle: "professional_analytical"
+      banner2Link: "/designs/gallery"
     }
   });
 
@@ -68,8 +68,7 @@ export default function AdminSettingsFullControl() {
         appearance: { ...prev.appearance, ...config.appearance },
         siteInfo: { ...prev.siteInfo, ...config.siteInfo },
         contact: { ...prev.contact, ...config.contact },
-        promotions: { ...prev.promotions, ...config.promotions },
-        bot: { ...prev.bot, ...config.bot }
+        promotions: { ...prev.promotions, ...config.promotions }
       }));
     }
   }, [config]);
@@ -101,7 +100,7 @@ export default function AdminSettingsFullControl() {
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-10">
         <div className="text-right">
           <h1 className="text-5xl font-headline font-bold gold-text">سيادة المتجر: تحكم مطلق</h1>
-          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Engine: 25 Global Control Points Active</p>
+          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Engine: 30+ Control Points Active</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg">
           {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ الإعدادات الكلية</>}
@@ -109,21 +108,18 @@ export default function AdminSettingsFullControl() {
       </header>
 
       <Tabs defaultValue="visual" className="w-full">
-        <TabsList className="bg-zinc-950 p-2 rounded-3xl h-20 border border-white/5 mb-10 flex gap-2 px-4 overflow-x-auto">
-          <TabsTrigger value="visual" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
+        <TabsList className="bg-zinc-950 p-2 rounded-3xl h-20 border border-white/5 mb-10 flex gap-2 px-4 overflow-x-auto custom-scrollbar">
+          <TabsTrigger value="visual" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black min-w-[120px]">
             <Palette size={16} className="ml-2" /> المظهر
           </TabsTrigger>
-          <TabsTrigger value="site" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-red-600 data-[state=active]:text-white">
+          <TabsTrigger value="site" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-red-600 data-[state=active]:text-white min-w-[120px]">
             <Globe size={16} className="ml-2" /> الموقع
           </TabsTrigger>
-          <TabsTrigger value="contact" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-zinc-800 data-[state=active]:text-white">
-            <Phone size={16} className="ml-2" /> التواصل
+          <TabsTrigger value="social" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-zinc-800 data-[state=active]:text-white min-w-[120px]">
+            <Share2 size={16} className="ml-2" /> التواصل الاجتماعي
           </TabsTrigger>
-          <TabsTrigger value="ads" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-amber-600 data-[state=active]:text-white">
-            <Megaphone size={16} className="ml-2" /> الإعلانات
-          </TabsTrigger>
-          <TabsTrigger value="bot" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-            <Sparkles size={16} className="ml-2" /> المساعد
+          <TabsTrigger value="contact" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-blue-600 data-[state=active]:text-white min-w-[120px]">
+            <Phone size={16} className="ml-2" /> معلومات التواصل
           </TabsTrigger>
         </TabsList>
 
@@ -148,7 +144,7 @@ export default function AdminSettingsFullControl() {
           <Card className="luxury-card p-10 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">عنوان الموقع</Label>
+                <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">عنوان الموقع (Title)</Label>
                 <Input value={form.siteInfo.title} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, title: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
               </div>
               <div className="space-y-4">
@@ -157,77 +153,66 @@ export default function AdminSettingsFullControl() {
               </div>
             </div>
             <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">عنوان الهيرو الرئيسي</Label>
-              <Input value={form.siteInfo.heroTitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, heroTitle: e.target.value}})} className="h-16 bg-zinc-900 border-none rounded-xl px-8 font-black text-2xl text-primary" />
+              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">حقوق النشر (Copyright Text)</Label>
+              <Input value={form.siteInfo.copyright} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, copyright: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
             </div>
             <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">وصف الهيرو التفصيلي</Label>
-              <Textarea value={form.siteInfo.heroDescription} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, heroDescription: e.target.value}})} className="min-h-[120px] bg-zinc-900 border-none rounded-2xl p-6 font-bold leading-relaxed" />
+              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">وصف الموقع العام (SEO)</Label>
+              <Textarea value={form.siteInfo.description} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, description: e.target.value}})} className="min-h-[100px] bg-zinc-900 border-none rounded-2xl p-6" />
             </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="social" className="space-y-8">
+          <Card className="luxury-card p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+             {[
+               { key: 'whatsapp', label: 'واتساب الدعم', icon: MessageSquare },
+               { key: 'telegram', label: 'تيليجرام', icon: Send },
+               { key: 'instagram', label: 'إنستقرام', icon: Instagram },
+               { key: 'facebook', label: 'فيسبوك', icon: Facebook },
+               { key: 'tiktok', label: 'تيك توك', icon: Video },
+               { key: 'youtube', label: 'يوتيوب', icon: Youtube },
+             ].map((social) => (
+               <div key={social.key} className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4 flex items-center gap-2">
+                    <social.icon size={12} className="text-primary" /> {social.label}
+                  </Label>
+                  <Input 
+                    value={form.contact[social.key as keyof typeof form.contact]} 
+                    onChange={e => setForm({...form, contact: {...form.contact, [social.key]: e.target.value}})} 
+                    placeholder="الرابط أو المعرف..."
+                    className="h-12 bg-zinc-900 border-none rounded-xl px-4"
+                  />
+               </div>
+             ))}
           </Card>
         </TabsContent>
 
         <TabsContent value="contact" className="space-y-8">
-          <Card className="luxury-card p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4 flex items-center gap-2"><Mail size={12} /> بريد الدعم والشكاوي</Label>
-              <Input value={form.contact.email} onChange={e => setForm({...form, contact: {...form.contact, email: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
-            </div>
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4 flex items-center gap-2"><Phone size={12} /> رقم التواصل والواتساب</Label>
-              <Input value={form.contact.phone} onChange={e => setForm({...form, contact: {...form.contact, phone: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
-            </div>
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4 flex items-center gap-2"><Instagram size={12} /> إنستقرام الإدارة</Label>
-              <Input value={form.contact.instagram} onChange={e => setForm({...form, contact: {...form.contact, instagram: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
-            </div>
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4 flex items-center gap-2"><Activity size={12} /> معرف التليجرام</Label>
-              <Input value={form.contact.telegram} onChange={e => setForm({...form, contact: {...form.contact, telegram: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="ads" className="space-y-8">
-          <Card className="luxury-card p-10 space-y-10">
-            <div className="p-8 bg-zinc-900/50 rounded-3xl border border-white/5 space-y-6">
-              <h4 className="text-primary font-black uppercase text-xs tracking-widest">إعلان الواجهة 1</h4>
-              <Input value={form.promotions.banner1Title} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Title: e.target.value}})} placeholder="العنوان" className="h-12 bg-black border-none px-6 font-bold" />
-              <Input value={form.promotions.banner1Subtitle} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Subtitle: e.target.value}})} placeholder="الوصف" className="h-12 bg-black border-none px-6" />
-              <Input value={form.promotions.banner1Link} onChange={e => setForm({...form, promotions: {...form.promotions, banner1Link: e.target.value}})} placeholder="الرابط" className="h-12 bg-black border-none px-6" />
-            </div>
-            <div className="p-8 bg-zinc-900/50 rounded-3xl border border-white/5 space-y-6">
-              <h4 className="text-primary font-black uppercase text-xs tracking-widest">إعلان الواجهة 2</h4>
-              <Input value={form.promotions.banner2Title} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Title: e.target.value}})} placeholder="العنوان" className="h-12 bg-black border-none px-6 font-bold" />
-              <Input value={form.promotions.banner2Subtitle} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Subtitle: e.target.value}})} placeholder="الوصف" className="h-12 bg-black border-none px-6" />
-              <Input value={form.promotions.banner2Link} onChange={e => setForm({...form, promotions: {...form.promotions, banner2Link: e.target.value}})} placeholder="الرابط" className="h-12 bg-black border-none px-6" />
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="bot" className="space-y-8">
-          <Card className="luxury-card p-10 space-y-8">
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase text-zinc-500 pr-4">رسالة ترحيب المساعد (التحليلية)</Label>
-              <Input value={form.bot.greeting} onChange={e => setForm({...form, bot: {...form.bot, greeting: e.target.value}})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold text-primary" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black text-zinc-500 uppercase">نصيحة تحليلية 1</Label>
-                <Input value={form.bot.tip1} onChange={e => setForm({...form, bot: {...form.bot, tip1: e.target.value}})} className="bg-zinc-900 border-none font-bold" />
+           <Card className="luxury-card p-10 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-zinc-500 uppercase flex items-center gap-2"><Mail size={12}/> البريد الرسمي</Label>
+                    <Input value={form.contact.email} onChange={e => setForm({...form, contact: {...form.contact, email: e.target.value}})} className="h-12 bg-zinc-900 border-none rounded-xl" />
+                 </div>
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-zinc-500 uppercase flex items-center gap-2"><Phone size={12}/> رقم الهاتف</Label>
+                    <Input value={form.contact.phone} onChange={e => setForm({...form, contact: {...form.contact, phone: e.target.value}})} className="h-12 bg-zinc-900 border-none rounded-xl" />
+                 </div>
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-zinc-500 uppercase flex items-center gap-2"><MapPin size={12}/> العنوان</Label>
+                    <Input value={form.contact.address} onChange={e => setForm({...form, contact: {...form.contact, address: e.target.value}})} className="h-12 bg-zinc-900 border-none rounded-xl" />
+                 </div>
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black text-zinc-500 uppercase flex items-center gap-2"><Clock size={12}/> ساعات العمل</Label>
+                    <Input value={form.contact.workHours} onChange={e => setForm({...form, contact: {...form.contact, workHours: e.target.value}})} className="h-12 bg-zinc-900 border-none rounded-xl" />
+                 </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black text-zinc-500 uppercase">نصيحة تحليلية 2</Label>
-                <Input value={form.bot.tip2} onChange={e => setForm({...form, bot: {...form.bot, tip2: e.target.value}})} className="bg-zinc-900 border-none font-bold" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black text-zinc-500 uppercase">نصيحة تحليلية 3</Label>
-                <Input value={form.bot.tip3} onChange={e => setForm({...form, bot: {...form.bot, tip3: e.target.value}})} className="bg-zinc-900 border-none font-bold" />
-              </div>
-            </div>
-          </Card>
+           </Card>
         </TabsContent>
       </Tabs>
     </div>
   );
 }
+
+import { Share2 } from "lucide-react";

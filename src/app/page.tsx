@@ -4,7 +4,11 @@
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Trophy, Cpu, Heart, Sparkles, ArrowRight, Zap, Instagram, Mail, Phone, MessageSquare, Palette } from "lucide-react";
+import { 
+  ShieldCheck, Trophy, Cpu, Heart, Sparkles, ArrowRight, 
+  Zap, Instagram, Mail, Phone, MessageSquare, Palette, 
+  Facebook, Youtube, Video 
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -81,23 +85,52 @@ export default function HomeSovereignPRO() {
       <footer className="py-40 bg-black border-t border-white/5 relative z-10">
         <div className="container mx-auto px-6 text-center">
           <div className="decorative-logo text-7xl mb-12">{config?.siteInfo?.title || "XMOOD"}</div>
+          <p className="text-zinc-500 max-w-2xl mx-auto mb-16 text-lg leading-relaxed">{config?.siteInfo?.description}</p>
           
           <div className="flex flex-wrap justify-center gap-10 mb-16">
-             <a href={`mailto:${config?.contact?.email}`} className="flex items-center gap-3 text-zinc-400 hover:text-white transition-all font-bold">
-                <Mail size={18} className="text-red-600" /> {config?.contact?.email}
-             </a>
-             <a href={`tel:${config?.contact?.phone}`} className="flex items-center gap-3 text-zinc-400 hover:text-white transition-all font-bold">
-                <Phone size={18} className="text-primary" /> {config?.contact?.phone}
-             </a>
+             {config?.contact?.email && (
+               <a href={`mailto:${config.contact.email}`} className="flex items-center gap-3 text-zinc-400 hover:text-white transition-all font-bold">
+                  <Mail size={18} className="text-red-600" /> {config.contact.email}
+               </a>
+             )}
+             {config?.contact?.whatsapp && (
+               <a href={`https://wa.me/${config.contact.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-zinc-400 hover:text-white transition-all font-bold">
+                  <MessageSquare size={18} className="text-green-500" /> واتساب الدعم
+               </a>
+             )}
+             {config?.contact?.phone && (
+               <a href={`tel:${config.contact.phone}`} className="flex items-center gap-3 text-zinc-400 hover:text-white transition-all font-bold">
+                  <Phone size={18} className="text-primary" /> {config.contact.phone}
+               </a>
+             )}
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-12 mb-20">
+             {config?.contact?.telegram && (
+               <a href={`https://t.me/${config.contact.telegram}`} target="_blank" className="text-zinc-500 hover:text-primary transition-all"><Zap size={24}/></a>
+             )}
+             {config?.contact?.instagram && (
+               <a href={`https://instagram.com/${config.contact.instagram}`} target="_blank" className="text-zinc-500 hover:text-primary transition-all"><Instagram size={24}/></a>
+             )}
+             {config?.contact?.facebook && (
+               <a href={config.contact.facebook} target="_blank" className="text-zinc-500 hover:text-primary transition-all"><Facebook size={24}/></a>
+             )}
+             {config?.contact?.youtube && (
+               <a href={config.contact.youtube} target="_blank" className="text-zinc-500 hover:text-primary transition-all"><Youtube size={24}/></a>
+             )}
+             {config?.contact?.tiktok && (
+               <a href={config.contact.tiktok} target="_blank" className="text-zinc-500 hover:text-primary transition-all"><Video size={24}/></a>
+             )}
           </div>
 
           <div className="flex flex-wrap justify-center gap-16 text-[10px] font-bold uppercase tracking-[0.4em] text-zinc-600">
             <Link href="/marketplace" className="hover:text-primary transition-all">المجتمع</Link>
             <Link href="/designs/gallery" className="hover:text-primary transition-all">المعرض</Link>
+            <Link href="/middleman" className="hover:text-primary transition-all">الوكلاء</Link>
             <Link href="/admin" className="hover:text-primary transition-all">الإدارة</Link>
           </div>
           <div className="mt-24 text-[9px] font-bold text-zinc-800 uppercase tracking-[0.8em]">
-            © 2025 XMOOD PREMIUM SERVICES. ALL RIGHTS RESERVED.
+            {config?.siteInfo?.copyright || "© 2025 XMOOD PREMIUM SERVICES. ALL RIGHTS RESERVED."}
           </div>
         </div>
       </footer>

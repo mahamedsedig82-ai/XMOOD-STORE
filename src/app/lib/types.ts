@@ -24,6 +24,43 @@ export interface UserProfile {
   }
 }
 
+export interface SiteSettings {
+  appearance: {
+    primaryColor: string;
+    backgroundColor: string;
+    accentColor: string;
+    logoUrl: string;
+  };
+  siteInfo: {
+    title: string;
+    subtitle: string;
+    heroTitle: string;
+    heroDescription: string;
+    description: string;
+    copyright: string;
+  };
+  contact: {
+    email: string;
+    phone: string;
+    whatsapp: string;
+    telegram: string;
+    instagram: string;
+    facebook: string;
+    tiktok: string;
+    youtube: string;
+    address: string;
+    workHours: string;
+  };
+  promotions: {
+    banner1Title: string;
+    banner1Subtitle: string;
+    banner1Link: string;
+    banner2Title: string;
+    banner2Subtitle: string;
+    banner2Link: string;
+  };
+}
+
 export interface OtherService {
   id: string;
   name: string;
@@ -35,7 +72,7 @@ export interface OtherService {
   description: string;
   price: number;
   isAvailable: boolean;
-  createdAt: string;
+  createdAt: any;
 }
 
 export interface Product {

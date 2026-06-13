@@ -11,8 +11,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useUser, useAuth } from "@/firebase";
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { signOut } from "firebase/auth";
+import { doc } from "firebase/firestore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatUSD } from "@/lib/currency";
 import { 
@@ -28,11 +29,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 export function Navbar() {
   const { user, profile } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   const pathname = usePathname();
   
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [layout, setLayout] = useState<'desktop' | 'mobile'>('desktop');
   const [isMounted, setIsMounted] = useState(false);
+
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const { data: config } = useDoc(settingsRef);
 
   useEffect(() => {
     setIsMounted(true);
@@ -78,8 +83,8 @@ export function Navbar() {
       <div className={`container mx-auto px-4 md:px-6 h-20 md:h-24 flex items-center justify-between ${layout === 'mobile' ? 'max-w-[450px]' : ''}`}>
         
         <Link href="/" className="flex flex-col items-start md:items-end group">
-          <span className="decorative-logo">XMOOD</span>
-          <span className="text-[7px] md:text-[8px] font-black tracking-widest text-primary uppercase">Elite Enterprise</span>
+          <span className="decorative-logo">{config?.siteInfo?.title || "XMOOD"}</span>
+          <span className="text-[7px] md:text-[8px] font-black tracking-widest text-primary uppercase">{config?.siteInfo?.subtitle || "Elite Enterprise"}</span>
         </Link>
 
         <div className="hidden lg:flex items-center gap-10">
@@ -96,7 +101,6 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Desktop Simulation Toggles */}
           <div className="hidden xl:flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={toggleLayout} className="text-muted-foreground hover:text-primary rounded-xl bg-muted/50 h-10 w-10">
               {layout === 'desktop' ? <Smartphone size={18} /> : <Monitor size={18} />}
@@ -106,7 +110,6 @@ export function Navbar() {
             </Button>
           </div>
 
-          {/* Theme Toggle for Mobile */}
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="xl:hidden text-muted-foreground hover:text-primary rounded-xl bg-muted/50 h-10 w-10">
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </Button>
@@ -132,30 +135,31 @@ export function Navbar() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64 mt-4 rounded-2xl p-2 shadow-2xl border-primary/10" align="start">
-                <DropdownMenuLabel className="p-4 text-right">
+              <DropdownMenuContent className="w-64 mt-4 rounded-2xl p-4 shadow-2xl border-primary/10 bg-zinc-950" align="start">
+                <DropdownMenuLabel className="p-2 text-right">
                   <Badge variant="outline" className="w-fit text-[7px] font-black uppercase tracking-widest mb-1 border-primary/20 text-primary">{profile?.role}</Badge>
                   <p className="font-black text-lg gold-text truncate">{profile?.displayName}</p>
+                  <p className="text-[9px] text-zinc-500 truncate">{profile?.email}</p>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-primary/5" />
-                <DropdownMenuItem asChild className="rounded-xl h-12 cursor-pointer focus:bg-primary/5 focus:text-primary">
+                <DropdownMenuSeparator className="bg-primary/5 my-2" />
+                <DropdownMenuItem asChild className="rounded-xl h-11 cursor-pointer focus:bg-primary/5 focus:text-primary">
                   <Link href="/wallet" className="flex items-center w-full gap-3 justify-end font-bold text-xs">
-                    <span>محفظتي</span>
+                    <span>محفظتي السيادية</span>
                     <Wallet size={16} />
                   </Link>
                 </DropdownMenuItem>
                 {isAdmin && (
-                  <DropdownMenuItem asChild className="rounded-xl h-12 cursor-pointer text-primary focus:bg-primary/10">
+                  <DropdownMenuItem asChild className="rounded-xl h-11 cursor-pointer text-primary focus:bg-primary/10">
                     <Link href="/admin" className="flex items-center w-full gap-3 justify-end font-bold text-xs">
-                      <span>الإدارة</span>
+                      <span>إدارة النظام</span>
                       <LayoutDashboard size={16} />
                     </Link>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator className="bg-primary/5" />
-                <DropdownMenuItem onClick={() => signOut(auth!)} className="rounded-xl h-12 cursor-pointer text-red-600 focus:bg-red-500/10 font-bold">
+                <DropdownMenuSeparator className="bg-primary/5 my-2" />
+                <DropdownMenuItem onClick={() => signOut(auth!)} className="rounded-xl h-11 cursor-pointer text-red-600 focus:bg-red-500/10 font-bold">
                   <div className="flex items-center w-full gap-3 justify-end text-xs">
-                    <span>خروج</span>
+                    <span>خروج آمن</span>
                     <LogOut size={16} />
                   </div>
                 </DropdownMenuItem>
@@ -171,7 +175,7 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[85%] sm:max-w-xs bg-background p-0 border-l border-primary/10 flex flex-col">
               <SheetHeader className="p-6 border-b bg-muted/20 flex flex-row items-center justify-between">
-                <SheetTitle className="decorative-logo text-3xl">XMOOD</SheetTitle>
+                <SheetTitle className="decorative-logo text-3xl">{config?.siteInfo?.title || "XMOOD"}</SheetTitle>
                 <SheetClose className="text-muted-foreground"><X size={24}/></SheetClose>
               </SheetHeader>
               <div className="flex-1 p-6 space-y-2 overflow-y-auto custom-scrollbar">
