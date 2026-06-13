@@ -17,7 +17,11 @@ export default function DesignManagementPRO() {
   const db = useFirestore();
   const [designerWhatsapp, setDesignerWhatsapp] = useState(profile?.phoneNumber || "");
   
-  const requestsQuery = useMemoFirebase(() => query(collection(db, "design_requests"), orderBy("createdAt", "desc")), [db]);
+  const requestsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "design_requests"), orderBy("createdAt", "desc"));
+  }, [db]);
+  
   const { data: requests, loading } = useCollection(requestsQuery);
 
   const handleUpdateStatus = async (id: string, status: string) => {
@@ -82,7 +86,7 @@ export default function DesignManagementPRO() {
               {loading ? (
                 <TableRow><TableCell colSpan={5} className="text-center py-20">جاري تحميل الطلبات...</TableCell></TableRow>
               ) : requests?.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-20 text-zinc-600">لا توجد طلبات حالياً</TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-20 text-zinc-600">لا توجد طلبات حالياً</TableCell></TableRow>
               ) : requests?.map((req: any) => (
                 <TableRow key={req.id} className="hover:bg-primary/5 transition-colors border-b border-white/5">
                   <TableCell className="py-6">

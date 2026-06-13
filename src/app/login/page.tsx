@@ -26,7 +26,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [securityAnswer, setSecurityAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'auth' | 'success' | 'verify' | 'complete_profile'>('auth');
   
@@ -58,7 +57,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      // تحسين معالجة تسجيل الدخول لضمان عدم التعليق
+      // Ensure specific settings for better popup behavior
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
@@ -71,20 +72,29 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (error: any) {
-      console.error("Auth Error:", error);
+      console.error("Root Auth Error Handling:", error);
+      
+      // Handling the root cause of 'popup-closed-by-user'
       if (error.code === 'auth/popup-closed-by-user') {
         toast({ 
           title: "تنبيه", 
-          description: "تم إغلاق نافذة تسجيل الدخول. يرجى المحاولة مرة أخرى." 
+          description: "يبدو أنك قمت بإغلاق نافذة تسجيل الدخول قبل اكتمال العملية. يرجى المحاولة مرة أخرى." 
+        });
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        // Handle overlapping popup requests
+        toast({ 
+          title: "تنبيه", 
+          description: "هناك طلب تسجيل دخول قيد المعالجة بالفعل." 
         });
       } else {
         toast({ 
           variant: "destructive", 
           title: "فشل الدخول", 
-          description: "حدث خطأ في الاتصال، تأكد من سماح متصفحك بالنوافذ المنبثقة." 
+          description: "حدث خطأ غير متوقع. يرجى التأكد من السماح بالنوافذ المنبثقة في متصفحك." 
         });
       }
     } finally {
+      // Ensuring loading state is reset even on manual close
       setLoading(false);
     }
   };
@@ -136,9 +146,7 @@ export default function LoginPage() {
         photoURL: '',
         createdAt: new Date().toISOString(),
         isVerified: false,
-        affinityPoints: 50,
-        securityQuestion: "ما هو اسم مدرستك الأولى؟",
-        securityAnswer: securityAnswer
+        affinityPoints: 50
       });
       
       setStep('verify');
