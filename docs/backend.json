@@ -12,16 +12,32 @@
         "walletBalance": { "type": "number" },
         "role": { 
           "type": "string", 
-          "enum": ["owner", "admin", "gm", "store_manager", "design_manager", "designer", "accountant", "support", "middleman", "user"] 
+          "enum": ["owner", "admin", "gm", "store_manager", "design_manager", "designer", "accountant", "support", "middleman", "agent", "user"] 
         },
         "photoURL": { "type": "string" },
         "isVerified": { "type": "boolean" },
         "affinityPoints": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" },
         "bio": { "type": "string" },
-        "completedDeals": { "type": "number" }
+        "completedDeals": { "type": "number" },
+        "phoneNumber": { "type": "string" }
       },
       "required": ["uid", "email", "role"]
+    },
+    "AgentRequest": {
+      "title": "Agent Request",
+      "description": "User application to become a certified charging agent",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "reason": { "type": "string" },
+        "experience": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "reason"]
     },
     "MarketplaceListing": {
       "title": "Marketplace Listing",
@@ -77,6 +93,10 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Sovereign user profiles"
+    },
+    "/agent_requests/{requestId}": {
+      "schema": "AgentRequest",
+      "description": "Agent applications"
     },
     "/marketplace_listings/{postId}": {
       "schema": "MarketplaceListing",

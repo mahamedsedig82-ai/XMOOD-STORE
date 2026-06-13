@@ -3,13 +3,39 @@
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, ShieldCheck, History, Copy, Loader2, ArrowRightLeft, Edit2, Zap, UserCheck, Phone, Mail, Award, TrendingUp, CheckCircle, Smartphone, UserCircle, Settings } from "lucide-react";
+import { 
+  Wallet, 
+  ShieldCheck, 
+  History, 
+  Copy, 
+  Loader2, 
+  ArrowRightLeft, 
+  Edit2, 
+  Zap, 
+  UserCheck, 
+  Phone, 
+  Mail, 
+  Award, 
+  TrendingUp, 
+  CheckCircle, 
+  Smartphone, 
+  UserCircle, 
+  Settings, 
+  Camera, 
+  Building2, 
+  CreditCard, 
+  Bitcoin, 
+  HelpCircle,
+  Clock,
+  CheckCircle2,
+  XCircle
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useUser, useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { formatUSD, formatSDG } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
-import { query, collection, orderBy, doc, updateDoc } from "firebase/firestore";
+import { query, collection, orderBy, doc, updateDoc, addDoc, where, limit } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -17,19 +43,31 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function SovereignWalletPage() {
   const { profile, user, loading: userLoading, isVerified } = useUser();
   const db = useFirestore();
+  
+  // Profile Editing State
   const [isEditing, setIsEditing] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newPhone, setNewPhone] = useState("");
+  const [newPhotoURL, setNewPhotoURL] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Agent Request State
+  const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false);
+  const [agentReason, setAgentReason] = useState("");
+  const [agentExperience, setAgentExperience] = useState("");
+  const [isSubmittingAgent, setIsSubmittingAgent] = useState(false);
 
   useEffect(() => {
     if (profile) {
       setNewDisplayName(profile.displayName || "");
       setNewPhone(profile.phoneNumber || "");
+      setNewPhotoURL(profile.photoURL || "");
     }
   }, [profile]);
 
@@ -38,7 +76,14 @@ export default function SovereignWalletPage() {
     return query(collection(db, "users", user.uid, "transactions"), orderBy("createdAt", "desc"));
   }, [user, db]);
 
+  const agentRequestQuery = useMemoFirebase(() => {
+    if (!user || !db) return null;
+    return query(collection(db, "agent_requests"), where("userId", "==", user.uid), limit(1));
+  }, [user, db]);
+
   const { data: transactions, loading: transLoading } = useCollection(transactionsQuery);
+  const { data: agentRequests } = useCollection(agentRequestQuery);
+  const currentAgentRequest = agentRequests?.[0];
 
   const handleUpdateProfile = async () => {
     if (!user || !db) return;
@@ -47,14 +92,37 @@ export default function SovereignWalletPage() {
       await updateDoc(doc(db, "users", user.uid), {
         displayName: newDisplayName,
         phoneNumber: newPhone,
+        photoURL: newPhotoURL,
         updatedAt: new Date().toISOString()
       });
       setIsEditing(false);
-      toast({ title: "تم التحديث", description: "تم ربط معلوماتك الجديدة بنجاح." });
+      toast({ title: "تم التحديث", description: "تم ربط معلوماتك السيادية الجديدة بنجاح." });
     } catch (e) {
       toast({ variant: "destructive", title: "فشل التحديث", description: "تأكد من الصلاحيات والاتصال." });
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleAgentRequest = async () => {
+    if (!user || !db || !agentReason.trim()) return;
+    setIsSubmittingAgent(true);
+    try {
+      await addDoc(collection(db, "agent_requests"), {
+        userId: user.uid,
+        userName: profile?.displayName || "عضو",
+        userEmail: user.email,
+        reason: agentReason,
+        experience: agentExperience,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      });
+      setIsAgentDialogOpen(false);
+      toast({ title: "تم إرسال الطلب", description: "طلبك قيد المراجعة من قبل الإدارة العليا الآن." });
+    } catch (e) {
+      toast({ variant: "destructive", title: "فشل الإرسال", description: "يرجى المحاولة لاحقاً." });
+    } finally {
+      setIsSubmittingAgent(false);
     }
   };
 
@@ -71,6 +139,37 @@ export default function SovereignWalletPage() {
 
   const balance = profile?.walletBalance || 0;
 
+  const paymentMethods = [
+    { 
+      name: "بنكك (Bankak)", 
+      icon: Building2, 
+      desc: "التحويل المباشر عبر تطبيق بنك الخرطوم. أسرع وسيلة محلية.", 
+      color: "text-green-500",
+      guide: "قم بالتحويل لرقم الحساب المعتمد من الوكيل وأرسل صورة الإشعار."
+    },
+    { 
+      name: "Binance (USDT)", 
+      icon: Bitcoin, 
+      desc: "شحن المحفظة عبر العملات الرقمية المستقرة (USDT/P2P).", 
+      color: "text-yellow-500",
+      guide: "اختر شبكة TRC20 للتحويل لضمان سرعة المعالجة وأقل رسوم."
+    },
+    { 
+      name: "فوري (Fawry)", 
+      icon: CreditCard, 
+      desc: "شبكة الدفع الإلكتروني الشاملة للوكلاء والعملاء.", 
+      color: "text-blue-500",
+      guide: "استخدم كود الخدمة الخاص بالمتجر لدى أي منفذ فوري معتمد."
+    },
+    { 
+      name: "ماي سوداني", 
+      icon: Smartphone, 
+      desc: "خدمة تحويل الرصيد والدفع عبر شبكة سوداني.", 
+      color: "text-red-500",
+      guide: "خدمة دفع لحظية تعتمد على رقم الهاتف المسجل في النظام."
+    }
+  ];
+
   return (
     <main className="min-h-screen bg-black font-body text-white pb-20" dir="rtl">
       <Navbar />
@@ -83,7 +182,7 @@ export default function SovereignWalletPage() {
           <div className="flex flex-col lg:flex-row justify-between items-center gap-16 relative z-10">
             <div className="flex flex-col md:flex-row items-center gap-10 text-center md:text-right flex-1">
               <div className="relative group">
-                <Avatar className="w-40 h-40 rounded-[3.5rem] border-4 border-primary/20 shadow-2xl transition-all group-hover:border-primary/50 group-hover:scale-105 duration-500">
+                <Avatar className="w-40 h-40 rounded-[3.5rem] border-4 border-primary/20 shadow-2xl transition-all group-hover:border-primary/50 group-hover:scale-105 duration-500 overflow-hidden">
                   <AvatarImage src={profile?.photoURL} />
                   <AvatarFallback className="bg-zinc-900 text-primary text-5xl font-black">
                     {profile?.displayName?.charAt(0) || "X"}
@@ -92,6 +191,11 @@ export default function SovereignWalletPage() {
                 <div className="absolute -bottom-3 -right-2 bg-primary text-black p-3 rounded-2xl border-4 border-black shadow-2xl">
                   <Award size={24} />
                 </div>
+                {isEditing && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-[3.5rem] pointer-events-none">
+                    <Camera className="text-white w-8 h-8" />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-6">
@@ -100,6 +204,15 @@ export default function SovereignWalletPage() {
                   <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                     <Badge className="bg-red-600/20 text-red-500 border-red-600/30 px-6 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest">{profile?.role}</Badge>
                     <Badge variant="outline" className="border-primary/20 text-primary text-[9px] px-6 py-1.5 rounded-full font-black uppercase tracking-widest">{profile?.label || "XMOOD MEMBER"}</Badge>
+                    {currentAgentRequest && (
+                      <Badge className={`px-6 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                        currentAgentRequest.status === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                        currentAgentRequest.status === 'accepted' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                        'bg-red-500/10 text-red-500 border-red-500/20'
+                      }`}>
+                         طلب وكيل: {currentAgentRequest.status === 'pending' ? 'تحت المراجعة' : currentAgentRequest.status === 'accepted' ? 'مقبول' : 'مرفوض'}
+                      </Badge>
+                    )}
                   </div>
                 </div>
 
@@ -133,6 +246,39 @@ export default function SovereignWalletPage() {
               <Button asChild className="royal-button h-18 px-10 text-base shadow-primary/30">
                 <Link href="/wallet/transfer"><ArrowRightLeft className="ml-4" size={24} /> تحويل رصيد</Link>
               </Button>
+              
+              {!currentAgentRequest && profile?.role !== 'agent' && (
+                <Dialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" className="h-12 text-zinc-500 hover:text-primary font-bold text-[9px] uppercase tracking-[0.2em] gap-2">
+                       <UserCheck size={16} /> طلب رتبة وكيل معتمد
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-zinc-950 border border-primary/20 rounded-[2.5rem] p-10 text-white shadow-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-3xl font-headline font-bold gold-text flex items-center gap-4">
+                        <UserCheck className="text-primary" /> طلب الانضمام للنخبة
+                      </DialogTitle>
+                      <DialogDescription className="text-zinc-500 font-bold mt-2">كن جزءاً من شبكة وكلاء XMOOD الرسمية في منطقتك.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-6 mt-8">
+                       <div className="space-y-2">
+                          <label className="text-[9px] font-bold text-primary uppercase pr-2">لماذا تود أن تصبح وكيلاً؟</label>
+                          <Textarea value={agentReason} onChange={e => setAgentReason(e.target.value)} placeholder="اشرح لنا دوافعك..." className="bg-zinc-900 border-none rounded-xl min-h-[100px] p-4" />
+                       </div>
+                       <div className="space-y-2">
+                          <label className="text-[9px] font-bold text-primary uppercase pr-2">الخبرات السابقة في الشحن والوساطة</label>
+                          <Textarea value={agentExperience} onChange={e => setAgentExperience(e.target.value)} placeholder="اذكر أي منصات أو أعمال سابقة..." className="bg-zinc-900 border-none rounded-xl min-h-[80px] p-4" />
+                       </div>
+                    </div>
+                    <DialogFooter className="mt-10">
+                       <Button onClick={handleAgentRequest} disabled={isSubmittingAgent} className="royal-button w-full h-16 text-lg">
+                          {isSubmittingAgent ? <Loader2 className="animate-spin" /> : "تقديم طلب السيادة"}
+                       </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </div>
 
@@ -156,6 +302,12 @@ export default function SovereignWalletPage() {
                        <Smartphone size={12} /> رقم الهاتف الدولي
                     </label>
                     <Input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="h-14 bg-black border-primary/20 rounded-2xl px-6 font-bold text-left text-lg" placeholder="+966" />
+                  </div>
+                  <div className="col-span-1 md:col-span-2 space-y-3">
+                    <label className="text-[10px] font-black uppercase text-zinc-500 pr-4 tracking-widest flex items-center gap-2">
+                       <Camera size={12} /> رابط الصورة الشخصية (Photo URL)
+                    </label>
+                    <Input value={newPhotoURL} onChange={e => setNewPhotoURL(e.target.value)} placeholder="https://..." className="h-14 bg-black border-primary/20 rounded-2xl px-6 font-bold text-zinc-300" />
                   </div>
                 </div>
                 <Button onClick={handleUpdateProfile} disabled={isUpdating} className="royal-button h-14 px-12 text-sm">
@@ -225,6 +377,31 @@ export default function SovereignWalletPage() {
             </div>
           </Card>
         </div>
+
+        {/* Payment Methods Section */}
+        <section className="mb-20 space-y-10">
+           <div className="flex items-center gap-4">
+              <CreditCard className="text-primary w-8 h-8" />
+              <h2 className="text-3xl font-headline font-bold text-white">طرق الدفع والشحن المعتمدة</h2>
+           </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {paymentMethods.map((pm, i) => (
+                <Card key={i} className="luxury-card border-none bg-zinc-950/60 p-8 hover:bg-zinc-900 transition-all group">
+                   <div className={`w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center ${pm.color} mb-6 border border-white/5 group-hover:border-current transition-all shadow-xl`}>
+                      <pm.icon size={28} />
+                   </div>
+                   <h4 className="font-bold text-lg text-white mb-2">{pm.name}</h4>
+                   <p className="text-xs text-zinc-500 leading-relaxed mb-6 h-12">{pm.desc}</p>
+                   <div className="pt-4 border-t border-white/5">
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase mb-2 flex items-center gap-2">
+                        <HelpCircle size={12} className="text-primary" /> كيفية الشحن:
+                      </p>
+                      <p className="text-[10px] text-zinc-600 leading-relaxed italic">{pm.guide}</p>
+                   </div>
+                </Card>
+              ))}
+           </div>
+        </section>
 
         {/* Financial Ledger Section */}
         <Card className="luxury-card border-none overflow-hidden bg-zinc-950/40">
