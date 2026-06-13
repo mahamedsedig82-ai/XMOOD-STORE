@@ -19,7 +19,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Loader2, Mail, Globe, UserCircle, Phone, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -38,25 +38,27 @@ export default function LoginPage() {
     if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user && db) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (!userDoc.exists()) {
-          setStep('complete_profile');
-        } else {
-          // User exists, but might be mid-auth flow
-          if (step === 'auth') router.push("/");
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (!userDoc.exists()) {
+            setStep('complete_profile');
+          } else {
+            if (step === 'auth') router.push("/");
+          }
+        } catch (e) {
+          console.error("Auth check error:", e);
         }
       }
     });
     return () => unsubscribe();
-  }, [auth, db, router]);
+  }, [auth, db, router, step]);
 
   const handleGoogleLogin = async () => {
     if (!auth || !db || loading) return;
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
-      
+      // تحسين معالجة تسجيل الدخول لضمان عدم التعليق
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
@@ -69,23 +71,17 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (error: any) {
+      console.error("Auth Error:", error);
       if (error.code === 'auth/popup-closed-by-user') {
         toast({ 
           title: "تنبيه", 
-          description: "يبدو أنك أغلقت نافذة الدخول قبل الاكتمال. يرجى المحاولة مرة أخرى." 
-        });
-      } else if (error.code === 'auth/popup-blocked') {
-        toast({ 
-          variant: "destructive",
-          title: "المتصفح حجب النافذة", 
-          description: "يرجى السماح بالنوافذ المنبثقة لهذا الموقع من إعدادات متصفحك." 
+          description: "تم إغلاق نافذة تسجيل الدخول. يرجى المحاولة مرة أخرى." 
         });
       } else {
-        console.error("Auth Error:", error);
         toast({ 
           variant: "destructive", 
           title: "فشل الدخول", 
-          description: "حدث خطأ في الاتصال، يرجى المحاولة لاحقاً." 
+          description: "حدث خطأ في الاتصال، تأكد من سماح متصفحك بالنوافذ المنبثقة." 
         });
       }
     } finally {
