@@ -15,9 +15,9 @@ import {
   onAuthStateChanged,
   signOut
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { Loader2, Mail, ShieldCheck, Key, ArrowRight, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Loader2, Mail, ShieldCheck, Key, RefreshCw, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -165,7 +165,7 @@ export default function LoginPage() {
           <div className="p-10 text-center bg-white/5 border-b border-white/5">
             <ShieldCheck size={56} className="text-primary mx-auto mb-6" />
             <h2 className="text-4xl font-headline font-bold gold-text">دخول XMOOD STORE</h2>
-            <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-2">Secure Access Protocol</p>
+            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mt-2">Secure Access Protocol</p>
           </div>
           <CardContent className="p-10">
             <Tabs defaultValue="login" className="w-full">
@@ -186,7 +186,7 @@ export default function LoginPage() {
                       <DialogTrigger asChild>
                         <button type="button" className="text-[10px] font-bold text-zinc-500 hover:text-primary transition-colors">نسيت كلمة المرور؟</button>
                       </DialogTrigger>
-                      <DialogContent className="bg-zinc-950 border-primary/20 rounded-3xl p-8">
+                      <DialogContent className="bg-zinc-950 border-primary/20 rounded-3xl p-8 text-white">
                         <DialogHeader>
                           <DialogTitle className="text-2xl font-bold gold-text flex items-center gap-3">
                             <Key className="text-primary" /> استعادة الحساب

@@ -5,10 +5,10 @@ import { useState } from "react";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query, orderBy, doc, updateDoc } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Phone, User, ExternalLink, ShieldCheck, CheckCircle, Clock } from "lucide-react";
+import { MessageSquare, Phone, User, CheckCircle, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 
@@ -45,7 +45,6 @@ export default function DesignManagementPRO() {
 - المقاسات: ${req.dimensions || "غير محدد"}
 رقم الطلب: ${req.id.substring(0,8)}`;
     
-    // Check if customer phone exists
     const phone = req.customerPhone?.replace(/\+/g, '').replace(/\s/g, '') || "";
     return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
   };
@@ -64,7 +63,7 @@ export default function DesignManagementPRO() {
                 value={designerWhatsapp} 
                 onChange={e => setDesignerWhatsapp(e.target.value)} 
                 placeholder="أدخل رقمك هنا..." 
-                className="h-12 bg-white/5 border-primary/20 w-64"
+                className="h-12 bg-white/5 border-primary/20 w-64 text-white"
               />
            </div>
         </div>
@@ -74,7 +73,7 @@ export default function DesignManagementPRO() {
         <CardContent className="p-0">
           <Table>
             <TableHeader className="bg-white/5">
-              <TableRow className="hover:bg-transparent">
+              <TableRow className="hover:bg-transparent border-none">
                 <TableHead className="text-right py-6 font-bold text-zinc-500 uppercase text-[10px]">العميل / التواصل</TableHead>
                 <TableHead className="text-right font-bold text-zinc-500 uppercase text-[10px]">نوع الخدمة</TableHead>
                 <TableHead className="text-right font-bold text-zinc-500 uppercase text-[10px]">التفاصيل</TableHead>
@@ -84,9 +83,9 @@ export default function DesignManagementPRO() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-20">جاري تحميل الطلبات...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-20 text-white">جاري تحميل الطلبات...</TableCell></TableRow>
               ) : requests?.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-20 text-zinc-600">لا توجد طلبات حالياً</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-20 text-zinc-600 font-bold">لا توجد طلبات حالياً</TableCell></TableRow>
               ) : requests?.map((req: any) => (
                 <TableRow key={req.id} className="hover:bg-primary/5 transition-colors border-b border-white/5">
                   <TableCell className="py-6">

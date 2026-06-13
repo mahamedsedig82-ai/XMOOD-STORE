@@ -14,9 +14,9 @@ import {
   ShoppingBag,
   ArrowRightLeft,
   Settings,
-  ShieldCheck,
   MessageSquare,
-  HelpCircle
+  Activity,
+  UserCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";

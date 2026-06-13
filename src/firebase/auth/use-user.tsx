@@ -14,7 +14,6 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // بريد المدير الرسمي المعتمد
   const ADMIN_EMAILS = ["MAHAMEDFK3@GMAIL.COM"];
 
   useEffect(() => {
@@ -39,11 +38,7 @@ export function useUser() {
         const docSnap = await getDoc(userDocRef);
         const isAdmin = ADMIN_EMAILS.includes(user.email?.toUpperCase() || "");
         
-        // التحقق من أن البريد مفعل للوصول الكامل
-        const isEmailVerified = user.emailVerified;
-
         if (!docSnap.exists()) {
-          // إذا كان المستخدم مديراً، ننشئ له ملفاً فورياً
           if (isAdmin) {
             const adminProfile: UserProfile = {
               uid: user.uid,
@@ -63,7 +58,6 @@ export function useUser() {
           }
         } else {
           const currentData = docSnap.data();
-          // تحديث الصلاحيات تلقائياً للمدير إذا تغير البريد
           if (isAdmin && currentData.role !== 'owner') {
             await setDoc(userDocRef, { 
               role: 'owner', 
