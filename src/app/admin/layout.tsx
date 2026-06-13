@@ -46,7 +46,7 @@ export default function AdminLayoutComprehensive({ children }: { children: React
   const { data: config } = useDoc(settingsRef);
 
   useEffect(() => {
-    const allowedRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'agent'];
+    const allowedRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'];
     if (!loading && (!profile || !allowedRoles.includes(profile.role))) {
       router.push('/'); 
     }
@@ -71,18 +71,17 @@ export default function AdminLayoutComprehensive({ children }: { children: React
   const businessSections = [
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
     { label: "الخزانة المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
+    { label: "إدارة الوساطة", icon: ShieldCheck, href: "/admin/middleman", roles: ['owner', 'admin', 'middleman'] },
     { label: "الإعلانات والعروض", icon: Megaphone, href: "/admin/ads", roles: ['owner', 'admin', 'gm'] },
-    { label: "المدونة والمقالات", icon: FileText, href: "/admin/blog", roles: ['owner', 'admin', 'gm'] },
   ];
 
   const systemSections = [
     { label: "هوية المتجر", icon: Palette, href: "/admin/settings", roles: ['owner', 'admin'] },
     { label: "إعدادات النظام", icon: Globe, href: "/admin/config", roles: ['owner', 'admin'] },
-    { label: "مركز التنبيهات", icon: Bell, href: "/admin/notifications", roles: ['owner', 'admin'] },
     { label: "سجل النشاط", icon: Activity, href: "/admin/system", roles: ['owner', 'admin'] },
   ];
 
-  const renderMenuItems = (items: typeof mainSections) => 
+  const renderMenuItems = (items: any[]) => 
     items.filter(item => item.roles.includes(role || 'user')).map((item) => (
       <SidebarMenuItem key={item.href}>
         <SidebarMenuButton 

@@ -1,5 +1,5 @@
 
-export type UserRole = 'owner' | 'admin' | 'gm' | 'store_manager' | 'design_manager' | 'designer' | 'accountant' | 'support' | 'middleman' | 'user';
+export type UserRole = 'owner' | 'admin' | 'gm' | 'store_manager' | 'design_manager' | 'designer' | 'accountant' | 'support' | 'middleman' | 'agent' | 'user';
 
 export interface UserProfile {
   uid: string;
@@ -28,6 +28,8 @@ export interface MarketplaceListing {
   description: string;
   price: number;
   type: 'sell' | 'buy' | 'service';
+  contactMethod: 'whatsapp' | 'telegram' | 'email' | 'onsite';
+  contactValue: string;
   likes: string[];
   commentCount: number;
   status: string;

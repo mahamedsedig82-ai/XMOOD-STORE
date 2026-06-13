@@ -18,7 +18,8 @@ import {
   ShieldCheck,
   ChevronDown,
   ShoppingBag,
-  History
+  History,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -75,7 +76,7 @@ export function Navbar() {
         {/* Brand */}
         <Link href="/" className="flex flex-col items-end group">
           <span className="decorative-logo text-2xl group-hover:scale-105 transition-transform">{siteTitle}</span>
-          <span className="text-[7px] font-black tracking-[0.4em] text-red-600 uppercase opacity-60">Sovereign Core</span>
+          <span className="text-[7px] font-black tracking-[0.4em] text-red-600 uppercase opacity-60">Enterprise System</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -121,7 +122,7 @@ export function Navbar() {
               <DropdownMenuContent className="w-72 mt-2 rounded-[2rem] bg-zinc-950/95 backdrop-blur-3xl border border-white/10 p-3" align="start">
                 <DropdownMenuLabel className="p-4 text-right bg-white/5 rounded-2xl mb-2">
                   <div className="flex items-center justify-between mb-1">
-                    <Badge variant="outline" className="border-primary/20 text-primary text-[6px] px-2 py-0.5 rounded-full uppercase">{profile?.label || "VIP"}</Badge>
+                    <Badge variant="outline" className="border-primary/20 text-primary text-[6px] px-2 py-0.5 rounded-full uppercase">{profile?.role}</Badge>
                     <p className="text-[8px] text-zinc-500 uppercase">ID: {user.uid.substring(0,6)}</p>
                   </div>
                   <p className="font-headline text-xl font-bold gold-text">{profile?.displayName}</p>
@@ -130,7 +131,7 @@ export function Navbar() {
                 <DropdownMenuGroup className="space-y-1">
                   <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer justify-end font-bold text-zinc-400 hover:text-primary transition-all">
                     <Link href="/wallet" className="flex items-center w-full justify-end">
-                      <span className="ml-3 text-xs">المحفظة السيادية</span>
+                      <span className="ml-3 text-xs">المحفظة والملف الشخصي</span>
                       <Wallet size={16} className="text-red-600" />
                     </Link>
                   </DropdownMenuItem>
@@ -144,7 +145,7 @@ export function Navbar() {
 
                 <DropdownMenuSeparator className="bg-white/5 my-2" />
 
-                {['owner', 'admin', 'gm', 'design_manager', 'designer'].includes(profile?.role || '') && (
+                {['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman'].includes(profile?.role || '') && (
                   <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer text-primary font-black justify-end bg-primary/5 hover:bg-primary/20 border border-primary/10">
                     <Link href="/admin" className="flex items-center w-full justify-end">
                       <span className="ml-3 text-[10px] uppercase">لوحة الإدارة PRO</span>
@@ -168,11 +169,12 @@ export function Navbar() {
                 <Menu size={24} />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80 bg-black border-l border-white/10 p-0 text-white flex flex-col">
-              <SheetHeader className="p-8 border-b border-white/5 bg-zinc-950">
+            <SheetContent side="right" className="w-80 bg-black border-l border-white/10 p-0 text-white flex flex-col h-full">
+              <SheetHeader className="p-8 border-b border-white/5 bg-zinc-950 flex flex-row items-center justify-between">
                 <SheetTitle className="text-right">
                   <span className="decorative-logo text-2xl">{siteTitle}</span>
                 </SheetTitle>
+                <SheetClose className="text-zinc-500"><X size={24}/></SheetClose>
               </SheetHeader>
               
               <ScrollArea className="flex-1 p-6">
@@ -186,7 +188,7 @@ export function Navbar() {
                         </Avatar>
                         <div className="text-right">
                           <p className="font-bold text-lg gold-text">{profile.displayName}</p>
-                          <Badge variant="outline" className="text-[8px] uppercase tracking-widest border-primary/20 text-primary">{profile.label}</Badge>
+                          <Badge variant="outline" className="text-[8px] uppercase tracking-widest border-primary/20 text-primary">{profile.role}</Badge>
                         </div>
                       </div>
                       <div className="flex justify-between items-center bg-black/60 p-4 rounded-2xl border border-white/5">
@@ -197,7 +199,7 @@ export function Navbar() {
                   )}
 
                   <div className="space-y-2">
-                    <p className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.4em] pr-2 mb-4">قائمة التنقل السيادية</p>
+                    <p className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.4em] pr-2 mb-4">قائمة التنقل</p>
                     {navLinks.map((link) => (
                       <SheetClose asChild key={link.href}>
                         <Link href={link.href} className={`flex items-center flex-row-reverse gap-5 p-4 rounded-2xl transition-all ${pathname === link.href ? 'bg-primary/10 text-primary border border-primary/20 shadow-lg' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}>
@@ -214,8 +216,8 @@ export function Navbar() {
 
                   {user && (
                     <div className="space-y-2 pt-4 border-t border-white/5">
-                      <p className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.4em] pr-2 mb-4">مركز العمليات الشخصي</p>
-                      <SheetClose asChild><Link href="/wallet" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-zinc-400 hover:bg-white/5"><Wallet size={20} className="text-red-600" /><span className="font-bold text-sm">المحفظة الرقمية</span></Link></SheetClose>
+                      <p className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.4em] pr-2 mb-4">العمليات الشخصية</p>
+                      <SheetClose asChild><Link href="/wallet" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-zinc-400 hover:bg-white/5"><Wallet size={20} className="text-red-600" /><span className="font-bold text-sm">المحفظة والملف</span></Link></SheetClose>
                       <SheetClose asChild><Link href="/wallet/transfer" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-zinc-400 hover:bg-white/5"><ArrowRightLeft size={20} className="text-amber-500" /><span className="font-bold text-sm">تحويل الرصيد</span></Link></SheetClose>
                     </div>
                   )}
@@ -225,7 +227,7 @@ export function Navbar() {
               {user && (
                 <div className="p-8 border-t border-white/5 bg-zinc-950 mt-auto">
                   <Button variant="ghost" onClick={handleSignOut} className="w-full h-14 rounded-2xl text-red-600 hover:bg-red-600/10 gap-4 font-bold text-sm flex flex-row-reverse items-center justify-center border border-red-600/20 shadow-2xl">
-                    <LogOut size={20} /> خروج سيادي من النظام
+                    <LogOut size={20} /> تسجيل الخروج من النظام
                   </Button>
                 </div>
               )}

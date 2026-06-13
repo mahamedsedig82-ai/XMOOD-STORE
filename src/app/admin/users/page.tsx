@@ -3,22 +3,23 @@
 
 import { useState } from "react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, doc, updateDoc, query, orderBy } from "firebase/firestore";
+import { collection, doc, updateDoc, query, orderBy, limit } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Shield, User as UserIcon, Wallet, Star, Loader2 } from "lucide-react";
+import { Search, Shield, User as UserIcon, Star, Loader2, Award, Zap } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-export default function AdminUsers() {
+export default function AdminUsersManagement() {
   const db = useFirestore();
   const usersQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, "users"), orderBy("createdAt", "desc"));
+    return query(collection(db, "users"), orderBy("createdAt", "desc"), limit(200));
   }, [db]);
 
   const { data: users, loading } = useCollection(usersQuery);
@@ -28,10 +29,27 @@ export default function AdminUsers() {
   const handleUpdateRole = async (userId: string, newRole: string) => {
     setIsUpdating(userId);
     try {
-      await updateDoc(doc(db, "users", userId), { role: newRole });
-      toast({ title: "تم تحديث الرتبة", description: `رتبة المستخدم الآن: ${newRole}` });
+      const labels: Record<string, string> = {
+        owner: 'المالك السيادي',
+        admin: 'المدير العام',
+        gm: 'مدير العمليات',
+        store_manager: 'مشرف المستودع',
+        design_manager: 'مشرف التصاميم',
+        designer: 'مصمم معتمد',
+        accountant: 'المحاسب المالي',
+        support: 'الدعم الفني',
+        middleman: 'وسيط معتمد',
+        agent: 'وكيل شحن',
+        user: 'عضو بريميوم'
+      };
+
+      await updateDoc(doc(db, "users", userId), { 
+        role: newRole,
+        label: labels[newRole] || 'عضو بريميوم'
+      });
+      toast({ title: "تم تحديث الرتبة السيادية", description: `الدور الجديد للمستخدم: ${labels[newRole]}` });
     } catch (e) {
-      toast({ variant: "destructive", title: "خطأ", description: "ليس لديك صلاحية" });
+      toast({ variant: "destructive", title: "خطأ في الصلاحيات", description: "تأكد من امتلاكك صلاحيات تعديل الرتب." });
     } finally {
       setIsUpdating(null);
     }
@@ -44,81 +62,107 @@ export default function AdminUsers() {
   );
 
   return (
-    <div className="space-y-8 animate-fade-in" dir="rtl">
-      <header>
-        <h1 className="text-4xl font-headline font-bold gold-text">إدارة النخبة والرتب</h1>
-        <p className="text-muted-foreground mt-2">منح الصلاحيات، ترقية الوكلاء، ومراقبة نشاط الحسابات.</p>
+    <div className="space-y-10 animate-fade-in" dir="rtl">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/5 pb-10">
+        <div>
+          <h1 className="text-5xl font-headline font-bold gold-text">إدارة النخبة والرتب</h1>
+          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Role-Based Access Control Console</p>
+        </div>
+        <div className="flex gap-4">
+           <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex items-center gap-4">
+              <Zap className="text-primary animate-pulse" size={24} />
+              <div>
+                <span className="text-[8px] font-black text-zinc-500 block uppercase">إجمالي الأعضاء</span>
+                <span className="text-lg font-black text-white">{users?.length || 0}</span>
+              </div>
+           </div>
+        </div>
       </header>
 
-      <Card className="luxury-card border-none overflow-hidden">
-        <CardHeader className="p-8 border-b border-white/5">
-          <div className="relative max-w-md">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+      <Card className="luxury-card border-none overflow-hidden bg-zinc-950/40 shadow-2xl">
+        <CardHeader className="p-10 border-b border-white/5 bg-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="relative max-w-xl w-full">
+            <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500 w-5 h-5" />
             <Input 
-              placeholder="ابحث بالاسم، البريد، أو المعرف..." 
-              className="pr-10 h-12 bg-white/5 border-none rounded-2xl"
+              placeholder="ابحث بالاسم، البريد، أو المعرف السيادي..." 
+              className="pr-14 h-14 bg-black border-none rounded-2xl text-lg font-bold"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
+          <Badge className="bg-primary text-black font-black px-6 py-2 rounded-full uppercase text-[10px] tracking-widest">Sovereign Records Active</Badge>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-white/5">
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="text-right py-6 pr-10">المستخدم</TableHead>
-                <TableHead className="text-right">المحفظة</TableHead>
-                <TableHead className="text-right">الرتبة</TableHead>
-                <TableHead className="text-right">تاريخ الانضمام</TableHead>
-                <TableHead className="text-center">تغيير الرتبة</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
-              ) : filtered?.map((u) => (
-                <TableRow key={u.id} className="hover:bg-white/5 border-b border-white/5 transition-colors">
-                  <TableCell className="py-6 pr-10">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                        <UserIcon size={20} />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold">{u.displayName}</span>
-                        <span className="text-[10px] opacity-40 uppercase font-black">{u.uid?.substring(0,10)}</span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-black text-primary">{formatUSD(u.walletBalance || 0)}</TableCell>
-                  <TableCell>
-                    <Badge variant={u.role === 'admin' ? 'default' : u.role === 'agent' ? 'secondary' : 'outline'} className="rounded-full">
-                      {u.role === 'admin' ? 'مدير عام' : u.role === 'agent' ? 'وكيل معتمد' : 'عضو XMOOD'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs opacity-50">
-                    {u.createdAt ? new Date(u.createdAt).toLocaleDateString('ar-EG') : '---'}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Select 
-                      disabled={isUpdating === u.id}
-                      defaultValue={u.role} 
-                      onValueChange={(val) => handleUpdateRole(u.id, val)}
-                    >
-                      <SelectTrigger className="w-32 h-10 bg-white/5 border-none mx-auto font-bold">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-900 border-white/10" dir="rtl">
-                        <SelectItem value="user">عضو عادي</SelectItem>
-                        <SelectItem value="agent">وكيل شحن</SelectItem>
-                        <SelectItem value="admin">مدير نظام</SelectItem>
-                        <SelectItem value="vip">عميل VIP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
+          <ScrollArea className="max-h-[700px] custom-scrollbar">
+            <Table>
+              <TableHeader className="bg-black/60 sticky top-0 z-20">
+                <TableRow className="hover:bg-transparent border-white/5">
+                  <TableHead className="text-right py-8 pr-12 font-black uppercase text-[10px] text-zinc-500">العضو والهوية</TableHead>
+                  <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500">المحفظة</TableHead>
+                  <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500">الرتبة الحالية</TableHead>
+                  <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500">تاريخ الانضمام</TableHead>
+                  <TableHead className="text-center font-black uppercase text-[10px] text-zinc-500">تعديل السيادة</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow><TableCell colSpan={5} className="text-center py-40"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
+                ) : filtered?.map((u) => (
+                  <TableRow key={u.id} className="hover:bg-primary/5 border-b border-white/5 transition-all group">
+                    <TableCell className="py-8 pr-12">
+                      <div className="flex items-center gap-6">
+                        <div className="relative">
+                           <img src={u.photoURL || `https://picsum.photos/seed/${u.id}/100/100`} className="w-14 h-14 rounded-2xl object-cover border-2 border-white/5 shadow-xl group-hover:border-primary/40 transition-all" alt="" />
+                           {u.role === 'owner' && <Award className="absolute -top-2 -right-2 text-primary bg-black rounded-full p-1" size={20} />}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-lg text-white group-hover:gold-text transition-colors">{u.displayName}</span>
+                          <span className="text-[9px] opacity-40 font-mono uppercase tracking-tighter">{u.uid}</span>
+                          <span className="text-[10px] text-zinc-500 font-bold mt-1">{u.email}</span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-black text-primary text-xl tracking-tighter">{formatUSD(u.walletBalance || 0)}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={`rounded-full px-4 py-1 text-[9px] font-black uppercase tracking-widest ${
+                        u.role === 'owner' ? 'text-red-500 border-red-500/20 bg-red-500/5' : 
+                        u.role === 'admin' ? 'text-primary border-primary/20 bg-primary/5' : 
+                        'text-zinc-500 border-white/5 bg-white/5'
+                      }`}>
+                        {u.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs font-bold text-zinc-500">
+                      {u.createdAt ? new Date(u.createdAt).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' }) : '---'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Select 
+                        disabled={isUpdating === u.id}
+                        defaultValue={u.role} 
+                        onValueChange={(val) => handleUpdateRole(u.id, val)}
+                      >
+                        <SelectTrigger className="w-48 h-12 bg-zinc-900 border-none mx-auto font-black text-[10px] uppercase rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-950 border-white/10 text-white" dir="rtl">
+                          <SelectItem value="owner">المالك السيادي (Owner)</SelectItem>
+                          <SelectItem value="admin">المدير العام (Admin)</SelectItem>
+                          <SelectItem value="gm">مدير العمليات (GM)</SelectItem>
+                          <SelectItem value="accountant">المحاسب (Accountant)</SelectItem>
+                          <SelectItem value="design_manager">مشرف التصاميم</SelectItem>
+                          <SelectItem value="designer">مصمم (Designer)</SelectItem>
+                          <SelectItem value="middleman">وسيط (Middleman)</SelectItem>
+                          <SelectItem value="agent">وكيل شحن (Agent)</SelectItem>
+                          <SelectItem value="support">دعم فني (Support)</SelectItem>
+                          <SelectItem value="user">عضو عادي (User)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </CardContent>
       </Card>
     </div>

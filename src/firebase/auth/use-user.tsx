@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,6 +7,10 @@ import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 
+/**
+ * Enterprise-level User Hook with Role-Based Access Control (RBAC) synchronization.
+ * High-performance profile monitoring and admin auto-detection.
+ */
 export function useUser() {
   const auth = useAuth();
   const db = useFirestore();
@@ -13,7 +18,8 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const ADMIN_EMAILS = ["MAHAMEDFK3@GMAIL.COM"];
+  // High-level owners list (Enterprise Protection)
+  const MASTER_ADMINS = ["MAHAMEDFK3@GMAIL.COM", "XMOODSTORE.SUPPORT@GMAIL.COM"];
 
   useEffect(() => {
     if (!auth) return;
@@ -32,57 +38,59 @@ export function useUser() {
 
     const userDocRef = doc(db, 'users', user.uid);
 
-    const syncProfile = async () => {
+    const initializeProfile = async () => {
       try {
         const docSnap = await getDoc(userDocRef);
-        const isAdmin = ADMIN_EMAILS.includes(user.email?.toUpperCase() || "");
+        const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         const isVerified = user.emailVerified;
         
         if (!docSnap.exists()) {
+          // New User Provisioning
           const initialProfile: UserProfile = {
             uid: user.uid,
-            displayName: user.displayName || user.email?.split('@')[0] || "عضو جديد",
+            displayName: user.displayName || user.email?.split('@')[0] || "Sovereign Member",
             fullName: user.displayName || "",
             email: user.email || "",
-            walletBalance: isAdmin ? 999999 : 0,
-            role: isAdmin ? 'owner' : 'user',
-            label: isAdmin ? 'المدير العام للمتجر' : 'عضو بريميوم',
-            photoURL: user.photoURL || '',
+            walletBalance: isMaster ? 999999 : 0,
+            role: isMaster ? 'owner' : 'user',
+            label: isMaster ? 'المالك السيادي للمنصة' : 'عضو بريميوم',
+            photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
             createdAt: new Date().toISOString(),
             isVerified: isVerified,
-            affinityPoints: isAdmin ? 1000 : 50
+            affinityPoints: isMaster ? 1000 : 50
           };
           await setDoc(userDocRef, initialProfile);
           setProfile(initialProfile);
         } else {
           const currentData = docSnap.data();
-          // Auto-upgrade role if email is in admin list
-          if (isAdmin && currentData.role !== 'owner') {
+          // Auto-escalate permissions if email matches master list
+          if (isMaster && currentData.role !== 'owner') {
             await setDoc(userDocRef, { 
               role: 'owner', 
-              label: 'المدير العام للمتجر',
+              label: 'المالك السيادي للمنصة',
               isVerified: true 
             }, { merge: true });
           }
-          // Sync verification status
+          // Sync live verification status from Firebase Auth to Profile
           if (currentData.isVerified !== isVerified) {
             await setDoc(userDocRef, { isVerified }, { merge: true });
           }
         }
       } catch (err) {
-        console.error("Profile Sync Error:", err);
+        console.error("Critical Profile Sync Failure:", err);
       }
     };
 
-    syncProfile();
+    initializeProfile();
 
+    // Setup real-time listener for profile changes (Wallet, Role, Stats)
     const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
       if (snapshot.exists()) {
         setProfile(snapshot.data() as UserProfile);
       }
       setLoading(false);
     }, (error) => {
-      console.error("Profile Listener Error:", error);
+      console.error("Profile Live Listener Error:", error);
       setLoading(false);
     });
 
@@ -93,6 +101,7 @@ export function useUser() {
     user, 
     profile, 
     loading, 
-    isVerified: user?.emailVerified || false 
+    isVerified: user?.emailVerified || false,
+    isAdmin: ['owner', 'admin', 'gm'].includes(profile?.role || '')
   };
 }
