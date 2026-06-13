@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -56,25 +57,25 @@
   }
 }
 
-/* Professional Modern UI Components */
+/* Modern Luxury UI Framework */
 .luxury-card {
-  @apply rounded-2xl border bg-card/80 backdrop-blur-sm shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20;
+  @apply rounded-2xl border bg-card/50 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary/30;
 }
 
 .gold-text {
-  @apply bg-gradient-to-r from-amber-500 via-yellow-600 to-amber-700 bg-clip-text text-transparent font-bold;
+  @apply bg-gradient-to-r from-amber-500 via-yellow-600 to-amber-700 bg-clip-text text-transparent font-black;
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-sm flex items-center justify-center gap-2;
+  @apply bg-primary text-primary-foreground font-black rounded-xl px-8 py-3 shadow-lg hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-widest;
 }
 
 .accent-button {
-  @apply bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-sm flex items-center justify-center gap-2;
+  @apply bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-black rounded-xl px-8 py-3 shadow-lg hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-widest;
 }
 
 .decorative-logo {
-  @apply font-headline font-black text-2xl md:text-3xl tracking-tight;
+  @apply font-headline font-black text-2xl md:text-3xl tracking-tighter;
   background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -82,7 +83,7 @@
 
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   @apply bg-transparent;
@@ -91,25 +92,31 @@
   @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
 }
 
-/* Mobile Adjustments */
+/* Responsive Scaling Fixes */
 @media (max-width: 768px) {
-  .container { @apply px-4; }
+  .container { @apply px-5; }
   h1 { @apply text-3xl !important; }
   h2 { @apply text-2xl !important; }
-  .luxury-card { @apply p-5 !important; }
+  .luxury-card { @apply p-6 !important; }
   
-  /* Tables to responsive cards on mobile */
+  /* Data Tables to Mobile Cards */
   .responsive-table table thead { @apply hidden; }
-  .responsive-table table tr { @apply block mb-4 border border-border rounded-xl p-4 bg-card; }
-  .responsive-table table td { @apply flex justify-between items-center py-2 border-none !important; }
+  .responsive-table table tr { @apply block mb-6 border border-border rounded-2xl p-4 bg-card shadow-sm; }
+  .responsive-table table td { @apply flex justify-between items-center py-3 border-none !important; }
   .responsive-table table td::before {
     content: attr(data-label);
-    @apply font-bold text-[10px] uppercase text-muted-foreground ml-4;
+    @apply font-black text-[9px] uppercase text-muted-foreground ml-4 tracking-widest;
   }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+.animate-fade-in { animation: fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.5s ease-out forwards; }

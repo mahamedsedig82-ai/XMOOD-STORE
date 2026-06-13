@@ -40,29 +40,17 @@ export interface CommunityPost {
   contactMethod: string;
   contactValue: string;
   status: 'active' | 'hidden' | 'deleted';
-  likes: string[];
+  likes: string[]; // List of UIDs
   commentCount: number;
   createdAt: string;
 }
 
-export interface CommunityReport {
+export interface CommunityComment {
   id: string;
-  reporterId: string;
-  reporterName: string;
-  targetId: string;
-  targetType: 'post' | 'comment' | 'user';
-  targetContent?: string;
-  reason: string;
-  status: 'pending' | 'resolved' | 'dismissed';
-  createdAt: string;
-}
-
-export interface AuditLog {
-  id: string;
-  adminId: string;
-  adminName: string;
-  action: string;
-  targetId: string;
-  details: string;
+  postId: string;
+  userId: string;
+  userName: string;
+  userPhoto?: string;
+  content: string;
   createdAt: string;
 }
