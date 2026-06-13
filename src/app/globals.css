@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,47 +6,47 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 43 70% 50%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11.2%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 43 70% 50%;
-    --radius: 1.25rem;
+    --radius: 1rem;
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 210 40% 98%;
-    --card: 240 10% 6%;
-    --card-foreground: 210 40% 98%;
-    --popover: 240 10% 5%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 43 70% 45%;
-    --primary-foreground: 222 47% 11.2%;
-    --secondary: 217.2 32.6% 12%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 12%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 12%;
-    --accent-foreground: 210 40% 98%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 43 70% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 43 70% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 43 70% 50%;
   }
 }
 
@@ -56,9 +57,9 @@
   }
 }
 
-/* Professional Modern UI Patterns */
+/* Luxury UI Patterns */
 .luxury-card {
-  @apply rounded-3xl border bg-card shadow-sm transition-all duration-500 hover:shadow-xl hover:border-primary/30 overflow-hidden relative;
+  @apply rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20 overflow-hidden relative;
 }
 
 .gold-text {
@@ -66,28 +67,24 @@
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-black rounded-2xl px-10 py-4 shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-3 uppercase tracking-widest;
+  @apply bg-primary text-primary-foreground font-bold rounded-xl px-8 py-3 shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
 }
 
 .accent-button {
-  @apply bg-foreground text-background font-black rounded-2xl px-10 py-4 shadow-lg hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-3 uppercase tracking-widest;
+  @apply bg-foreground text-background font-bold rounded-xl px-8 py-3 shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
 }
 
 .decorative-logo {
-  @apply font-headline font-black text-2xl md:text-4xl tracking-tighter;
+  @apply font-headline font-black text-2xl md:text-3xl tracking-tighter;
   background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Scrollbar & Helpers */
-.custom-scrollbar::-webkit-scrollbar { width: 8px; }
-.custom-scrollbar::-webkit-scrollbar-track { @apply bg-transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full hover:bg-primary/40; }
-
-.glass-morphism {
-  @apply bg-card/70 backdrop-blur-2xl border border-white/10 dark:border-white/5;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { @apply bg-transparent; }
+::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full hover:bg-primary/40; }
 
 .responsive-table {
   @apply w-full overflow-x-auto;
@@ -95,17 +92,11 @@
 
 @media (max-width: 768px) {
   .responsive-table table { @apply block; }
-  .responsive-table tr { @apply block mb-6 p-4 rounded-2xl border bg-card shadow-sm; }
+  .responsive-table tr { @apply block mb-4 p-4 rounded-xl border bg-card shadow-sm; }
   .responsive-table td { @apply flex justify-between items-center py-2 border-none !important; }
   .responsive-table td::before {
     content: attr(data-label);
-    @apply font-black text-[9px] uppercase text-muted-foreground ml-4;
+    @apply font-bold text-[8px] uppercase text-muted-foreground ml-4;
   }
   .responsive-table thead { @apply hidden; }
 }
-
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-up { animation: fade-up 0.5s ease-out forwards; }

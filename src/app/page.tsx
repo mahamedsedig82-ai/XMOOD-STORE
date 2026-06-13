@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -54,7 +55,7 @@ export default function HomeCorporate() {
                  <Link href="/store"><Store className="ml-3" size={28} /> تصفح المتجر</Link>
                </Button>
                <Button asChild className="accent-button h-20 px-16 text-xl">
-                 <Link href="/marketplace"><Users className="ml-3" size={28} /> مجتمع الموثوقية</Link>
+                 <Link href="/marketplace"><Users className="ml-3" size={28} /> السوق المفتوح</Link>
                </Button>
              </div>
           </motion.div>
@@ -112,10 +113,10 @@ export default function HomeCorporate() {
           </div>
 
           <div className="flex flex-wrap justify-center gap-12 text-[13px] font-black uppercase tracking-widest text-muted-foreground mb-24 border-b pb-24">
-            <Link href="/marketplace" className="hover:text-primary transition-all">مجتمع التداول</Link>
-            <Link href="/designs/gallery" className="hover:text-primary transition-all">معرض التصاميم</Link>
-            <Link href="/middleman" className="hover:text-primary transition-all">الوكلاء المعتمدون</Link>
-            <Link href="/admin" className="hover:text-primary transition-all opacity-40">لوحة التحكم</Link>
+            <Link href="/marketplace" className="hover:text-primary transition-all">السوق المفتوح</Link>
+            <Link href="/designs/gallery" className="hover:text-primary transition-all">معرض الإبداع</Link>
+            <Link href="/middleman" className="hover:text-primary transition-all">الخبراء المعتمدون</Link>
+            <Link href="/admin" className="hover:text-primary transition-all opacity-40">مركز الإدارة</Link>
           </div>
           
           <p className="text-[12px] font-black text-muted-foreground uppercase tracking-widest opacity-60">

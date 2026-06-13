@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { useUser, useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit, addDoc, where } from "firebase/firestore";
 import { 
   Search, Zap, Megaphone, Plus, 
-  Users, Phone, MessageSquare, Send, Filter, Award, ShoppingBag, ShieldCheck
+  Users, Phone, MessageSquare, Send, Filter, Award, ShoppingBag, ShieldCheck, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -73,7 +73,7 @@ export default function OpenMarketPage() {
         userId: user.uid,
         userName: profile.displayName,
         userPhoto: profile.photoURL || "",
-        userLabel: profile.label || "عضو موثق",
+        userLabel: profile.label || "عضو معتمد",
         isTrustedUser: profile.isTrusted || false,
         title: listingForm.title,
         description: listingForm.description,
@@ -93,8 +93,10 @@ export default function OpenMarketPage() {
   };
 
   const filteredListings = listings?.filter(l => {
-    const matchesSearch = l.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          l.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const title = l.title || "";
+    const description = l.description || "";
+    const matchesSearch = title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === "all" || l.type === filterType;
     return matchesSearch && matchesFilter;
   });
@@ -110,12 +112,12 @@ export default function OpenMarketPage() {
            </svg>
         </div>
         <div className="container mx-auto px-6 text-center relative z-10">
-           <Badge className="mb-8 py-2.5 px-10 bg-primary/10 text-primary border-primary/20 rounded-full font-black uppercase text-[10px] tracking-widest shadow-sm">
-              منصة التداول والوساطة الاحترافية
+           <Badge className="mb-8 py-2.5 px-10 bg-primary/10 text-primary border-primary/20 rounded-full font-bold uppercase text-[10px] tracking-widest shadow-sm">
+              منصة التداول والخدمات الموثوقة
            </Badge>
            <h1 className="text-6xl md:text-8xl font-headline font-black mb-8 leading-tight tracking-tighter">السوق المفتوح</h1>
            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto font-medium leading-relaxed mb-12">
-             ساحة آمنة لعرض وطلب الخدمات الرقمية، تواصل مع الوكلاء المعتمدين واضمن حقوقك في كل صفقة.
+             ساحة آمنة لعرض وطلب الخدمات الرقمية، تواصل مع الخبراء المعتمدين واضمن حقوقك في كل صفقة.
            </p>
            
            <div className="flex flex-col md:flex-row gap-4 items-center justify-center max-w-4xl mx-auto">
@@ -139,7 +141,7 @@ export default function OpenMarketPage() {
                     <div className="space-y-8 mt-10">
                        <div className="space-y-2">
                           <Label className="text-[10px] font-black text-primary uppercase pr-3 tracking-widest">عنوان العرض المختصر</Label>
-                          <Input placeholder="مثال: حساب ببجي مستوى 70..." className="h-14 rounded-xl bg-muted border-none px-6 font-bold" value={listingForm.title} onChange={e => setListingForm({...listingForm, title: e.target.value})} />
+                          <Input placeholder="مثال: حساب ألعاب مستوى 70..." className="h-14 rounded-xl bg-muted border-none px-6 font-bold" value={listingForm.title} onChange={e => setListingForm({...listingForm, title: e.target.value})} />
                        </div>
                        <div className="space-y-2">
                           <Label className="text-[10px] font-black text-primary uppercase pr-3 tracking-widest">التفاصيل والوصف</Label>
@@ -178,7 +180,7 @@ export default function OpenMarketPage() {
           <aside className="lg:col-span-1 space-y-10">
             <Card className="luxury-card p-8 border-none sticky top-32">
                <h5 className="text-[10px] font-black uppercase tracking-widest text-primary mb-8 flex items-center gap-3">
-                 <ShieldCheck size={18} className="animate-pulse" /> وكلاء معتمدون
+                 <ShieldCheck size={18} className="animate-pulse" /> خبراء معتمدون
                </h5>
                <div className="space-y-6">
                   {trustedAgents?.map((agent: any) => (
@@ -203,7 +205,7 @@ export default function OpenMarketPage() {
                    key={type}
                    onClick={() => setFilterType(type)}
                    variant="ghost" 
-                   className={`w-full justify-start h-12 rounded-xl px-6 text-[10px] font-black uppercase tracking-widest transition-all ${filterType === type ? 'bg-primary text-black' : 'hover:bg-muted'}`}
+                   className={`w-full justify-start h-12 rounded-xl px-6 text-[10px] font-black uppercase tracking-widest transition-all ${filterType === type ? 'bg-primary text-black shadow-lg shadow-primary/10' : 'hover:bg-muted text-muted-foreground'}`}
                  >
                    {type === 'all' ? 'كافة العروض' : type === 'sell' ? 'عروض بيع' : type === 'buy' ? 'طلبات شراء' : 'تقديم خدمات'}
                  </Button>
@@ -218,6 +220,12 @@ export default function OpenMarketPage() {
                 ) : filteredListings?.map((post: any) => (
                   <MarketplacePost key={post.id} post={post} />
                 ))}
+                {filteredListings?.length === 0 && !listingsLoading && (
+                   <div className="py-40 text-center luxury-card border-dashed opacity-30">
+                      <ShoppingBag size={80} className="mx-auto mb-6" />
+                      <p className="text-xl font-bold uppercase tracking-widest">لا توجد عروض مطابقة حالياً</p>
+                   </div>
+                )}
              </AnimatePresence>
           </section>
         </div>

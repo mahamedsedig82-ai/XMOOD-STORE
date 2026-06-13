@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, Users, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Zap, Bell, X, User, ChevronLeft, ShoppingBag
+  Wallet, LayoutDashboard, LogOut, Zap, X, User, ChevronLeft, ShoppingBag, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,11 +61,11 @@ export function Navbar() {
 
   const navLinks = [
     { name: "الرئيسية", href: "/", icon: Home },
-    { name: "المتجر", href: "/store", icon: Store },
+    { name: "المتجر الرقمي", href: "/store", icon: Store },
     { name: "السوق المفتوح", href: "/marketplace", icon: ShoppingBag },
-    { name: "معرض الأعمال", href: "/designs/gallery", icon: Palette },
-    { name: "الوكلاء المعتمدون", href: "/middleman", icon: ShieldCheck },
-    { name: "خدمات رقمية", href: "/other-services", icon: Zap },
+    { name: "معرض الإبداع", href: "/designs/gallery", icon: Palette },
+    { name: "الخبراء المعتمدون", href: "/middleman", icon: ShieldCheck },
+    { name: "حلول تقنية", href: "/other-services", icon: Zap },
   ];
 
   const isAdmin = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant'].includes(profile?.role || '');
@@ -78,7 +78,7 @@ export function Navbar() {
         
         <Link href="/" className="flex flex-col items-start group">
           <span className="decorative-logo group-hover:scale-105 transition-transform">{config?.siteInfo?.title || "XMOOD"}</span>
-          <span className="text-[8px] font-black tracking-[0.3em] text-zinc-500 uppercase">{config?.siteInfo?.subtitle || "Digital Services Hub"}</span>
+          <span className="text-[8px] font-black tracking-[0.3em] text-muted-foreground uppercase">{config?.siteInfo?.subtitle || "Professional Services"}</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -87,7 +87,7 @@ export function Navbar() {
             <Link 
               key={link.href} 
               href={link.href} 
-              className={`text-[11px] font-black uppercase tracking-widest transition-all hover:text-primary relative py-2 ${pathname === link.href ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`text-[11px] font-bold uppercase tracking-widest transition-all hover:text-primary relative py-2 ${pathname === link.href ? 'text-primary' : 'text-muted-foreground'}`}
             >
               {link.name}
               {pathname === link.href && (
@@ -109,7 +109,7 @@ export function Navbar() {
 
           {user && profile && (
             <div className="hidden sm:flex items-center gap-3 bg-primary/10 px-4 py-2 rounded-xl border border-primary/20">
-              <span className="text-xs font-black text-primary">{formatUSD(profile.walletBalance || 0)}</span>
+              <span className="text-xs font-bold text-primary">{formatUSD(profile.walletBalance || 0)}</span>
               <Wallet size={14} className="text-primary" />
             </div>
           )}
@@ -128,9 +128,9 @@ export function Navbar() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64 mt-4 rounded-2xl p-4 shadow-2xl border-border/50 bg-card/95 backdrop-blur-3xl" align="start">
+              <DropdownMenuContent className="w-64 mt-4 rounded-2xl p-4 shadow-2xl border-border bg-card/95 backdrop-blur-3xl" align="start">
                 <DropdownMenuLabel className="p-2 mb-4 text-right">
-                  <Badge variant="outline" className="w-fit text-[8px] font-black uppercase mb-2 border-primary/20 text-primary px-2 py-0.5 rounded-full">{profile?.role}</Badge>
+                  <Badge variant="outline" className="w-fit text-[8px] font-bold uppercase mb-2 border-primary/20 text-primary px-2 py-0.5 rounded-full">{profile?.role}</Badge>
                   <p className="font-bold text-base text-foreground truncate">{profile?.displayName}</p>
                   <p className="text-[10px] text-muted-foreground truncate">{profile?.email}</p>
                 </DropdownMenuLabel>
@@ -150,7 +150,7 @@ export function Navbar() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator className="my-2 opacity-50" />
-                <DropdownMenuItem onClick={handleSignOut} className="rounded-xl h-12 cursor-pointer text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-950/20">
+                <DropdownMenuItem onClick={handleSignOut} className="rounded-xl h-12 cursor-pointer text-destructive font-bold hover:bg-destructive/10">
                   <div className="flex items-center w-full gap-3 justify-end text-xs">
                     <span>تسجيل الخروج</span>
                     <LogOut size={16} />
@@ -177,7 +177,7 @@ export function Navbar() {
               </SheetHeader>
 
               {user && profile && (
-                <div className="p-6 bg-primary/5 border-b border-border/50">
+                <div className="p-6 bg-primary/5 border-b border-border">
                    <div className="flex items-center gap-4 mb-4">
                       <Avatar className="h-12 w-12 rounded-xl border border-primary/20">
                         <AvatarImage src={profile.photoURL} />
@@ -185,13 +185,13 @@ export function Navbar() {
                       </Avatar>
                       <div className="flex-1 overflow-hidden">
                         <p className="font-bold text-sm truncate">{profile.displayName}</p>
-                        <Badge variant="outline" className="text-[8px] uppercase font-black border-primary/20 text-primary px-2 py-0.5 rounded-full">{profile.role}</Badge>
+                        <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/20 text-primary px-2 py-0.5 rounded-full">{profile.role}</Badge>
                       </div>
                    </div>
-                   <Link href="/wallet" className="flex items-center justify-between bg-background/50 p-4 rounded-xl border border-border/50 hover:border-primary/30 transition-all">
+                   <Link href="/wallet" className="flex items-center justify-between bg-card p-4 rounded-xl border border-border hover:border-primary/30 transition-all">
                       <div className="flex flex-col">
                         <span className="text-[8px] font-black text-muted-foreground uppercase mb-1">الرصيد المتاح</span>
-                        <span className="text-sm font-black text-primary">{formatUSD(profile.walletBalance || 0)}</span>
+                        <span className="text-sm font-bold text-primary">{formatUSD(profile.walletBalance || 0)}</span>
                       </div>
                       <ChevronLeft size={16} className="text-muted-foreground" />
                    </Link>
@@ -223,16 +223,16 @@ export function Navbar() {
 
               <div className="p-6 border-t bg-muted/10 space-y-3">
                 {user ? (
-                   <Button variant="ghost" onClick={handleSignOut} className="w-full h-12 rounded-xl text-red-500 font-bold border border-red-100 dark:border-red-900/20 hover:bg-red-50 transition-all text-xs">
+                   <Button variant="ghost" onClick={handleSignOut} className="w-full h-12 rounded-xl text-destructive font-bold border border-destructive/10 hover:bg-destructive/5 transition-all text-xs">
                      <LogOut size={16} className="ml-2" /> تسجيل الخروج
                    </Button>
                 ) : (
                   <Button asChild className="royal-button w-full h-12 text-xs">
-                    <Link href="/login">دخول الأعضاء الموثقين</Link>
+                    <Link href="/login">دخول الأعضاء المعتمدين</Link>
                   </Button>
                 )}
                 <p className="text-[8px] text-center text-muted-foreground uppercase font-black tracking-widest mt-4">
-                  Professional Services Platform
+                  Professional Services Hub
                 </p>
               </div>
             </SheetContent>
