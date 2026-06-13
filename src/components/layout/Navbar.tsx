@@ -8,7 +8,6 @@ import {
   LayoutDashboard, 
   Sparkles, 
   LogOut, 
-  User as UserIcon, 
   Zap, 
   Menu,
   ArrowRightLeft,
@@ -17,7 +16,9 @@ import {
   Users,
   ShieldCheck,
   ChevronDown,
-  X
+  X,
+  Settings,
+  Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -46,7 +47,7 @@ import { formatUSD } from "@/lib/currency";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function Navbar() {
-  const { user, profile } = useUser();
+  const { user, profile, loading } = useUser();
   const auth = useAuth();
   const db = useFirestore();
   const pathname = usePathname();
@@ -123,7 +124,7 @@ export function Navbar() {
                     <Badge variant="outline" className="border-primary/20 text-primary text-[6px] px-2 py-0.5 rounded-full uppercase">{profile?.role}</Badge>
                     <p className="text-[8px] text-zinc-500 uppercase">ID: {user.uid.substring(0,6)}</p>
                   </div>
-                  <p className="font-headline text-xl font-bold gold-text">{profile?.displayName}</p>
+                  <p className="font-headline text-xl font-bold gold-text">{profile?.displayName || "عضو سيادي"}</p>
                 </DropdownMenuLabel>
                 
                 <DropdownMenuGroup className="space-y-1">
@@ -217,6 +218,9 @@ export function Navbar() {
                       <p className="text-[10px] font-black text-zinc-700 uppercase tracking-[0.4em] pr-2 mb-4">العمليات الشخصية</p>
                       <SheetClose asChild><Link href="/wallet" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-zinc-400 hover:bg-white/5"><Wallet size={20} className="text-red-600" /><span className="font-bold text-sm">المحفظة والملف</span></Link></SheetClose>
                       <SheetClose asChild><Link href="/wallet/transfer" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-zinc-400 hover:bg-white/5"><ArrowRightLeft size={20} className="text-amber-500" /><span className="font-bold text-sm">تحويل الرصيد</span></Link></SheetClose>
+                      {['owner', 'admin', 'gm'].includes(profile?.role || '') && (
+                         <SheetClose asChild><Link href="/admin" className="flex items-center flex-row-reverse gap-5 p-4 rounded-2xl text-primary bg-primary/5 border border-primary/10"><LayoutDashboard size={20} /><span className="font-bold text-sm">لوحة الإدارة PRO</span></Link></SheetClose>
+                      )}
                     </div>
                   )}
                 </div>

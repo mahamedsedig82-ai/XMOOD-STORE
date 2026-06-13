@@ -7,10 +7,6 @@ import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 
-/**
- * Enterprise-level User Hook with Role-Based Access Control (RBAC) synchronization.
- * High-performance profile monitoring and admin auto-detection.
- */
 export function useUser() {
   const auth = useAuth();
   const db = useFirestore();
@@ -18,7 +14,6 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // High-level owners list (Enterprise Protection)
   const MASTER_ADMINS = ["MAHAMEDFK3@GMAIL.COM", "XMOODSTORE.SUPPORT@GMAIL.COM"];
 
   useEffect(() => {
@@ -34,21 +29,24 @@ export function useUser() {
   }, [auth]);
 
   useEffect(() => {
-    if (!user || !db) return;
+    if (!user || !db) {
+      if (!user) setLoading(false);
+      return;
+    }
 
     const userDocRef = doc(db, 'users', user.uid);
 
-    const initializeProfile = async () => {
+    const syncProfile = async () => {
       try {
-        const docSnap = await getDoc(userDocRef);
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         const isVerified = user.emailVerified;
         
+        const docSnap = await getDoc(userDocRef);
+        
         if (!docSnap.exists()) {
-          // New User Provisioning
           const initialProfile: UserProfile = {
             uid: user.uid,
-            displayName: user.displayName || user.email?.split('@')[0] || "Sovereign Member",
+            displayName: user.displayName || user.email?.split('@')[0] || "عضو سيادي",
             fullName: user.displayName || "",
             email: user.email || "",
             walletBalance: isMaster ? 999999 : 0,
@@ -62,8 +60,7 @@ export function useUser() {
           await setDoc(userDocRef, initialProfile);
           setProfile(initialProfile);
         } else {
-          const currentData = docSnap.data();
-          // Auto-escalate permissions if email matches master list
+          const currentData = docSnap.data() as UserProfile;
           if (isMaster && currentData.role !== 'owner') {
             await setDoc(userDocRef, { 
               role: 'owner', 
@@ -71,26 +68,26 @@ export function useUser() {
               isVerified: true 
             }, { merge: true });
           }
-          // Sync live verification status from Firebase Auth to Profile
           if (currentData.isVerified !== isVerified) {
             await setDoc(userDocRef, { isVerified }, { merge: true });
           }
         }
       } catch (err) {
-        console.error("Critical Profile Sync Failure:", err);
+        console.error("Profile Sync Error:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    initializeProfile();
+    syncProfile();
 
-    // Setup real-time listener for profile changes (Wallet, Role, Stats)
     const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
       if (snapshot.exists()) {
         setProfile(snapshot.data() as UserProfile);
       }
       setLoading(false);
     }, (error) => {
-      console.error("Profile Live Listener Error:", error);
+      console.error("Profile Listener Error:", error);
       setLoading(false);
     });
 

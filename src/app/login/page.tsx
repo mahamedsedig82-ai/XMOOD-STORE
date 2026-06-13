@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -37,7 +38,7 @@ export default function SecureLoginPage() {
 
   useEffect(() => {
     if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         if (user.emailVerified) {
           router.push("/");
@@ -73,7 +74,7 @@ export default function SecureLoginPage() {
       });
       
       setStep('verify_pending');
-      toast({ title: "تم إنشاء الحساب السيادي", description: "يرجى التحقق من بريدك الإلكتروني لتفعيل السيادة." });
+      toast({ title: "تم إنشاء الحساب", description: "يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب." });
     } catch (error: any) {
       let msg = "فشل إنشاء الحساب. تأكد من البيانات.";
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل لدينا بالفعل.";
@@ -96,7 +97,7 @@ export default function SecureLoginPage() {
         router.push("/");
       }
     } catch (error: any) {
-      toast({ variant: "destructive", title: "فشل الدخول الآمن", description: "البريد أو كلمة المرور غير متوافقة." });
+      toast({ variant: "destructive", title: "فشل الدخول", description: "البريد أو كلمة المرور غير صحيحة." });
     } finally {
       setLoading(false);
     }
@@ -107,22 +108,9 @@ export default function SecureLoginPage() {
     setLoading(true);
     try {
       await sendPasswordResetEmail(auth, resetEmail.trim());
-      toast({ title: "تم إرسال تعليمات الاستعادة", description: "تفقد بريدك الإلكتروني الآن." });
+      toast({ title: "تم الإرسال", description: "تفقد بريدك الإلكتروني الآن لاستعادة كلمة المرور." });
     } catch (e) {
       toast({ variant: "destructive", title: "خطأ", description: "لم نتمكن من العثور على هذا الحساب." });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resendVerification = async () => {
-    if (!auth?.currentUser) return;
-    setLoading(true);
-    try {
-      await sendEmailVerification(auth.currentUser);
-      toast({ title: "تم إعادة إرسال الرابط", description: "تفقد صندوق الوارد أو البريد المهمل." });
-    } catch (e) {
-      toast({ variant: "destructive", title: "خطأ", description: "يرجى المحاولة بعد دقائق قليلة." });
     } finally {
       setLoading(false);
     }
@@ -131,26 +119,24 @@ export default function SecureLoginPage() {
   if (step === 'verify_pending') {
     return (
       <main className="min-h-screen bg-black flex items-center justify-center p-6" dir="rtl">
-        <Card className="w-full max-w-2xl rounded-[4rem] bg-zinc-950 border border-primary/20 text-center p-16 relative overflow-hidden shadow-2xl animate-fade-in">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-primary to-red-600 animate-pulse" />
-          <div className="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center text-primary mx-auto mb-10 border border-primary/20">
-            <Mail size={48} className="animate-bounce" />
+        <Card className="w-full max-w-2xl rounded-[3rem] bg-zinc-950 border border-primary/20 text-center p-12 relative overflow-hidden shadow-2xl animate-fade-in">
+          <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-8 border border-primary/20">
+            <Mail size={40} className="animate-bounce" />
           </div>
-          <h2 className="text-5xl font-headline font-bold gold-text mb-8">تفعيل الهوية الرقمية</h2>
-          <p className="text-zinc-400 mb-12 text-xl leading-relaxed">
-            لقد أرسلنا رابط تحقق سيادي إلى بريدك الإلكتروني: <br/>
-            <span className="text-white font-black block mt-2">{auth?.currentUser?.email}</span>
-            <span className="text-sm opacity-60 mt-4 block">لن تتمكن من دخول المتجر أو تنفيذ عمليات الشحن قبل التفعيل.</span>
+          <h2 className="text-4xl font-headline font-bold gold-text mb-6">تفعيل الهوية الرقمية</h2>
+          <p className="text-zinc-400 mb-10 text-lg leading-relaxed">
+            لقد أرسلنا رابط تحقق إلى بريدك الإلكتروني: <br/>
+            <span className="text-white font-bold block mt-2">{auth?.currentUser?.email}</span>
+            <span className="text-sm opacity-50 mt-4 block">يرجى الضغط على الرابط لتتمكن من استخدام ميزات المتجر والمحفظة.</span>
           </p>
-          <div className="space-y-6">
-            <Button onClick={() => window.location.reload()} className="w-full h-20 rounded-[1.5rem] bg-white text-black font-black text-2xl shadow-2xl hover:scale-105 transition-all">
+          <div className="space-y-4">
+            <Button onClick={() => window.location.reload()} className="w-full h-16 rounded-2xl bg-white text-black font-black text-xl hover:scale-105 transition-all">
               لقد قمت بالتفعيل، دخول الآن
             </Button>
-            <Button onClick={resendVerification} disabled={loading} variant="outline" className="w-full h-16 rounded-2xl border-white/10 text-zinc-400 gap-4 font-bold">
-              {loading ? <Loader2 className="animate-spin" /> : <RefreshCw size={24} />}
-              إعادة إرسال رابط التفعيل
+            <Button onClick={() => auth?.currentUser && sendEmailVerification(auth.currentUser)} variant="outline" className="w-full h-14 rounded-2xl border-white/10 text-zinc-400 gap-3">
+              <RefreshCw size={20} /> إعادة إرسال رابط التفعيل
             </Button>
-            <Button onClick={() => { signOut(auth!); setStep('auth'); }} variant="ghost" className="text-red-500 font-black text-xs uppercase tracking-widest">
+            <Button onClick={() => { signOut(auth!); setStep('auth'); }} variant="ghost" className="text-red-500 font-bold text-xs uppercase">
               استخدام بريد إلكتروني آخر
             </Button>
           </div>
@@ -163,84 +149,54 @@ export default function SecureLoginPage() {
     <main className="min-h-screen bg-black" dir="rtl">
       <Navbar />
       <div className="container mx-auto px-4 py-20 flex justify-center items-center min-h-screen pt-32">
-        <Card className="w-full max-w-xl rounded-[3.5rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl animate-fade-in">
-          <div className="p-12 text-center bg-white/5 border-b border-white/5 relative">
-            <div className="absolute top-0 right-0 p-8 opacity-20">
-               <Sparkles size={120} className="text-primary" />
-            </div>
-            <ShieldCheck size={72} className="text-primary mx-auto mb-8 shadow-2xl" />
-            <h2 className="text-4xl md:text-5xl font-headline font-bold gold-text">سيادة XMOOD STORE</h2>
-            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.4em] mt-4">Secure Sovereign Authentication Core</p>
+        <Card className="w-full max-w-xl rounded-[2.5rem] overflow-hidden bg-zinc-950 border border-white/5 shadow-2xl animate-fade-in">
+          <div className="p-10 text-center bg-white/5 border-b border-white/5">
+            <ShieldCheck size={60} className="text-primary mx-auto mb-6" />
+            <h2 className="text-3xl font-headline font-bold gold-text uppercase tracking-tight">XMOOD SOVEREIGN CORE</h2>
+            <p className="text-zinc-500 text-[9px] font-black uppercase tracking-[0.3em] mt-3">Secure Access Protocol</p>
           </div>
-          <CardContent className="p-12">
+          <CardContent className="p-10">
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-12 bg-white/5 rounded-full p-2 h-20">
-                <TabsTrigger value="login" className="rounded-full font-black text-sm uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">تسجيل الدخول</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full font-black text-sm uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">حساب جديد</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-10 bg-white/5 rounded-full p-1.5 h-16">
+                <TabsTrigger value="login" className="rounded-full font-bold text-xs uppercase data-[state=active]:bg-primary data-[state=active]:text-black">تسجيل الدخول</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-full font-bold text-xs uppercase data-[state=active]:bg-primary data-[state=active]:text-black">حساب جديد</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="login" className="space-y-8">
-                <form onSubmit={handleLogin} className="space-y-8">
-                  <div className="space-y-6">
-                    <div className="relative">
-                      <Mail className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={24} />
-                      <Input type="email" placeholder="البريد الإلكتروني الموثق" className="h-18 rounded-[1.5rem] bg-zinc-900 border-none pr-16 font-bold text-lg text-white placeholder:text-zinc-700" value={email} onChange={e => setEmail(e.target.value)} required />
-                    </div>
-                    <div className="relative">
-                      <Key className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={24} />
-                      <Input type="password" placeholder="كلمة المرور" className="h-18 rounded-[1.5rem] bg-zinc-900 border-none pr-16 font-bold text-lg text-white placeholder:text-zinc-700" value={password} onChange={e => setPassword(e.target.value)} required />
-                    </div>
-                  </div>
+              <TabsContent value="login" className="space-y-6">
+                <form onSubmit={handleLogin} className="space-y-6">
+                  <Input type="email" placeholder="البريد الإلكتروني" className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="كلمة المرور" className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
                   
                   <div className="text-left">
                     <Dialog>
                       <DialogTrigger asChild>
-                        <button type="button" className="text-[11px] font-black text-zinc-500 hover:text-primary transition-all uppercase tracking-widest">نسيت مفتاح المرور؟</button>
+                        <button type="button" className="text-[10px] font-bold text-zinc-500 hover:text-primary transition-all">نسيت كلمة المرور؟</button>
                       </DialogTrigger>
-                      <DialogContent className="bg-zinc-950 border-primary/20 rounded-[2.5rem] p-12 text-white shadow-2xl">
+                      <DialogContent className="bg-zinc-950 border-primary/20 rounded-[2rem] p-10 text-white">
                         <DialogHeader>
-                          <DialogTitle className="text-3xl font-headline font-bold gold-text flex items-center gap-4">
-                            <Key className="text-primary" /> استعادة السيادة
-                          </DialogTitle>
+                          <DialogTitle className="text-2xl font-bold gold-text">استعادة الحساب</DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-8 mt-10">
-                          <p className="text-zinc-500 font-bold">أدخل بريدك الإلكتروني لإرسال مفتاح استعادة الحساب.</p>
-                          <Input placeholder="البريد الإلكتروني..." className="h-16 bg-zinc-900 border-none rounded-2xl px-8 text-xl font-bold" value={resetEmail} onChange={e => setResetEmail(e.target.value)} />
-                          <Button onClick={handleResetPassword} disabled={loading} className="w-full royal-button h-16 text-xl">
-                            إرسال تعليمات الاستعادة
-                          </Button>
+                        <div className="space-y-6 mt-6">
+                          <Input placeholder="البريد الإلكتروني..." className="h-14 bg-zinc-900 border-none rounded-xl px-6" value={resetEmail} onChange={e => setResetEmail(e.target.value)} />
+                          <Button onClick={handleResetPassword} className="w-full royal-button h-14">إرسال رابط الاستعادة</Button>
                         </div>
                       </DialogContent>
                     </Dialog>
                   </div>
 
-                  <Button type="submit" className="w-full royal-button h-20 text-2xl" disabled={loading}>
+                  <Button type="submit" className="w-full royal-button h-16 text-lg" disabled={loading}>
                     {loading ? <Loader2 className="animate-spin" /> : "دخول سيادي آمن"}
                   </Button>
                 </form>
               </TabsContent>
 
-              <TabsContent value="signup" className="space-y-8">
-                <form onSubmit={handleSignUp} className="space-y-8">
-                  <div className="space-y-6">
-                    <div className="relative">
-                      <UserCircle className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={24} />
-                      <Input placeholder="الاسم الكامل للنخبة" className="h-18 rounded-[1.5rem] bg-zinc-900 border-none pr-16 font-bold text-lg text-white" value={fullName} onChange={e => setFullName(e.target.value)} required />
-                    </div>
-                    <div className="relative">
-                      <Phone className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={24} />
-                      <Input placeholder="رقم الهاتف للتواصل" className="h-18 rounded-[1.5rem] bg-zinc-900 border-none pr-16 font-bold text-lg text-white" value={phone} onChange={e => setPhone(e.target.value)} required />
-                    </div>
-                    <div className="relative">
-                      <Mail className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={24} />
-                      <Input type="email" placeholder="البريد الإلكتروني" className="h-18 rounded-[1.5rem] bg-zinc-900 border-none pr-16 font-bold text-lg text-white" value={email} onChange={e => setEmail(e.target.value)} required />
-                    </div>
-                    <div className="relative">
-                      <Key className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-600" size={24} />
-                      <Input type="password" placeholder="كلمة المرور القوية" className="h-18 rounded-[1.5rem] bg-zinc-900 border-none pr-16 font-bold text-lg text-white" value={password} onChange={e => setPassword(e.target.value)} required />
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full royal-button h-20 text-2xl" disabled={loading}>إنشاء حساب وتفعيل</Button>
+              <TabsContent value="signup" className="space-y-6">
+                <form onSubmit={handleSignUp} className="space-y-6">
+                  <Input placeholder="الاسم الكامل" className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                  <Input placeholder="رقم الهاتف" className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold text-left" value={phone} onChange={e => setPhone(e.target.value)} required />
+                  <Input type="email" placeholder="البريد الإلكتروني" className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input type="password" placeholder="كلمة المرور" className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
+                  <Button type="submit" className="w-full royal-button h-16 text-lg" disabled={loading}>إنشاء حساب وتفعيل</Button>
                 </form>
               </TabsContent>
             </Tabs>
