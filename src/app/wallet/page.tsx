@@ -62,6 +62,7 @@ export default function WalletPagePRO() {
       <Navbar />
       <div className="container mx-auto px-6 py-32 animate-fade-up max-w-6xl">
         
+        {/* Sovereign Header Section */}
         <header className="mb-16 flex flex-col md:flex-row justify-between items-center gap-10 border-b border-white/5 pb-16">
           <div className="flex items-center gap-8">
             <Avatar className="w-32 h-32 rounded-[2rem] border-2 border-primary/20 shadow-2xl">
@@ -107,6 +108,7 @@ export default function WalletPagePRO() {
           </Card>
         )}
         
+        {/* Financial Assets Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
           <Card className="luxury-card border-none relative overflow-hidden p-12 bg-zinc-950">
             <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 blur-[100px] rounded-full" />
@@ -137,6 +139,7 @@ export default function WalletPagePRO() {
           </Card>
         </div>
 
+        {/* Transaction History Section */}
         <Card className="luxury-card border-none overflow-hidden bg-zinc-950/20">
           <CardHeader className="p-10 border-b border-white/5 flex flex-row items-center justify-between">
             <CardTitle className="text-3xl font-bold flex items-center gap-5">
