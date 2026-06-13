@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Edit2, Zap, Loader2, Save, Image as ImageIcon, Smartphone } from "lucide-react";
+import { Plus, Trash2, Edit2, Zap, Loader2, Save, Image as ImageIcon, Smartphone, Eye } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -126,20 +126,23 @@ export default function AdminOtherServices() {
                 <Input value={form.type} onChange={e => setForm({...form, type: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-bold" />
               </div>
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">اسم مقدم الخدمة</label>
-                <Input value={form.agentName} onChange={e => setForm({...form, agentName: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-bold" />
+                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">السعر المبدئي (USD)</label>
+                <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-black text-primary text-xl" />
               </div>
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest flex items-center gap-2"><Smartphone size={12}/> رقم واتساب التواصل</label>
                 <Input value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} placeholder="+966..." className="h-14 rounded-2xl bg-muted border-none px-6 font-bold text-left" />
               </div>
-              <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">السعر المبدئي (USD)</label>
-                <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-black text-primary text-xl" />
-              </div>
-              <div className="space-y-3">
+              <div className="col-span-1 md:col-span-2 space-y-4">
                 <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest flex items-center gap-2"><ImageIcon size={12}/> رابط صورة الخدمة</label>
-                <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-14 rounded-2xl bg-muted border-none px-6 font-bold" />
+                <div className="flex gap-4">
+                   <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-14 rounded-2xl bg-muted border-none px-6 font-bold flex-1" />
+                   {form.imageUrl && (
+                     <div className="w-14 h-14 rounded-xl overflow-hidden border">
+                       <img src={form.imageUrl} className="w-full h-full object-cover" alt="Preview" />
+                     </div>
+                   )}
+                </div>
               </div>
               <div className="col-span-1 md:col-span-2 space-y-3">
                 <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">وصف تفصيلي للخدمة</label>

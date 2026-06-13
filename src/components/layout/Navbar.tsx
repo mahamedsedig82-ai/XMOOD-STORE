@@ -10,7 +10,8 @@ import {
   Wallet, LayoutDashboard, LogOut, ChevronDown, X, Zap, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useUser, useAuth, useFirestore } from "@/firebase";
+import { Badge } from "@/components/ui/badge";
+import { useUser, useAuth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatUSD } from "@/lib/currency";
@@ -29,7 +30,6 @@ export function Navbar() {
   const auth = useAuth();
   const pathname = usePathname();
   
-  // Theme & Layout States
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [layout, setLayout] = useState<'desktop' | 'mobile'>('desktop');
 
