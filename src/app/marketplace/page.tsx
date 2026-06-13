@@ -1,22 +1,13 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { useUser, useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit, addDoc } from "firebase/firestore";
+import { collection, query, orderBy, limit, addDoc, where } from "firebase/firestore";
 import { 
-  ShieldCheck, 
-  Search,
-  Zap,
-  Megaphone,
-  Plus,
-  Users,
-  CheckCircle,
-  Phone,
-  MessageSquare,
-  AtSign,
-  Send
+  ShieldCheck, Search, Zap, Megaphone, Plus, 
+  Users, CheckCircle, Phone, MessageSquare, AtSign, Send, Filter, Award
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +27,7 @@ export default function MarketplaceSocial() {
   const { profile, user } = useUser();
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
   const [isListingOpen, setIsListingOpen] = useState(false);
   
   const [listingForm, setListingForm] = useState({
@@ -47,31 +39,50 @@ export default function MarketplaceSocial() {
     contactValue: ""
   });
 
+  // Blacklist filter
+  const FORBIDDEN_WORDS = ["مخدر", "هاك", "سب", "شتيمة"]; // Simple client-side example
+
   const listingsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, "marketplace_listings"), orderBy("createdAt", "desc"), limit(50));
+    return query(
+      collection(db, "marketplace_listings"), 
+      where("status", "==", "active"),
+      orderBy("createdAt", "desc"), 
+      limit(50)
+    );
   }, [db]);
 
   const middlemenQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, "users"), orderBy("completedDeals", "desc"), limit(10));
+    return query(collection(db, "users"), where("isTrusted", "==", true), limit(15));
   }, [db]);
 
-  const { data: listings } = useCollection(listingsQuery);
-  const { data: potentialMiddlemen } = useCollection(middlemenQuery);
+  const { data: listings, loading: listingsLoading } = useCollection(listingsQuery);
+  const { data: trustedAgents } = useCollection(middlemenQuery);
   
-  const middlemen = potentialMiddlemen?.filter(u => u.role === 'middleman' || u.role === 'owner');
-
   const handleCreateListing = async () => {
     if (!user || !profile || !db) return;
     
+    // Safety Check: Spam protection
+    const now = Date.now();
+    const lastPostTime = Number(localStorage.getItem('last_post_time') || 0);
+    if (now - lastPostTime < 60000) { // 1 minute cooldown
+       toast({ variant: "destructive", title: "تريث قليلاً", description: "يرجى الانتظار دقيقة بين كل منشور والآخر." });
+       return;
+    }
+
     if (!listingForm.title || !listingForm.description || !listingForm.contactValue) {
-      toast({ 
-        variant: "destructive", 
-        title: "بيانات ناقصة", 
-        description: "يجب إكمال العنوان، الوصف، ووسيلة التواصل لنشر العرض." 
-      });
+      toast({ variant: "destructive", title: "بيانات ناقصة", description: "أكمل كافة الحقول الإلزامية." });
       return;
+    }
+
+    // Content Filtering
+    const containsForbidden = FORBIDDEN_WORDS.some(word => 
+      listingForm.title.includes(word) || listingForm.description.includes(word)
+    );
+    if (containsForbidden) {
+       toast({ variant: "destructive", title: "محتوى مرفوض", description: "يحتوي منشورك على كلمات محظورة." });
+       return;
     }
 
     try {
@@ -80,6 +91,7 @@ export default function MarketplaceSocial() {
         userName: profile.displayName,
         userPhoto: profile.photoURL || "",
         userLabel: profile.label || "عضو موثق",
+        isTrustedUser: profile.isTrusted || false,
         title: listingForm.title,
         description: listingForm.description,
         price: Number(listingForm.price) || 0,
@@ -91,204 +103,152 @@ export default function MarketplaceSocial() {
         commentCount: 0,
         createdAt: new Date().toISOString()
       });
+      localStorage.setItem('last_post_time', now.toString());
       setIsListingOpen(false);
       setListingForm({ title: "", description: "", price: "", type: 'sell', contactMethod: 'whatsapp', contactValue: "" });
-      toast({ title: "تم النشر بنجاح", description: "عرضك متاح الآن في مجتمع XMOOD ببيانات تواصل موثقة." });
+      toast({ title: "تم النشر بنجاح" });
     } catch (e) {
-      toast({ variant: "destructive", title: "خطأ", description: "فشل نشر العرض. يرجى المحاولة لاحقاً." });
+      toast({ variant: "destructive", title: "خطأ في النشر" });
     }
   };
 
-  const filteredListings = listings?.filter(l => 
-    l.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    l.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredListings = listings?.filter(l => {
+    const matchesSearch = l.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          l.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterType === "all" || l.type === filterType;
+    return matchesSearch && matchesFilter;
+  });
 
   return (
-    <main className="min-h-screen bg-black text-white" dir="rtl">
+    <main className="min-h-screen bg-black text-white pb-40" dir="rtl">
       <Navbar />
       
-      <section className="pt-48 pb-24 relative border-b border-white/5 bg-zinc-950/40">
-        <div className="container mx-auto px-6 text-center">
-           <Badge className="mb-8 bg-primary/10 text-primary border-primary/20 py-2 px-8 rounded-full font-bold uppercase text-[10px]">
+      <section className="pt-48 pb-24 relative border-b border-white/5 bg-zinc-950/40 overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100%" height="100%" fill="url(#grid-v6)" />
+           </svg>
+        </div>
+        <div className="container mx-auto px-6 text-center relative z-10">
+           <Badge className="mb-8 bg-primary/10 text-primary border border-primary/20 py-2 px-10 rounded-full font-black uppercase text-[10px] tracking-[0.4em]">
               XMOOD SOVEREIGN SOCIAL HUB
            </Badge>
-           <h1 className="text-6xl md:text-8xl font-headline font-bold mb-6 gold-text">مجتمع XMOOD</h1>
-           <p className="text-xl md:text-2xl text-zinc-500 max-w-3xl mx-auto font-light leading-relaxed">
-             منصة التداول والتحقق الرقمي الأولى. شارك عروضك، تواصل مع النخبة، واضمن حقك مع نظام الوساطة السيادي.
+           <h1 className="text-6xl md:text-9xl font-headline font-bold mb-8 gold-text leading-tight tracking-tighter">مجتمع النخبة</h1>
+           <p className="text-xl md:text-2xl text-zinc-500 max-w-4xl mx-auto font-light leading-relaxed mb-12">
+             ساحة التداول والتحقق الرقمي. تواصل مع الوسطاء الموثوقين واضمن حقوقك في كل صفقة.
            </p>
+           
+           <div className="flex flex-col md:flex-row gap-4 items-center justify-center max-w-4xl mx-auto">
+              <div className="relative flex-1 w-full group">
+                 <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/30 group-focus-within:text-primary transition-all" size={24} />
+                 <Input 
+                   value={searchTerm}
+                   onChange={e => setSearchTerm(e.target.value)}
+                   placeholder="ابحث عن عروض أو مستخدمين..." 
+                   className="h-20 bg-zinc-950 border-white/5 rounded-[2rem] pr-16 text-xl text-white placeholder:text-zinc-700 shadow-2xl focus:border-primary/40" 
+                 />
+              </div>
+              <Dialog open={isListingOpen} onOpenChange={setIsListingOpen}>
+                 <DialogTrigger asChild>
+                   <Button className="h-20 px-12 royal-button text-xl flex gap-4 shadow-primary/20 w-full md:w-auto"><Plus size={28} /> نشر عرض جديد</Button>
+                 </DialogTrigger>
+                 <DialogContent className="bg-zinc-950 border border-primary/20 rounded-[3rem] p-12 text-white shadow-2xl overflow-y-auto max-h-[90vh]">
+                    <DialogHeader>
+                      <DialogTitle className="text-4xl font-headline font-bold gold-text flex items-center gap-5"><Megaphone size={36} /> نشر عرض سيادي</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-8 mt-10">
+                       <div className="space-y-3">
+                          <Label className="text-[11px] font-black text-primary uppercase pr-4 tracking-widest">عنوان العرض</Label>
+                          <Input placeholder="مثال: حساب ببجي مستويات عالية..." className="h-16 bg-zinc-900 border-none rounded-2xl px-8 font-bold text-lg" value={listingForm.title} onChange={e => setListingForm({...listingForm, title: e.target.value})} />
+                       </div>
+                       <div className="space-y-3">
+                          <Label className="text-[11px] font-black text-primary uppercase pr-4 tracking-widest">التفاصيل الكاملة</Label>
+                          <Textarea placeholder="اشرح تفاصيل عرضك بدقة..." className="min-h-[150px] bg-zinc-900 border-none rounded-[2rem] p-8 font-bold leading-relaxed text-lg" value={listingForm.description} onChange={e => setListingForm({...listingForm, description: e.target.value})} />
+                       </div>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div className="space-y-3">
+                            <Label className="text-[11px] font-black text-primary uppercase pr-4">السعر (USD)</Label>
+                            <Input type="number" placeholder="0.00" className="h-16 bg-zinc-900 border-none rounded-2xl px-8 font-black text-2xl text-primary" value={listingForm.price} onChange={e => setListingForm({...listingForm, price: e.target.value})} />
+                          </div>
+                          <div className="space-y-3">
+                            <Label className="text-[11px] font-black text-primary uppercase pr-4">نوع العرض</Label>
+                            <Select onValueChange={(val: any) => setListingForm({...listingForm, type: val})} defaultValue="sell">
+                               <SelectTrigger className="h-16 bg-zinc-900 border-none rounded-2xl px-8 font-bold text-lg">
+                                  <SelectValue />
+                               </SelectTrigger>
+                               <SelectContent className="bg-zinc-950 border-white/10 text-white">
+                                  <SelectItem value="sell">عرض بيع</SelectItem>
+                                  <SelectItem value="buy">طلب شراء</SelectItem>
+                                  <SelectItem value="service">تقديم خدمة</SelectItem>
+                               </SelectContent>
+                            </Select>
+                          </div>
+                       </div>
+                       <Button onClick={handleCreateListing} className="w-full h-20 royal-button text-2xl mt-6 shadow-xl">نشر العرض في الساحة</Button>
+                    </div>
+                 </DialogContent>
+              </Dialog>
+           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-6 pb-40">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 -mt-12">
+      <div className="container mx-auto px-6 mt-16">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
           
-          <aside className="lg:col-span-1 space-y-6">
-            <Card className="luxury-card p-8 border-none sticky top-36">
-              {user ? (
-                <div className="space-y-8 text-center">
-                   <Link href={`/profile/${user.uid}`} className="block group">
-                     <Avatar className="w-24 h-24 mx-auto border-4 border-primary/20 group-hover:border-primary/50 transition-all">
-                       <AvatarImage src={profile?.photoURL} />
-                       <AvatarFallback className="bg-zinc-900 text-2xl text-primary font-bold">{profile?.displayName?.charAt(0)}</AvatarFallback>
-                     </Avatar>
-                   </Link>
-                   <div>
-                     <h4 className="text-2xl font-bold text-white mb-1">{profile?.displayName}</h4>
-                     <Badge className="bg-primary/20 text-primary font-bold text-[9px] px-4 py-1 rounded-full uppercase tracking-widest">{profile?.label}</Badge>
-                   </div>
-                   <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-                         <p className="text-[8px] text-zinc-600 font-bold uppercase mb-1">النقاط</p>
-                         <p className="text-xl font-black text-primary">{profile?.affinityPoints || 0}</p>
-                      </div>
-                      <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-                         <p className="text-[8px] text-zinc-600 font-bold uppercase mb-1">العمليات</p>
-                         <p className="text-xl font-black text-white">{profile?.completedDeals || 0}</p>
-                      </div>
-                   </div>
-                   <Button asChild variant="outline" className="w-full h-12 rounded-xl border-white/10 text-[10px] font-bold uppercase tracking-widest">
-                     <Link href="/wallet">إدارة المحفظة</Link>
-                   </Button>
-                </div>
-              ) : (
-                <div className="text-center py-10 space-y-4">
-                   <Users size={48} className="mx-auto text-zinc-800 opacity-30" />
-                   <p className="text-zinc-500 text-sm font-bold">انضم لمجتمعنا الرقمي الموثق.</p>
-                   <Button asChild className="royal-button w-full h-12"><Link href="/login">تسجيل الدخول</Link></Button>
-                </div>
-              )}
-            </Card>
-
-            <Card className="luxury-card p-6 bg-primary/5 border-none">
-               <h5 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2">
-                 <ShieldCheck size={14} /> الوسطاء المعتمدون
+          <aside className="lg:col-span-1 space-y-10">
+            <Card className="luxury-card p-10 border-none sticky top-36 bg-zinc-950/60">
+               <h5 className="text-[11px] font-black uppercase tracking-[0.3em] text-primary mb-10 flex items-center gap-3">
+                 <Award size={18} className="animate-pulse" /> النخبة الموثوقة
                </h5>
-               <div className="space-y-5">
-                  {middlemen?.map((m: any) => (
-                    <Link key={m.id} href={`/profile/${m.id}`} className="flex items-center justify-between group">
-                       <div className="flex items-center gap-3">
-                          <Avatar className="w-8 h-8 border border-white/10 group-hover:border-primary/50 transition-all">
-                            <AvatarImage src={m.photoURL} />
-                            <AvatarFallback className="text-[8px] font-bold">XM</AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col">
-                             <span className="text-xs font-bold text-zinc-300 group-hover:text-primary">{m.displayName}</span>
-                             <span className="text-[8px] text-zinc-600 uppercase">Verified Escrow</span>
+               <div className="space-y-8">
+                  {trustedAgents?.map((agent: any) => (
+                    <Link key={agent.id} href={`/profile/${agent.id}`} className="flex items-center justify-between group">
+                       <div className="flex items-center gap-4">
+                          <div className="relative">
+                             <Avatar className="w-12 h-12 border-2 border-primary/20 group-hover:border-primary/60 transition-all">
+                                <AvatarImage src={agent.photoURL} />
+                                <AvatarFallback className="bg-zinc-900 font-bold text-primary">XM</AvatarFallback>
+                             </Avatar>
+                             <ShieldCheck size={14} className="absolute -bottom-1 -right-1 text-blue-500 bg-black rounded-full" />
                           </div>
-                       </div>
-                       <div className="text-left">
-                          <p className="text-[10px] font-bold text-primary">{m.completedDeals || 0}</p>
-                          <p className="text-[7px] text-zinc-600 uppercase">Deal</p>
+                          <div>
+                             <p className="font-bold text-white group-hover:text-primary transition-colors">{agent.displayName}</p>
+                             <p className="text-[8px] text-zinc-600 font-black uppercase">{agent.role}</p>
+                          </div>
                        </div>
                     </Link>
                   ))}
                </div>
             </Card>
+
+            <div className="space-y-4">
+               <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest pr-4">تصفية حسب النوع</p>
+               {['all', 'sell', 'buy', 'service'].map((type) => (
+                 <Button 
+                   key={type}
+                   onClick={() => setFilterType(type)}
+                   variant="ghost" 
+                   className={`w-full justify-start h-14 rounded-2xl px-6 text-xs font-black uppercase tracking-widest transition-all ${filterType === type ? 'bg-primary text-black' : 'text-zinc-500 hover:bg-white/5'}`}
+                 >
+                   {type === 'all' ? 'كافة المنشورات' : type === 'sell' ? 'عروض البيع' : type === 'buy' ? 'طلبات الشراء' : 'الخدمات الفنية'}
+                 </Button>
+               ))}
+            </div>
           </aside>
 
           <section className="lg:col-span-3 space-y-10">
-            <div className="flex flex-col md:flex-row gap-4 items-center">
-               <div className="relative flex-1 w-full">
-                  <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/30" size={20} />
-                  <Input 
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    placeholder="ابحث عن عروض في المجتمع..." 
-                    className="h-16 bg-zinc-950 border-none rounded-2xl pr-14 text-lg text-white placeholder:text-zinc-700" 
-                  />
-               </div>
-               <Dialog open={isListingOpen} onOpenChange={setIsListingOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="h-16 px-10 royal-button text-lg flex gap-3 shadow-primary/20 w-full md:w-auto"><Plus size={24} /> نشر عرض جديد</Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-zinc-950 border border-primary/20 rounded-[2.5rem] p-10 text-white shadow-2xl overflow-y-auto max-h-[90vh]">
-                    <DialogHeader>
-                      <DialogTitle className="text-3xl font-headline font-bold gold-text flex items-center gap-4"><Megaphone size={28} /> نشر عرض سيادي</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-6 mt-8">
-                       <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-primary uppercase pr-3">عنوان العرض</Label>
-                          <Input placeholder="مثال: حساب ببجي مستويات عالية..." className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" value={listingForm.title} onChange={e => setListingForm({...listingForm, title: e.target.value})} />
-                       </div>
-                       <div className="space-y-2">
-                          <Label className="text-[10px] font-bold text-primary uppercase pr-3">التفاصيل الكاملة</Label>
-                          <Textarea placeholder="اشرح تفاصيل عرضك بدقة..." className="min-h-[120px] bg-zinc-900 border-none rounded-2xl p-6 font-bold leading-relaxed" value={listingForm.description} onChange={e => setListingForm({...listingForm, description: e.target.value})} />
-                       </div>
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <Label className="text-[10px] font-bold text-primary uppercase pr-3">السعر المتوقع (USD)</Label>
-                            <Input type="number" placeholder="0.00" className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" value={listingForm.price} onChange={e => setListingForm({...listingForm, price: e.target.value})} />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-[10px] font-bold text-primary uppercase pr-3">التصنيف</Label>
-                            <Select onValueChange={(val: any) => setListingForm({...listingForm, type: val})} defaultValue="sell">
-                               <SelectTrigger className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold">
-                                  <SelectValue />
-                               </SelectTrigger>
-                               <SelectContent className="bg-zinc-950 border-white/10 text-white">
-                                  <SelectItem value="sell">عرض بيع أصل</SelectItem>
-                                  <SelectItem value="buy">طلب شراء أصل</SelectItem>
-                                  <SelectItem value="service">خدمة / وساطة فنية</SelectItem>
-                               </SelectContent>
-                            </Select>
-                          </div>
-                       </div>
-
-                       <div className="p-8 bg-primary/5 rounded-[2rem] border border-primary/10 space-y-6">
-                          <h4 className="text-primary font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                             <ShieldCheck size={14} /> بيانات التواصل الإلزامية
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-zinc-500 uppercase pr-3">طريقة التواصل</Label>
-                                <Select onValueChange={(val: any) => setListingForm({...listingForm, contactMethod: val})} defaultValue="whatsapp">
-                                   <SelectTrigger className="h-12 bg-black border-white/5 rounded-xl px-4 font-bold">
-                                      <SelectValue />
-                                   </SelectTrigger>
-                                   <SelectContent className="bg-zinc-950 border-white/10 text-white">
-                                      <SelectItem value="whatsapp">واتساب</SelectItem>
-                                      <SelectItem value="telegram">تيليجرام</SelectItem>
-                                      <SelectItem value="email">البريد الإلكتروني</SelectItem>
-                                      <SelectItem value="onsite">داخل الموقع (معرفك)</SelectItem>
-                                   </SelectContent>
-                                </Select>
-                             </div>
-                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-zinc-500 uppercase pr-3">المعرف / الرقم</Label>
-                                <Input 
-                                  placeholder="أدخل وسيلة التواصل هنا..." 
-                                  className="h-12 bg-black border-white/5 rounded-xl px-4 font-bold" 
-                                  value={listingForm.contactValue} 
-                                  onChange={e => setListingForm({...listingForm, contactValue: e.target.value})} 
-                                />
-                             </div>
-                          </div>
-                          <p className="text-[8px] text-zinc-600 font-bold uppercase italic text-center">
-                            * لن يتم نشر العرض بدون وسيلة تواصل صحيحة تظهر للوسطاء والمشترين.
-                          </p>
-                       </div>
-
-                       <Button onClick={handleCreateListing} className="w-full h-16 royal-button text-lg mt-4">تأكيد ونشر العرض الآن</Button>
-                    </div>
-                  </DialogContent>
-               </Dialog>
-            </div>
-
-            <div className="space-y-10">
-              <AnimatePresence>
+             <AnimatePresence>
                 {filteredListings?.map((post: any) => (
                   <MarketplacePost key={post.id} post={post} />
                 ))}
-              </AnimatePresence>
-              
-              {filteredListings?.length === 0 && (
-                <div className="py-48 text-center luxury-card border-dashed border-white/5 opacity-50">
-                   <Users size={80} className="mx-auto text-zinc-900 mb-6" />
-                   <h3 className="text-2xl font-bold text-zinc-700 uppercase tracking-[0.3em]">بانتظار العروض الأولى..</h3>
+             </AnimatePresence>
+             
+             {filteredListings?.length === 0 && (
+                <div className="py-60 text-center luxury-card border-dashed border-white/5 opacity-40">
+                   <Users size={120} className="mx-auto text-zinc-900 mb-10" />
+                   <h3 className="text-4xl font-headline font-bold text-zinc-700 uppercase tracking-[0.4em]">بانتظار العروض الأولى..</h3>
                 </div>
-              )}
-            </div>
+             )}
           </section>
         </div>
       </div>

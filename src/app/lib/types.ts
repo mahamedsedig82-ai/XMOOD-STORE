@@ -1,5 +1,5 @@
 
-export type UserRole = 'owner' | 'admin' | 'gm' | 'store_manager' | 'design_manager' | 'designer' | 'accountant' | 'support' | 'middleman' | 'agent' | 'user';
+export type UserRole = 'owner' | 'admin' | 'gm' | 'community_admin' | 'community_mod' | 'store_manager' | 'design_manager' | 'designer' | 'accountant' | 'support' | 'middleman' | 'agent' | 'user';
 
 export interface UserProfile {
   uid: string;
@@ -10,6 +10,8 @@ export interface UserProfile {
   residence?: string;
   walletBalance: number;
   role: UserRole;
+  isTrusted?: boolean;
+  communityStatus?: 'active' | 'muted' | 'banned';
   photoURL?: string;
   isVerified?: boolean;
   affinityPoints?: number;
@@ -24,65 +26,43 @@ export interface UserProfile {
   }
 }
 
-export interface SiteSettings {
-  appearance: {
-    primaryColor: string;
-    backgroundColor: string;
-    accentColor: string;
-    logoUrl: string;
-  };
-  siteInfo: {
-    title: string;
-    subtitle: string;
-    heroTitle: string;
-    heroDescription: string;
-    description: string;
-    copyright: string;
-  };
-  contact: {
-    email: string;
-    phone: string;
-    whatsapp: string;
-    telegram: string;
-    instagram: string;
-    facebook: string;
-    tiktok: string;
-    youtube: string;
-    address: string;
-    workHours: string;
-  };
-  promotions: {
-    banner1Title: string;
-    banner1Subtitle: string;
-    banner1Link: string;
-    banner2Title: string;
-    banner2Subtitle: string;
-    banner2Link: string;
-  };
-}
-
-export interface OtherService {
+export interface CommunityPost {
   id: string;
-  name: string;
-  agentName: string;
-  agentId: string;
-  whatsapp: string;
-  imageUrl: string;
-  type: string;
+  userId: string;
+  userName: string;
+  userPhoto?: string;
+  userLabel?: string;
+  isTrustedUser?: boolean;
+  title: string;
   description: string;
   price: number;
-  isAvailable: boolean;
-  createdAt: any;
+  type: 'sell' | 'buy' | 'service';
+  contactMethod: string;
+  contactValue: string;
+  status: 'active' | 'hidden' | 'deleted';
+  likes: string[];
+  commentCount: number;
+  createdAt: string;
 }
 
-export interface Product {
+export interface CommunityReport {
   id: string;
-  name: string;
-  price: number;
-  category: string;
-  stock: number;
-  imageUrl: string;
-  description: string;
-  status: string;
-  shippingCodes?: string;
+  reporterId: string;
+  reporterName: string;
+  targetId: string;
+  targetType: 'post' | 'comment' | 'user';
+  targetContent?: string;
+  reason: string;
+  status: 'pending' | 'resolved' | 'dismissed';
+  createdAt: string;
+}
+
+export interface AuditLog {
+  id: string;
+  adminId: string;
+  adminName: string;
+  action: string;
+  targetId: string;
+  details: string;
+  createdAt: string;
 }

@@ -3,7 +3,7 @@
   "entities": {
     "UserProfile": {
       "title": "User Profile PRO",
-      "description": "Extended user info with multi-level roles and middleman metadata",
+      "description": "Extended user info with multi-level roles and community status",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
@@ -12,57 +12,61 @@
         "walletBalance": { "type": "number" },
         "role": { 
           "type": "string", 
-          "enum": ["owner", "admin", "gm", "store_manager", "design_manager", "designer", "accountant", "support", "middleman", "agent", "user"] 
+          "enum": ["owner", "admin", "gm", "community_admin", "community_mod", "store_manager", "design_manager", "designer", "accountant", "support", "middleman", "agent", "user"] 
         },
+        "isTrusted": { "type": "boolean" },
+        "communityStatus": { "type": "string", "enum": ["active", "muted", "banned"] },
         "photoURL": { "type": "string" },
         "isVerified": { "type": "boolean" },
         "affinityPoints": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" },
-        "bio": { "type": "string" },
         "completedDeals": { "type": "number" },
         "phoneNumber": { "type": "string" },
-        "residence": { "type": "string" },
-        "middlemanInfo": {
-          "type": "object",
-          "properties": {
-            "services": { "type": "array", "items": { "type": "string" } },
-            "isAvailable": { "type": "boolean" },
-            "workHours": { "type": "string" }
-          }
-        }
+        "residence": { "type": "string" }
       },
       "required": ["uid", "email", "role"]
     },
-    "GalleryItem": {
-      "title": "Gallery Design",
-      "description": "A showcase item for the designer portfolio",
+    "MarketplaceListing": {
+      "title": "Community Post",
+      "description": "A post in the community marketplace",
       "type": "object",
       "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
         "title": { "type": "string" },
         "description": { "type": "string" },
-        "imageUrl": { "type": "string" },
-        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "type": { "type": "string", "enum": ["sell", "buy", "service"] },
+        "status": { "type": "string", "enum": ["active", "hidden", "deleted"] },
+        "isVerifiedPost": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["title", "imageUrl"]
+      }
     },
-    "OtherService": {
-      "title": "Professional Service",
-      "description": "Managed services offered by agents or the platform",
+    "CommunityReport": {
+      "title": "Report",
+      "description": "User report for content violation",
       "type": "object",
       "properties": {
-        "name": { "type": "string" },
-        "agentName": { "type": "string" },
-        "agentId": { "type": "string" },
-        "whatsapp": { "type": "string" },
-        "imageUrl": { "type": "string" },
-        "type": { "type": "string" },
-        "description": { "type": "string" },
-        "price": { "type": "number" },
-        "isAvailable": { "type": "boolean" },
+        "reporterId": { "type": "string" },
+        "targetId": { "type": "string" },
+        "targetType": { "type": "string", "enum": ["post", "comment", "user"] },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "resolved", "dismissed"] },
         "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["name", "price", "whatsapp"]
+      }
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Log of admin actions",
+      "type": "object",
+      "properties": {
+        "adminId": { "type": "string" },
+        "adminName": { "type": "string" },
+        "action": { "type": "string" },
+        "targetId": { "type": "string" },
+        "details": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "auth": {
@@ -73,13 +77,17 @@
       "schema": "UserProfile",
       "description": "Sovereign user profiles"
     },
-    "/gallery/{itemId}": {
-      "schema": "GalleryItem",
-      "description": "Designer portfolio items"
+    "/marketplace_listings/{postId}": {
+      "schema": "MarketplaceListing",
+      "description": "Community marketplace posts"
     },
-    "/other_services/{serviceId}": {
-      "schema": "OtherService",
-      "description": "Managed extra services"
+    "/community_reports/{reportId}": {
+      "schema": "CommunityReport",
+      "description": "User violation reports"
+    },
+    "/community_audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Administrative action logs"
     }
   }
 }
