@@ -9,21 +9,10 @@ import {
   Users, 
   Wallet, 
   Settings, 
-  Sparkles,
   Palette,
-  FileText,
   ShieldCheck,
-  Megaphone,
-  CreditCard,
-  MessageSquare,
-  Zap,
   Activity,
-  LogOut,
-  Bell,
-  Globe,
-  Database,
-  BarChart3,
-  Image as ImageIcon
+  LogOut
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -78,7 +67,7 @@ export default function AdminLayoutComprehensive({ children }: { children: React
   const businessSections = [
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
     { label: "الخزانة المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
-    { label: "إدارة الوساطة", icon: ShieldCheck, href: "/admin/middleman", roles: ['owner', 'admin', 'middleman'] },
+    { label: "إدارة الوكلاء", icon: ShieldCheck, href: "/admin/middleman", roles: ['owner', 'admin', 'middleman', 'agent'] },
   ];
 
   const systemSections = [

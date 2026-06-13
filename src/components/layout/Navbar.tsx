@@ -64,7 +64,7 @@ export function Navbar() {
     { name: "المتجر", href: "/store", icon: Store },
     { name: "المعرض", href: "/designs/gallery", icon: Palette },
     { name: "المجتمع", href: "/marketplace", icon: Users },
-    { name: "الوساطة", href: "/middleman", icon: ShieldCheck },
+    { name: "الوكلاء", href: "/middleman", icon: ShieldCheck },
   ];
 
   const siteTitle = siteSettings?.siteInfo?.title || "XMOOD STORE";

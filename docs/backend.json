@@ -21,6 +21,7 @@
         "bio": { "type": "string" },
         "completedDeals": { "type": "number" },
         "phoneNumber": { "type": "string" },
+        "residence": { "type": "string" },
         "middlemanInfo": {
           "type": "object",
           "properties": {

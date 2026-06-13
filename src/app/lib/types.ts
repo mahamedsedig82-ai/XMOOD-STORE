@@ -7,6 +7,7 @@ export interface UserProfile {
   fullName?: string;
   email: string;
   phoneNumber?: string;
+  residence?: string; // مكان السكن أو المنطقة
   walletBalance: number;
   role: UserRole;
   photoURL?: string;
