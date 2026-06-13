@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -13,16 +12,14 @@ import {
   Menu,
   ShoppingBag,
   ArrowRightLeft,
-  Settings,
-  MessageSquare,
-  Activity,
-  UserCircle,
   Home,
   Store,
   Users,
   ShieldCheck,
-  MoreVertical,
-  ChevronDown
+  ChevronDown,
+  MessageSquare,
+  Activity,
+  UserCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -43,7 +40,8 @@ import {
   SheetHeader, 
   SheetTitle, 
   SheetTrigger,
-  SheetClose
+  SheetClose,
+  SheetFooter
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -70,7 +68,7 @@ export function Navbar() {
     { name: "الوساطة المضمونة", href: "/middleman", icon: ShieldCheck },
   ];
 
-  const siteTitle = siteSettings?.siteInfo?.title || "XMOOD PRO";
+  const siteTitle = siteSettings?.siteInfo?.title || "XMOOD STORE";
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-white/5 bg-black/80 backdrop-blur-3xl shadow-2xl">
@@ -138,13 +136,13 @@ export function Navbar() {
                 <DropdownMenuGroup className="space-y-1">
                   <DropdownMenuItem asChild className="rounded-2xl p-4 cursor-pointer justify-end font-bold text-zinc-400 hover:bg-primary/10 hover:text-primary transition-all group">
                     <Link href="/wallet" className="flex items-center w-full justify-end">
-                      <span className="ml-3">المحفظة الشخصية</span>
+                      <span className="ml-3 text-sm">المحفظة السيادية</span>
                       <Wallet className="w-5 h-5 text-red-600" />
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="rounded-2xl p-4 cursor-pointer justify-end font-bold text-zinc-400 hover:bg-primary/10 hover:text-primary transition-all group">
                     <Link href="/wallet/transfer" className="flex items-center w-full justify-end">
-                      <span className="ml-3">تحويل الأموال</span>
+                      <span className="ml-3 text-sm">تحويل الرصيد</span>
                       <ArrowRightLeft className="w-5 h-5 text-amber-500" />
                     </Link>
                   </DropdownMenuItem>
@@ -155,8 +153,14 @@ export function Navbar() {
                 <DropdownMenuGroup className="space-y-1">
                   <DropdownMenuItem asChild className="rounded-2xl p-4 cursor-pointer justify-end font-bold text-zinc-400 hover:bg-primary/10 hover:text-primary transition-all group">
                     <Link href="/designs/request" className="flex items-center w-full justify-end">
-                      <span className="ml-3">طلب تصميم</span>
+                      <span className="ml-3 text-sm">طلب خدمة بريميوم</span>
                       <ShoppingBag className="w-5 h-5 text-blue-500" />
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="rounded-2xl p-4 cursor-pointer justify-end font-bold text-zinc-400 hover:bg-primary/10 hover:text-primary transition-all group">
+                    <Link href="/concierge" className="flex items-center w-full justify-end">
+                      <span className="ml-3 text-sm">المحلل الذكي</span>
+                      <Sparkles className="w-5 h-5 text-red-500" />
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -166,7 +170,7 @@ export function Navbar() {
                     <DropdownMenuSeparator className="bg-white/5 my-4" />
                     <DropdownMenuItem asChild className="rounded-2xl p-4 cursor-pointer text-primary font-black justify-end bg-primary/5 hover:bg-primary/20 transition-all border border-primary/10">
                       <Link href="/admin" className="flex items-center w-full justify-end">
-                        <span className="ml-3">لوحة التحكم PRO</span>
+                        <span className="ml-3 text-xs uppercase tracking-widest">لوحة التحكم PRO</span>
                         <LayoutDashboard className="w-5 h-5" />
                       </Link>
                     </DropdownMenuItem>
@@ -176,7 +180,7 @@ export function Navbar() {
                 <DropdownMenuSeparator className="bg-white/5 my-4" />
                 
                 <DropdownMenuItem onClick={handleSignOut} className="rounded-2xl p-4 cursor-pointer text-red-600 font-bold justify-end hover:bg-red-600/10 transition-all group">
-                  <span className="ml-3">تسجيل الخروج</span>
+                  <span className="ml-3 text-sm">تسجيل الخروج</span>
                   <LogOut className="w-5 h-5" />
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -206,7 +210,7 @@ export function Navbar() {
                           <AvatarImage src={profile.photoURL} />
                           <AvatarFallback className="bg-zinc-900 text-primary font-bold">{profile.displayName?.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="text-right">
                           <p className="font-bold text-lg gold-text">{profile.displayName}</p>
                           <Badge variant="outline" className="border-primary/20 text-primary text-[8px] uppercase">{profile.label || "عضو"}</Badge>
                         </div>
@@ -245,13 +249,13 @@ export function Navbar() {
                       <SheetClose asChild>
                         <Link href="/wallet" className="flex items-center flex-row-reverse gap-4 p-4 rounded-2xl text-zinc-400 hover:bg-white/5">
                           <Wallet size={20} className="text-red-600" />
-                          <span className="font-bold text-sm">المحفظة</span>
+                          <span className="font-bold text-sm">المحفظة السيادية</span>
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
                         <Link href="/wallet/transfer" className="flex items-center flex-row-reverse gap-4 p-4 rounded-2xl text-zinc-400 hover:bg-white/5">
                           <ArrowRightLeft size={20} className="text-amber-500" />
-                          <span className="font-bold text-sm">تحويل الأموال</span>
+                          <span className="font-bold text-sm">تحويل الرصيد</span>
                         </Link>
                       </SheetClose>
                       {['owner', 'admin', 'gm', 'design_manager', 'designer'].includes(profile?.role || '') && (
@@ -271,7 +275,7 @@ export function Navbar() {
                 <div className="p-8 border-t border-white/5 bg-zinc-950 mt-auto">
                   <Button 
                     variant="ghost" 
-                    onClick={() => { handleSignOut(); }}
+                    onClick={handleSignOut}
                     className="w-full h-16 rounded-2xl text-red-600 hover:bg-red-600/10 gap-4 font-bold text-sm flex flex-row-reverse items-center justify-center border border-red-600/20"
                   >
                     <LogOut size={20} /> تسجيل الخروج

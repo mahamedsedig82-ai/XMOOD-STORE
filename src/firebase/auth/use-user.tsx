@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -37,33 +36,37 @@ export function useUser() {
       try {
         const docSnap = await getDoc(userDocRef);
         const isAdmin = ADMIN_EMAILS.includes(user.email?.toUpperCase() || "");
+        const isVerified = user.emailVerified;
         
         if (!docSnap.exists()) {
-          if (isAdmin) {
-            const adminProfile: UserProfile = {
-              uid: user.uid,
-              displayName: "المدير العام",
-              fullName: "المدير العام XMOOD",
-              email: user.email || "",
-              walletBalance: 999999,
-              role: 'owner',
-              label: 'المدير العام للمتجر',
-              photoURL: user.photoURL || '',
-              createdAt: new Date().toISOString(),
-              isVerified: true,
-              affinityPoints: 1000
-            };
-            await setDoc(userDocRef, adminProfile);
-            setProfile(adminProfile);
-          }
+          const initialProfile: UserProfile = {
+            uid: user.uid,
+            displayName: user.displayName || user.email?.split('@')[0] || "عضو جديد",
+            fullName: user.displayName || "",
+            email: user.email || "",
+            walletBalance: isAdmin ? 999999 : 0,
+            role: isAdmin ? 'owner' : 'user',
+            label: isAdmin ? 'المدير العام للمتجر' : 'عضو بريميوم',
+            photoURL: user.photoURL || '',
+            createdAt: new Date().toISOString(),
+            isVerified: isVerified,
+            affinityPoints: isAdmin ? 1000 : 50
+          };
+          await setDoc(userDocRef, initialProfile);
+          setProfile(initialProfile);
         } else {
           const currentData = docSnap.data();
+          // Auto-upgrade role if email is in admin list
           if (isAdmin && currentData.role !== 'owner') {
             await setDoc(userDocRef, { 
               role: 'owner', 
               label: 'المدير العام للمتجر',
               isVerified: true 
             }, { merge: true });
+          }
+          // Sync verification status
+          if (currentData.isVerified !== isVerified) {
+            await setDoc(userDocRef, { isVerified }, { merge: true });
           }
         }
       } catch (err) {
