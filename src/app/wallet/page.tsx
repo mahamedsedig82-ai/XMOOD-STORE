@@ -10,25 +10,20 @@ import {
   Copy, 
   Loader2, 
   ArrowRightLeft, 
-  Edit2, 
   Zap, 
   UserCheck, 
-  Phone, 
-  Mail, 
-  Award, 
-  TrendingUp, 
-  CheckCircle, 
   Smartphone, 
-  UserCircle, 
   Settings, 
   Camera, 
   Building2, 
   CreditCard, 
   Bitcoin, 
   HelpCircle,
-  Clock,
-  CheckCircle2,
-  XCircle
+  Award,
+  TrendingUp,
+  CheckCircle,
+  Mail,
+  UserCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -50,14 +45,12 @@ export default function SovereignWalletPage() {
   const { profile, user, loading: userLoading, isVerified } = useUser();
   const db = useFirestore();
   
-  // Profile Editing State
   const [isEditing, setIsEditing] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newPhotoURL, setNewPhotoURL] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Agent Request State
   const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false);
   const [agentReason, setAgentReason] = useState("");
   const [agentExperience, setAgentExperience] = useState("");
@@ -73,7 +66,7 @@ export default function SovereignWalletPage() {
 
   const transactionsQuery = useMemoFirebase(() => {
     if (!user || !db) return null;
-    return query(collection(db, "users", user.uid, "transactions"), orderBy("createdAt", "desc"));
+    return query(collection(db, "users", user.uid, "transactions"), orderBy("createdAt", "desc"), limit(50));
   }, [user, db]);
 
   const agentRequestQuery = useMemoFirebase(() => {
@@ -96,9 +89,9 @@ export default function SovereignWalletPage() {
         updatedAt: new Date().toISOString()
       });
       setIsEditing(false);
-      toast({ title: "تم التحديث", description: "تم ربط معلوماتك السيادية الجديدة بنجاح." });
+      toast({ title: "تم التحديث" });
     } catch (e) {
-      toast({ variant: "destructive", title: "فشل التحديث", description: "تأكد من الصلاحيات والاتصال." });
+      toast({ variant: "destructive", title: "فشل التحديث" });
     } finally {
       setIsUpdating(false);
     }
@@ -118,9 +111,9 @@ export default function SovereignWalletPage() {
         createdAt: new Date().toISOString()
       });
       setIsAgentDialogOpen(false);
-      toast({ title: "تم إرسال الطلب", description: "طلبك قيد المراجعة من قبل الإدارة العليا الآن." });
+      toast({ title: "تم إرسال الطلب", description: "طلبك قيد المراجعة حالياً." });
     } catch (e) {
-      toast({ variant: "destructive", title: "فشل الإرسال", description: "يرجى المحاولة لاحقاً." });
+      toast({ variant: "destructive", title: "فشل الإرسال" });
     } finally {
       setIsSubmittingAgent(false);
     }
@@ -128,337 +121,242 @@ export default function SovereignWalletPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: "تم النسخ", description: "معرفك الشخصي متاح الآن في الحافظة." });
+    toast({ title: "تم النسخ" });
   };
 
   if (userLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="w-16 h-16 border-t-2 border-primary rounded-full animate-spin" />
+      <div className="w-12 h-12 border-t-2 border-primary rounded-full animate-spin" />
     </div>
   );
 
   const balance = profile?.walletBalance || 0;
 
   const paymentMethods = [
-    { 
-      name: "بنكك (Bankak)", 
-      icon: Building2, 
-      desc: "التحويل المباشر عبر تطبيق بنك الخرطوم. أسرع وسيلة محلية.", 
-      color: "text-green-500",
-      guide: "قم بالتحويل لرقم الحساب المعتمد من الوكيل وأرسل صورة الإشعار."
-    },
-    { 
-      name: "Binance (USDT)", 
-      icon: Bitcoin, 
-      desc: "شحن المحفظة عبر العملات الرقمية المستقرة (USDT/P2P).", 
-      color: "text-yellow-500",
-      guide: "اختر شبكة TRC20 للتحويل لضمان سرعة المعالجة وأقل رسوم."
-    },
-    { 
-      name: "فوري (Fawry)", 
-      icon: CreditCard, 
-      desc: "شبكة الدفع الإلكتروني الشاملة للوكلاء والعملاء.", 
-      color: "text-blue-500",
-      guide: "استخدم كود الخدمة الخاص بالمتجر لدى أي منفذ فوري معتمد."
-    },
-    { 
-      name: "ماي سوداني", 
-      icon: Smartphone, 
-      desc: "خدمة تحويل الرصيد والدفع عبر شبكة سوداني.", 
-      color: "text-red-500",
-      guide: "خدمة دفع لحظية تعتمد على رقم الهاتف المسجل في النظام."
-    }
+    { name: "بنكك (Bankak)", icon: Building2, desc: "التحويل المحلي في السودان.", color: "text-green-500" },
+    { name: "Binance (USDT)", icon: Bitcoin, desc: "شحن عالمي عبر الكريبتو.", color: "text-yellow-500" },
+    { name: "فوري (Fawry)", icon: CreditCard, desc: "شبكة فوري المصرية.", color: "text-blue-500" },
+    { name: "ماي سوداني", icon: Smartphone, desc: "الدفع عبر الرصيد.", color: "text-red-500" }
   ];
 
   return (
-    <main className="min-h-screen bg-black font-body text-white pb-20" dir="rtl">
+    <main className="min-h-screen bg-black text-white pb-20" dir="rtl">
       <Navbar />
-      <div className="container mx-auto px-6 py-32 max-w-6xl animate-fade-in">
+      <div className="container mx-auto px-4 md:px-6 py-24 md:py-32 max-w-6xl animate-fade-in">
         
-        {/* Header: Unified Profile & Identity Dashboard */}
-        <Card className="luxury-card border-none overflow-hidden mb-12 p-10 md:p-16 relative bg-zinc-950/40">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-primary to-red-600 animate-pulse" />
+        {/* Profile Card */}
+        <Card className="luxury-card border-none overflow-hidden mb-8 md:mb-12 p-6 md:p-16 relative bg-zinc-950/40">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-primary to-red-600" />
           
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-16 relative z-10">
-            <div className="flex flex-col md:flex-row items-center gap-10 text-center md:text-right flex-1">
-              <div className="relative group">
-                <Avatar className="w-40 h-40 rounded-[3.5rem] border-4 border-primary/20 shadow-2xl transition-all group-hover:border-primary/50 group-hover:scale-105 duration-500 overflow-hidden">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-10 relative z-10">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 text-center md:text-right flex-1">
+              <div className="relative group cursor-pointer" onClick={() => setIsEditing(!isEditing)}>
+                <Avatar className="w-28 h-28 md:w-40 md:h-40 rounded-2xl md:rounded-[3.5rem] border-4 border-primary/20 shadow-2xl overflow-hidden transition-all group-hover:border-primary/50">
                   <AvatarImage src={profile?.photoURL} />
-                  <AvatarFallback className="bg-zinc-900 text-primary text-5xl font-black">
+                  <AvatarFallback className="bg-zinc-900 text-primary text-4xl md:text-5xl font-black">
                     {profile?.displayName?.charAt(0) || "X"}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-3 -right-2 bg-primary text-black p-3 rounded-2xl border-4 border-black shadow-2xl">
-                  <Award size={24} />
+                <div className="absolute -bottom-2 -right-2 bg-primary text-black p-2 md:p-3 rounded-xl border-2 border-black shadow-2xl">
+                  <Award size={18} className="md:w-6 md:h-6" />
                 </div>
-                {isEditing && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-[3.5rem] pointer-events-none">
-                    <Camera className="text-white w-8 h-8" />
-                  </div>
-                )}
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 <div>
-                  <h1 className="text-5xl md:text-6xl font-headline font-bold gold-text mb-3 leading-tight">{profile?.displayName}</h1>
-                  <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                    <Badge className="bg-red-600/20 text-red-500 border-red-600/30 px-6 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest">{profile?.role}</Badge>
-                    <Badge variant="outline" className="border-primary/20 text-primary text-[9px] px-6 py-1.5 rounded-full font-black uppercase tracking-widest">{profile?.label || "XMOOD MEMBER"}</Badge>
-                    {currentAgentRequest && (
-                      <Badge className={`px-6 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                        currentAgentRequest.status === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                        currentAgentRequest.status === 'accepted' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                        'bg-red-500/10 text-red-500 border-red-500/20'
-                      }`}>
-                         طلب وكيل: {currentAgentRequest.status === 'pending' ? 'تحت المراجعة' : currentAgentRequest.status === 'accepted' ? 'مقبول' : 'مرفوض'}
-                      </Badge>
-                    )}
+                  <h1 className="text-3xl md:text-6xl font-headline font-bold gold-text mb-2 leading-tight">{profile?.displayName}</h1>
+                  <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                    <Badge className="bg-red-600/20 text-red-500 border-red-600/30 px-4 py-1 text-[8px] md:text-[9px] font-black uppercase tracking-widest">{profile?.role}</Badge>
+                    <Badge variant="outline" className="border-primary/20 text-primary text-[8px] md:text-[9px] px-4 py-1 font-black uppercase tracking-widest">{profile?.label || "MEMBER"}</Badge>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-white/5 p-4 rounded-2xl border border-white/5 flex items-center gap-4 hover:bg-white/10 transition-colors">
-                    <div className="w-10 h-10 bg-red-600/10 rounded-xl flex items-center justify-center text-red-600">
-                      <Mail size={18} />
-                    </div>
-                    <div className="text-right">
-                       <p className="text-[8px] text-zinc-500 font-bold uppercase">البريد الإلكتروني</p>
-                       <p className="text-xs font-bold text-zinc-300 truncate max-w-[150px]">{profile?.email}</p>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center gap-3">
+                    <Mail size={14} className="text-red-500" />
+                    <span className="text-[10px] md:text-xs font-bold text-zinc-400 truncate max-w-[120px]">{profile?.email}</span>
                   </div>
-                  <div className="bg-white/5 p-4 rounded-2xl border border-white/5 flex items-center gap-4 hover:bg-white/10 transition-colors">
-                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                      <Smartphone size={18} />
-                    </div>
-                    <div className="text-right">
-                       <p className="text-[8px] text-zinc-500 font-bold uppercase">رقم الهاتف</p>
-                       <p className="text-xs font-bold text-zinc-300">{profile?.phoneNumber || "غير مربوط"}</p>
-                    </div>
+                  <div className="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center gap-3">
+                    <Smartphone size={14} className="text-primary" />
+                    <span className="text-[10px] md:text-xs font-bold text-zinc-400">{profile?.phoneNumber || "رقم مفقود"}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 w-full md:w-64">
-              <Button onClick={() => setIsEditing(!isEditing)} variant="outline" className="h-14 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 font-black uppercase text-[10px] tracking-widest gap-3">
-                {isEditing ? "إلغاء التعديل" : <><Settings size={18} className="text-zinc-500" /> إعدادات الملف</>}
+            <div className="flex flex-col gap-3 w-full md:w-64">
+              <Button onClick={() => setIsEditing(!isEditing)} variant="outline" className="h-12 md:h-14 rounded-xl border-white/10 bg-white/5 text-[9px] md:text-[10px] font-black uppercase tracking-widest gap-2">
+                <Settings size={16} /> {isEditing ? "إلغاء التعديل" : "تعديل الهوية"}
               </Button>
-              <Button asChild className="royal-button h-18 px-10 text-base shadow-primary/30">
-                <Link href="/wallet/transfer"><ArrowRightLeft className="ml-4" size={24} /> تحويل رصيد</Link>
+              <Button asChild className="royal-button h-14 md:h-18 px-6 text-sm md:text-base">
+                <Link href="/wallet/transfer"><ArrowRightLeft className="ml-2 md:ml-4" size={20} /> تحويل رصيد</Link>
               </Button>
-              
               {!currentAgentRequest && profile?.role !== 'agent' && (
-                <Dialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" className="h-12 text-zinc-500 hover:text-primary font-bold text-[9px] uppercase tracking-[0.2em] gap-2">
-                       <UserCheck size={16} /> طلب رتبة وكيل معتمد
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-zinc-950 border border-primary/20 rounded-[2.5rem] p-10 text-white shadow-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="text-3xl font-headline font-bold gold-text flex items-center gap-4">
-                        <UserCheck className="text-primary" /> طلب الانضمام للنخبة
-                      </DialogTitle>
-                      <DialogDescription className="text-zinc-500 font-bold mt-2">كن جزءاً من شبكة وكلاء XMOOD الرسمية في منطقتك.</DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-6 mt-8">
-                       <div className="space-y-2">
-                          <label className="text-[9px] font-bold text-primary uppercase pr-2">لماذا تود أن تصبح وكيلاً؟</label>
-                          <Textarea value={agentReason} onChange={e => setAgentReason(e.target.value)} placeholder="اشرح لنا دوافعك..." className="bg-zinc-900 border-none rounded-xl min-h-[100px] p-4" />
-                       </div>
-                       <div className="space-y-2">
-                          <label className="text-[9px] font-bold text-primary uppercase pr-2">الخبرات السابقة في الشحن والوساطة</label>
-                          <Textarea value={agentExperience} onChange={e => setAgentExperience(e.target.value)} placeholder="اذكر أي منصات أو أعمال سابقة..." className="bg-zinc-900 border-none rounded-xl min-h-[80px] p-4" />
-                       </div>
-                    </div>
-                    <DialogFooter className="mt-10">
-                       <Button onClick={handleAgentRequest} disabled={isSubmittingAgent} className="royal-button w-full h-16 text-lg">
-                          {isSubmittingAgent ? <Loader2 className="animate-spin" /> : "تقديم طلب السيادة"}
-                       </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <Button onClick={() => setIsAgentDialogOpen(true)} variant="ghost" className="text-zinc-500 hover:text-primary text-[8px] md:text-[9px] font-black uppercase tracking-widest">
+                   طلب رتبة وكيل
+                </Button>
               )}
             </div>
           </div>
 
           <AnimatePresence>
             {isEditing && (
-              <motion.div 
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="mt-12 pt-12 border-t border-white/5 overflow-hidden"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase text-zinc-500 pr-4 tracking-widest flex items-center gap-2">
-                       <UserCircle size={12} /> الاسم المعروض للنخبة
-                    </label>
-                    <Input value={newDisplayName} onChange={e => setNewDisplayName(e.target.value)} className="h-14 bg-black border-primary/20 rounded-2xl px-6 font-bold text-primary text-lg" />
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="mt-8 pt-8 border-t border-white/5 overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase text-zinc-500 pr-2">الاسم السيادي</label>
+                    <Input value={newDisplayName} onChange={e => setNewDisplayName(e.target.value)} className="h-12 bg-black border-primary/20 rounded-xl font-bold" />
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase text-zinc-500 pr-4 tracking-widest flex items-center gap-2">
-                       <Smartphone size={12} /> رقم الهاتف الدولي
-                    </label>
-                    <Input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="h-14 bg-black border-primary/20 rounded-2xl px-6 font-bold text-left text-lg" placeholder="+966" />
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black uppercase text-zinc-500 pr-2">رقم الهاتف الدولي</label>
+                    <Input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="h-12 bg-black border-primary/20 rounded-xl font-bold text-left" placeholder="+966" />
                   </div>
-                  <div className="col-span-1 md:col-span-2 space-y-3">
-                    <label className="text-[10px] font-black uppercase text-zinc-500 pr-4 tracking-widest flex items-center gap-2">
-                       <Camera size={12} /> رابط الصورة الشخصية (Photo URL)
-                    </label>
-                    <Input value={newPhotoURL} onChange={e => setNewPhotoURL(e.target.value)} placeholder="https://..." className="h-14 bg-black border-primary/20 rounded-2xl px-6 font-bold text-zinc-300" />
+                  <div className="col-span-1 md:col-span-2 space-y-2">
+                    <label className="text-[9px] font-black uppercase text-zinc-500 pr-2">رابط الصورة الشخصية</label>
+                    <Input value={newPhotoURL} onChange={e => setNewPhotoURL(e.target.value)} placeholder="https://..." className="h-12 bg-black border-primary/20 rounded-xl" />
                   </div>
                 </div>
-                <Button onClick={handleUpdateProfile} disabled={isUpdating} className="royal-button h-14 px-12 text-sm">
-                  {isUpdating ? <Loader2 className="animate-spin" /> : "حفظ السيادة الرقمية"}
+                <Button onClick={handleUpdateProfile} disabled={isUpdating} className="royal-button h-12 px-10 text-xs">
+                  {isUpdating ? <Loader2 className="animate-spin" /> : "حفظ التغييرات"}
                 </Button>
               </motion.div>
             )}
           </AnimatePresence>
         </Card>
         
-        {/* Assets & Charging Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 mb-12">
-          {/* Main Balance Card */}
-          <Card className="luxury-card border-none relative overflow-hidden p-12 bg-zinc-950 flex flex-col justify-center min-h-[350px]">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 blur-[120px] rounded-full" />
+        {/* Balance Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-10 mb-12">
+          <Card className="luxury-card border-none relative overflow-hidden p-8 md:p-12 bg-zinc-950 min-h-[250px] flex flex-col justify-center">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full" />
             <div className="relative z-10 text-center md:text-right">
-              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-primary/60 mb-8 flex items-center justify-center md:justify-start gap-3">
-                <TrendingUp size={16} /> الرصيد السيادي الكلي
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 mb-6 flex items-center justify-center md:justify-start gap-2">
+                <TrendingUp size={14} /> الرصيد الكلي
               </p>
-              <div className="text-7xl font-black text-white mb-6 tracking-tighter leading-none">{formatUSD(balance)}</div>
-              <div className="text-lg font-bold text-zinc-500 uppercase tracking-[0.3em] bg-white/5 inline-block px-6 py-2 rounded-full border border-white/5">
+              <div className="text-5xl md:text-7xl font-black text-white mb-4 tracking-tighter leading-none">{formatUSD(balance)}</div>
+              <div className="text-sm md:text-base font-bold text-zinc-500 bg-white/5 inline-block px-4 py-1.5 rounded-full border border-white/5 uppercase tracking-widest">
                 {formatSDG(balance)}
               </div>
             </div>
           </Card>
 
-          {/* Charging & Verification Card */}
-          <Card className="lg:col-span-2 luxury-card border-none overflow-hidden p-12 flex flex-col md:flex-row items-center gap-12 bg-zinc-950 min-h-[350px]">
-            <div className="flex-1 space-y-8 text-center md:text-right">
-               <div className="flex items-center justify-center md:justify-start gap-5 text-primary">
-                  <Zap size={32} className="animate-pulse" />
-                  <h3 className="text-3xl font-bold gold-text">بروتوكول الشحن الفوري</h3>
-               </div>
-               <p className="text-zinc-400 text-base font-medium leading-relaxed max-w-lg">
-                 استخدم معرفك السيادي (UID) أو رقم الهاتف الموثق لتزويد محفظتك بالرصيد عبر وكلائنا المعتمدين في كافة المناطق.
+          <Card className="lg:col-span-2 luxury-card border-none overflow-hidden p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 bg-zinc-950">
+            <div className="flex-1 space-y-6 text-center md:text-right">
+               <h3 className="text-2xl md:text-3xl font-bold gold-text flex items-center justify-center md:justify-start gap-3">
+                  <Zap size={24} className="animate-pulse" /> بروتوكول الشحن
+               </h3>
+               <p className="text-zinc-400 text-xs md:text-sm font-medium leading-relaxed max-w-lg">
+                 استخدم معرفك السيادي (UID) الموضح أدناه لتزويد محفظتك بالرصيد عبر وكلائنا المعتمدين فوراً.
                </p>
-               <div className="space-y-4">
-                  <div className="bg-black px-8 py-5 rounded-[2rem] border border-dashed border-primary/30 flex items-center justify-between gap-6 cursor-pointer hover:bg-primary/5 transition-all group" onClick={() => copyToClipboard(user?.uid || "")}>
-                      <div className="flex flex-col">
-                        <span className="text-[8px] text-zinc-600 font-black uppercase tracking-widest mb-1">SOVEREIGN UID</span>
-                        <span className="font-mono font-black text-xl text-primary tracking-widest uppercase">{user?.uid?.substring(0, 22)}...</span>
-                      </div>
-                      <Copy size={24} className="text-zinc-700 group-hover:text-primary transition-colors" />
+               <div className="bg-black px-6 py-4 rounded-2xl border border-dashed border-primary/30 flex items-center justify-between gap-4 cursor-pointer hover:bg-primary/5 transition-all group" onClick={() => copyToClipboard(user?.uid || "")}>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[7px] text-zinc-600 font-black uppercase mb-1">SOVEREIGN UID</span>
+                    <span className="font-mono font-black text-sm md:text-lg text-primary tracking-widest uppercase truncate max-w-[200px] md:max-w-none">{user?.uid}</span>
                   </div>
-                  <div className="bg-primary/5 px-8 py-4 rounded-2xl border border-primary/10 flex items-center justify-between">
-                     <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">الرقم الموثق للشحن</span>
-                     <span className="font-black text-white text-xl tracking-wider">{profile?.phoneNumber || "غير مربوط"}</span>
-                  </div>
+                  <Copy size={20} className="text-zinc-700 group-hover:text-primary shrink-0" />
                </div>
             </div>
             
-            <div className="w-full md:w-64 p-10 bg-black/60 rounded-[3rem] text-center border border-white/5 flex flex-col items-center justify-center gap-6 shadow-2xl">
+            <div className="w-full md:w-56 p-8 bg-black/60 rounded-3xl text-center border border-white/5 flex flex-col items-center justify-center gap-4">
               {isVerified ? (
-                <div className="relative">
-                  <CheckCircle size={72} className="text-green-500" />
-                  <div className="absolute inset-0 bg-green-500/20 blur-2xl rounded-full" />
-                </div>
+                <CheckCircle size={56} className="text-green-500" />
               ) : (
-                <ShieldCheck size={72} className="text-red-500 animate-pulse" />
+                <ShieldCheck size={56} className="text-red-500 animate-pulse" />
               )}
               <div>
-                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3">حالة الحساب</p>
-                <Badge className={`px-8 py-2 rounded-full font-black text-[10px] uppercase tracking-widest ${isVerified ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
-                  {isVerified ? 'Verified Sovereign' : 'Unverified Identity'}
+                <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-2">حالة التوثيق</p>
+                <Badge className={`px-4 py-1 rounded-full font-black text-[8px] uppercase tracking-widest ${isVerified ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                  {isVerified ? 'Verified' : 'Unverified'}
                 </Badge>
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Payment Methods Section */}
-        <section className="mb-20 space-y-10">
-           <div className="flex items-center gap-4">
-              <CreditCard className="text-primary w-8 h-8" />
-              <h2 className="text-3xl font-headline font-bold text-white">طرق الدفع والشحن المعتمدة</h2>
-           </div>
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {paymentMethods.map((pm, i) => (
-                <Card key={i} className="luxury-card border-none bg-zinc-950/60 p-8 hover:bg-zinc-900 transition-all group">
-                   <div className={`w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center ${pm.color} mb-6 border border-white/5 group-hover:border-current transition-all shadow-xl`}>
-                      <pm.icon size={28} />
-                   </div>
-                   <h4 className="font-bold text-lg text-white mb-2">{pm.name}</h4>
-                   <p className="text-xs text-zinc-500 leading-relaxed mb-6 h-12">{pm.desc}</p>
-                   <div className="pt-4 border-t border-white/5">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase mb-2 flex items-center gap-2">
-                        <HelpCircle size={12} className="text-primary" /> كيفية الشحن:
-                      </p>
-                      <p className="text-[10px] text-zinc-600 leading-relaxed italic">{pm.guide}</p>
-                   </div>
-                </Card>
-              ))}
-           </div>
-        </section>
-
-        {/* Financial Ledger Section */}
+        {/* Financial History */}
         <Card className="luxury-card border-none overflow-hidden bg-zinc-950/40">
-          <CardHeader className="p-10 border-b border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <CardTitle className="text-3xl font-bold flex items-center gap-5">
-              <History size={32} className="text-red-600" /> سجل التدفقات المالية السيادية
+          <CardHeader className="p-6 md:p-10 border-b border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <CardTitle className="text-xl md:text-3xl font-bold flex items-center gap-3 md:gap-5">
+              <History size={24} className="md:w-8 md:h-8 text-red-600" /> سجل التدفقات المالية
             </CardTitle>
-            <div className="flex items-center gap-4">
-               <Badge variant="outline" className="border-primary/20 text-primary uppercase text-[10px] font-black px-6 py-2 rounded-full tracking-widest">Live Sovereign Ledger</Badge>
-            </div>
+            <Badge variant="outline" className="border-primary/20 text-primary uppercase text-[8px] font-black px-4 py-1.5 rounded-full">Live Sovereign Ledger</Badge>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="max-h-[600px] custom-scrollbar">
-              <Table>
+            <ScrollArea className="max-h-[500px] custom-scrollbar">
+              <div className="md:hidden space-y-2 p-4">
+                {transactions?.map((t: any) => (
+                  <div key={t.id} className="p-4 bg-white/5 rounded-2xl border border-white/5 flex justify-between items-center">
+                    <div className="space-y-1">
+                      <p className="font-bold text-[11px] text-zinc-200 line-clamp-1">{t.description}</p>
+                      <p className="text-[8px] text-zinc-500 font-bold">{new Date(t.createdAt).toLocaleDateString('ar-EG')}</p>
+                    </div>
+                    <div className="text-left">
+                       <p className={`font-black text-lg ${t.type === 'deposit' || t.type === 'transfer_receive' ? 'text-green-500' : 'text-red-500'}`}>
+                         {t.type === 'deposit' || t.type === 'transfer_receive' ? '+' : '-'}${t.amount}
+                       </p>
+                       <Badge className="text-[6px] px-2 py-0">{t.type}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Table className="hidden md:table">
                 <TableHeader className="bg-black/60 sticky top-0 z-20 border-b border-white/5">
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-right py-6 pr-12 font-black uppercase text-[10px] text-zinc-500 tracking-widest">تفاصيل العملية</TableHead>
-                    <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500 tracking-widest">التصنيف</TableHead>
-                    <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500 tracking-widest">المبلغ</TableHead>
-                    <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500 tracking-widest">التوقيت</TableHead>
+                    <TableHead className="text-right py-6 pr-10 font-black uppercase text-[10px] text-zinc-500">العملية</TableHead>
+                    <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500">التصنيف</TableHead>
+                    <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500">المبلغ</TableHead>
+                    <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500 pr-10">التوقيت</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {transLoading ? (
-                    <TableRow><TableCell colSpan={4} className="text-center py-24"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
+                    <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
                   ) : transactions?.map((t: any) => (
                     <TableRow key={t.id} className="hover:bg-primary/5 transition-all border-b border-white/5 group">
-                      <TableCell className="py-8 pr-12">
-                        <span className="font-bold text-base text-zinc-200 block group-hover:text-white transition-colors">{t.description}</span>
-                        <span className="text-[9px] text-zinc-600 font-bold mt-2 uppercase tracking-tighter">Operation ID: {t.id?.substring(0,12)}</span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`rounded-full font-black text-[9px] px-4 py-1 border uppercase tracking-widest ${t.type === 'deposit' || t.type === 'transfer_receive' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
-                          {t.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className={`font-black text-2xl tracking-tighter ${t.type === 'deposit' || t.type === 'transfer_receive' ? 'text-green-500' : 'text-red-500'}`}>
+                      <TableCell className="py-6 pr-10 font-bold text-sm text-zinc-200">{t.description}</TableCell>
+                      <TableCell><Badge className="text-[8px] font-black uppercase">{t.type}</Badge></TableCell>
+                      <TableCell className={`font-black text-xl ${t.type === 'deposit' || t.type === 'transfer_receive' ? 'text-green-500' : 'text-red-500'}`}>
                         {t.type === 'deposit' || t.type === 'transfer_receive' ? `+${formatUSD(t.amount)}` : `-${formatUSD(t.amount)}`}
                       </TableCell>
-                      <TableCell className="text-zinc-500 text-[11px] font-bold">
-                        {new Date(t.createdAt).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      </TableCell>
+                      <TableCell className="text-zinc-500 text-[10px] font-bold pr-10">{new Date(t.createdAt).toLocaleString('ar-EG')}</TableCell>
                     </TableRow>
                   ))}
-                  {(!transactions || transactions.length === 0) && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-32 text-zinc-700 font-bold uppercase tracking-[0.5em] text-[11px]">
-                         No Financial Records Found
-                      </TableCell>
-                    </TableRow>
-                  )}
                 </TableBody>
               </Table>
             </ScrollArea>
           </CardContent>
         </Card>
       </div>
+
+      {/* Agent Request Dialog */}
+      <Dialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen}>
+        <DialogContent className="bg-zinc-950 border border-primary/20 rounded-2xl md:rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl md:text-3xl font-headline font-bold gold-text flex items-center gap-4">
+              <UserCheck className="text-primary" /> طلب رتبة وكيل
+            </DialogTitle>
+            <DialogDescription className="text-zinc-500 font-bold mt-2">انضم لنخبة وكلاء XMOOD الرسميين.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 mt-6">
+             <div className="space-y-2">
+                <label className="text-[9px] font-bold text-primary uppercase pr-2">الاسم الكامل</label>
+                <Input value={profile?.fullName || ""} disabled className="bg-zinc-900 border-none rounded-xl" />
+             </div>
+             <div className="space-y-2">
+                <label className="text-[9px] font-bold text-primary uppercase pr-2">لماذا تود الانضمام؟</label>
+                <Textarea value={agentReason} onChange={e => setAgentReason(e.target.value)} placeholder="اشرح لنا..." className="bg-zinc-900 border-none rounded-xl min-h-[100px] p-4" />
+             </div>
+             <div className="space-y-2">
+                <label className="text-[9px] font-bold text-primary uppercase pr-2">الخبرات السابقة</label>
+                <Textarea value={agentExperience} onChange={e => setAgentExperience(e.target.value)} placeholder="اذكر خبراتك..." className="bg-zinc-900 border-none rounded-xl min-h-[80px] p-4" />
+             </div>
+          </div>
+          <DialogFooter className="mt-8">
+             <Button onClick={handleAgentRequest} disabled={isSubmittingAgent} className="royal-button w-full h-14 md:h-16 text-lg">
+                {isSubmittingAgent ? <Loader2 className="animate-spin" /> : "تقديم الطلب للسيادة"}
+             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
