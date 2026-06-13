@@ -17,8 +17,6 @@ import {
   Users,
   ShieldCheck,
   ChevronDown,
-  ShoppingBag,
-  History,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -145,7 +143,7 @@ export function Navbar() {
 
                 <DropdownMenuSeparator className="bg-white/5 my-2" />
 
-                {['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman'].includes(profile?.role || '') && (
+                {['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile?.role || '') && (
                   <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer text-primary font-black justify-end bg-primary/5 hover:bg-primary/20 border border-primary/10">
                     <Link href="/admin" className="flex items-center w-full justify-end">
                       <span className="ml-3 text-[10px] uppercase">لوحة الإدارة PRO</span>
