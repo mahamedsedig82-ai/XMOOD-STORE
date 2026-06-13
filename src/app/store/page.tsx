@@ -1,26 +1,31 @@
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Loader2, Sparkles } from "lucide-react";
+import { Search, Filter, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export default function StorePage() {
   const db = useFirestore();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const productsQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    return query(collection(db, "products"), orderBy("createdAt", "desc"));
+  useEffect(() => {
+    if (!db) return;
+    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, [db]);
-
-  const { data: products, loading } = useCollection(productsQuery);
 
   const categories = Array.from(new Set(products.map(p => p.category))).filter(Boolean);
   
@@ -31,50 +36,45 @@ export default function StorePage() {
   });
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-background">
       <Navbar />
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-6 py-32 max-w-7xl">
         <header className="mb-24 space-y-12">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
             <div className="text-right">
-              <div className="flex items-center gap-3 text-primary mb-4 font-black tracking-[0.4em] uppercase text-[10px]">
-                <Sparkles size={16} />
-                <span>XMOOD Sovereign Catalog</span>
+              <div className="flex items-center gap-3 text-primary mb-6 font-black tracking-[0.4em] uppercase text-[10px]">
+                <Zap size={16} className="animate-pulse" />
+                <span>مركز الأصول الرقمية المعتمدة</span>
               </div>
-              <h1 className="text-6xl font-headline font-bold gold-text leading-tight">مستودع الأصول الرقمية</h1>
-              <p className="text-slate-500 text-xl font-light mt-4">تصفح أرقى الخدمات والباقات الرقمية المعتمدة سيادياً.</p>
+              <h1 className="text-6xl md:text-8xl font-headline font-black gold-text leading-tight">مستودع الخدمات</h1>
+              <p className="text-zinc-500 text-xl font-medium mt-6 max-w-2xl leading-relaxed">اكتشف أرقى باقات الشحن والخدمات الرقمية الموثوقة والمجهزة للتسليم الفوري.</p>
             </div>
             
-            <div className="flex w-full md:w-auto gap-4">
-              <div className="relative flex-1 md:w-96">
-                <Search className="absolute right-6 top-1/2 -translate-y-1/2 w-6 h-6 text-primary/40" />
+            <div className="flex w-full lg:w-auto gap-4">
+              <div className="relative flex-1 lg:w-[450px] group">
+                <Search className="absolute right-6 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-400 group-focus-within:text-primary transition-all" />
                 <Input 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="ابحث عن أصل رقمي..." 
-                  className="pr-16 h-18 rounded-[1.5rem] border-primary/10 bg-zinc-900 text-white shadow-inner focus:ring-primary" 
+                  placeholder="ابحث عن باقة أو خدمة..." 
+                  className="pr-16 h-20 rounded-3xl border-border/50 bg-card text-xl shadow-xl focus:ring-primary/20" 
                 />
               </div>
-              <Button variant="outline" className="h-18 w-18 rounded-[1.5rem] border-primary/10 bg-zinc-900 flex items-center justify-center p-0">
-                <Filter className="w-6 h-6 text-primary/40" />
-              </Button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-3 pt-6 border-t border-border/50">
             <Button 
               onClick={() => setSelectedCategory(null)}
-              variant={selectedCategory === null ? "default" : "outline"}
-              className={`rounded-full px-10 font-black h-12 text-sm uppercase tracking-widest ${selectedCategory === null ? 'bg-primary text-black' : 'border-primary/10 text-slate-500 hover:bg-primary/5'}`}
+              className={`rounded-2xl px-10 h-14 font-black text-xs uppercase tracking-widest transition-all ${selectedCategory === null ? 'bg-primary text-black shadow-xl shadow-primary/20' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800'}`}
             >
-              الكل
+              كافة الخدمات
             </Button>
             {categories.map((cat) => (
               <Button 
                 key={String(cat)}
                 onClick={() => setSelectedCategory(String(cat))}
-                variant={selectedCategory === cat ? "default" : "outline"}
-                className={`rounded-full px-10 font-black h-12 text-sm uppercase tracking-widest ${selectedCategory === cat ? 'bg-primary text-black' : 'border-primary/10 text-slate-500 hover:bg-primary/5'}`}
+                className={`rounded-2xl px-10 h-14 font-black text-xs uppercase tracking-widest transition-all ${selectedCategory === cat ? 'bg-primary text-black shadow-xl shadow-primary/20' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800'}`}
               >
                 {String(cat)}
               </Button>
@@ -83,8 +83,9 @@ export default function StorePage() {
         </header>
 
         {loading ? (
-          <div className="flex justify-center py-60">
-            <Loader2 className="animate-spin text-primary" size={60} />
+          <div className="flex flex-col items-center justify-center py-60 gap-6">
+            <Loader2 className="animate-spin text-primary" size={80} />
+            <p className="font-black text-zinc-500 uppercase tracking-widest text-xs">جاري جلب البيانات من المركز...</p>
           </div>
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
@@ -93,12 +94,12 @@ export default function StorePage() {
             ))}
           </div>
         ) : (
-          <div className="py-60 text-center luxury-card rounded-[4rem] border-dashed border-primary/10">
-            <div className="text-primary/10 mb-10 flex justify-center">
-              <Search size={120} />
+          <div className="py-60 text-center luxury-card border-dashed border-border flex flex-col items-center">
+            <div className="text-zinc-200 dark:text-zinc-800 mb-10">
+              <Search size={140} />
             </div>
-            <h3 className="text-4xl font-bold gold-text mb-4">لا توجد أصول متاحة</h3>
-            <p className="text-slate-500 text-lg">لم نتمكن من العثور على أي باقات تطابق معاييرك حالياً.</p>
+            <h3 className="text-4xl font-black gold-text mb-4">لا توجد أصول مطابقة</h3>
+            <p className="text-zinc-500 text-lg font-medium">لم نتمكن من العثور على أي نتائج لبحثك الحالي.</p>
           </div>
         )}
       </div>

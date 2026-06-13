@@ -1,13 +1,12 @@
+
 "use client";
 
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { 
-  ShieldCheck, Trophy, Cpu, Heart, Sparkles, ArrowRight, 
-  Zap, Instagram, Mail, Phone, MessageSquare, Palette, 
-  Facebook, Youtube, Video, Globe, Award, CheckCircle,
-  Store
+  ShieldCheck, Zap, Store, Palette, Globe, Award, CheckCircle, 
+  MessageSquare, Mail, Smartphone, ArrowRight, Users
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -15,7 +14,7 @@ import { doc } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 
-export default function HomeProfessional() {
+export default function HomeCorporate() {
   const db = useFirestore();
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
@@ -24,95 +23,106 @@ export default function HomeProfessional() {
     <main className="min-h-screen bg-background text-foreground" dir="rtl">
       <Navbar />
       
-      {/* Modern Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none dark:opacity-[0.03]">
+      {/* Modern Professional Hero Section */}
+      <section className="relative pt-40 pb-24 md:pt-60 md:pb-40 overflow-hidden bg-zinc-50/30 dark:bg-background">
+        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
              <defs>
-               <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                 <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+               <pattern id="grid-modern" width="60" height="60" patternUnits="userSpaceOnUse">
+                 <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="1"/>
                </pattern>
              </defs>
-             <rect width="100%" height="100%" fill="url(#grid)" />
+             <rect width="100%" height="100%" fill="url(#grid-modern)" />
           </svg>
         </div>
-        
-        <div className="container mx-auto px-6 relative z-10 text-center animate-fade-in">
-          <Badge className="mb-8 py-2 px-6 bg-primary/5 text-primary border-primary/20 rounded-full font-bold text-[10px] tracking-wide uppercase">
-            {config?.siteInfo?.subtitle || "منصة متكاملة للخدمات الرقمية والتقنية الموثوقة"}
-          </Badge>
-          
-          <h1 className="text-4xl md:text-7xl lg:text-8xl mb-8 font-headline font-bold leading-tight tracking-tight text-zinc-900 dark:text-white">
-             عالمك الرقمي <span className="gold-text">بلمسة احترافية</span>
-          </h1>
 
-          <p className="text-lg md:text-xl text-zinc-500 dark:text-zinc-400 max-w-3xl mx-auto mb-12 leading-relaxed font-medium">
-            {config?.siteInfo?.heroDescription || "نقدم باقات شحن ألعاب، حسابات مميزة، وخدمات إبداعية تضمن لك الجودة والسرعة والأمان التام."}
-          </p>
-          
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-            <Button asChild className="royal-button h-14 px-10 text-base">
-              <Link href="/store"><Store className="ml-2" size={18} /> تصفح المتجر</Link>
-            </Button>
-            <Button asChild className="accent-button h-14 px-10 text-base">
-              <Link href="/designs/gallery"><Palette className="ml-2" size={18} /> معرض الأعمال</Link>
-            </Button>
-          </div>
+        <div className="container mx-auto px-6 relative z-10 text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+             <Badge className="mb-10 py-2.5 px-10 bg-primary/10 text-primary border-primary/20 rounded-full font-black text-[11px] tracking-widest uppercase shadow-sm">
+               {config?.siteInfo?.subtitle || "منصة الخدمات الرقمية الموثوقة الأولى"}
+             </Badge>
+             
+             <h1 className="text-5xl md:text-8xl lg:text-9xl mb-10 font-headline font-black leading-tight tracking-tighter text-zinc-900 dark:text-white">
+                حلول رقمية <span className="gold-text">مبتكرة وموثوقة</span>
+             </h1>
+
+             <p className="text-xl md:text-2xl text-zinc-500 dark:text-zinc-400 max-w-4xl mx-auto mb-16 leading-relaxed font-medium">
+               {config?.siteInfo?.heroDescription || "نقدم باقات شحن الألعاب، اشتراكات رقمية، وخدمات إبداعية متكاملة تضمن لك السرعة والأمان التام في كل خطوة."}
+             </p>
+             
+             <div className="flex flex-wrap justify-center gap-6">
+               <Button asChild className="royal-button h-16 px-14 text-lg">
+                 <Link href="/store"><Store className="ml-3" size={24} /> تصفح المتجر</Link>
+               </Button>
+               <Button asChild className="accent-button h-16 px-14 text-lg">
+                 <Link href="/marketplace"><Users className="ml-3" size={24} /> مجتمع الوكلاء</Link>
+               </Button>
+             </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="py-20 bg-zinc-50 dark:bg-zinc-900/30">
+      {/* Corporate Features */}
+      <section className="py-32 bg-white dark:bg-zinc-950/40 border-y border-border/50">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="text-center mb-24">
+             <h2 className="text-4xl md:text-5xl font-headline font-bold mb-6">لماذا يختارنا المحترفون؟</h2>
+             <p className="text-zinc-500 text-lg max-w-2xl mx-auto">نلتزم بأعلى معايير الجودة والأمان لتقديم تجربة رقمية لا تضاهى.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
             {[
-              { icon: ShieldCheck, title: "حماية البيانات", desc: "أنظمة تشفير متطورة تضمن خصوصية تعاملاتك الرقمية.", color: "text-blue-500" },
-              { icon: Award, title: "جودة مضمونة", desc: "خدمات مختارة بعناية تلبي أعلى معايير الاحترافية.", color: "text-amber-500" },
-              { icon: Zap, title: "تنفيذ سريع", desc: "نظام آلي وبشري يضمن تسليم طلباتك في وقت قياسي.", color: "text-red-500" },
-              { icon: CheckCircle, title: "وكلاء معتمدون", desc: "نخبة من الوكلاء الموثوقين لضمان حقوقك في كل صفقة.", color: "text-green-500" },
+              { icon: ShieldCheck, title: "حماية متكاملة", desc: "أنظمة تشفير وحماية بيانات متطورة تضمن خصوصية تعاملاتك.", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/20" },
+              { icon: Award, title: "جودة معتمدة", desc: "كافة خدماتنا تخضع لمعايير فحص دقيقة لضمان رضاكم التام.", color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/20" },
+              { icon: Zap, title: "تنفيذ لحظي", desc: "نظام آلي متطور يضمن وصول طلباتك في ثوانٍ معدودة.", color: "text-red-600", bg: "bg-red-50 dark:bg-red-950/20" },
+              { icon: CheckCircle, title: "وكلاء موثوقون", desc: "نخبة من الوكلاء المعتمدين لضمان حقوقك في كل صفقة وساطة.", color: "text-green-600", bg: "bg-green-50 dark:bg-green-950/20" },
             ].map((item, i) => (
-              <Card key={i} className="luxury-card p-8 border-none group hover:-translate-y-2 transition-all">
-                <div className={`w-14 h-14 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center ${item.color} mb-6 transition-colors group-hover:bg-primary group-hover:text-white`}>
-                  <item.icon size={28} />
-                </div>
-                <h4 className="font-bold text-xl text-zinc-900 dark:text-white mb-3">{item.title}</h4>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">{item.desc}</p>
-              </Card>
+              <motion.div key={i} whileHover={{ y: -10 }} transition={{ type: "spring", stiffness: 300 }}>
+                <Card className="luxury-card p-10 border-none h-full flex flex-col items-center text-center group">
+                  <div className={`w-20 h-20 rounded-3xl ${item.bg} flex items-center justify-center ${item.color} mb-8 transition-transform group-hover:scale-110 shadow-sm`}>
+                    <item.icon size={36} />
+                  </div>
+                  <h4 className="font-bold text-2xl text-zinc-900 dark:text-white mb-4">{item.title}</h4>
+                  <p className="text-base text-zinc-500 dark:text-zinc-400 leading-relaxed">{item.desc}</p>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-20 bg-white dark:bg-background border-t">
+      {/* Footer Restructured */}
+      <footer className="py-32 bg-zinc-50 dark:bg-zinc-950 border-t">
         <div className="container mx-auto px-6 text-center">
-          <div className="decorative-logo text-4xl mb-8">{config?.siteInfo?.title || "XMOOD"}</div>
-          <p className="text-zinc-500 dark:text-zinc-400 max-w-xl mx-auto mb-10 text-base leading-relaxed">
-            {config?.siteInfo?.description || "الوجهة الأولى والموثوقة للخدمات الرقمية في المنطقة، نسعى دائماً لتقديم حلول مبتكرة وبسيطة لعملائنا."}
+          <div className="decorative-logo text-5xl mb-10">{config?.siteInfo?.title || "XMOOD"}</div>
+          <p className="text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto mb-16 text-lg leading-relaxed font-medium">
+            {config?.siteInfo?.description || "المنصة الرائدة والموثوقة لتقديم كافة الحلول والخدمات الرقمية المتكاملة، نسعى دائماً للابتكار والسرعة لخدمة عملائنا في كل مكان."}
           </p>
           
-          <div className="flex flex-wrap justify-center gap-8 mb-12">
+          <div className="flex flex-wrap justify-center gap-10 mb-20">
              {config?.contact?.whatsapp && (
-               <a href={`https://wa.me/${config.contact.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-primary transition-all font-bold text-sm">
-                  <MessageSquare size={16} className="text-green-500" /> دعم العملاء (WhatsApp)
+               <a href={`https://wa.me/${config.contact.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-zinc-700 dark:text-zinc-300 hover:text-primary transition-all font-bold text-sm bg-white dark:bg-zinc-900 px-6 py-3 rounded-2xl shadow-sm border border-border/50">
+                  <MessageSquare size={18} className="text-green-500" /> دعم العملاء المباشر
                </a>
              )}
              {config?.contact?.email && (
-               <a href={`mailto:${config.contact.email}`} className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-primary transition-all font-bold text-sm">
-                  <Mail size={16} className="text-red-500" /> المراسلة الرسمية
+               <a href={`mailto:${config.contact.email}`} className="flex items-center gap-3 text-zinc-700 dark:text-zinc-300 hover:text-primary transition-all font-bold text-sm bg-white dark:bg-zinc-900 px-6 py-3 rounded-2xl shadow-sm border border-border/50">
+                  <Mail size={18} className="text-primary" /> المراسلة الرسمية
                </a>
              )}
           </div>
 
-          <div className="flex flex-wrap justify-center gap-8 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-            <Link href="/marketplace" className="hover:text-primary transition-all">المجتمع الرقمي</Link>
-            <Link href="/designs/gallery" className="hover:text-primary transition-all">معرض الأعمال</Link>
+          <div className="flex flex-wrap justify-center gap-10 text-[12px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-20">
+            <Link href="/marketplace" className="hover:text-primary transition-all">مجتمع التداول</Link>
+            <Link href="/designs/gallery" className="hover:text-primary transition-all">معرض التصاميم</Link>
             <Link href="/middleman" className="hover:text-primary transition-all">الوكلاء المعتمدون</Link>
-            <Link href="/admin" className="hover:text-primary transition-all">لوحة الإدارة</Link>
+            <Link href="/admin" className="hover:text-primary transition-all opacity-40">لوحة التحكم</Link>
           </div>
           
-          <div className="mt-16 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-            {config?.siteInfo?.copyright || "© 2025 XMOOD DIGITAL SERVICES. ALL RIGHTS RESERVED."}
+          <div className="pt-10 border-t border-border/50">
+            <p className="text-[11px] font-black text-zinc-400 uppercase tracking-widest">
+              {config?.siteInfo?.copyright || "© 2025 XMOOD INTEGRATED SERVICES. ALL RIGHTS RESERVED."}
+            </p>
           </div>
         </div>
       </footer>

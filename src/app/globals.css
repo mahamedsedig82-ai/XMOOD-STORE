@@ -17,8 +17,8 @@
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 43 70% 95%;
+    --accent-foreground: 43 70% 20%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
@@ -30,7 +30,7 @@
   .dark {
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 5%;
+    --card: 240 10% 6%;
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 5%;
     --popover-foreground: 0 0% 98%;
@@ -38,14 +38,14 @@
     --primary-foreground: 240 10% 4%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
+    --muted: 240 3.7% 12%;
     --muted-foreground: 240 5% 64.9%;
     --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 240 3.7% 12%;
+    --input: 240 3.7% 12%;
     --ring: 43 70% 45%;
   }
 }
@@ -57,21 +57,21 @@
   }
 }
 
-/* Modern Luxury UI Framework */
+/* Unified Professional Design Language */
 .luxury-card {
-  @apply rounded-2xl border bg-card/50 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary/30;
+  @apply rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20;
 }
 
 .gold-text {
-  @apply bg-gradient-to-r from-amber-500 via-yellow-600 to-amber-700 bg-clip-text text-transparent font-black;
+  @apply bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 bg-clip-text text-transparent font-bold;
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-black rounded-xl px-8 py-3 shadow-lg hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-widest;
+  @apply bg-primary text-primary-foreground font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-sm flex items-center justify-center gap-2 uppercase tracking-wide;
 }
 
 .accent-button {
-  @apply bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-black rounded-xl px-8 py-3 shadow-lg hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-widest;
+  @apply bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-sm flex items-center justify-center gap-2 uppercase tracking-wide;
 }
 
 .decorative-logo {
@@ -92,31 +92,24 @@
   @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
 }
 
-/* Responsive Scaling Fixes */
+/* Perfect Responsive Architecture */
 @media (max-width: 768px) {
-  .container { @apply px-5; }
-  h1 { @apply text-3xl !important; }
-  h2 { @apply text-2xl !important; }
+  .container { @apply px-4; }
+  h1 { @apply text-4xl !important; }
+  h2 { @apply text-3xl !important; }
   .luxury-card { @apply p-6 !important; }
   
-  /* Data Tables to Mobile Cards */
   .responsive-table table thead { @apply hidden; }
-  .responsive-table table tr { @apply block mb-6 border border-border rounded-2xl p-4 bg-card shadow-sm; }
+  .responsive-table table tr { @apply block mb-6 border border-border rounded-2xl p-6 bg-card shadow-sm; }
   .responsive-table table td { @apply flex justify-between items-center py-3 border-none !important; }
   .responsive-table table td::before {
     content: attr(data-label);
-    @apply font-black text-[9px] uppercase text-muted-foreground ml-4 tracking-widest;
+    @apply font-bold text-[10px] uppercase text-muted-foreground ml-4 tracking-wider opacity-60;
   }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(15px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-in { animation: fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-up { animation: fade-up 0.5s ease-out forwards; }
+.animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
