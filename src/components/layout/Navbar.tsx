@@ -3,11 +3,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Monitor, Smartphone, 
   Home, Store, Palette, Users, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, X, Zap
+  Wallet, LayoutDashboard, LogOut, X, Zap, UserCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ export function Navbar() {
   const auth = useAuth();
   const db = useFirestore();
   const pathname = usePathname();
+  const router = useRouter();
   
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [layout, setLayout] = useState<'desktop' | 'mobile'>('desktop');
@@ -45,6 +46,7 @@ export function Navbar() {
     const savedLayout = localStorage.getItem('xmood-layout') as 'desktop' | 'mobile' || 'desktop';
     setTheme(savedTheme);
     setLayout(savedLayout);
+    
     document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     if (window.innerWidth > 1024) {
       document.body.className = savedLayout === 'mobile' ? 'mobile-view-container' : 'desktop-view-container';
@@ -63,6 +65,13 @@ export function Navbar() {
     setLayout(next);
     localStorage.setItem('xmood-layout', next);
     window.location.reload(); 
+  };
+
+  const handleSignOut = async () => {
+    if (auth) {
+      await signOut(auth);
+      router.push("/");
+    }
   };
 
   const navLinks = [
@@ -87,6 +96,7 @@ export function Navbar() {
           <span className="text-[7px] md:text-[8px] font-black tracking-widest text-primary uppercase">{config?.siteInfo?.subtitle || "Elite Enterprise"}</span>
         </Link>
 
+        {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-10">
           {navLinks.map((link) => (
             <Link 
@@ -101,6 +111,7 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
+          {/* Controls */}
           <div className="hidden xl:flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={toggleLayout} className="text-muted-foreground hover:text-primary rounded-xl bg-muted/50 h-10 w-10">
               {layout === 'desktop' ? <Smartphone size={18} /> : <Monitor size={18} />}
@@ -135,11 +146,11 @@ export function Navbar() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64 mt-4 rounded-2xl p-4 shadow-2xl border-primary/10 bg-zinc-950" align="start">
+              <DropdownMenuContent className="w-64 mt-4 rounded-2xl p-4 shadow-2xl border-primary/10 bg-card" align="start">
                 <DropdownMenuLabel className="p-2 text-right">
                   <Badge variant="outline" className="w-fit text-[7px] font-black uppercase tracking-widest mb-1 border-primary/20 text-primary">{profile?.role}</Badge>
                   <p className="font-black text-lg gold-text truncate">{profile?.displayName}</p>
-                  <p className="text-[9px] text-zinc-500 truncate">{profile?.email}</p>
+                  <p className="text-[9px] text-muted-foreground truncate">{profile?.email}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-primary/5 my-2" />
                 <DropdownMenuItem asChild className="rounded-xl h-11 cursor-pointer focus:bg-primary/5 focus:text-primary">
@@ -157,7 +168,7 @@ export function Navbar() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator className="bg-primary/5 my-2" />
-                <DropdownMenuItem onClick={() => signOut(auth!)} className="rounded-xl h-11 cursor-pointer text-red-600 focus:bg-red-500/10 font-bold">
+                <DropdownMenuItem onClick={handleSignOut} className="rounded-xl h-11 cursor-pointer text-red-600 focus:bg-red-500/10 font-bold">
                   <div className="flex items-center w-full gap-3 justify-end text-xs">
                     <span>خروج آمن</span>
                     <LogOut size={16} />
@@ -167,6 +178,7 @@ export function Navbar() {
             </DropdownMenu>
           )}
 
+          {/* Mobile Menu */}
           <Sheet dir="rtl">
             <SheetTrigger asChild className="lg:hidden">
               <Button variant="ghost" size="icon" className="text-primary rounded-xl bg-primary/10 h-10 w-10 border border-primary/20">
@@ -189,7 +201,7 @@ export function Navbar() {
               </div>
               {user && (
                 <div className="p-6 border-t bg-muted/30">
-                  <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-12 rounded-xl text-red-600 font-black border border-red-500/20 hover:bg-red-500/10 transition-all text-sm">
+                  <Button variant="ghost" onClick={handleSignOut} className="w-full h-12 rounded-xl text-red-600 font-black border border-red-500/20 hover:bg-red-500/10 transition-all text-sm">
                     تسجيل الخروج
                   </Button>
                 </div>
