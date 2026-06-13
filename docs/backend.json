@@ -46,53 +46,21 @@
       },
       "required": ["title", "imageUrl"]
     },
-    "AgentRequest": {
-      "title": "Agent Request",
-      "description": "User application to become a certified charging agent",
+    "OtherService": {
+      "title": "Professional Service",
+      "description": "Managed services offered by agents or the platform",
       "type": "object",
       "properties": {
-        "userId": { "type": "string" },
-        "userName": { "type": "string" },
-        "userEmail": { "type": "string" },
-        "reason": { "type": "string" },
-        "experience": { "type": "string" },
-        "status": { "type": "string", "enum": ["pending", "accepted", "rejected"] },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "reason"]
-    },
-    "MarketplaceListing": {
-      "title": "Marketplace Listing",
-      "description": "User generated posts with mandatory contact for escrow safety",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "userName": { "type": "string" },
-        "userPhoto": { "type": "string" },
-        "title": { "type": "string" },
+        "name": { "type": "string" },
+        "agentName": { "type": "string" },
+        "agentId": { "type": "string" },
+        "type": { "type": "string" },
         "description": { "type": "string" },
         "price": { "type": "number" },
-        "type": { "type": "string", "enum": ["sell", "buy", "service"] },
-        "contactMethod": { "type": "string", "enum": ["whatsapp", "telegram", "email", "onsite"] },
-        "contactValue": { "type": "string" },
-        "likes": { "type": "array", "items": { "type": "string" } },
-        "commentCount": { "type": "number" },
-        "status": { "type": "string" },
+        "isAvailable": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "title", "contactMethod", "contactValue"]
-    },
-    "Comment": {
-      "title": "Post Comment",
-      "type": "object",
-      "properties": {
-        "postId": { "type": "string" },
-        "userId": { "type": "string" },
-        "userName": { "type": "string" },
-        "userPhoto": { "type": "string" },
-        "content": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      }
+      "required": ["name", "price"]
     }
   },
   "auth": {
@@ -107,17 +75,9 @@
       "schema": "GalleryItem",
       "description": "Designer portfolio items"
     },
-    "/agent_requests/{requestId}": {
-      "schema": "AgentRequest",
-      "description": "Agent applications"
-    },
-    "/marketplace_listings/{postId}": {
-      "schema": "MarketplaceListing",
-      "description": "Social marketplace posts"
-    },
-    "/marketplace_listings/{postId}/comments/{commentId}": {
-      "schema": "Comment",
-      "description": "Post interaction comments"
+    "/other_services/{serviceId}": {
+      "schema": "OtherService",
+      "description": "Managed extra services"
     }
   }
 }

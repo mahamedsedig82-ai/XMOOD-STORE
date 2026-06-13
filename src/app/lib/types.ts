@@ -7,7 +7,7 @@ export interface UserProfile {
   fullName?: string;
   email: string;
   phoneNumber?: string;
-  residence?: string; // مكان السكن أو المنطقة
+  residence?: string;
   walletBalance: number;
   role: UserRole;
   photoURL?: string;
@@ -18,36 +18,32 @@ export interface UserProfile {
   bio?: string;
   completedDeals?: number;
   middlemanInfo?: {
-    services: string[]; // e.g. ["escrow", "charging"]
+    services: string[];
     isAvailable: boolean;
     workHours?: string;
   }
 }
 
-export interface MarketplaceListing {
+export interface OtherService {
   id: string;
-  userId: string;
-  userName: string;
-  userPhoto: string;
-  userLabel?: string;
-  title: string;
+  name: string;
+  agentName: string;
+  agentId: string;
+  type: string;
   description: string;
   price: number;
-  type: 'sell' | 'buy' | 'service';
-  contactMethod: 'whatsapp' | 'telegram' | 'email' | 'onsite';
-  contactValue: string;
-  likes: string[];
-  commentCount: number;
-  status: string;
+  isAvailable: boolean;
   createdAt: string;
 }
 
-export interface Comment {
+export interface Product {
   id: string;
-  postId: string;
-  userId: string;
-  userName: string;
-  userPhoto: string;
-  content: string;
-  createdAt: string;
+  name: string;
+  price: number;
+  category: string;
+  stock: number;
+  imageUrl: string;
+  description: string;
+  status: string;
+  shippingCodes?: string;
 }
