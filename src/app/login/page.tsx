@@ -41,7 +41,6 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      // تأكيد اختيار الحساب لضمان ظهور النافذة بشكل صحيح
       provider.setCustomParameters({ prompt: 'select_account' });
       
       const result = await signInWithPopup(auth, provider);
@@ -50,7 +49,6 @@ export default function LoginPage() {
       const userDoc = await getDoc(doc(db, "users", user.uid));
       
       if (!userDoc.exists()) {
-        // إذا كان مستخدم جديد، نطلب منه إكمال رقم الهاتف لربط المحفظة
         setStep('complete_profile');
       } else {
         toast({ title: "مرحباً بك مجدداً", description: "تم تسجيل الدخول بنجاح." });

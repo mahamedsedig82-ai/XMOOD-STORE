@@ -79,7 +79,7 @@ export default function DesignManagementPRO() {
               {loading ? (
                 <TableRow><TableCell colSpan={5} className="text-center py-20">جاري تحميل الطلبات...</TableCell></TableRow>
               ) : requests?.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-20 text-zinc-600">لا توجد طلبات حالياً</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-20 text-zinc-600">لا توجد طلبات حالياً</TableRow>
               ) : requests?.map((req: any) => (
                 <TableRow key={req.id} className="hover:bg-primary/5 transition-colors border-b border-white/5">
                   <TableCell className="py-6">

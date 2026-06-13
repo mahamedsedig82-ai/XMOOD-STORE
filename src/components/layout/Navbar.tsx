@@ -111,7 +111,7 @@ export function Navbar() {
               <DropdownMenuContent className="w-80 mt-4 rounded-[2.5rem] bg-zinc-950/95 backdrop-blur-3xl border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] p-4" align="start">
                 <DropdownMenuLabel className="p-6 text-right bg-white/5 rounded-3xl mb-4 border border-white/5">
                   <div className="flex items-center justify-between mb-2">
-                    <Badge variant="outline" className="border-primary/20 text-primary text-[7px] px-3 py-0.5 rounded-full uppercase font-black">{profile?.label || "عضو بريميوم"}</Badge>
+                    <Badge variant="outline" className="border-primary/20 text-primary text-[7px] px-3 py-0.5 rounded-full uppercase font-black">{profile?.role || "عضو بريميوم"}</Badge>
                     <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">معرف: {user.uid.substring(0,8)}</p>
                   </div>
                   <p className="font-headline text-2xl font-bold gold-text leading-none">{profile?.displayName}</p>
