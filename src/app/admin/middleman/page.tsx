@@ -1,15 +1,15 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, where, doc, updateDoc, orderBy, getDocs, limit } from "firebase/firestore";
+import { collection, query, where, doc, updateDoc, getDocs, limit } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck, Zap, Loader2, MapPin, Smartphone, UserPlus, Clock, Search } from "lucide-react";
+import { ShieldCheck, Zap, Loader2, MapPin, Smartphone, UserPlus, Search, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
@@ -23,12 +23,20 @@ export default function AdminAgentsManagement() {
   const [foundUser, setFoundUser] = useState<any>(null);
   const [isAddingAgent, setIsAddingAgent] = useState(false);
 
+  // تم تبسيط الاستعلام لإزالة الخطأ الخاص بالفهارس المفقودة
   const agentsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, "users"), where("role", "in", ["middleman", "agent", "owner"]), orderBy("createdAt", "desc"));
+    return query(collection(db, "users"), where("role", "in", ["middleman", "agent", "owner"]));
   }, [db]);
 
-  const { data: agents, loading } = useCollection(agentsQuery);
+  const { data: rawAgents, loading } = useCollection(agentsQuery);
+
+  // فرز الوكلاء برمجياً لضمان الاستقرار
+  const agents = useMemo(() => {
+    return [...rawAgents].sort((a: any, b: any) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }, [rawAgents]);
 
   const handleSearchUser = async () => {
     if (!searchEmail.trim() || !db) return;
@@ -53,7 +61,14 @@ export default function AdminAgentsManagement() {
       await updateDoc(doc(db, "users", foundUser.id), {
         role: "agent",
         label: "وكيل معتمد",
-        middlemanInfo: { services: ["charging"], isAvailable: true }
+        residence: foundUser.residence || "غير محدد",
+        phoneNumber: foundUser.phoneNumber || "",
+        completedDeals: foundUser.completedDeals || 0,
+        middlemanInfo: { 
+          services: ["charging"], 
+          isAvailable: true,
+          workHours: "24/7 Sovereign Access"
+        }
       });
       setIsAddingAgent(false);
       setFoundUser(null);
@@ -126,7 +141,7 @@ export default function AdminAgentsManagement() {
                  {foundUser && (
                     <div className="p-6 bg-primary/5 rounded-2xl border border-primary/10 flex items-center justify-between">
                        <div className="flex items-center gap-4">
-                          <img src={foundUser.photoURL} className="w-12 h-12 rounded-xl" alt="" />
+                          <img src={foundUser.photoURL || `https://picsum.photos/seed/${foundUser.uid}/100/100`} className="w-12 h-12 rounded-xl" alt="" />
                           <div>
                              <p className="font-bold">{foundUser.displayName}</p>
                              <p className="text-xs text-zinc-500">{foundUser.email}</p>
@@ -182,6 +197,7 @@ export default function AdminAgentsManagement() {
                             {s === 'escrow' ? 'الوساطة' : s === 'charging' ? 'شحن المحفظة' : s}
                           </Badge>
                         ))}
+                        {(!m.middlemanInfo?.services || m.middlemanInfo.services.length === 0) && <span className="text-[8px] text-zinc-600 italic">لا توجد خدمات</span>}
                       </div>
                     </TableCell>
                     <TableCell>

@@ -4,23 +4,30 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldCheck, UserCheck, Lock, MessageCircle, Zap, Star, TrendingUp, MapPin, Smartphone, ArrowRight, Award } from "lucide-react";
+import { ShieldCheck, UserCheck, Lock, MessageCircle, Zap, Star, TrendingUp, MapPin, Smartphone, ArrowRight, Award, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, where, limit } from "firebase/firestore";
+import { collection, query, where } from "firebase/firestore";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useMemo } from "react";
 
 export default function AgentsDirectoryPage() {
   const db = useFirestore();
   
+  // استعلام بسيط لتجنب أخطاء الفهارس
   const agentsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, "users"), where("role", "in", ["middleman", "agent", "owner"]), orderBy("completedDeals", "desc"), limit(30));
+    return query(collection(db, "users"), where("role", "in", ["middleman", "agent", "owner"]));
   }, [db]);
 
-  const { data: agents, loading } = useCollection(agentsQuery);
+  const { data: rawAgents, loading } = useCollection(agentsQuery);
+
+  // فرز الوكلاء برمجياً حسب الصفقات المكتملة
+  const agents = useMemo(() => {
+    return [...rawAgents].sort((a: any, b: any) => (b.completedDeals || 0) - (a.completedDeals || 0));
+  }, [rawAgents]);
 
   const features = [
     {
@@ -96,7 +103,14 @@ export default function AgentsDirectoryPage() {
                </div>
                
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {agents?.map((m: any) => (
+                  {loading ? (
+                    <div className="col-span-full py-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={40} /></div>
+                  ) : agents?.length === 0 ? (
+                    <div className="col-span-full py-32 text-center opacity-30">
+                       <ShieldCheck size={100} className="mx-auto mb-8 text-zinc-800" />
+                       <p className="text-xl font-bold uppercase tracking-[0.3em]">بانتظار تعيين الوكلاء من الإدارة</p>
+                    </div>
+                  ) : agents?.map((m: any) => (
                     <Card key={m.id} className="luxury-card border-none p-10 bg-zinc-950/40 hover:bg-zinc-950 transition-all group relative overflow-hidden">
                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[60px] rounded-full" />
                        
@@ -126,6 +140,7 @@ export default function AgentsDirectoryPage() {
                               {s === 'escrow' ? '🛡️ وساطة صفقات' : s === 'charging' ? '⚡ شحن محفظة' : s}
                             </Badge>
                           ))}
+                          {(!m.middlemanInfo?.services || m.middlemanInfo.services.length === 0) && <span className="text-[10px] text-zinc-600 italic">وكيل معتمد</span>}
                        </div>
 
                        <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
@@ -153,12 +168,6 @@ export default function AgentsDirectoryPage() {
                        </div>
                     </Card>
                   ))}
-                  {agents?.length === 0 && (
-                    <div className="col-span-full py-32 text-center opacity-30">
-                       <ShieldCheck size={100} className="mx-auto mb-8 text-zinc-800" />
-                       <p className="text-xl font-bold uppercase tracking-[0.3em]">بانتظار تعيين الوكلاء من الإدارة</p>
-                    </div>
-                  )}
                </div>
             </div>
 
