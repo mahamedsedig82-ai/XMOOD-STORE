@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, Users, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Zap, Bell, X, User, ChevronLeft
+  Wallet, LayoutDashboard, LogOut, Zap, Bell, X, User, ChevronLeft, ShoppingBag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -62,9 +62,9 @@ export function Navbar() {
   const navLinks = [
     { name: "الرئيسية", href: "/", icon: Home },
     { name: "المتجر", href: "/store", icon: Store },
+    { name: "السوق المفتوح", href: "/marketplace", icon: ShoppingBag },
     { name: "معرض الأعمال", href: "/designs/gallery", icon: Palette },
-    { name: "المجتمع", href: "/marketplace", icon: Users },
-    { name: "الوكلاء", href: "/middleman", icon: ShieldCheck },
+    { name: "الوكلاء المعتمدون", href: "/middleman", icon: ShieldCheck },
     { name: "خدمات رقمية", href: "/other-services", icon: Zap },
   ];
 
@@ -78,7 +78,7 @@ export function Navbar() {
         
         <Link href="/" className="flex flex-col items-start group">
           <span className="decorative-logo group-hover:scale-105 transition-transform">{config?.siteInfo?.title || "XMOOD"}</span>
-          <span className="text-[8px] font-black tracking-[0.3em] text-zinc-500 uppercase">{config?.siteInfo?.subtitle || "Professional Services"}</span>
+          <span className="text-[8px] font-black tracking-[0.3em] text-zinc-500 uppercase">{config?.siteInfo?.subtitle || "Digital Services Hub"}</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -160,7 +160,6 @@ export function Navbar() {
             </DropdownMenu>
           )}
 
-          {/* Mobile Navigation Menu (3 Stripes) */}
           <Sheet dir="rtl">
             <SheetTrigger asChild className="lg:hidden">
               <Button variant="ghost" size="icon" className="text-primary rounded-xl bg-primary/5 h-10 w-10 border border-primary/10">
@@ -225,7 +224,7 @@ export function Navbar() {
               <div className="p-6 border-t bg-muted/10 space-y-3">
                 {user ? (
                    <Button variant="ghost" onClick={handleSignOut} className="w-full h-12 rounded-xl text-red-500 font-bold border border-red-100 dark:border-red-900/20 hover:bg-red-50 transition-all text-xs">
-                     <LogOut size={16} className="ml-2" /> تسجيل الخروج من الحساب
+                     <LogOut size={16} className="ml-2" /> تسجيل الخروج
                    </Button>
                 ) : (
                   <Button asChild className="royal-button w-full h-12 text-xs">
@@ -233,7 +232,7 @@ export function Navbar() {
                   </Button>
                 )}
                 <p className="text-[8px] text-center text-muted-foreground uppercase font-black tracking-widest mt-4">
-                  Professional Services Platform v2.0
+                  Professional Services Platform
                 </p>
               </div>
             </SheetContent>
