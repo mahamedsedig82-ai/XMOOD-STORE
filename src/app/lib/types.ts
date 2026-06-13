@@ -29,6 +29,8 @@ export interface OtherService {
   name: string;
   agentName: string;
   agentId: string;
+  whatsapp: string;
+  imageUrl: string;
   type: string;
   description: string;
   price: number;

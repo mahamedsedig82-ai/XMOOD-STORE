@@ -3,15 +3,16 @@
 
 import { useState } from "react";
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase";
-import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Edit2, Zap, Loader2, Save } from "lucide-react";
+import { Plus, Trash2, Edit2, Zap, Loader2, Save, Image as ImageIcon, Smartphone } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminOtherServices() {
   const { profile } = useUser();
@@ -22,7 +23,9 @@ export default function AdminOtherServices() {
 
   const [form, setForm] = useState({
     name: "",
-    agentName: "",
+    agentName: profile?.displayName || "",
+    whatsapp: profile?.phoneNumber || "",
+    imageUrl: "",
     type: "تقني",
     description: "",
     price: "",
@@ -37,8 +40,8 @@ export default function AdminOtherServices() {
   const { data: services, loading } = useCollection(servicesQuery);
 
   const handleSubmit = async () => {
-    if (!form.name || !form.price || !db) {
-      toast({ variant: "destructive", title: "بيانات ناقصة" });
+    if (!form.name || !form.price || !form.whatsapp || !db) {
+      toast({ variant: "destructive", title: "بيانات ناقصة", description: "الاسم، السعر، ورقم الواتساب حقول إجبارية." });
       return;
     }
     setIsProcessing(true);
@@ -47,18 +50,18 @@ export default function AdminOtherServices() {
         ...form,
         price: Number(form.price),
         agentId: profile?.uid || "",
-        createdAt: new Date().toISOString(),
+        updatedAt: serverTimestamp(),
       };
 
       if (editingId) {
         await updateDoc(doc(db, "other_services", editingId), data);
+        toast({ title: "تم التحديث بنجاح" });
       } else {
-        await addDoc(collection(db, "other_services"), data);
+        await addDoc(collection(db, "other_services"), { ...data, createdAt: serverTimestamp() });
+        toast({ title: "تم إضافة الخدمة ونشرها" });
       }
       setIsOpen(false);
-      setEditingId(null);
-      setForm({ name: "", agentName: "", type: "تقني", description: "", price: "", isAvailable: true });
-      toast({ title: "تم الحفظ بنجاح" });
+      resetForm();
     } catch (e) {
       toast({ variant: "destructive", title: "فشل الإجراء" });
     } finally {
@@ -66,83 +69,124 @@ export default function AdminOtherServices() {
     }
   };
 
+  const resetForm = () => {
+    setForm({ name: "", agentName: profile?.displayName || "", whatsapp: profile?.phoneNumber || "", imageUrl: "", type: "تقني", description: "", price: "", isAvailable: true });
+    setEditingId(null);
+  };
+
+  const startEdit = (s: any) => {
+    setForm({
+      name: s.name,
+      agentName: s.agentName,
+      whatsapp: s.whatsapp,
+      imageUrl: s.imageUrl || "",
+      type: s.type,
+      description: s.description,
+      price: s.price.toString(),
+      isAvailable: s.isAvailable
+    });
+    setEditingId(s.id);
+    setIsOpen(true);
+  };
+
   const handleDelete = async (id: string) => {
-    if (!confirm("هل تريد حذف هذه الخدمة؟")) return;
+    if (!confirm("هل تريد حذف هذه الخدمة نهائياً من السوق؟")) return;
     try {
       await deleteDoc(doc(db, "other_services", id));
-      toast({ title: "تم الحذف" });
+      toast({ title: "تم الحذف بنجاح" });
     } catch (e) {
       toast({ variant: "destructive", title: "خطأ في الحذف" });
     }
   };
 
   return (
-    <div className="space-y-8 p-6" dir="rtl">
-      <header className="flex justify-between items-center bg-card p-8 rounded-3xl border">
+    <div className="space-y-12" dir="rtl">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 bg-card p-10 rounded-[3rem] border shadow-2xl">
         <div>
-          <h1 className="text-4xl font-headline font-bold gold-text">إدارة الخدمات الأخرى</h1>
-          <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1">Managed Extra Services</p>
+          <h1 className="text-5xl font-headline font-bold gold-text">إدارة سوق الخدمات</h1>
+          <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-2">Elite Managed Services Marketplace Control</p>
         </div>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={(v) => { setIsOpen(v); if(!v) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button className="royal-button h-14"><Plus className="ml-2" /> إضافة خدمة جديدة</Button>
+            <Button className="royal-button h-16 px-12 text-lg shadow-primary/20"><Plus size={24} className="ml-3" /> إضافة خدمة جديدة</Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border-border rounded-3xl max-w-2xl">
+          <DialogContent className="bg-card border-primary/20 rounded-[3rem] max-w-4xl p-10 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold gold-text">بيانات الخدمة</DialogTitle>
+              <DialogTitle className="text-3xl font-bold gold-text flex items-center gap-4">
+                <Zap className="text-primary" /> {editingId ? 'تعديل بيانات الخدمة' : 'إنشاء خدمة احترافية'}
+              </DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-6 mt-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-muted-foreground">اسم الخدمة</label>
-                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="h-12 rounded-xl" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">اسم الخدمة</label>
+                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-bold" />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-muted-foreground">اسم الوكيل</label>
-                <Input value={form.agentName} onChange={e => setForm({...form, agentName: e.target.value})} className="h-12 rounded-xl" />
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">التصنيف (مثلاً: تصميم، برمجة)</label>
+                <Input value={form.type} onChange={e => setForm({...form, type: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-bold" />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-muted-foreground">السعر (USD)</label>
-                <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-12 rounded-xl" />
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">اسم مقدم الخدمة</label>
+                <Input value={form.agentName} onChange={e => setForm({...form, agentName: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-bold" />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-muted-foreground">التصنيف</label>
-                <Input value={form.type} onChange={e => setForm({...form, type: e.target.value})} className="h-12 rounded-xl" />
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest flex items-center gap-2"><Smartphone size={12}/> رقم واتساب التواصل</label>
+                <Input value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} placeholder="+966..." className="h-14 rounded-2xl bg-muted border-none px-6 font-bold text-left" />
               </div>
-              <div className="col-span-2 space-y-2">
-                <label className="text-[10px] font-black uppercase text-muted-foreground">وصف الخدمة</label>
-                <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="rounded-xl min-h-[100px]" />
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">السعر المبدئي (USD)</label>
+                <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-14 rounded-2xl bg-muted border-none px-6 font-black text-primary text-xl" />
+              </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest flex items-center gap-2"><ImageIcon size={12}/> رابط صورة الخدمة</label>
+                <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-14 rounded-2xl bg-muted border-none px-6 font-bold" />
+              </div>
+              <div className="col-span-1 md:col-span-2 space-y-3">
+                <label className="text-[10px] font-black uppercase text-muted-foreground pr-4 tracking-widest">وصف تفصيلي للخدمة</label>
+                <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="rounded-3xl bg-muted border-none min-h-[150px] p-6 font-bold leading-relaxed" />
               </div>
             </div>
-            <DialogFooter className="mt-8">
-              <Button onClick={handleSubmit} disabled={isProcessing} className="royal-button w-full h-14">
-                {isProcessing ? <Loader2 className="animate-spin" /> : "تأكيد النشر"}
+            <DialogFooter className="mt-12">
+              <Button onClick={handleSubmit} disabled={isProcessing} className="royal-button w-full h-18 text-xl">
+                {isProcessing ? <Loader2 className="animate-spin" /> : editingId ? "تحديث وحفظ التغييرات" : "نشر الخدمة في السوق"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </header>
 
-      <Card className="luxury-card overflow-hidden">
+      <Card className="luxury-card border-none overflow-hidden shadow-2xl">
         <Table>
-          <TableHeader className="bg-muted/50">
-            <TableRow>
-              <TableHead className="text-right">الخدمة</TableHead>
-              <TableHead className="text-right">الوكيل</TableHead>
-              <TableHead className="text-right">السعر</TableHead>
-              <TableHead className="text-center">الإجراءات</TableHead>
+          <TableHeader className="bg-muted/50 border-b">
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="text-right py-8 pr-10 font-black text-[10px] uppercase tracking-widest">الخدمة والناشر</TableHead>
+              <TableHead className="text-right font-black text-[10px] uppercase tracking-widest">السعر</TableHead>
+              <TableHead className="text-right font-black text-[10px] uppercase tracking-widest">الواتساب</TableHead>
+              <TableHead className="text-center font-black text-[10px] uppercase tracking-widest">الإجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-center py-24"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
+            ) : services?.length === 0 ? (
+              <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold uppercase tracking-widest">No Services Found</TableCell></TableRow>
             ) : services?.map((s: any) => (
-              <TableRow key={s.id}>
-                <TableCell className="font-bold">{s.name}</TableCell>
-                <TableCell className="text-xs text-muted-foreground">{s.agentName}</TableCell>
-                <TableCell className="font-black text-primary">${s.price}</TableCell>
+              <TableRow key={s.id} className="hover:bg-primary/5 transition-all border-b border-muted">
+                <TableCell className="py-8 pr-10">
+                   <div className="flex items-center gap-6">
+                      <img src={s.imageUrl || "https://picsum.photos/seed/service/200/200"} className="w-16 h-16 rounded-2xl object-cover border" alt="" />
+                      <div>
+                         <p className="font-bold text-xl">{s.name}</p>
+                         <p className="text-[10px] text-muted-foreground font-black uppercase mt-1">بواسطة: {s.agentName}</p>
+                      </div>
+                   </div>
+                </TableCell>
+                <TableCell className="font-black text-2xl text-primary tracking-tighter">${s.price}</TableCell>
+                <TableCell className="font-mono font-bold text-xs text-muted-foreground">{s.whatsapp}</TableCell>
                 <TableCell className="text-center">
-                  <div className="flex justify-center gap-2">
-                    <Button size="icon" variant="ghost" className="text-red-500" onClick={() => handleDelete(s.id)}><Trash2 size={16} /></Button>
+                  <div className="flex justify-center gap-4">
+                    <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-primary hover:bg-primary/10" onClick={() => startEdit(s)}><Edit2 size={20} /></Button>
+                    <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-red-500 hover:bg-red-500/10" onClick={() => handleDelete(s.id)}><Trash2 size={20} /></Button>
                   </div>
                 </TableCell>
               </TableRow>

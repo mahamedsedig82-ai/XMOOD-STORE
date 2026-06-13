@@ -54,13 +54,15 @@
         "name": { "type": "string" },
         "agentName": { "type": "string" },
         "agentId": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "imageUrl": { "type": "string" },
         "type": { "type": "string" },
         "description": { "type": "string" },
         "price": { "type": "number" },
         "isAvailable": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "price"]
+      "required": ["name", "price", "whatsapp"]
     }
   },
   "auth": {

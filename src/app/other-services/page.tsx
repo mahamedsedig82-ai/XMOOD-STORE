@@ -7,8 +7,9 @@ import { collection, query, orderBy } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Zap, ShieldCheck, UserCheck, MessageSquare, Loader2 } from "lucide-react";
+import { Zap, MessageSquare, Loader2, UserCheck, Smartphone } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
+import { motion } from "framer-motion";
 
 export default function OtherServicesPublic() {
   const db = useFirestore();
@@ -20,65 +21,85 @@ export default function OtherServicesPublic() {
 
   const { data: services, loading } = useCollection(servicesQuery);
 
+  const handleOrder = (whatsapp: string, serviceName: string) => {
+    const text = encodeURIComponent(`مرحباً، أريد طلب خدمة: ${serviceName} المعروضة في متجر XMOOD.`);
+    window.open(`https://wa.me/${whatsapp.replace(/\+/g, '').replace(/\s/g, '')}?text=${text}`, '_blank');
+  };
+
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background text-foreground" dir="rtl">
       <Navbar />
-      <div className="container mx-auto px-6 py-32 max-w-6xl">
-        <header className="text-center mb-20 space-y-4 animate-fade-up">
-          <Badge className="bg-primary/10 text-primary border-primary/20 px-8 py-2 rounded-full font-black uppercase text-[10px] tracking-widest">
-            XMOOD MANAGED SERVICES
+      <div className="container mx-auto px-6 py-32 max-w-7xl">
+        <header className="text-center mb-24 space-y-6 animate-fade-up">
+          <Badge className="bg-primary/10 text-primary border-primary/20 px-10 py-2.5 rounded-full font-black uppercase text-[10px] tracking-[0.4em]">
+            XMOOD ELITE SERVICES MARKETPLACE
           </Badge>
-          <h1 className="text-6xl font-headline font-bold gold-text">خدمات احترافية إضافية</h1>
-          <p className="text-muted-foreground text-xl max-w-2xl mx-auto font-light">باقات متخصصة يقدمها نخبة من الوكلاء والخبراء تحت إشراف المنصة.</p>
+          <h1 className="text-6xl md:text-8xl font-headline font-bold gold-text leading-tight">سوق الخدمات الاحترافية</h1>
+          <p className="text-muted-foreground text-xl md:text-2xl max-w-3xl mx-auto font-light leading-relaxed">
+            اكتشف باقات تقنية وإبداعية يقدمها نخبة من الخبراء والوكلاء المعتمدين لدينا بأعلى معايير الجودة.
+          </p>
         </header>
 
         {loading ? (
-          <div className="flex justify-center py-40">
-            <Loader2 className="animate-spin text-primary" size={60} />
+          <div className="flex justify-center py-60">
+            <Loader2 className="animate-spin text-primary" size={80} />
+          </div>
+        ) : services?.length === 0 ? (
+          <div className="py-60 text-center luxury-card border-dashed border-primary/10 opacity-30">
+            <Zap size={120} className="mx-auto mb-8 text-zinc-500" />
+            <h3 className="text-3xl font-black uppercase tracking-[0.3em]">لا توجد خدمات متاحة حالياً</h3>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services?.map((s: any) => (
-              <Card key={s.id} className="luxury-card border-none bg-card p-10 flex flex-col hover:scale-[1.02] transition-all">
-                <div className="flex justify-between items-start mb-8">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
-                    <Zap size={32} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {services?.map((s: any, i: number) => (
+              <motion.div
+                key={s.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <Card className="luxury-card border-none overflow-hidden h-full flex flex-col group hover:scale-[1.03] transition-all duration-500">
+                  <div className="relative aspect-video overflow-hidden bg-muted">
+                    <img 
+                      src={s.imageUrl || "https://picsum.photos/seed/service/800/450"} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                      alt={s.name} 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60" />
+                    <Badge className="absolute top-5 right-5 bg-primary text-black font-black text-[8px] uppercase px-5 py-1.5 rounded-full shadow-2xl">
+                      {s.type}
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="border-primary/20 text-primary px-4 py-1 text-[8px] font-black uppercase tracking-widest">
-                    {s.type}
-                  </Badge>
-                </div>
 
-                <div className="flex-1 space-y-4">
-                  <h3 className="text-3xl font-headline font-bold leading-tight">{s.name}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">{s.description}</p>
-                  
-                  <div className="pt-6 border-t flex items-center justify-between">
-                    <div>
-                      <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">السعر</p>
-                      <p className="text-3xl font-black text-primary">{formatUSD(s.price)}</p>
-                    </div>
-                    <div className="text-left">
-                      <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">الوكيل</p>
-                      <div className="flex items-center gap-2 text-sm font-bold">
-                        <UserCheck size={14} className="text-primary" /> {s.agentName}
+                  <CardContent className="p-10 flex-1 flex flex-col">
+                    <h3 className="text-3xl font-headline font-bold mb-4 leading-tight group-hover:gold-text transition-colors">{s.name}</h3>
+                    <p className="text-muted-foreground text-base leading-relaxed line-clamp-4 font-medium mb-8">
+                      {s.description}
+                    </p>
+                    
+                    <div className="mt-auto pt-8 border-t flex items-center justify-between">
+                      <div>
+                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">السعر التقديري</p>
+                        <p className="text-4xl font-black text-primary tracking-tighter">{formatUSD(s.price)}</p>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">الخبير المسؤول</p>
+                        <div className="flex items-center gap-2 text-sm font-bold">
+                          <UserCheck size={16} className="text-primary" /> {s.agentName}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                <Button className="royal-button w-full h-16 mt-10 text-xs">
-                  <MessageSquare className="ml-3" size={18} /> اطلب الخدمة الآن
-                </Button>
-              </Card>
+                    <Button 
+                      onClick={() => handleOrder(s.whatsapp, s.name)}
+                      className="royal-button w-full h-18 mt-10 text-xs shadow-primary/20"
+                    >
+                      <MessageSquare className="ml-3" size={20} /> طلب الخدمة (WhatsApp)
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-
-            {services?.length === 0 && (
-              <div className="col-span-full py-40 text-center opacity-30">
-                <Zap size={80} className="mx-auto mb-6" />
-                <p className="text-xl font-black uppercase tracking-widest">لا توجد خدمات إضافية حالياً</p>
-              </div>
-            )}
           </div>
         )}
       </div>
