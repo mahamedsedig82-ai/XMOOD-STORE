@@ -1,10 +1,9 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Menu, X, ChevronLeft
+  Settings, Palette, LogOut, ArrowLeft, Zap, Cpu, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Menu, X, ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -37,7 +36,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent', 'middleman', 'designer'] },
     { label: "المنتجات الرقمية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support', 'agent'] },
-    { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
     { label: "الخزينة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },

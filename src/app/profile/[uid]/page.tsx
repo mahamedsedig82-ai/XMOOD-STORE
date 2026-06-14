@@ -1,33 +1,22 @@
-
 "use client";
 
 import { useParams } from "next/navigation";
-import { useDoc, useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase";
-import { doc, query, collection, where, orderBy, limit } from "firebase/firestore";
+import { useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
 import { Navbar } from "@/components/layout/Navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Calendar, Award, Zap, ShieldCheck, TrendingUp, MessageSquare, Heart, Box } from "lucide-react";
-import { formatUSD } from "@/lib/currency";
-import { MarketplacePost } from "@/components/marketplace/MarketplacePost";
+import { Loader2, Calendar, Award, Zap, ShieldCheck, TrendingUp, Heart, MessageSquare } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function PublicProfilePage() {
   const params = useParams();
   const uid = params.uid as string;
   const db = useFirestore();
-  const { user: currentUser } = useUser();
 
   const userRef = useMemoFirebase(() => doc(db, "users", uid), [db, uid]);
   const { data: profile, loading: profileLoading } = useDoc(userRef);
-
-  const userPostsQuery = useMemoFirebase(() => {
-    if (!db || !uid) return null;
-    return query(collection(db, "marketplace_listings"), where("userId", "==", uid), orderBy("createdAt", "desc"), limit(20));
-  }, [db, uid]);
-
-  const { data: userPosts, loading: postsLoading } = useCollection(userPostsQuery);
 
   if (profileLoading) return (
     <div className="min-h-screen bg-black flex items-center justify-center">
@@ -103,42 +92,22 @@ export default function PublicProfilePage() {
         </div>
       </section>
 
-      {/* Profile Tabs & Activity */}
+      {/* Profile Activity */}
       <section className="container mx-auto px-6 py-20">
-         <Tabs defaultValue="posts" className="space-y-12">
+         <Tabs defaultValue="activity" className="space-y-12">
             <TabsList className="bg-zinc-950 p-2 rounded-3xl h-20 border border-white/5 inline-flex gap-2 px-4 shadow-2xl">
-               <TabsTrigger value="posts" className="rounded-2xl px-10 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
-                  <Box size={16} className="ml-2" /> العروض النشطة ({userPosts?.length || 0})
-               </TabsTrigger>
-               <TabsTrigger value="activity" className="rounded-2xl px-10 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-zinc-800 data-[state=active]:text-white">
+               <TabsTrigger value="activity" className="rounded-2xl px-10 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
                   <Zap size={16} className="ml-2" /> النشاط الأخير
                </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="posts" className="space-y-10">
-               {postsLoading ? (
-                 <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={40} /></div>
-               ) : userPosts && userPosts.length > 0 ? (
-                 <div className="grid grid-cols-1 gap-10">
-                    {userPosts.map((post: any) => (
-                      <MarketplacePost key={post.id} post={post} />
-                    ))}
-                 </div>
-               ) : (
-                 <div className="py-40 text-center luxury-card border-dashed border-white/5 opacity-50">
-                    <Box size={80} className="mx-auto text-zinc-900 mb-6" />
-                    <p className="text-2xl font-bold text-zinc-700 uppercase tracking-[0.3em]">لا توجد عروض حالياً</p>
-                 </div>
-               )}
-            </TabsContent>
 
             <TabsContent value="activity">
                <Card className="luxury-card p-10 bg-zinc-950/40">
                   <div className="space-y-10">
                      {[
-                       { icon: Heart, label: "قام بالإعجاب بعرض شحن UC", date: "منذ ساعتين", color: "text-red-500" },
-                       { icon: MessageSquare, label: "علق على عرض حساب فورتنايت", date: "منذ 5 ساعات", color: "text-primary" },
-                       { icon: ShieldCheck, label: "أتم عملية وساطة بنجاح", date: "أمس", color: "text-green-500" }
+                       { icon: Heart, label: "قام بالإعجاب بباقة شحن جديدة", date: "منذ ساعتين", color: "text-red-500" },
+                       { icon: MessageSquare, label: "استفسر عن خدمة تصميم هوية", date: "منذ 5 ساعات", color: "text-primary" },
+                       { icon: ShieldCheck, label: "أتم عملية شحن محفظة بنجاح", date: "أمس", color: "text-green-500" }
                      ].map((item, i) => (
                        <div key={i} className="flex items-center gap-6 group">
                           <div className={`w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center ${item.color} border border-white/5 group-hover:border-current transition-all`}>

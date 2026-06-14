@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -6,10 +5,10 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, Zap, Store, Palette, Award, CheckCircle, 
-  MessageSquare, Mail, ShoppingBag, Activity
+  MessageSquare, Mail, Activity
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
@@ -80,7 +79,7 @@ export default function HomeCorporate() {
                  <Link href="/store"><Store className="ml-3" size={28} /> الخدمات الإلكترونية</Link>
                </Button>
                <Button asChild className="accent-button h-20 px-16 text-xl shadow-foreground/10">
-                 <Link href="/marketplace"><ShoppingBag className="ml-3" size={28} /> السوق المفتوح</Link>
+                 <Link href="/designs/gallery"><Palette className="ml-3" size={28} /> معرض الإبداع</Link>
                </Button>
              </motion.div>
           </motion.div>
@@ -141,7 +140,6 @@ export default function HomeCorporate() {
 
           <div className="flex flex-wrap justify-center gap-12 text-[12px] font-black uppercase tracking-widest text-muted-foreground mb-24 border-b pb-24 border-border/50">
             <Link href="/store" className="hover:text-primary transition-all">الخدمات الإلكترونية</Link>
-            <Link href="/marketplace" className="hover:text-primary transition-all">السوق المفتوح</Link>
             <Link href="/designs/gallery" className="hover:text-primary transition-all">معرض الأعمال</Link>
             <Link href="/middleman" className="hover:text-primary transition-all">الوكلاء</Link>
             <Link href="/admin" className="hover:text-primary transition-all opacity-40">الإدارة</Link>

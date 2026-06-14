@@ -1,4 +1,3 @@
-
 export type UserRole = 'owner' | 'admin' | 'gm' | 'community_admin' | 'community_mod' | 'store_manager' | 'design_manager' | 'designer' | 'accountant' | 'support' | 'middleman' | 'agent' | 'user';
 
 export interface UserProfile {
@@ -24,25 +23,6 @@ export interface UserProfile {
     isAvailable: boolean;
     workHours?: string;
   }
-}
-
-export interface CommunityPost {
-  id: string;
-  userId: string;
-  userName: string;
-  userPhoto?: string;
-  userLabel?: string;
-  isTrustedUser?: boolean;
-  title: string;
-  description: string;
-  price: number;
-  type: 'sell' | 'buy' | 'service';
-  contactMethod: string;
-  contactValue: string;
-  status: 'active' | 'hidden' | 'deleted';
-  likes: string[]; // List of UIDs
-  commentCount: number;
-  createdAt: string;
 }
 
 export interface CommunityComment {

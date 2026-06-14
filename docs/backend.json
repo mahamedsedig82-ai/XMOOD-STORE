@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -26,35 +25,6 @@
       },
       "required": ["uid", "email", "role"]
     },
-    "MarketplaceListing": {
-      "title": "Community Post",
-      "description": "A post in the community marketplace",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "userName": { "type": "string" },
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "price": { "type": "number" },
-        "type": { "type": "string", "enum": ["sell", "buy", "service"] },
-        "status": { "type": "string", "enum": ["active", "hidden", "deleted"] },
-        "isVerifiedPost": { "type": "boolean" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      }
-    },
-    "CommunityReport": {
-      "title": "Report",
-      "description": "User report for content violation",
-      "type": "object",
-      "properties": {
-        "reporterId": { "type": "string" },
-        "targetId": { "type": "string" },
-        "targetType": { "type": "string", "enum": ["post", "comment", "user"] },
-        "reason": { "type": "string" },
-        "status": { "type": "string", "enum": ["pending", "resolved", "dismissed"] },
-        "createdAt": { "type": "string", "format": "date-time" }
-      }
-    },
     "AuditLog": {
       "title": "Audit Log",
       "description": "Log of admin actions",
@@ -76,14 +46,6 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Sovereign user profiles"
-    },
-    "/marketplace_listings/{postId}": {
-      "schema": "MarketplaceListing",
-      "description": "Community marketplace posts"
-    },
-    "/community_reports/{reportId}": {
-      "schema": "CommunityReport",
-      "description": "User violation reports"
     },
     "/community_audit_logs/{logId}": {
       "schema": "AuditLog",

@@ -3,8 +3,6 @@ import { Product, Agent } from './types';
 // تم تصفير كافة المنتجات بطلب من الإدارة لبدء البناء الأسطوري
 export const STORE_PRODUCTS: Product[] = [];
 
-export const MARKETPLACE_PRODUCTS: Product[] = [];
-
 export const AGENTS: Agent[] = [
   {
     id: 'ag1',
