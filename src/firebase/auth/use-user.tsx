@@ -28,34 +28,46 @@ export function useUser() {
 
   useEffect(() => {
     if (!auth) return;
+    
+    // مستمع حالة الدخول - هو المصدر الأول للحقيقة
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      // إذا لم يوجد مستخدم نهائياً، ننهي حالة التحميل فوراً
+      
       if (!firebaseUser) {
         setProfile(null);
-        setLoading(false);
+        setLoading(false); // لا يوجد مستخدم، توقف عن التحميل فوراً
       }
+      // إذا وجد مستخدم، لا نغير حالة التحميل هنا، ننتظر الملف الشخصي
     });
+
     return () => unsubscribeAuth();
   }, [auth]);
 
   useEffect(() => {
     if (!user || !db) return;
 
-    // نبدأ حالة التحميل للملف الشخصي
+    // نبدأ حالة التحميل للملف الشخصي بشكل إجباري
     setLoading(true);
 
     const userDocRef = doc(db, 'users', user.uid);
     let isMounted = true;
 
-    const syncProfile = async () => {
-      try {
-        const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
-        
-        // جلب أولي سريع للملف
-        const docSnap = await getDoc(userDocRef);
-        
-        if (!docSnap.exists()) {
+    // مستمع لحظي للملف الشخصي لضمان ثبات الجلسة
+    const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
+      if (isMounted) {
+        if (snapshot.exists()) {
+          const data = snapshot.data() as UserProfile;
+          
+          // بروتوكول حماية المدير العام
+          const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
+          if (isMaster && data.role !== 'owner') {
+            updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
+          }
+
+          setProfile({ ...data, uid: snapshot.id });
+        } else {
+          // إذا لم يوجد ملف شخصي، نقوم بإنشائه (حالة تسجيل جديد)
+          const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
           const initialProfile: UserProfile = {
             uid: user.uid,
             displayName: user.displayName || user.email?.split('@')[0] || "عضو",
@@ -63,63 +75,31 @@ export function useUser() {
             email: user.email || "",
             walletBalance: isMaster ? 999999 : 0,
             role: isMaster ? 'owner' : 'user',
-            label: isMaster ? 'المدير العام' : 'عضو موثق',
+            label: isMaster ? 'المدير العام' : 'عضو بريميوم',
             photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
             createdAt: new Date().toISOString(),
             isVerified: user.emailVerified,
             affinityPoints: isMaster ? 1000 : 50
           };
-          await setDoc(userDocRef, initialProfile);
-          if (isMounted) {
-            setProfile(initialProfile);
-            setLoading(false);
-          }
-        } else {
-          const currentData = docSnap.data() as UserProfile;
-          if (isMaster && currentData.role !== 'owner') {
-            await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
-          }
-          if (isMounted) {
-            setProfile({ ...currentData, uid: docSnap.id });
-            // لا ننهي التحميل هنا، ننتظر مستمع اللحظات Snapshots لضمان ثبات البيانات
-          }
+          setDoc(userDocRef, initialProfile);
+          setProfile(initialProfile);
         }
-
-        // الاستماع اللحظي - هو الضمان الحقيقي لبقاء المستخدم في صفحته
-        const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
-          if (isMounted) {
-            if (snapshot.exists()) {
-              const data = snapshot.data() as UserProfile;
-              setProfile({ ...data, uid: snapshot.id });
-            } else {
-              setProfile(null);
-            }
-            setLoading(false); // تم جلب البيانات وتثبيتها، ننهي حالة التحميل بأمان
-          }
-        }, (err) => {
-          console.error("Firestore Sync Error:", err);
-          if (isMounted) setLoading(false);
-        });
-
-        return unsubscribe;
-      } catch (err) {
-        console.error("Profile Logic Error:", err);
-        if (isMounted) setLoading(false);
-        return () => {};
+        
+        // الأهم: ننهي حالة التحميل فقط بعد التأكد من وصول الملف الشخصي
+        setLoading(false);
       }
-    };
-
-    const unsubPromise = syncProfile();
+    }, (err) => {
+      console.error("Firestore Sync Error:", err);
+      if (isMounted) setLoading(false);
+    });
 
     return () => {
       isMounted = false;
-      unsubPromise.then(unsub => {
-        if (typeof unsub === 'function') unsub();
-      });
+      unsubscribeProfile();
     };
   }, [user, db]);
 
-  // صلاحية طاقم العمل
+  // صلاحية طاقم العمل - تشمل كافة الرتب التشغيلية
   const isStaff = !!(user && (
     MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || 
     (profile?.role && staffRoles.includes(profile.role))

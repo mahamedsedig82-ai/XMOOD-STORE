@@ -27,23 +27,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // بروتوكول الحماية ومنع الطرد الخاطئ - ننتظر اكتمال التحميل تماماً واليقين من الرتبة
+  // بروتوكول الحماية ومنع الطرد الخاطئ - ننتظر بيقين تام
   useEffect(() => {
     if (isClient && !loading) {
       if (!user) {
-        // لا يوجد مستخدم إطلاقاً
+        // لا يوجد مستخدم إطلاقاً، توجه لصفحة الدخول
         router.replace('/login');
-      } else {
-        // يوجد مستخدم، ننتظر وجود الملف الشخصي لاتخاذ قرار الطرد
-        if (profile) {
-          if (!isAdmin) {
-            // تأكدنا أنه ليس طاقم عمل
-            router.replace('/');
-          }
-        } else {
-          // إذا انتهى التحميل ولم يوجد ملف شخصي (حالة نادرة)
-          router.replace('/');
-        }
+      } else if (profile && !isAdmin) {
+        // المستخدم موجود وملفه محمل، ولكنه ليس من طاقم العمل، يطرد للواجهة
+        router.replace('/');
       }
     }
   }, [loading, user, isAdmin, profile, isClient, router]);
@@ -60,7 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <div className="text-center space-y-3">
            <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">جاري التحقق من الهوية السيادية</h2>
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Staff Access Protocol v3.0</p>
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Staff Access Protocol v4.0</p>
         </div>
       </div>
     );
@@ -70,13 +62,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!user || !isAdmin || !profile) return null;
 
   const allSections = [
-    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman', 'store_manager', 'accountant'] },
+    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman', 'store_manager', 'accountant', 'support'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
     { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
     { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
-    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman', 'designer'] },
+    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman', 'designer', 'support'] },
     { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
-    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'designer', 'agent'] },
+    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'designer', 'agent', 'support'] },
     { label: "المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager', 'designer'] },
     { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'designer'] },
