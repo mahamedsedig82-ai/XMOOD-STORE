@@ -3,7 +3,7 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Menu, X
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Menu, X, ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -27,7 +27,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // منع الطرد المتسرع: ننتظر دائماً اكتمال التحميل
+  // تعريف الأقسام مع الربط الصارم بالأدوار لضمان "العزل التخصصي"
+  const allSections = useMemo(() => [
+    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
+    { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
+    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'designer'] },
+    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'designer'] },
+    { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm', 'agent', 'middleman'] },
+    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent', 'middleman', 'designer'] },
+    { label: "المنتجات الرقمية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
+    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support', 'agent'] },
+    { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
+    { label: "الخزينة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
+    { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
+    { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
+  ], []);
+
+  // تصفية الأقسام بناءً على رتبة المستخدم الحالية (العزل البصري)
+  const visibleSections = useMemo(() => {
+    if (!profile?.role) return [];
+    return allSections.filter(item => 
+      profile.role === 'owner' || profile.role === 'admin' || item.roles.includes(profile.role)
+    );
+  }, [profile, allSections]);
+
+  // التحقق من صلاحية المسار الحالي (العزل البرمجي)
+  const isPathAllowed = useMemo(() => {
+    if (loading || !profile) return true;
+    if (pathname === "/admin") return isAdmin;
+    return profile.role === 'owner' || profile.role === 'admin' || visibleSections.some(s => s.href === pathname);
+  }, [profile, loading, pathname, visibleSections, isAdmin]);
+
+  // منع الطرد المتسرع
   useEffect(() => {
     if (isClient && !loading) {
       if (!user) {
@@ -38,40 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [loading, user, isAdmin, profile, isClient, router]);
 
-  // تعريف الأقسام مع الربط الصارم بالأدوار لضمان "العزل التخصصي"
-  const allSections = useMemo(() => [
-    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
-    { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
-    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'designer'] },
-    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'designer'] },
-    { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm', 'agent', 'middleman'] },
-    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent', 'middleman', 'designer'] },
-    { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
-    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support', 'agent'] },
-    { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
-    { label: "المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
-    { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
-    { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
-  ], []);
-
-  // تصفية الأقسام بناءً على رتبة المستخدم الحالية
-  const visibleSections = useMemo(() => {
-    if (!profile?.role) return [];
-    return allSections.filter(item => 
-      profile.role === 'owner' || profile.role === 'admin' || item.roles.includes(profile.role)
-    );
-  }, [profile, allSections]);
-
-  // التحقق من صلاحية المسار الحالي
-  const isPathAllowed = useMemo(() => {
-    if (loading || !profile) return true;
-    if (pathname === "/admin") {
-       // لوحة القيادة متاحة للكل كطاقم عمل، لكن المحتوى داخلها قد يختلف
-       return isAdmin;
-    }
-    return profile.role === 'owner' || profile.role === 'admin' || visibleSections.some(s => s.href === pathname);
-  }, [profile, loading, pathname, visibleSections, isAdmin]);
-
+  // شاشة التحميل السيادية الموحدة (Fix Hydration)
   if (!isClient || loading || (user && !profile)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-8" dir="rtl">
@@ -98,12 +96,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="w-24 h-24 bg-red-500/10 rounded-[2.5rem] flex items-center justify-center text-red-500 mb-8 border border-red-500/20 shadow-2xl">
            <ShieldAlert size={48} />
         </div>
-        <h2 className="text-4xl font-black mb-4 gold-text">وصول محدود للتخصص</h2>
+        <h2 className="text-4xl font-black mb-4 gold-text">وصول متخصص محدود</h2>
         <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed text-lg font-medium">
-          عذراً سيادة {profile.label}، هذا القسم يقع خارج نطاق مهامك المعتمدة حالياً. يرجى استخدام الأدوات المتاحة لك فقط.
+          عذراً سيادة {profile.label}، هذا القسم يقع خارج نطاق مهامك المعتمدة. يرجى استخدام أدواتك المخصصة فقط.
         </p>
         <Button asChild className="mt-12 royal-button px-16 h-16 text-lg">
-          <Link href={visibleSections[0]?.href || "/admin"}>الذهاب لمهامي</Link>
+          <Link href={visibleSections[0]?.href || "/admin"}>العودة لمهامي</Link>
         </Button>
       </div>
     );
@@ -192,7 +190,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </AnimatePresence>
           </div>
 
-          {/* Fixed Bottom Navigation (Mobile Specialist Dock) */}
+          {/* Fixed Bottom Navigation (Mobile specialist Dock) - RECONSTRUCTED */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/98 backdrop-blur-3xl border-t z-[110] flex items-center justify-around px-4 shadow-[0_-15px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link 
@@ -213,7 +211,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </Link>
              ))}
              
-             {/* Mobile "More" Menu for additional specialist tools */}
+             {/* Mobile "More" Menu for additional tools */}
              <Sheet dir="rtl">
                 <SheetTrigger asChild>
                    <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-muted-foreground opacity-70 pointer-events-auto relative z-[120]">
@@ -251,10 +249,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       </div>
                       <div className="mt-12 space-y-4">
                          <Button asChild variant="outline" className="w-full h-16 rounded-[1.5rem] font-black text-xs uppercase gap-4 border-border/60 hover:bg-card">
-                           <Link href="/"><ArrowLeft size={18} /> العودة للمتجر الرئيسي</Link>
+                           <Link href="/"><ArrowLeft size={18} /> العودة للمتجر</Link>
                          </Button>
                          <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-16 rounded-[1.5rem] text-red-500 font-black text-xs uppercase gap-4 hover:bg-red-500/5">
-                           <LogOut size={18} /> تسجيل خروج آمن
+                           <LogOut size={18} /> خروج آمن
                          </Button>
                       </div>
                    </ScrollArea>

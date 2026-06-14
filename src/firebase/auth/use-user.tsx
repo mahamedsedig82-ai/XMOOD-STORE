@@ -7,8 +7,8 @@ import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 
 /**
- * هوك سيادي لإدارة هوية المستخدم ورتبته
- * يضمن عدم انتهاء حالة التحميل قبل التأكد اليقيني من البيانات
+ * هوك سيادي مطور لإدارة الهوية والرتب التخصصية
+ * يمنع انتهاء حالة التحميل قبل التأكد اليقيني من البيانات في Firestore
  */
 export function useUser() {
   const auth = useAuth();
@@ -34,7 +34,6 @@ export function useUser() {
     
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      // إذا لم يكن هناك مستخدم، ننهي التحميل فوراً
       if (!firebaseUser) {
         setProfile(null);
         setLoading(false);
@@ -47,7 +46,7 @@ export function useUser() {
   useEffect(() => {
     if (!user || !db) return;
 
-    // نبدأ التحميل عند وجود مستخدم
+    // حالة التحميل تظل فعالة طالما لم نصل للملف الشخصي
     setLoading(true);
     const userDocRef = doc(db, 'users', user.uid);
     let isMounted = true;
@@ -57,16 +56,16 @@ export function useUser() {
         if (snapshot.exists()) {
           const data = snapshot.data() as UserProfile;
           
-          // حماية رتبة المدير العام
+          // حماية سيادية لرتبة المالك
           const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
           if (isMaster && data.role !== 'owner') {
             updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
           }
 
           setProfile({ ...data, uid: snapshot.id });
-          setLoading(false); // ننهي التحميل هنا فقط بعد وصول البيانات
+          setLoading(false); 
         } else {
-          // إنشاء ملف شخصي إذا لم يوجد
+          // إنشاء ملف شخصي إذا لم يوجد فوراً
           const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
           const initialProfile: UserProfile = {
             uid: user.uid,
@@ -90,7 +89,7 @@ export function useUser() {
         }
       }
     }, (err) => {
-      console.error("Critical Profile Sync Error:", err);
+      console.error("Critical Access Sync Error:", err);
       if (isMounted) setLoading(false);
     });
 
@@ -108,7 +107,7 @@ export function useUser() {
   return { 
     user, 
     profile, 
-    // المفتاح هنا: لا ننهي التحميل طالما هناك مستخدم ولم يصل ملفه الشخصي بعد
+    // المفتاح لثبات الدخول: عدم انتهاء التحميل إلا بوجود بيانات مؤكدة
     loading: loading || (!!user && !profile),
     isVerified: user?.emailVerified || false,
     isAdmin: isStaff,
