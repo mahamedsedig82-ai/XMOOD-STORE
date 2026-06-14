@@ -3,7 +3,7 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -39,11 +39,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const mainSections = [
     { label: "لوحة التحكم", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
+    { label: "المساعد الذكي", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
     { label: "إدارة السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm'] },
     { label: "طلبات العملاء", icon: ShoppingBag, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager'] },
     { label: "مستودع الأصول", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
     { label: "معرض الأعمال", icon: Palette, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer'] },
-    { label: "خدمات متنوعة", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent'] },
+    { label: "خدمات أخرى", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent'] },
   ];
 
   const businessSections = [
@@ -73,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex h-screen w-full bg-background" dir="rtl">
         <Sidebar className="border-l border-border bg-card/80 backdrop-blur-3xl" side="right">
           <SidebarHeader className="p-8 border-b text-center">
-            <span className="decorative-logo block mb-3">مركز الإدارة</span>
+            <span className="handwritten-logo block mb-3 text-3xl">XMOOD STORE</span>
             <Badge variant="outline" className="text-[10px] uppercase font-bold border-primary/20 text-primary px-4 py-1 rounded-full">{profile?.role}</Badge>
           </SidebarHeader>
           <ScrollArea className="flex-1 p-6">

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,7 +12,7 @@ import {
   Palette, Globe, Save, Loader2, Phone, Instagram, 
   Mail, Megaphone, Sparkles, Layout, MessageSquare, 
   ShieldCheck, Zap, Activity, Facebook, Youtube, Video, MapPin, Clock,
-  Share2, Send, Info
+  Share2, Send, Info, DollarSign
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +36,8 @@ export default function AdminSettingsFullControl() {
       heroTitle: "حلول رقمية متقدمة لراحتك",
       heroDescription: "نقدم لك أفضل باقات شحن الألعاب، الحسابات المميزة، والخدمات الاحترافية بأعلى معايير الأمان والسرعة.",
       description: "منصة متكاملة لتقديم الحلول والخدمات الرقمية المعتمدة.",
-      copyright: "© 2025 XMOOD PROFESSIONAL SERVICES. ALL RIGHTS RESERVED."
+      copyright: "© 2025 XMOOD PROFESSIONAL SERVICES. ALL RIGHTS RESERVED.",
+      usdRate: "5400"
     },
     contact: {
       email: "SUPPORT@XMOOD.COM",
@@ -107,6 +107,9 @@ export default function AdminSettingsFullControl() {
           <TabsTrigger value="site" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black min-w-[120px]">
             <Globe size={16} className="ml-2" /> معلومات الموقع
           </TabsTrigger>
+          <TabsTrigger value="finance" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black min-w-[120px]">
+            <DollarSign size={16} className="ml-2" /> الإعدادات المالية
+          </TabsTrigger>
           <TabsTrigger value="contact" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black min-w-[120px]">
             <Phone size={16} className="ml-2" /> معلومات التواصل
           </TabsTrigger>
@@ -121,6 +124,26 @@ export default function AdminSettingsFullControl() {
             <div className="space-y-4">
               <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">رابط الشعار الرئيسي (SVG/PNG)</Label>
               <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} placeholder="URL..." className="h-14 bg-muted border-none rounded-xl px-6 font-bold" />
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="finance" className="space-y-8">
+          <Card className="luxury-card p-10 space-y-8 bg-green-500/5 border-green-500/10">
+            <div className="flex items-center gap-4 text-green-600 mb-4">
+              <DollarSign size={32} />
+              <h3 className="text-2xl font-bold">تحديث سعر الصرف المركزي</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">سعر صرف الدولار (SDG مقابل 1 USD)</Label>
+                <Input type="number" value={form.siteInfo.usdRate} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, usdRate: e.target.value}})} className="h-16 text-center text-3xl font-black bg-white border-green-500/20 rounded-2xl text-green-600" />
+              </div>
+              <div className="p-6 bg-white/50 rounded-2xl border flex items-center">
+                 <p className="text-xs text-muted-foreground leading-relaxed">
+                   تنبيه: تحديث هذا السعر سيغير كافة عرض الأسعار في الموقع (بالعملة المحلية) بشكل فوري. تأكد من دقة البيانات المدخلة قبل الحفظ.
+                 </p>
+              </div>
             </div>
           </Card>
         </TabsContent>

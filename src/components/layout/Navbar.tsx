@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, Users, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Zap, X, User, ChevronLeft, ShoppingBag, Loader2
+  Wallet, LayoutDashboard, LogOut, Zap, X, ChevronLeft, ShoppingBag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -62,9 +62,9 @@ export function Navbar() {
     { name: "الرئيسية", href: "/", icon: Home },
     { name: "المتجر الرقمي", href: "/store", icon: Store },
     { name: "السوق المفتوح", href: "/marketplace", icon: ShoppingBag },
-    { name: "معرض الإبداع", href: "/designs/gallery", icon: Palette },
-    { name: "الخبراء المعتمدون", href: "/middleman", icon: ShieldCheck },
-    { name: "حلول تقنية", href: "/other-services", icon: Zap },
+    { name: "معرض الأعمال", href: "/designs/gallery", icon: Palette },
+    { name: "الوكلاء المعتمدون", href: "/middleman", icon: ShieldCheck },
+    { name: "خدمات أخرى", href: "/other-services", icon: Zap },
   ];
 
   const isAdmin = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant'].includes(profile?.role || '');
@@ -76,8 +76,8 @@ export function Navbar() {
       <div className="container mx-auto px-6 h-20 md:h-24 flex items-center justify-between">
         
         <Link href="/" className="flex flex-col items-start group">
-          <span className="decorative-logo group-hover:scale-105 transition-transform">{config?.siteInfo?.title || "XMOOD"}</span>
-          <span className="text-[8px] font-black tracking-[0.3em] text-muted-foreground uppercase">{config?.siteInfo?.subtitle || "Professional Services"}</span>
+          <span className="handwritten-logo text-2xl md:text-3xl group-hover:scale-105 transition-transform text-foreground">XMOOD STORE</span>
+          <span className="text-[8px] font-black tracking-[0.3em] text-muted-foreground uppercase">{config?.siteInfo?.subtitle || "Professional Digital Services"}</span>
         </Link>
 
         <div className="hidden lg:flex items-center gap-8">
@@ -167,7 +167,7 @@ export function Navbar() {
             <SheetContent side="right" className="w-[85%] sm:max-w-sm bg-background p-0 border-l border-border flex flex-col rounded-l-3xl overflow-hidden shadow-2xl">
               <SheetHeader className="p-8 border-b bg-muted/10">
                 <div className="flex items-center justify-between">
-                   <SheetTitle className="decorative-logo text-2xl">{config?.siteInfo?.title || "XMOOD"}</SheetTitle>
+                   <SheetTitle className="handwritten-logo text-2xl">XMOOD STORE</SheetTitle>
                    <SheetClose asChild>
                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl"><X size={20} /></Button>
                    </SheetClose>
@@ -229,9 +229,6 @@ export function Navbar() {
                     <Link href="/login">دخول الأعضاء المعتمدين</Link>
                   </Button>
                 )}
-                <p className="text-[9px] text-center text-muted-foreground uppercase font-black tracking-widest mt-6">
-                  Professional Services Hub
-                </p>
               </div>
             </SheetContent>
           </Sheet>
