@@ -8,11 +8,14 @@ import { PageLoader } from '@/components/shared/PageLoader';
 
 export const metadata: Metadata = {
   title: 'XMOOD STORE | منصة الخدمات الإلكترونية المعتمدة',
-  description: 'وجهتك الأولى لشحن الألعاب، الحسابات المميزة، والخدمات الرقمية بأعلى جودة وأمان.',
+  description: 'منصة متخصصة في الخدمات الرقمية والألعاب، توفر شحن الألعاب، الحسابات، البطاقات الرقمية، والخدمات التقنية المعتمدة بأعلى معايير الأمان والسرعة.',
   openGraph: {
     title: 'XMOOD STORE',
-    description: 'منصة الخدمات الإلكترونية المعتمدة',
+    description: 'منصة الخدمات الإلكترونية المعتمدة والأكثر موثوقية',
     images: ['https://picsum.photos/seed/xmood-og/1200/630'],
+  },
+  icons: {
+    icon: '/favicon.ico',
   }
 };
 

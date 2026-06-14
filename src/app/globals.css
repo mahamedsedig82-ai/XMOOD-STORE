@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -101,3 +102,13 @@
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { @apply bg-transparent; }
 ::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full hover:bg-primary/40; }
+
+/* Custom Animations */
+.animate-pulse-gold {
+  animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5)); }
+  50% { opacity: 0.8; filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.8)); }
+}

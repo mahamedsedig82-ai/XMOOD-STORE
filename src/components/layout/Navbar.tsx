@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
-  Menu, Moon, Sun, Home, Store, Palette, Users, ShieldCheck, 
+  Menu, Moon, Sun, Home, Store, Palette, ShieldCheck, 
   Wallet, LayoutDashboard, LogOut, Zap, ChevronLeft, ShoppingBag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -76,13 +76,19 @@ export function Navbar() {
     <nav className="fixed top-0 z-[100] w-full border-b bg-background/80 backdrop-blur-xl transition-all duration-300">
       <div className="container mx-auto px-6 h-24 flex items-center justify-between">
         
-        <Link href="/" className="flex flex-col items-start group">
-          <span className="handwritten-logo text-3xl group-hover:scale-105 transition-transform">
-            {config?.siteInfo?.title || "XMOOD STORE"}
-          </span>
-          <span className="text-[8px] font-black tracking-[0.3em] text-muted-foreground uppercase">
-            {config?.siteInfo?.subtitle || "مركز الخدمات الإلكترونية المعتمدة"}
-          </span>
+        <Link href="/" className="flex items-center gap-4 group">
+          {config?.appearance?.logoUrl ? (
+            <img src={config.appearance.logoUrl} alt="XMOOD" className="h-12 w-auto object-contain transition-transform group-hover:scale-105" />
+          ) : (
+            <div className="flex flex-col items-start">
+               <span className="handwritten-logo text-3xl group-hover:scale-105 transition-transform">
+                 {config?.siteInfo?.title || "XMOOD STORE"}
+               </span>
+               <span className="text-[8px] font-black tracking-[0.3em] text-muted-foreground uppercase">
+                 {config?.siteInfo?.subtitle || "مركز الخدمات الإلكترونية المعتمدة"}
+               </span>
+            </div>
+          )}
         </Link>
 
         <div className="hidden lg:flex items-center gap-10">
