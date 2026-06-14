@@ -48,8 +48,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
         <div className="text-center space-y-3">
-           <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">جاري التحقق من الصلاحيات السيادية</h2>
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Identity Verification Protocol v7.0</p>
+           <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">جاري تأمين الوصول السيادي</h2>
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Role-Based Access Protocol v9.0</p>
         </div>
       </div>
     );
@@ -57,13 +57,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!user || !isAdmin || !profile) return null;
 
-  // تعريف الأقسام مع تحديد الأدوار المسموح لها (فصل سيادي تام)
+  // مصفوفة الأقسام مع تحديد الأدوار بدقة (Isolation Matrix)
   const allSections = [
-    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman', 'store_manager', 'accountant', 'support'] },
+    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
     { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
     { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
-    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent', 'middleman', 'designer', 'support'] },
+    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent', 'middleman', 'designer'] },
     { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm', 'agent', 'middleman'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support'] },
     { label: "المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
@@ -73,26 +73,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
 
-  // تصفية القائمة الجانبية بناءً على رتبة المستخدم (الاقتصار على المهام فقط)
+  // تصفية الأقسام بناءً على الرتبة (الفصل التام)
   const visibleSections = allSections.filter(item => 
     profile?.role === 'owner' || profile?.role === 'admin' || (profile?.role && item.roles.includes(profile.role))
   );
 
+  // التحقق من صلاحية المسار الحالي (Security Guard)
   const isPathAllowed = profile?.role === 'owner' || profile?.role === 'admin' || visibleSections.some(s => s.href === pathname);
 
-  // في حال حاول الدخول لرابط غير مصرح له به يدوياً
   if (!isPathAllowed && pathname !== "/admin") {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-center p-10 bg-background" dir="rtl">
         <div className="w-24 h-24 bg-red-500/10 rounded-[2.5rem] flex items-center justify-center text-red-500 mb-8 border border-red-500/20 shadow-2xl">
            <ShieldAlert size={48} />
         </div>
-        <h2 className="text-4xl font-black mb-4 gold-text">وصول محدود</h2>
+        <h2 className="text-4xl font-black mb-4 gold-text">وصول مقتصر على التخصص</h2>
         <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed text-lg font-medium">
-          عذراً <span className="text-foreground font-bold">{profile.displayName}</span>، هذا القسم مخصص لمهام تخصصية أخرى. يرجى استخدام الأدوات المتاحة في قائمتك الجانبية.
+          عذراً <span className="text-foreground font-bold">{profile.displayName}</span>، هذا القسم ليس ضمن نطاق مهامك المعتمدة. يرجى استخدام الأدوات المتاحة في شريط المهام الخاص بك.
         </p>
         <Button asChild className="mt-12 royal-button px-16 h-16 text-lg">
-          <Link href="/admin">العودة للوحة القيادة</Link>
+          <Link href="/admin">العودة لمهامي الخاصة</Link>
         </Button>
       </div>
     );
@@ -105,7 +105,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Desktop Sidebar */}
         <Sidebar className="border-l border-border bg-card hidden lg:flex" side="right">
           <SidebarHeader className="p-10 border-b text-center">
-            <span className="handwritten-logo block mb-3 text-3xl">XMOOD STORE</span>
+            <span className="handwritten-logo block mb-3 text-3xl">XMOOD ADMIN</span>
             <Badge variant="outline" className="text-[10px] uppercase font-black border-primary/30 text-primary px-4 py-1 rounded-full bg-primary/5">
               {profile?.label || profile?.role}
             </Badge>
@@ -113,7 +113,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <ScrollArea className="flex-1 p-5">
             <SidebarGroup>
                <SidebarGroupLabel className="text-right px-4 mb-4 text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">
-                 قائمة المهام الحصرية
+                 المهام التخصصية المتاحة
                </SidebarGroupLabel>
                <SidebarMenu className="gap-2.5">
                  {visibleSections.map((item) => (
@@ -135,7 +135,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </ScrollArea>
           <div className="p-8 border-t bg-muted/5 space-y-4">
             <Button asChild variant="outline" className="w-full h-12 rounded-xl text-[10px] font-black uppercase gap-3 border-border hover:bg-card">
-              <Link href="/"><ArrowLeft size={16} /> العودة للمتجر</Link>
+              <Link href="/"><ArrowLeft size={16} /> المتجر العام</Link>
             </Button>
             <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-12 rounded-xl text-red-500 font-black text-[10px] uppercase gap-3 hover:bg-red-500/10">
               <LogOut size={16} /> خروج آمن
@@ -145,103 +145,113 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <main className="flex-1 overflow-hidden flex flex-col relative">
           
-          {/* Enhanced Mobile Header */}
+          {/* Header */}
           <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl z-[60] sticky top-0">
              <div className="flex items-center gap-4">
-                {/* Mobile Menu Trigger (Sheet) */}
-                <Sheet dir="rtl">
-                   <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon" className="lg:hidden h-12 w-12 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-md">
-                         <Menu size={24} />
-                      </Button>
-                   </SheetTrigger>
-                   <SheetContent side="right" className="w-[85%] max-w-sm p-0 border-none bg-background shadow-2xl z-[100]">
-                      <SheetHeader className="p-8 border-b text-center bg-muted/5">
-                         <div className="flex justify-between items-center mb-6">
-                            <SheetClose asChild>
-                               <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-red-500/10 text-red-500"><X size={24}/></Button>
-                            </SheetClose>
-                            <span className="handwritten-logo text-3xl">XMOOD ADMIN</span>
-                         </div>
-                         <Badge className="bg-primary/10 text-primary border-none px-4 py-1 rounded-full text-[9px] font-black uppercase">
-                            {profile?.label || profile?.role}
-                         </Badge>
-                      </SheetHeader>
-                      <ScrollArea className="flex-1 p-6">
-                         <div className="space-y-3">
-                            {visibleSections.map((item) => (
-                               <SheetClose asChild key={item.href}>
-                                  <Link 
-                                    href={item.href} 
-                                    className={`flex flex-row-reverse items-center gap-5 p-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'hover:bg-muted font-bold text-muted-foreground'}`}
-                                  >
-                                     <item.icon size={20} className={pathname === item.href ? 'text-white' : 'text-primary'} />
-                                     <span className="font-black text-xs uppercase">{item.label}</span>
-                                  </Link>
-                               </SheetClose>
-                            ))}
-                         </div>
-                      </ScrollArea>
-                      <div className="p-8 border-t bg-muted/5 flex flex-col gap-3">
-                         <Button asChild variant="outline" className="w-full h-14 rounded-2xl font-black text-[10px] uppercase gap-3">
-                           <Link href="/"><ArrowLeft size={16} /> المتجر</Link>
-                         </Button>
-                         <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-14 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-3">
-                           <LogOut size={16} /> خروج
-                         </Button>
-                      </div>
-                   </SheetContent>
-                </Sheet>
-
                 <div className="flex items-center gap-5">
                    <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20">
                       <Terminal size={22} />
                    </div>
                    <div className="flex flex-col text-right">
                       <span className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground">وحدة التحكم</span>
-                      <span className="text-[8px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Terminal</span>
+                      <span className="text-[8px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Active</span>
                    </div>
                 </div>
              </div>
              
              <div className="flex items-center gap-3">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-xs font-black px-4 py-1.5 rounded-full hidden sm:block">Encrypted Session</Badge>
+                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-xs font-black px-4 py-1.5 rounded-full hidden sm:block">Secured Session</Badge>
                 <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_#22c55e]" />
              </div>
           </header>
 
           {/* Page Content */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-14 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 md:p-14 custom-scrollbar pb-32">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="max-w-7xl mx-auto pb-32"
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="max-w-7xl mx-auto"
               >
                 {children}
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Bottom Navigation for Mobile Specialists */}
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-background/90 backdrop-blur-2xl border-t z-50 flex items-center justify-around px-4 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
-             {visibleSections.slice(0, 5).map((item) => (
+          {/* Fixed Bottom Navigation (Mobile Specialist Hub) */}
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-2xl border-t z-[100] flex items-center justify-around px-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] pointer-events-auto">
+             {visibleSections.slice(0, 4).map((item) => (
                 <Link 
                   key={item.href} 
                   href={item.href} 
-                  className={`flex flex-col items-center gap-1 transition-all flex-1 py-2 ${pathname === item.href ? 'text-primary scale-110' : 'text-muted-foreground opacity-60'}`}
+                  className={`flex flex-col items-center justify-center gap-1.5 transition-all flex-1 h-full relative ${pathname === item.href ? 'text-primary' : 'text-muted-foreground opacity-60'}`}
                 >
-                   <item.icon size={20} className={pathname === item.href ? 'drop-shadow-[0_0_8px_var(--primary)]' : ''} />
-                   <span className="text-[7px] font-black uppercase tracking-widest text-center truncate w-full">{item.label.split(' ')[0]}</span>
-                   {pathname === item.href && <motion.div layoutId="bottom-indicator" className="w-1 h-1 bg-primary rounded-full mt-0.5" />}
+                   <div className={`p-2 rounded-xl transition-all ${pathname === item.href ? 'bg-primary/10 shadow-lg shadow-primary/5' : ''}`}>
+                      <item.icon size={22} className={pathname === item.href ? 'drop-shadow-[0_0_8px_var(--primary)]' : ''} />
+                   </div>
+                   <span className="text-[8px] font-black uppercase tracking-widest text-center truncate w-full px-1">{item.label}</span>
+                   {pathname === item.href && (
+                     <motion.div 
+                       layoutId="bottom-nav-indicator" 
+                       className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-b-full shadow-[0_0_10px_var(--primary)]" 
+                     />
+                   )}
                 </Link>
              ))}
-          </div>
+             {/* Mobile Menu Button for extra links */}
+             <Sheet dir="rtl">
+                <SheetTrigger asChild>
+                   <button className="flex flex-col items-center justify-center gap-1.5 flex-1 h-full text-muted-foreground opacity-60">
+                      <div className="p-2 rounded-xl hover:bg-muted">
+                        <Menu size={22} />
+                      </div>
+                      <span className="text-[8px] font-black uppercase tracking-widest">المزيد</span>
+                   </button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="rounded-t-[3rem] p-0 border-none bg-background shadow-2xl h-[70vh]">
+                   <SheetHeader className="p-8 border-b text-center bg-muted/5">
+                      <div className="flex justify-between items-center mb-4">
+                         <span className="handwritten-logo text-3xl">XMOOD ADMIN</span>
+                         <SheetClose asChild>
+                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-red-500"><X size={24}/></Button>
+                         </SheetClose>
+                      </div>
+                      <Badge className="bg-primary/10 text-primary border-none px-6 py-1 rounded-full text-[10px] font-black uppercase">
+                         {profile?.label || profile?.role}
+                      </Badge>
+                   </SheetHeader>
+                   <ScrollArea className="p-6 h-full pb-32">
+                      <div className="space-y-3">
+                         {visibleSections.map((item) => (
+                            <SheetClose asChild key={item.href}>
+                               <Link 
+                                 href={item.href} 
+                                 className={`flex flex-row-reverse items-center justify-between p-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'bg-muted/30 font-bold text-muted-foreground'}`}
+                               >
+                                  <item.icon size={20} className={pathname === item.href ? 'text-white' : 'text-primary'} />
+                                  <span className="font-black text-xs uppercase">{item.label}</span>
+                               </Link>
+                            </SheetClose>
+                         ))}
+                      </div>
+                      <div className="mt-8 space-y-3">
+                         <Button asChild variant="outline" className="w-full h-14 rounded-2xl font-black text-[11px] uppercase gap-3">
+                           <Link href="/"><ArrowLeft size={16} /> المتجر الرئيسي</Link>
+                         </Button>
+                         <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-14 rounded-2xl text-red-500 font-black text-[11px] uppercase gap-3 hover:bg-red-50">
+                           <LogOut size={16} /> تسجيل الخروج
+                         </Button>
+                      </div>
+                   </ScrollArea>
+                </SheetContent>
+             </Sheet>
+          </nav>
         </main>
       </div>
     </SidebarProvider>
   );
 }
+
