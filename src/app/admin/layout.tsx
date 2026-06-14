@@ -4,7 +4,7 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon, ClipboardList
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -31,16 +31,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (isClient && !loading) {
       if (!user) {
-        // لا يوجد مستخدم إطلاقاً، توجه لصفحة الدخول
         router.replace('/login');
       } else if (profile && !isAdmin) {
-        // المستخدم موجود وملفه محمل، ولكنه ليس من طاقم العمل، يطرد للواجهة
         router.replace('/');
       }
     }
   }, [loading, user, isAdmin, profile, isClient, router]);
 
-  // واجهة تأمين الوصول تظهر طالما لم نتأكد من الصلاحيات بعد
   if (!isClient || loading || (user && !profile)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-8" dir="rtl">
@@ -52,15 +49,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <div className="text-center space-y-3">
            <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">جاري التحقق من الهوية السيادية</h2>
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Staff Access Protocol v4.0</p>
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Staff Access Protocol v5.0</p>
         </div>
       </div>
     );
   }
 
-  // منع عرض المحتوى إذا كان المستخدم غير مخول قطعاً
   if (!user || !isAdmin || !profile) return null;
 
+  // تعريف كافة الأقسام مع تحديد الأدوار المسموح لها بالوصول لكل قسم
   const allSections = [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman', 'store_manager', 'accountant', 'support'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
@@ -76,27 +73,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
 
-  // تصفية الأقسام بناءً على الرتبة الحالية للمستخدم
+  // تصفية القائمة الجانبية بناءً على رتبة المستخدم الحالية
   const visibleSections = allSections.filter(item => 
     profile?.role === 'owner' || (profile?.role && item.roles.includes(profile.role))
   );
 
+  // التحقق من صلاحية المسار الحالي
   const currentSection = allSections.find(s => s.href === pathname);
-  const isAllowed = profile?.role === 'owner' || (profile?.role && currentSection?.roles.includes(profile.role));
+  const isPathAllowed = !currentSection || profile?.role === 'owner' || (profile?.role && currentSection.roles.includes(profile.role));
 
-  // شاشة المنع إذا حاول مستخدم الدخول لرابط تخصص آخر
-  if (pathname !== "/admin" && !isAllowed && currentSection) {
+  // إذا كان المستخدم يحاول الوصول لصفحة غير مسموح له بها، نعرض واجهة المنع بدلاً من طرده
+  if (!isPathAllowed && pathname !== "/admin") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-10 bg-background" dir="rtl">
-        <div className="w-20 h-20 bg-red-500/10 rounded-[2rem] flex items-center justify-center text-red-500 mb-8">
-           <Terminal size={40} />
+      <div className="flex flex-col items-center justify-center min-h-screen text-center p-10 bg-background" dir="rtl">
+        <div className="w-24 h-24 bg-red-500/10 rounded-[2.5rem] flex items-center justify-center text-red-500 mb-8 border border-red-500/20 shadow-2xl">
+           <ShieldAlert size={48} />
         </div>
-        <h2 className="text-3xl font-black mb-3">وصول غير مصرح به</h2>
-        <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
-          عذراً، هذا القسم مخصص لمتخصصين آخرين. يرجى استخدام الأدوات المتاحة في تخصصك الحالي: <span className="text-primary font-bold">{profile?.label || profile?.role}</span>.
+        <h2 className="text-4xl font-black mb-4 gold-text">وصول تخصصي محدود</h2>
+        <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed text-lg font-medium">
+          عذراً <span className="text-foreground font-bold">{profile.displayName}</span>، هذا القسم يقع خارج نطاق مهامك الحالية كـ <span className="text-primary font-bold">{profile.label || profile.role}</span>. يرجى الالتزام بالأدوات المتاحة في قائمتك الجانبية.
         </p>
-        <Button asChild className="mt-10 royal-button px-12 h-14">
-          <Link href="/admin">العودة للوحة القيادة</Link>
+        <Button asChild className="mt-12 royal-button px-16 h-16 text-lg">
+          <Link href="/admin">العودة لمساحة عملي</Link>
         </Button>
       </div>
     );
@@ -108,7 +106,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Sidebar className="border-l border-border bg-card hidden md:flex" side="right">
           <SidebarHeader className="p-10 border-b text-center">
             <span className="handwritten-logo block mb-3 text-3xl">XMOOD STORE</span>
-            <Badge variant="outline" className="text-[9px] uppercase font-black border-primary/30 text-primary px-4 py-1 rounded-full bg-primary/5">
+            <Badge variant="outline" className="text-[10px] uppercase font-black border-primary/30 text-primary px-4 py-1 rounded-full bg-primary/5">
               {profile?.label || profile?.role}
             </Badge>
           </SidebarHeader>
@@ -153,7 +151,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
                 <div className="flex flex-col text-right">
                    <span className="text-[11px] md:text-sm font-black uppercase tracking-widest text-foreground">وحدة التحكم السيادية</span>
-                   <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Professional Terminal</span>
+                   <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Specialist Terminal</span>
                 </div>
              </div>
              <div className="flex items-center gap-5">
