@@ -26,37 +26,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // بروتوكول حماية المسارات - فحص سيادي صارم
+  // بروتوكول حماية المسارات - فحص سيادي هادئ
   useEffect(() => {
     if (!loading && isClient) {
       if (!user) {
         router.replace('/login');
       } else if (!isAdmin) {
-        // لا يتم الطرد إلا إذا تأكدنا تماماً من عدم وجود صلاحية
+        // لا يتم الطرد إلا إذا تم التأكد 100% من عدم وجود صلاحية بعد اكتمال التحميل
         router.replace('/');
       }
     }
   }, [loading, user, isAdmin, isClient, router]);
 
-  // واجهة التحميل المركزية - تمنع وميض الواجهة غير المصرح بها
+  // واجهة التحميل المركزية - تمنع وميض الواجهة وتؤمن تجربة الدخول
   if (!isClient || loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6" dir="rtl">
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+          <div className="w-20 h-20 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+            <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_15px_var(--primary)]" />
           </div>
         </div>
-        <div className="text-center space-y-2">
-          <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] animate-pulse">تأمين الوصول للمركز...</p>
-          <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-widest">Verifying Admin Credentials</p>
+        <div className="text-center space-y-3">
+          <p className="text-[11px] font-black text-primary uppercase tracking-[0.5em] animate-pulse">جاري تأمين الوصول للمركز...</p>
+          <div className="flex items-center justify-center gap-2">
+             <div className="h-px w-8 bg-primary/20" />
+             <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-widest">Sovereign Encryption Active</p>
+             <div className="h-px w-8 bg-primary/20" />
+          </div>
         </div>
       </div>
     );
   }
 
-  // منع عرض أي محتوى إذا لم يكن المستخدم مديراً
+  // منع عرض أي محتوى إذا لم يكن المستخدم مخولاً (حماية إضافية)
   if (!user || !isAdmin) return null;
 
   const adminSections = [
@@ -64,12 +68,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
     { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm'] },
     { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
-    { label: "خدمات أخرى", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent'] },
+    { label: "خدمات أخرى", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman'] },
   ];
 
   const toolsSections = [
     { label: "الخزينة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
-    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager'] },
+    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager', 'designer'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
@@ -122,13 +126,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <header className="h-16 md:h-20 border-b flex items-center justify-between px-6 md:px-10 bg-background/80 backdrop-blur-md z-40 sticky top-0">
              <div className="flex items-center gap-4">
                 <Terminal size={18} className="text-primary" />
-                <div className="flex flex-col">
+                <div className="flex flex-col text-right">
                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-foreground">مركز التحكم</span>
                    <span className="text-[8px] text-muted-foreground uppercase">Sovereign Admin Console</span>
                 </div>
              </div>
              <div className="flex items-center gap-4">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-[10px] font-black px-4 py-1 rounded-full">Active Secure</Badge>
+                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-[10px] font-black px-4 py-1 rounded-full">Secure Session</Badge>
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]" />
              </div>
           </header>

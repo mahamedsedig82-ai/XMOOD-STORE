@@ -13,7 +13,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // MASTER ADMINS - القائمة السيادية للمديرين
+  // MASTER ADMINS - القائمة السيادية للإدارة العليا
   const MASTER_ADMINS = [
     "MAHAMEDFK3@GMAIL.COM", 
     "XMOODSTORE.SUPPORT@GMAIL.COM",
@@ -24,6 +24,7 @@ export function useUser() {
     if (!auth) return;
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
+      // إذا لم يوجد مستخدم، ننهي التحميل فوراً
       if (!firebaseUser) {
         setProfile(null);
         setLoading(false);
@@ -33,17 +34,16 @@ export function useUser() {
   }, [auth]);
 
   useEffect(() => {
-    if (!user || !db) {
-      if (!user) setLoading(false);
-      return;
-    }
+    if (!user || !db) return;
 
     const userDocRef = doc(db, 'users', user.uid);
-    let unsubscribeProfile: () => void;
+    let isMounted = true;
 
     const syncProfile = async () => {
       try {
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
+        
+        // جلب البيانات لأول مرة للتأكد من وجود البروفايل
         const docSnap = await getDoc(userDocRef);
         
         if (!docSnap.exists()) {
@@ -61,41 +61,48 @@ export function useUser() {
             affinityPoints: isMaster ? 1000 : 50
           };
           await setDoc(userDocRef, initialProfile);
-          setProfile(initialProfile);
+          if (isMounted) setProfile(initialProfile);
         } else {
           const currentData = docSnap.data() as UserProfile;
-          // الترقية السيادية التلقائية عند الدخول
+          // الترقية السيادية التلقائية عند الدخول ببريد المدير
           if (isMaster && currentData.role !== 'owner') {
             await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
+            if (isMounted) setProfile({ ...currentData, role: 'owner', uid: user.uid });
+          } else {
+            if (isMounted) setProfile({ ...currentData, uid: user.uid });
           }
-          setProfile({ ...currentData, uid: user.uid });
         }
 
-        // الاستماع للتغييرات اللحظية
-        unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.data() as UserProfile;
-            setProfile({ ...data, uid: snapshot.id });
+        // الاستماع للتغييرات اللحظية لضمان تفاعل الموقع مع تغييرات الرتب
+        const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
+          if (snapshot.exists() && isMounted) {
+            setProfile({ ...(snapshot.data() as UserProfile), uid: snapshot.id });
+            setLoading(false); // ننهي التحميل فقط بعد وصول أول "سناب شوت" ناجح
           }
-          setLoading(false);
+        }, (err) => {
+          console.error("Profile Snapshot Error:", err);
+          if (isMounted) setLoading(false);
         });
+
+        return unsubscribe;
 
       } catch (err) {
         console.error("Critical Auth Sync Error:", err);
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
-    syncProfile();
+    const unsubscribePromise = syncProfile();
 
     return () => {
-      if (unsubscribeProfile) unsubscribeProfile();
+      isMounted = false;
+      unsubscribePromise.then(unsub => unsubscribe && unsub?.());
     };
   }, [user, db]);
 
-  // فحص الصلاحية الإدارية - يدعم الفحص الفوري بالبريد والفحص بالرتبة
+  // فحص الصلاحية الإدارية - يدعم المدير، المشرفين، الوكلاء، المصممين، وغيرهم
   const isMasterByEmail = user && MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
-  const isAdmin = !!(isMasterByEmail || ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile?.role || ''));
+  const isAdmin = !!(isMasterByEmail || (profile?.role && ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile.role)));
 
   return { 
     user, 
@@ -103,6 +110,7 @@ export function useUser() {
     loading, 
     isVerified: user?.emailVerified || false,
     isAdmin,
-    isMaster: isMasterByEmail
+    isMaster: isMasterByEmail,
+    role: profile?.role
   };
 }
