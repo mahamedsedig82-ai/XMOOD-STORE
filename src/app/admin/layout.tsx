@@ -1,9 +1,10 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -32,13 +33,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (!user) {
         router.replace('/login');
       } else if (!isAdmin) {
-        // لا يتم الطرد إلا إذا تم التأكد 100% من عدم وجود صلاحية بعد اكتمال التحميل
         router.replace('/');
       }
     }
   }, [loading, user, isAdmin, isClient, router]);
 
-  // واجهة التحميل المركزية - تمنع وميض الواجهة وتؤمن تجربة الدخول
+  // واجهة التحميل المركزية
   if (!isClient || loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6" dir="rtl">
@@ -60,26 +60,47 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // منع عرض أي محتوى إذا لم يكن المستخدم مخولاً (حماية إضافية)
   if (!user || !isAdmin) return null;
 
-  const adminSections = [
+  // تعريف الأقسام مع تحديد الأدوار المسموح لها بدقة
+  const allSections = [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
-    { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm'] },
+    { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
     { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
-    { label: "خدمات أخرى", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman'] },
-  ];
-
-  const toolsSections = [
+    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman'] },
+    { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
     { label: "الخزينة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
-    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager', 'designer'] },
+    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager'] },
+    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'designer', 'design_manager'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
 
+  // تصفية الأقسام بناءً على دور المستخدم الحالي
+  const visibleSections = allSections.filter(item => 
+    profile?.role === 'owner' || (profile?.role && item.roles.includes(profile.role))
+  );
+
+  // حماية إضافية: إذا حاول المستخدم دخول مسار غير مسموح له عبر الرابط المباشر
+  const currentSection = allSections.find(s => s.href === pathname);
+  const isAllowed = profile?.role === 'owner' || (profile?.role && currentSection?.roles.includes(profile.role));
+
+  if (pathname !== "/admin" && !isAllowed && currentSection) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-10">
+        <Terminal size={64} className="text-red-500 mb-6" />
+        <h2 className="text-2xl font-bold mb-2">وصول غير مصرح به</h2>
+        <p className="text-muted-foreground">عذراً، هذا القسم خارج نطاق تخصصك الوظيفي الحالي.</p>
+        <Button asChild className="mt-8 royal-button">
+          <Link href="/admin">العودة للرئيسية</Link>
+        </Button>
+      </div>
+    );
+  }
+
   const renderMenuItems = (items: any[]) => 
-    items.filter(item => (profile?.role === 'owner' || (profile?.role && item.roles.includes(profile.role)))).map((item) => (
+    items.map((item) => (
       <SidebarMenuItem key={item.href}>
         <SidebarMenuButton 
           asChild 
@@ -100,16 +121,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Sidebar className="border-l border-border bg-card hidden md:flex" side="right">
           <SidebarHeader className="p-8 border-b text-center">
             <span className="handwritten-logo block mb-2 text-2xl">XMOOD STORE</span>
-            <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/20 text-primary px-3 py-0.5 rounded-full">{profile?.label || profile?.role}</Badge>
+            <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/20 text-primary px-3 py-0.5 rounded-full">
+              {profile?.label || profile?.role}
+            </Badge>
           </SidebarHeader>
           <ScrollArea className="flex-1 p-4">
             <SidebarGroup className="mb-6">
-               <SidebarGroupLabel className="text-right px-4 mb-2 text-[8px] font-black uppercase text-muted-foreground tracking-widest">العمليات المركزية</SidebarGroupLabel>
-               <SidebarMenu className="gap-2">{renderMenuItems(adminSections)}</SidebarMenu>
-            </SidebarGroup>
-            <SidebarGroup>
-               <SidebarGroupLabel className="text-right px-4 mb-2 text-[8px] font-black uppercase text-muted-foreground tracking-widest">الأدوات والتحكم</SidebarGroupLabel>
-               <SidebarMenu className="gap-2">{renderMenuItems(toolsSections)}</SidebarMenu>
+               <SidebarGroupLabel className="text-right px-4 mb-2 text-[8px] font-black uppercase text-muted-foreground tracking-widest">
+                 لوحة التخصص: {profile?.role}
+               </SidebarGroupLabel>
+               <SidebarMenu className="gap-2">{renderMenuItems(visibleSections)}</SidebarMenu>
             </SidebarGroup>
           </ScrollArea>
           <div className="p-6 border-t bg-muted/5 space-y-3">
@@ -127,8 +148,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              <div className="flex items-center gap-4">
                 <Terminal size={18} className="text-primary" />
                 <div className="flex flex-col text-right">
-                   <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-foreground">مركز التحكم</span>
-                   <span className="text-[8px] text-muted-foreground uppercase">Sovereign Admin Console</span>
+                   <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-foreground">مركز التحكم التخصصي</span>
+                   <span className="text-[8px] text-muted-foreground uppercase">{profile?.role} Department Console</span>
                 </div>
              </div>
              <div className="flex items-center gap-4">

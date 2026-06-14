@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -24,7 +25,6 @@ export function useUser() {
     if (!auth) return;
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      // إذا لم يوجد مستخدم، ننهي التحميل فوراً
       if (!firebaseUser) {
         setProfile(null);
         setLoading(false);
@@ -39,11 +39,9 @@ export function useUser() {
     const userDocRef = doc(db, 'users', user.uid);
     let isMounted = true;
 
-    const syncProfile = async (): Promise<Unsubscribe | null> => {
+    const syncProfile = async () => {
       try {
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
-        
-        // جلب البيانات لأول مرة للتأكد من وجود البروفايل
         const docSnap = await getDoc(userDocRef);
         
         if (!docSnap.exists()) {
@@ -64,7 +62,6 @@ export function useUser() {
           if (isMounted) setProfile(initialProfile);
         } else {
           const currentData = docSnap.data() as UserProfile;
-          // الترقية السيادية التلقائية عند الدخول ببريد المدير
           if (isMaster && currentData.role !== 'owner') {
             await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
             if (isMounted) setProfile({ ...currentData, role: 'owner', uid: user.uid });
@@ -73,11 +70,10 @@ export function useUser() {
           }
         }
 
-        // الاستماع للتغييرات اللحظية لضمان تفاعل الموقع مع تغييرات الرتب
         const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
           if (snapshot.exists() && isMounted) {
             setProfile({ ...(snapshot.data() as UserProfile), uid: snapshot.id });
-            setLoading(false); // ننهي التحميل فقط بعد وصول أول "سناب شوت" ناجح
+            setLoading(false);
           }
         }, (err) => {
           console.error("Profile Snapshot Error:", err);
@@ -85,7 +81,6 @@ export function useUser() {
         });
 
         return unsubscribe;
-
       } catch (err) {
         console.error("Critical Auth Sync Error:", err);
         if (isMounted) setLoading(false);
@@ -93,21 +88,18 @@ export function useUser() {
       }
     };
 
-    const unsubscribePromise = syncProfile();
+    const unsubPromise = syncProfile();
 
     return () => {
       isMounted = false;
-      unsubscribePromise.then(unsub => {
-        if (typeof unsub === 'function') {
-          unsub();
-        }
-      });
+      unsubPromise.then(unsub => unsub && (unsub as Unsubscribe)());
     };
   }, [user, db]);
 
-  // فحص الصلاحية الإدارية - يدعم المدير، المشرفين، الوكلاء، المصممين، وغيرهم
+  // فحص الصلاحية الإدارية - يشمل كافة المتخصصين المعتمدين في النظام
   const isMasterByEmail = user && MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
-  const isAdmin = !!(isMasterByEmail || (profile?.role && ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile.role)));
+  const staffRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent', 'community_mod'];
+  const isAdmin = !!(isMasterByEmail || (profile?.role && staffRoles.includes(profile.role)));
 
   return { 
     user, 
