@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
@@ -14,7 +14,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // القائمة الذهبية للمديرين السياديين
+  // Optimized Admin Check
   const MASTER_ADMINS = [
     "MAHAMEDFK3@GMAIL.COM", 
     "XMOODSTORE.SUPPORT@GMAIL.COM",
@@ -40,6 +40,7 @@ export function useUser() {
     }
 
     const userDocRef = doc(db, 'users', user.uid);
+    let unsubscribeProfile: () => void;
 
     const syncProfile = async () => {
       try {
@@ -49,12 +50,12 @@ export function useUser() {
         if (!docSnap.exists()) {
           const initialProfile: UserProfile = {
             uid: user.uid,
-            displayName: user.displayName || user.email?.split('@')[0] || "عضو سيادي",
+            displayName: user.displayName || user.email?.split('@')[0] || "عضو معتمد",
             fullName: user.displayName || "",
             email: user.email || "",
             walletBalance: isMaster ? 999999 : 0,
             role: isMaster ? 'owner' : 'user',
-            label: isMaster ? 'المالك السيادي للمنصة' : 'عضو بريميوم',
+            label: isMaster ? 'المدير العام للمنصة' : 'عضو بريميوم',
             photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
             createdAt: new Date().toISOString(),
             isVerified: user.emailVerified,
@@ -64,16 +65,23 @@ export function useUser() {
           setProfile(initialProfile);
         } else {
           const currentData = docSnap.data() as UserProfile;
-          // تحديث الصلاحيات إذا كان البريد في قائمة الماستر
           if (isMaster && currentData.role !== 'owner') {
             await updateDoc(userDocRef, { 
               role: 'owner', 
-              label: 'المالك السيادي للمنصة',
+              label: 'المدير العام للمنصة',
               isVerified: true 
             });
           }
           setProfile({ ...currentData, uid: user.uid });
         }
+
+        // Setup real-time listener for profile updates
+        unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
+          if (snapshot.exists()) {
+            setProfile(snapshot.data() as UserProfile);
+          }
+        }, (err) => console.error("Real-time Profile Error:", err));
+
       } catch (err) {
         console.error("Profile Sync Error:", err);
       } finally {
@@ -83,13 +91,9 @@ export function useUser() {
 
     syncProfile();
 
-    const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
-      if (snapshot.exists()) {
-        setProfile(snapshot.data() as UserProfile);
-      }
-    });
-
-    return () => unsubscribeProfile();
+    return () => {
+      if (unsubscribeProfile) unsubscribeProfile();
+    };
   }, [user, db]);
 
   return { 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -5,7 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, Zap, Store, Palette, Award, CheckCircle, 
-  MessageSquare, Mail, ShoppingBag, Users, Globe, Activity
+  MessageSquare, Mail, ShoppingBag, Activity
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -17,6 +18,19 @@ export default function HomeCorporate() {
   const db = useFirestore();
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
 
   return (
     <main className="min-h-screen bg-background" dir="rtl">
@@ -36,27 +50,39 @@ export default function HomeCorporate() {
         </div>
 
         <div className="container mx-auto px-6 relative z-10 text-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
-             <Badge className="mb-12 py-3 px-12 bg-primary/10 text-primary border-primary/20 rounded-full font-black text-[12px] tracking-[0.2em] uppercase shadow-sm">
-               {config?.siteInfo?.subtitle || "منصة الخدمات الرقمية المعتمدة والأكثر موثوقية"}
-             </Badge>
+          <motion.div 
+            initial="hidden" 
+            animate="visible" 
+            variants={containerVariants}
+          >
+             <motion.div variants={itemVariants}>
+               <Badge className="mb-12 py-3 px-12 bg-primary/10 text-primary border-primary/20 rounded-full font-black text-[12px] tracking-[0.2em] uppercase shadow-sm">
+                 {config?.siteInfo?.subtitle || "منصة الخدمات الإلكترونية المعتمدة والأكثر موثوقية"}
+               </Badge>
+             </motion.div>
              
-             <h1 className="text-6xl md:text-9xl mb-12 font-headline font-black leading-tight tracking-tighter text-foreground">
+             <motion.h1 
+               variants={itemVariants}
+               className="text-6xl md:text-9xl mb-12 font-headline font-black leading-tight tracking-tighter text-foreground"
+             >
                 {config?.pageContent?.heroTitle || "حلول رقمية متقدمة وموثوقة"}
-             </h1>
+             </motion.h1>
 
-             <p className="text-2xl md:text-3xl text-muted-foreground max-w-5xl mx-auto mb-20 leading-relaxed font-medium">
+             <motion.p 
+               variants={itemVariants}
+               className="text-2xl md:text-3xl text-muted-foreground max-w-5xl mx-auto mb-20 leading-relaxed font-medium"
+             >
                {config?.pageContent?.heroDescription || "نقدم لك أفضل باقات شحن الألعاب، الحسابات المميزة، والخدمات الاحترافية بأعلى معايير الأمان والسرعة."}
-             </p>
+             </motion.p>
              
-             <div className="flex flex-wrap justify-center gap-8">
+             <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-8">
                <Button asChild className="royal-button h-20 px-16 text-xl shadow-primary/20">
                  <Link href="/store"><Store className="ml-3" size={28} /> الخدمات الإلكترونية</Link>
                </Button>
                <Button asChild className="accent-button h-20 px-16 text-xl shadow-foreground/10">
                  <Link href="/marketplace"><ShoppingBag className="ml-3" size={28} /> السوق المفتوح</Link>
                </Button>
-             </div>
+             </motion.div>
           </motion.div>
         </div>
       </section>
@@ -97,7 +123,7 @@ export default function HomeCorporate() {
             {config?.siteInfo?.title || "XMOOD STORE"}
           </div>
           <p className="text-muted-foreground max-w-3xl mx-auto mb-20 text-2xl leading-relaxed font-medium">
-            {config?.pageContent?.footerAbout || "المنصة الرائدة والموثوقة لتقديم كافة الحلول والخدمات الرقمية المتكاملة، نسعى دائماً للابتكار والسرعة لخدمة عملائنا في كل مكان."}
+            {config?.pageContent?.footerAbout || "المنصة الرائدة والموثوقة لتقديم كافة الحلول والخدمات الإلكترونية المتكاملة، نسعى دائماً للابتكار والسرعة لخدمة عملائنا في كل مكان."}
           </p>
           
           <div className="flex flex-wrap justify-center gap-10 mb-32">

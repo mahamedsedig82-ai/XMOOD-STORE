@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, Users, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Zap, X, ChevronLeft, ShoppingBag
+  Wallet, LayoutDashboard, LogOut, Zap, ChevronLeft, ShoppingBag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -80,7 +81,7 @@ export function Navbar() {
             {config?.siteInfo?.title || "XMOOD STORE"}
           </span>
           <span className="text-[8px] font-black tracking-[0.3em] text-muted-foreground uppercase">
-            {config?.siteInfo?.subtitle || "مركز الخدمات الرقمية الموثوقة"}
+            {config?.siteInfo?.subtitle || "مركز الخدمات الإلكترونية المعتمدة"}
           </span>
         </Link>
 
