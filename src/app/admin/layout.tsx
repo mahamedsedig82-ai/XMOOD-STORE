@@ -1,10 +1,10 @@
 
 "use client";
 
-import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
+import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel, SidebarTrigger } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Menu
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { profile, loading, user, isAdmin } = useUser();
@@ -27,7 +28,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // بروتوكول الحماية ومنع الطرد الخاطئ - ننتظر بيقين تام
   useEffect(() => {
     if (isClient && !loading) {
       if (!user) {
@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <div className="text-center space-y-3">
            <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">جاري التحقق من الهوية السيادية</h2>
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Staff Access Protocol v5.0</p>
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Staff Access Protocol v6.0</p>
         </div>
       </div>
     );
@@ -57,32 +57,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!user || !isAdmin || !profile) return null;
 
-  // تعريف كافة الأقسام مع تحديد الأدوار المسموح لها بالوصول لكل قسم
+  // تعريف الأقسام مع تحديد الأدوار المسموح لها (تطبيق مبدأ الاقتصار على العمل فقط)
   const allSections = [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman', 'store_manager', 'accountant', 'support'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
     { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
-    { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
-    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman', 'designer', 'support'] },
-    { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
-    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'designer', 'agent', 'support'] },
+    { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
+    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent', 'middleman', 'designer', 'support'] },
+    { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm', 'agent', 'middleman'] },
+    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support'] },
     { label: "المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
-    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager', 'designer'] },
-    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'designer'] },
+    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'designer'] },
+    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'designer'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
 
-  // تصفية القائمة الجانبية بناءً على رتبة المستخدم الحالية
+  // تصفية القائمة الجانبية بناءً على رتبة المستخدم (اقتصار تام)
   const visibleSections = allSections.filter(item => 
-    profile?.role === 'owner' || (profile?.role && item.roles.includes(profile.role))
+    profile?.role === 'owner' || profile?.role === 'admin' || (profile?.role && item.roles.includes(profile.role))
   );
 
-  // التحقق من صلاحية المسار الحالي
-  const currentSection = allSections.find(s => s.href === pathname);
-  const isPathAllowed = !currentSection || profile?.role === 'owner' || (profile?.role && currentSection.roles.includes(profile.role));
+  const isPathAllowed = profile?.role === 'owner' || profile?.role === 'admin' || visibleSections.some(s => s.href === pathname);
 
-  // إذا كان المستخدم يحاول الوصول لصفحة غير مسموح له بها، نعرض واجهة المنع بدلاً من طرده
   if (!isPathAllowed && pathname !== "/admin") {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-center p-10 bg-background" dir="rtl">
@@ -91,7 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <h2 className="text-4xl font-black mb-4 gold-text">وصول تخصصي محدود</h2>
         <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed text-lg font-medium">
-          عذراً <span className="text-foreground font-bold">{profile.displayName}</span>، هذا القسم يقع خارج نطاق مهامك الحالية كـ <span className="text-primary font-bold">{profile.label || profile.role}</span>. يرجى الالتزام بالأدوات المتاحة في قائمتك الجانبية.
+          عذراً <span className="text-foreground font-bold">{profile.displayName}</span>، هذا القسم مخصص لمهام تخصصية أخرى. يرجى الالتزام بالأدوات المتاحة في قائمتك.
         </p>
         <Button asChild className="mt-12 royal-button px-16 h-16 text-lg">
           <Link href="/admin">العودة لمساحة عملي</Link>
@@ -103,7 +100,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
-        <Sidebar className="border-l border-border bg-card hidden md:flex" side="right">
+        {/* Desktop Sidebar */}
+        <Sidebar className="border-l border-border bg-card hidden lg:flex" side="right">
           <SidebarHeader className="p-10 border-b text-center">
             <span className="handwritten-logo block mb-3 text-3xl">XMOOD STORE</span>
             <Badge variant="outline" className="text-[10px] uppercase font-black border-primary/30 text-primary px-4 py-1 rounded-full bg-primary/5">
@@ -113,7 +111,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <ScrollArea className="flex-1 p-5">
             <SidebarGroup>
                <SidebarGroupLabel className="text-right px-4 mb-4 text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">
-                 قائمة مهام التخصص
+                 قائمة مهام التخصص الحصرية
                </SidebarGroupLabel>
                <SidebarMenu className="gap-2.5">
                  {visibleSections.map((item) => (
@@ -144,23 +142,67 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </Sidebar>
 
         <main className="flex-1 overflow-hidden flex flex-col relative">
-          <header className="h-20 md:h-24 border-b flex items-center justify-between px-8 md:px-12 bg-background/90 backdrop-blur-xl z-40 sticky top-0">
-             <div className="flex items-center gap-5">
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
-                   <Terminal size={22} />
-                </div>
-                <div className="flex flex-col text-right">
-                   <span className="text-[11px] md:text-sm font-black uppercase tracking-widest text-foreground">وحدة التحكم السيادية</span>
-                   <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Specialist Terminal</span>
+          {/* Enhanced Mobile Header */}
+          <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl z-40 sticky top-0">
+             <div className="flex items-center gap-4">
+                {/* Mobile Menu Trigger */}
+                <Sheet dir="rtl">
+                   <SheetTrigger asChild>
+                      <Button variant="ghost" size="icon" className="lg:hidden h-12 w-12 rounded-xl bg-primary/5 text-primary border border-primary/20 shadow-sm">
+                         <Menu size={24} />
+                      </Button>
+                   </SheetTrigger>
+                   <SheetContent side="right" className="w-[85%] max-w-sm p-0 border-none bg-background shadow-2xl">
+                      <SheetHeader className="p-8 border-b text-center bg-muted/5">
+                         <SheetTitle className="handwritten-logo text-3xl mb-2">XMOOD ADMIN</SheetTitle>
+                         <Badge className="bg-primary/10 text-primary border-none px-4 py-1 rounded-full text-[9px] font-black uppercase">
+                            {profile?.label || profile?.role}
+                         </Badge>
+                      </SheetHeader>
+                      <ScrollArea className="flex-1 p-6">
+                         <div className="space-y-3">
+                            {visibleSections.map((item) => (
+                               <SheetClose asChild key={item.href}>
+                                  <Link 
+                                    href={item.href} 
+                                    className={`flex flex-row-reverse items-center gap-5 p-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'hover:bg-muted font-bold text-muted-foreground'}`}
+                                  >
+                                     <item.icon size={20} className={pathname === item.href ? 'text-white' : 'text-primary'} />
+                                     <span className="font-black text-xs uppercase">{item.label}</span>
+                                  </Link>
+                               </SheetClose>
+                            ))}
+                         </div>
+                      </ScrollArea>
+                      <div className="p-8 border-t bg-muted/5 flex flex-col gap-3">
+                         <Button asChild variant="outline" className="w-full h-14 rounded-2xl font-black text-[10px] uppercase gap-3">
+                           <Link href="/"><ArrowLeft size={16} /> المتجر</Link>
+                         </Button>
+                         <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-14 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-3">
+                           <LogOut size={16} /> خروج
+                         </Button>
+                      </div>
+                   </SheetContent>
+                </Sheet>
+
+                <div className="hidden sm:flex items-center gap-5">
+                   <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
+                      <Terminal size={22} />
+                   </div>
+                   <div className="flex flex-col text-right">
+                      <span className="text-[11px] md:text-sm font-black uppercase tracking-widest text-foreground">وحدة التحكم السيادية</span>
+                      <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Terminal</span>
+                   </div>
                 </div>
              </div>
-             <div className="flex items-center gap-5">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[9px] md:text-xs font-black px-5 py-1.5 rounded-full shadow-sm">Encrypted Session</Badge>
+             
+             <div className="flex items-center gap-3">
+                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-xs font-black px-4 py-1.5 rounded-full">Encrypted Session</Badge>
                 <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_#22c55e]" />
              </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-6 md:p-14 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 md:p-14 custom-scrollbar">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
@@ -174,8 +216,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </motion.div>
             </AnimatePresence>
           </div>
+
+          {/* Bottom Task Bar for Mobile Specialists */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-background/80 backdrop-blur-2xl border-t z-50 flex items-center justify-around px-6">
+             {visibleSections.slice(0, 5).map((item) => (
+                <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1 transition-all ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}>
+                   <item.icon size={20} className={pathname === item.href ? 'scale-110' : 'opacity-60'} />
+                   <span className="text-[8px] font-black uppercase tracking-widest">{item.label.split(' ')[0]}</span>
+                </Link>
+             ))}
+          </div>
         </main>
       </div>
     </SidebarProvider>
   );
 }
+
