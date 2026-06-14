@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -12,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { 
   Users, MessageSquare, ShieldAlert, BarChart3, 
   Trash2, CheckCircle, XCircle, AlertTriangle, 
-  History, ShieldCheck, Eye, Search, Filter, Loader2, Zap, UserPlus, MapPin
+  History, ShieldCheck, Eye, Search, Filter, Loader2, Zap, UserPlus, MapPin, ShoppingBag
 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
@@ -28,7 +27,6 @@ export default function OpenMarketAdminHub() {
   const [foundUser, setFoundUser] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Real-time Queries
   const postsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, "marketplace_listings"), orderBy("createdAt", "desc"), limit(100));
@@ -138,14 +136,14 @@ export default function OpenMarketAdminHub() {
         </div>
         <div className="flex gap-4">
            <Card className="p-5 luxury-card flex items-center gap-4">
-              <div className="bg-red-500/10 text-red-500 p-3 rounded-xl"><ShieldAlert size={20} /></div>
+              <div className="bg-red-500/10 text-red-500 p-3 rounded-2xl"><ShieldAlert size={20} /></div>
               <div>
                 <span className="text-[9px] font-black text-muted-foreground block uppercase">بلاغات نشطة</span>
                 <span className="text-2xl font-black text-red-500">{stats.pendingReports}</span>
               </div>
            </Card>
            <Card className="p-5 luxury-card flex items-center gap-4">
-              <div className="bg-primary/10 text-primary p-3 rounded-xl"><Users size={20} /></div>
+              <div className="bg-primary/10 text-primary p-3 rounded-2xl"><Users size={20} /></div>
               <div>
                 <span className="text-[9px] font-black text-muted-foreground block uppercase">وكلاء معتمدون</span>
                 <span className="text-2xl font-black text-primary">{stats.activeAgents}</span>
@@ -155,17 +153,17 @@ export default function OpenMarketAdminHub() {
       </header>
 
       <Tabs defaultValue="posts" className="w-full">
-        <TabsList className="bg-muted/50 p-1.5 rounded-2xl h-14 border mb-8 flex gap-2">
-          <TabsTrigger value="posts" className="flex-1 rounded-xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white">
+        <TabsList className="bg-muted/50 p-1.5 rounded-3xl h-16 border mb-8 flex gap-2">
+          <TabsTrigger value="posts" className="flex-1 rounded-2xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white">
             المنشورات ({stats.totalPosts})
           </TabsTrigger>
-          <TabsTrigger value="agents" className="flex-1 rounded-xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsTrigger value="agents" className="flex-1 rounded-2xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white">
             إدارة الوكلاء
           </TabsTrigger>
-          <TabsTrigger value="reports" className="flex-1 rounded-xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-red-600 data-[state=active]:text-white relative">
+          <TabsTrigger value="reports" className="flex-1 rounded-2xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-red-600 data-[state=active]:text-white relative">
             البلاغات ({stats.pendingReports})
           </TabsTrigger>
-          <TabsTrigger value="audit" className="flex-1 rounded-xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-zinc-800 data-[state=active]:text-white">
+          <TabsTrigger value="audit" className="flex-1 rounded-2xl font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-zinc-800 data-[state=active]:text-white">
             سجل العمليات
           </TabsTrigger>
         </TabsList>
@@ -267,7 +265,7 @@ export default function OpenMarketAdminHub() {
                  </Dialog>
               </div>
 
-              <Table>
+              <Table className="responsive-table">
                  <TableHeader className="bg-muted/20">
                     <TableRow>
                        <TableHead className="text-right py-6 font-black text-[10px] uppercase">الوكيل المعتمد</TableHead>
@@ -279,7 +277,7 @@ export default function OpenMarketAdminHub() {
                  <TableBody>
                     {agents?.map((agent: any) => (
                        <TableRow key={agent.id} className="hover:bg-muted/20 transition-all border-b">
-                          <TableCell className="py-6">
+                          <TableCell className="py-6" data-label="الوكيل">
                              <div className="flex items-center gap-4">
                                 <Avatar className="h-12 w-12 border-2 border-primary/20"><AvatarImage src={agent.photoURL} /></Avatar>
                                 <div>
@@ -288,14 +286,14 @@ export default function OpenMarketAdminHub() {
                                 </div>
                              </div>
                           </TableCell>
-                          <TableCell><Badge variant="outline" className="border-primary/20 text-primary uppercase text-[8px]">{agent.role}</Badge></TableCell>
-                          <TableCell>
+                          <TableCell data-label="الرتبة"><Badge variant="outline" className="border-primary/20 text-primary uppercase text-[8px]">{agent.role}</Badge></TableCell>
+                          <TableCell data-label="الحالة">
                              <div className="flex items-center gap-2">
                                 <div className={`w-2 h-2 rounded-full ${agent.middlemanInfo?.isAvailable ? 'bg-green-500' : 'bg-red-500'}`} />
                                 <span className="text-[10px] font-bold opacity-60">{agent.middlemanInfo?.isAvailable ? 'متصل' : 'غير متوفر'}</span>
                              </div>
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center" data-label="التحكم">
                              <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50" onClick={async () => {
                                 if(confirm("إزالة صفة الوكيل؟")) {
                                    await updateDoc(doc(db, "users", agent.id), { role: "user", isTrusted: false, label: "عضو موثق" });
@@ -347,10 +345,10 @@ export default function OpenMarketAdminHub() {
                     <TableBody>
                        {logs?.map((log: any) => (
                          <TableRow key={log.id} className="hover:bg-muted/50 border-b">
-                            <TableCell className="py-5 pr-8 font-black text-xs text-primary">{log.action}</TableCell>
-                            <TableCell className="font-bold text-xs">{log.adminName}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground">{log.details}</TableCell>
-                            <TableCell className="text-left pl-8 text-[10px] opacity-60">{new Date(log.createdAt).toLocaleString('ar-EG')}</TableCell>
+                            <TableCell className="py-5 pr-8 font-black text-xs text-primary" data-label="الإجراء">{log.action}</TableCell>
+                            <TableCell className="font-bold text-xs" data-label="المسؤول">{log.adminName}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground" data-label="التفاصيل">{log.details}</TableCell>
+                            <TableCell className="text-left pl-8 text-[10px] opacity-60" data-label="التوقيت">{new Date(log.createdAt).toLocaleString('ar-EG')}</TableCell>
                          </TableRow>
                        ))}
                     </TableBody>

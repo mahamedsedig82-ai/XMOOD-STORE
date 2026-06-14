@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -6,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, Zap, Store, Palette, Globe, Award, CheckCircle, 
-  MessageSquare, Mail, Smartphone, ArrowRight, Users
+  MessageSquare, Mail, Smartphone, ArrowRight, Users, ShoppingBag
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -14,7 +13,7 @@ import { doc } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 
-export default function HomeCorporate() {
+export default function HomeProfessional() {
   const db = useFirestore();
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
@@ -23,7 +22,6 @@ export default function HomeCorporate() {
     <main className="min-h-screen bg-background" dir="rtl">
       <Navbar />
       
-      {/* Modern Professional Hero Section */}
       <section className="relative pt-48 pb-32 md:pt-64 md:pb-56 overflow-hidden bg-muted/20">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -43,7 +41,7 @@ export default function HomeCorporate() {
              </Badge>
              
              <h1 className="text-6xl md:text-9xl mb-12 font-headline font-black leading-tight tracking-tighter text-foreground">
-                حلول رقمية <span className="gold-text">مبتكرة وموثوقة</span>
+                حلول رقمية <span className="gold-text">موثوقة ومتكاملة</span>
              </h1>
 
              <p className="text-2xl md:text-3xl text-muted-foreground max-w-5xl mx-auto mb-20 leading-relaxed font-medium">
@@ -55,14 +53,13 @@ export default function HomeCorporate() {
                  <Link href="/store"><Store className="ml-3" size={28} /> تصفح المتجر</Link>
                </Button>
                <Button asChild className="accent-button h-20 px-16 text-xl">
-                 <Link href="/marketplace"><Users className="ml-3" size={28} /> السوق المفتوح</Link>
+                 <Link href="/marketplace"><ShoppingBag className="ml-3" size={28} /> السوق المفتوح</Link>
                </Button>
              </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Corporate Features */}
       <section className="py-40 bg-background border-y">
         <div className="container mx-auto px-6">
           <div className="text-center mb-32 space-y-6">
@@ -91,7 +88,6 @@ export default function HomeCorporate() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="py-40 bg-muted/30 border-t">
         <div className="container mx-auto px-6 text-center">
           <div className="decorative-logo text-6xl mb-12">{config?.siteInfo?.title || "XMOOD"}</div>

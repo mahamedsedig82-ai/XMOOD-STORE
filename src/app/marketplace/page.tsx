@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -6,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { useUser, useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit, addDoc, where } from "firebase/firestore";
 import { 
-  Search, Zap, Megaphone, Plus, 
+  Search, Zap, Plus, 
   Users, Phone, MessageSquare, Send, Filter, Award, ShoppingBag, ShieldCheck, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -127,7 +126,7 @@ export default function OpenMarketPage() {
                    value={searchTerm}
                    onChange={e => setSearchTerm(e.target.value)}
                    placeholder="ابحث عن عروض أو حسابات..." 
-                   className="h-16 bg-card border-border rounded-2xl pr-16 text-lg shadow-xl" 
+                   className="h-16 bg-card border-border rounded-3xl pr-16 text-lg shadow-xl" 
                  />
               </div>
               <Dialog open={isListingOpen} onOpenChange={setIsListingOpen}>
@@ -141,21 +140,21 @@ export default function OpenMarketPage() {
                     <div className="space-y-8 mt-10">
                        <div className="space-y-2">
                           <Label className="text-[10px] font-black text-primary uppercase pr-3 tracking-widest">عنوان العرض المختصر</Label>
-                          <Input placeholder="مثال: حساب ألعاب مستوى 70..." className="h-14 rounded-xl bg-muted border-none px-6 font-bold" value={listingForm.title} onChange={e => setListingForm({...listingForm, title: e.target.value})} />
+                          <Input placeholder="مثال: حساب ألعاب مستوى 70..." className="h-14 rounded-2xl bg-muted border-none px-6 font-bold" value={listingForm.title} onChange={e => setListingForm({...listingForm, title: e.target.value})} />
                        </div>
                        <div className="space-y-2">
                           <Label className="text-[10px] font-black text-primary uppercase pr-3 tracking-widest">التفاصيل والوصف</Label>
-                          <Textarea placeholder="اشرح كافة تفاصيل عرضك هنا..." className="min-h-[120px] bg-muted border-none rounded-2xl p-6 font-medium leading-relaxed" value={listingForm.description} onChange={e => setListingForm({...listingForm, description: e.target.value})} />
+                          <Textarea placeholder="اشرح كافة تفاصيل عرضك هنا..." className="min-h-[120px] bg-muted border-none rounded-[2rem] p-6 font-medium leading-relaxed" value={listingForm.description} onChange={e => setListingForm({...listingForm, description: e.target.value})} />
                        </div>
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label className="text-[10px] font-black text-primary uppercase pr-3">القيمة المطلوبة (USD)</Label>
-                            <Input type="number" placeholder="0.00" className="h-14 rounded-xl bg-muted border-none px-6 font-black text-xl text-primary" value={listingForm.price} onChange={e => setListingForm({...listingForm, price: e.target.value})} />
+                            <Input type="number" placeholder="0.00" className="h-14 rounded-2xl bg-muted border-none px-6 font-black text-xl text-primary" value={listingForm.price} onChange={e => setListingForm({...listingForm, price: e.target.value})} />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-[10px] font-black text-primary uppercase pr-3">نوع العملية</Label>
                             <Select onValueChange={(val: any) => setListingForm({...listingForm, type: val})} defaultValue="sell">
-                               <SelectTrigger className="h-14 rounded-xl bg-muted border-none px-6 font-bold">
+                               <SelectTrigger className="h-14 rounded-2xl bg-muted border-none px-6 font-bold">
                                   <SelectValue />
                                </SelectTrigger>
                                <SelectContent>
@@ -205,7 +204,7 @@ export default function OpenMarketPage() {
                    key={type}
                    onClick={() => setFilterType(type)}
                    variant="ghost" 
-                   className={`w-full justify-start h-12 rounded-xl px-6 text-[10px] font-black uppercase tracking-widest transition-all ${filterType === type ? 'bg-primary text-black shadow-lg shadow-primary/10' : 'hover:bg-muted text-muted-foreground'}`}
+                   className={`w-full justify-start h-12 rounded-2xl px-6 text-[10px] font-black uppercase tracking-widest transition-all ${filterType === type ? 'bg-primary text-black shadow-lg shadow-primary/10' : 'hover:bg-muted text-muted-foreground'}`}
                  >
                    {type === 'all' ? 'كافة العروض' : type === 'sell' ? 'عروض بيع' : type === 'buy' ? 'طلبات شراء' : 'تقديم خدمات'}
                  </Button>

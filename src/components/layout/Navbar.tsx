@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -81,7 +80,6 @@ export function Navbar() {
           <span className="text-[8px] font-black tracking-[0.3em] text-muted-foreground uppercase">{config?.siteInfo?.subtitle || "Professional Services"}</span>
         </Link>
 
-        {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
             <Link 
@@ -102,15 +100,15 @@ export function Navbar() {
             variant="ghost" 
             size="icon" 
             onClick={toggleTheme} 
-            className="rounded-xl h-10 w-10 md:h-12 md:w-12 border border-border/50 bg-muted/20 hover:bg-primary/10 transition-colors"
+            className="rounded-2xl h-10 w-10 md:h-12 md:w-12 border border-border/50 bg-muted/20 hover:bg-primary/10 transition-colors"
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </Button>
 
           {user && profile && (
-            <div className="hidden sm:flex items-center gap-3 bg-primary/10 px-4 py-2 rounded-xl border border-primary/20">
-              <span className="text-xs font-bold text-primary">{formatUSD(profile.walletBalance || 0)}</span>
-              <Wallet size={14} className="text-primary" />
+            <div className="hidden sm:flex items-center gap-3 bg-primary/10 px-5 py-2.5 rounded-2xl border border-primary/20">
+              <span className="text-xs font-black text-primary">{formatUSD(profile.walletBalance || 0)}</span>
+              <Wallet size={16} className="text-primary" />
             </div>
           )}
 
@@ -121,39 +119,39 @@ export function Navbar() {
           ) : (
             <DropdownMenu dir="rtl">
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 h-10 w-10 md:h-12 md:w-12 rounded-xl overflow-hidden border-2 border-primary/20 hover:border-primary transition-all">
+                <Button variant="ghost" className="p-0 h-10 w-10 md:h-12 md:w-12 rounded-2xl overflow-hidden border-2 border-primary/20 hover:border-primary transition-all">
                   <Avatar className="h-full w-full rounded-none">
                     <AvatarImage src={profile?.photoURL} className="object-cover" />
                     <AvatarFallback className="bg-muted text-primary font-bold">{profile?.displayName?.charAt(0)}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64 mt-4 rounded-2xl p-4 shadow-2xl border-border bg-card/95 backdrop-blur-3xl" align="start">
+              <DropdownMenuContent className="w-72 mt-4 rounded-3xl p-6 shadow-2xl border-border bg-card/95 backdrop-blur-3xl" align="start">
                 <DropdownMenuLabel className="p-2 mb-4 text-right">
-                  <Badge variant="outline" className="w-fit text-[8px] font-bold uppercase mb-2 border-primary/20 text-primary px-2 py-0.5 rounded-full">{profile?.role}</Badge>
-                  <p className="font-bold text-base text-foreground truncate">{profile?.displayName}</p>
+                  <Badge variant="outline" className="w-fit text-[8px] font-black uppercase mb-3 border-primary/20 text-primary px-3 py-1 rounded-full">{profile?.role}</Badge>
+                  <p className="font-bold text-lg text-foreground truncate">{profile?.displayName}</p>
                   <p className="text-[10px] text-muted-foreground truncate">{profile?.email}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="opacity-50" />
-                <DropdownMenuItem asChild className="rounded-xl h-12 cursor-pointer mt-2">
-                  <Link href="/wallet" className="flex items-center w-full gap-3 justify-end font-bold text-xs">
+                <DropdownMenuItem asChild className="rounded-2xl h-14 cursor-pointer mt-4">
+                  <Link href="/wallet" className="flex items-center w-full gap-4 justify-end font-bold text-sm">
                     <span>المحفظة الرقمية</span>
-                    <Wallet size={16} className="text-primary" />
+                    <Wallet size={18} className="text-primary" />
                   </Link>
                 </DropdownMenuItem>
                 {isAdmin && (
-                  <DropdownMenuItem asChild className="rounded-xl h-12 cursor-pointer text-primary hover:bg-primary/5">
-                    <Link href="/admin" className="flex items-center w-full gap-3 justify-end font-bold text-xs">
+                  <DropdownMenuItem asChild className="rounded-2xl h-14 cursor-pointer text-primary hover:bg-primary/5">
+                    <Link href="/admin" className="flex items-center w-full gap-4 justify-end font-bold text-sm">
                       <span>إدارة المنصة</span>
-                      <LayoutDashboard size={16} />
+                      <LayoutDashboard size={18} />
                     </Link>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator className="my-2 opacity-50" />
-                <DropdownMenuItem onClick={handleSignOut} className="rounded-xl h-12 cursor-pointer text-destructive font-bold hover:bg-destructive/10">
-                  <div className="flex items-center w-full gap-3 justify-end text-xs">
+                <DropdownMenuSeparator className="my-4 opacity-50" />
+                <DropdownMenuItem onClick={handleSignOut} className="rounded-2xl h-14 cursor-pointer text-destructive font-bold hover:bg-destructive/10">
+                  <div className="flex items-center w-full gap-4 justify-end text-sm">
                     <span>تسجيل الخروج</span>
-                    <LogOut size={16} />
+                    <LogOut size={18} />
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -162,7 +160,7 @@ export function Navbar() {
 
           <Sheet dir="rtl">
             <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="icon" className="text-primary rounded-xl bg-primary/5 h-10 w-10 border border-primary/10">
+              <Button variant="ghost" size="icon" className="text-primary rounded-2xl bg-primary/5 h-10 w-10 border border-primary/10">
                 <Menu size={24} />
               </Button>
             </SheetTrigger>
@@ -171,67 +169,67 @@ export function Navbar() {
                 <div className="flex items-center justify-between">
                    <SheetTitle className="decorative-logo text-2xl">{config?.siteInfo?.title || "XMOOD"}</SheetTitle>
                    <SheetClose asChild>
-                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl"><X size={20} /></Button>
+                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl"><X size={20} /></Button>
                    </SheetClose>
                 </div>
               </SheetHeader>
 
               {user && profile && (
-                <div className="p-6 bg-primary/5 border-b border-border">
-                   <div className="flex items-center gap-4 mb-4">
-                      <Avatar className="h-12 w-12 rounded-xl border border-primary/20">
+                <div className="p-8 bg-primary/5 border-b border-border">
+                   <div className="flex items-center gap-5 mb-6">
+                      <Avatar className="h-14 w-14 rounded-2xl border-2 border-primary/20">
                         <AvatarImage src={profile.photoURL} />
                         <AvatarFallback className="bg-zinc-100 text-primary font-bold">XM</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 overflow-hidden">
-                        <p className="font-bold text-sm truncate">{profile.displayName}</p>
-                        <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/20 text-primary px-2 py-0.5 rounded-full">{profile.role}</Badge>
+                        <p className="font-bold text-base truncate">{profile.displayName}</p>
+                        <Badge variant="outline" className="text-[8px] uppercase font-black border-primary/20 text-primary px-3 py-1 rounded-full">{profile.role}</Badge>
                       </div>
                    </div>
-                   <Link href="/wallet" className="flex items-center justify-between bg-card p-4 rounded-xl border border-border hover:border-primary/30 transition-all">
+                   <Link href="/wallet" className="flex items-center justify-between bg-card p-5 rounded-2xl border border-border hover:border-primary/30 transition-all">
                       <div className="flex flex-col">
                         <span className="text-[8px] font-black text-muted-foreground uppercase mb-1">الرصيد المتاح</span>
-                        <span className="text-sm font-bold text-primary">{formatUSD(profile.walletBalance || 0)}</span>
+                        <span className="text-base font-black text-primary">{formatUSD(profile.walletBalance || 0)}</span>
                       </div>
-                      <ChevronLeft size={16} className="text-muted-foreground" />
+                      <ChevronLeft size={20} className="text-muted-foreground" />
                    </Link>
                 </div>
               )}
 
-              <div className="flex-1 p-6 space-y-3 overflow-y-auto custom-scrollbar">
+              <div className="flex-1 p-8 space-y-4 overflow-y-auto custom-scrollbar">
                 {navLinks.map((link) => (
                   <SheetClose asChild key={link.href}>
                     <Link 
                       href={link.href} 
-                      className={`flex items-center gap-4 p-4 rounded-xl transition-all border ${pathname === link.href ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'text-foreground hover:bg-muted border-transparent'}`}
+                      className={`flex items-center gap-5 p-5 rounded-2xl transition-all border ${pathname === link.href ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'text-foreground hover:bg-muted border-transparent'}`}
                     >
-                      <link.icon size={18} />
-                      <span className="font-bold text-sm uppercase tracking-wider">{link.name}</span>
+                      <link.icon size={22} />
+                      <span className="font-bold text-sm uppercase tracking-widest">{link.name}</span>
                     </Link>
                   </SheetClose>
                 ))}
 
                 {isAdmin && (
                    <SheetClose asChild>
-                     <Link href="/admin" className="flex items-center gap-4 p-4 rounded-xl text-primary hover:bg-primary/10 border border-transparent font-bold text-sm">
-                        <LayoutDashboard size={18} />
+                     <Link href="/admin" className="flex items-center gap-5 p-5 rounded-2xl text-primary hover:bg-primary/10 border border-transparent font-bold text-sm">
+                        <LayoutDashboard size={22} />
                         <span>لوحة إدارة المنصة</span>
                      </Link>
                    </SheetClose>
                 )}
               </div>
 
-              <div className="p-6 border-t bg-muted/10 space-y-3">
+              <div className="p-8 border-t bg-muted/10 space-y-4">
                 {user ? (
-                   <Button variant="ghost" onClick={handleSignOut} className="w-full h-12 rounded-xl text-destructive font-bold border border-destructive/10 hover:bg-destructive/5 transition-all text-xs">
-                     <LogOut size={16} className="ml-2" /> تسجيل الخروج
+                   <Button variant="ghost" onClick={handleSignOut} className="w-full h-14 rounded-2xl text-destructive font-bold border border-destructive/10 hover:bg-destructive/5 transition-all text-xs">
+                     <LogOut size={20} className="ml-3" /> تسجيل الخروج
                    </Button>
                 ) : (
-                  <Button asChild className="royal-button w-full h-12 text-xs">
+                  <Button asChild className="royal-button w-full h-14 text-xs">
                     <Link href="/login">دخول الأعضاء المعتمدين</Link>
                   </Button>
                 )}
-                <p className="text-[8px] text-center text-muted-foreground uppercase font-black tracking-widest mt-4">
+                <p className="text-[9px] text-center text-muted-foreground uppercase font-black tracking-widest mt-6">
                   Professional Services Hub
                 </p>
               </div>

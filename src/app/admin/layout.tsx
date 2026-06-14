@@ -1,10 +1,9 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, ShieldCheck, LogOut, ArrowLeft, Zap, ShoppingBag, MessageSquare
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
