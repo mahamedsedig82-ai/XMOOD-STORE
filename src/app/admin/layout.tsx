@@ -53,21 +53,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!user || !isAdmin) return null;
 
+  // تعريف الأقسام مع تحديد الرتب المسموح لها بالوصول لكل قسم
   const allSections = [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
     { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
     { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
-    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman', 'designer'] },
+    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman'] },
     { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'designer', 'agent'] },
     { label: "الخزينة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager', 'designer'] },
-    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'designer', 'design_manager'] },
+    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'designer'] }, // حصري للمصمم والمالك
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
 
+  // فلترة الأقسام الظاهرة بناءً على رتبة المستخدم الحالية
   const visibleSections = allSections.filter(item => 
     profile?.role === 'owner' || (profile?.role && item.roles.includes(profile.role))
   );
@@ -75,12 +77,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const currentSection = allSections.find(s => s.href === pathname);
   const isAllowed = profile?.role === 'owner' || (profile?.role && currentSection?.roles.includes(profile.role));
 
+  // منع الوصول المباشر عبر الرابط إذا كانت الرتبة غير مخولة
   if (pathname !== "/admin" && !isAllowed && currentSection) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-10">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-10" dir="rtl">
         <Terminal size={64} className="text-red-500 mb-6" />
         <h2 className="text-2xl font-bold mb-2">وصول غير مصرح به</h2>
-        <p className="text-muted-foreground">عذراً، هذا القسم خارج نطاق تخصصك الوظيفي الحالي.</p>
+        <p className="text-muted-foreground">عذراً، هذا القسم مخصص لمتخصصين آخرين. يرجى العودة للقسم الخاص بتخصصك.</p>
         <Button asChild className="mt-8 royal-button">
           <Link href="/admin">العودة للرئيسية</Link>
         </Button>
