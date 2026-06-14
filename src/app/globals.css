@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,7 +23,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 43 70% 50%;
-    --radius: 1.5rem;
+    --radius: 1rem;
   }
 
   .dark {
@@ -57,8 +56,9 @@
   }
 }
 
+/* Luxury Components */
 .luxury-card {
-  @apply rounded-[2.5rem] border bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:border-primary/30 overflow-hidden relative;
+  @apply rounded-[1.5rem] border bg-card shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20 overflow-hidden relative;
 }
 
 .gold-text {
@@ -73,42 +73,23 @@
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-bold rounded-2xl px-10 py-4 shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-3 uppercase tracking-wider;
+  @apply bg-primary text-primary-foreground font-bold rounded-xl px-8 py-3 shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
 }
 
 .accent-button {
-  @apply bg-foreground text-background font-bold rounded-2xl px-10 py-4 shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-3 uppercase tracking-wider;
+  @apply bg-foreground text-background font-bold rounded-xl px-8 py-3 shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
 }
 
-.glass-morphism {
-  @apply bg-background/60 backdrop-blur-xl border border-white/5;
+/* UI Indexing and Clarity */
+.index-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
 }
 
-.responsive-table {
-  @apply w-full overflow-x-auto;
+.section-padding {
+  @apply py-20 px-6;
 }
 
-@media (max-width: 768px) {
-  .responsive-table table { @apply block; }
-  .responsive-table tr { @apply block mb-6 p-6 rounded-[2rem] border bg-card shadow-sm; }
-  .responsive-table td { @apply flex justify-between items-center py-3 border-none !important; }
-  .responsive-table td::before {
-    content: attr(data-label);
-    @apply font-bold text-[10px] uppercase text-muted-foreground ml-6;
-  }
-  .responsive-table thead { @apply hidden; }
-}
-
-::-webkit-scrollbar { width: 6px; }
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { @apply bg-transparent; }
 ::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full hover:bg-primary/40; }
-
-/* Custom Animations */
-.animate-pulse-gold {
-  animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse-gold {
-  0%, 100% { opacity: 1; filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5)); }
-  50% { opacity: 0.8; filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.8)); }
-}
