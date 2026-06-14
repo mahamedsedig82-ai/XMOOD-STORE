@@ -61,7 +61,7 @@ export function useUser() {
           setProfile({ ...data, uid: snapshot.id });
           setLoading(false);
         } else {
-          // إنشاء ملف شخصي جديد
+          // إنشاء ملف شخصي جديد فوراً لضمان عدم الطرد
           const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
           const initialProfile: UserProfile = {
             uid: user.uid,
@@ -103,7 +103,7 @@ export function useUser() {
   return { 
     user, 
     profile, 
-    loading, 
+    loading: loading || (!!user && !profile), // منع تجاوز التحميل قبل وصول الملف الشخصي
     isVerified: user?.emailVerified || false,
     isAdmin: isStaff,
     role: profile?.role
