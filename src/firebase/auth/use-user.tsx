@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
@@ -14,7 +13,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Optimized Admin Check
+  // Optimized Admin Check - MASTER EMAILS
   const MASTER_ADMINS = [
     "MAHAMEDFK3@GMAIL.COM", 
     "XMOODSTORE.SUPPORT@GMAIL.COM",
@@ -65,22 +64,28 @@ export function useUser() {
           setProfile(initialProfile);
         } else {
           const currentData = docSnap.data() as UserProfile;
+          // Forced check for Master Admin status to prevent accidental lockout
           if (isMaster && currentData.role !== 'owner') {
             await updateDoc(userDocRef, { 
               role: 'owner', 
               label: 'المدير العام للمنصة',
               isVerified: true 
             });
+            setProfile({ ...currentData, role: 'owner', uid: user.uid });
+          } else {
+            setProfile({ ...currentData, uid: user.uid });
           }
-          setProfile({ ...currentData, uid: user.uid });
         }
 
         // Setup real-time listener for profile updates
         unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
           if (snapshot.exists()) {
-            setProfile(snapshot.data() as UserProfile);
+            const data = snapshot.data() as UserProfile;
+            setProfile({ ...data, uid: snapshot.id });
           }
-        }, (err) => console.error("Real-time Profile Error:", err));
+        }, (err) => {
+          console.error("Real-time Profile Error:", err);
+        });
 
       } catch (err) {
         console.error("Profile Sync Error:", err);

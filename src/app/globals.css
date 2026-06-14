@@ -58,7 +58,7 @@
 
 /* Luxury Components */
 .luxury-card {
-  @apply rounded-[1.5rem] border bg-card shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20 overflow-hidden relative;
+  @apply rounded-[1.5rem] border bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary/30 overflow-hidden relative;
 }
 
 .gold-text {
@@ -73,20 +73,47 @@
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-bold rounded-xl px-8 py-3 shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
+  @apply bg-primary text-primary-foreground font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
 }
 
 .accent-button {
-  @apply bg-foreground text-background font-bold rounded-xl px-8 py-3 shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
+  @apply bg-foreground text-background font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
+}
+
+/* UI Image Control */
+img {
+  @apply object-cover;
+}
+
+.aspect-video-pro {
+  aspect-ratio: 16 / 9;
 }
 
 /* UI Indexing and Clarity */
-.index-grid {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+.responsive-table {
+  @apply w-full overflow-x-auto;
 }
 
-.section-padding {
-  @apply py-20 px-6;
+@media (max-width: 768px) {
+  .responsive-table table, .responsive-table thead, .responsive-table tbody, .responsive-table th, .responsive-table td, .responsive-table tr {
+    display: block;
+  }
+  .responsive-table thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+  .responsive-table tr {
+    @apply mb-4 border rounded-2xl p-4 bg-card shadow-sm;
+  }
+  .responsive-table td {
+    @apply flex justify-between items-center py-2 border-b last:border-0;
+    text-align: left;
+  }
+  .responsive-table td::before {
+    content: attr(data-label);
+    @apply font-black text-[8px] uppercase text-muted-foreground mr-4 shrink-0;
+  }
 }
 
 /* Custom Scrollbar */

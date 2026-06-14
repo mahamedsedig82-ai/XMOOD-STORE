@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit2, Trash2, Loader2, Search, Box, Image as ImageIcon, Upload, Link as LinkIcon, DollarSign } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, Search, Box, Upload, Link as LinkIcon, DollarSign, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +25,6 @@ export default function AdminProducts() {
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Settings for dynamic rate display
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
 
@@ -53,12 +51,11 @@ export default function AdminProducts() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (Firestore limit is 1MB total document size)
       if (file.size > 800000) {
         toast({
           variant: "destructive",
           title: "حجم الصورة كبير جداً",
-          description: "يرجى اختيار صورة أقل من 800 كيلوبايت أو استخدام رابط صورة خارجي لضمان الأداء."
+          description: "يرجى اختيار صورة أقل من 800 كيلوبايت لضمان الأداء."
         });
         return;
       }
@@ -89,11 +86,8 @@ export default function AdminProducts() {
       status: calculatedStock > 0 ? 'active' : 'out_of_stock'
     };
 
-    const targetCollection = collection(db, "products");
-    
     if (editingId) {
-      const docRef = doc(db, "products", editingId);
-      updateDoc(docRef, data)
+      updateDoc(doc(db, "products", editingId), data)
         .then(() => {
           toast({ title: "تم التحديث بنجاح" });
           setIsOpen(false);
@@ -101,7 +95,7 @@ export default function AdminProducts() {
         })
         .finally(() => setIsProcessing(false));
     } else {
-      addDoc(targetCollection, { ...data, createdAt: serverTimestamp() })
+      addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() })
         .then(() => {
           toast({ title: "تم النشر في المتجر" });
           setIsOpen(false);
@@ -113,8 +107,7 @@ export default function AdminProducts() {
 
   const handleDelete = (id: string) => {
     if (!db || !confirm("هل تريد حذف هذا المنتج نهائياً؟")) return;
-    const docRef = doc(db, "products", id);
-    deleteDoc(docRef).then(() => {
+    deleteDoc(doc(db, "products", id)).then(() => {
       toast({ title: "تم الحذف بنجاح" });
     });
   };
@@ -144,79 +137,86 @@ export default function AdminProducts() {
     <div className="space-y-8 animate-fade-in" dir="rtl">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-4xl font-headline font-bold gold-text">مستودع الأصول الرقمية</h1>
-          <p className="text-zinc-500 mt-2 font-bold uppercase tracking-widest text-[10px]">Digital Asset Inventory Control</p>
+          <h1 className="text-4xl font-headline font-bold gold-text">إدارة الخدمات الإلكترونية</h1>
+          <p className="text-zinc-500 mt-2 font-bold uppercase tracking-widest text-[10px]">Digital Services Inventory Protection</p>
         </div>
         <Dialog open={isOpen} onOpenChange={(val) => { setIsOpen(val); if (!val) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button className="h-14 px-8 royal-button text-sm">
-              <Plus className="ml-2" /> إضافة منتج جديد
+            <Button className="h-14 px-8 royal-button text-[10px] uppercase">
+              <Plus className="ml-2" size={16} /> إضافة باقة جديدة
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl bg-zinc-950 border-primary/20 rounded-[2.5rem] p-10 text-white shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
+          <DialogContent className="max-w-3xl bg-zinc-950 border-primary/20 rounded-[2.5rem] p-10 text-white shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar">
             <DialogHeader>
-              <DialogTitle className="text-3xl font-bold flex items-center gap-4 gold-text">
-                <Box size={32} className="text-primary" /> {editingId ? 'تعديل المنتج' : 'إنشاء منتج جديد'}
+              <DialogTitle className="text-2xl font-bold flex items-center gap-4 gold-text uppercase">
+                <Box size={24} className="text-primary" /> {editingId ? 'تعديل بيانات الباقة' : 'إنشاء باقة إلكترونية'}
               </DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3">اسم المنتج</label>
-                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="h-14 rounded-xl bg-zinc-900 border-none px-6 font-bold" />
+                <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">اسم الباقة</label>
+                <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="h-12 rounded-xl bg-zinc-900 border-none px-6 font-bold" />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3">الفئة</label>
-                <Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="h-14 rounded-xl bg-zinc-900 border-none px-6 font-bold" />
+                <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">التصنيف الرئيسي</label>
+                <Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="h-12 rounded-xl bg-zinc-900 border-none px-6 font-bold" />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3 flex justify-between">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2 flex justify-between">
                    <span>السعر بالدولار (USD)</span>
-                   <span className="text-zinc-500">يقابل: {formatSDG(Number(form.price) || 0, config?.siteInfo?.usdRate || 5400)}</span>
+                   <span className="text-primary">يقابل: {formatSDG(Number(form.price) || 0, config?.siteInfo?.usdRate || 5400)}</span>
                 </label>
                 <div className="relative">
-                  <DollarSign className="absolute right-4 top-1/2 -translate-y-1/2 text-primary" size={20} />
-                  <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-14 rounded-xl bg-zinc-900 border-none pr-12 pl-6 font-black text-xl text-primary" />
+                  <DollarSign className="absolute right-4 top-1/2 -translate-y-1/2 text-primary" size={18} />
+                  <Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-12 rounded-xl bg-zinc-900 border-none pr-12 pl-6 font-black text-lg text-primary" />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3">المخزون الاحتياطي</label>
-                <Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="h-14 rounded-xl bg-zinc-900 border-none px-6 font-bold" />
+                <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">المخزون (يدوي)</label>
+                <Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="h-12 rounded-xl bg-zinc-900 border-none px-6 font-bold" />
               </div>
               
               <div className="col-span-1 md:col-span-2 space-y-4">
-                 <label className="text-[10px] font-bold text-primary uppercase pr-3">صورة المنتج</label>
+                 <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">صورة الباقة (16:9 الموصى به)</label>
+                    <Badge variant="outline" className="text-[7px] border-primary/20 text-primary">Aspect Ratio: 16/9</Badge>
+                 </div>
                  <Tabs defaultValue="url" className="w-full">
                     <TabsList className="bg-zinc-900 p-1 rounded-xl mb-4">
-                       <TabsTrigger value="url" className="flex-1 gap-2"><LinkIcon size={14}/> رابط</TabsTrigger>
-                       <TabsTrigger value="upload" className="flex-1 gap-2"><Upload size={14}/> رفع ملف</TabsTrigger>
+                       <TabsTrigger value="url" className="flex-1 gap-2 h-10"><LinkIcon size={12}/> رابط خارجي</TabsTrigger>
+                       <TabsTrigger value="upload" className="flex-1 gap-2 h-10"><Upload size={12}/> رفع ملف</TabsTrigger>
                     </TabsList>
                     <TabsContent value="url">
-                       <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-14 bg-zinc-900 border-none rounded-xl" />
+                       <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-12 bg-zinc-900 border-none rounded-xl" />
                     </TabsContent>
                     <TabsContent value="upload">
-                       <Input type="file" accept="image/*" onChange={handleImageUpload} className="h-14 bg-zinc-900 border-none pt-4" />
+                       <Input type="file" accept="image/*" onChange={handleImageUpload} className="h-12 bg-zinc-900 border-none pt-3 text-xs" />
                     </TabsContent>
                  </Tabs>
                  {form.imageUrl && (
-                   <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-primary/20">
+                   <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-primary/20">
                       <img src={form.imageUrl} className="w-full h-full object-cover" alt="Preview" />
                    </div>
                  )}
               </div>
 
               <div className="col-span-1 md:col-span-2 space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3">أكواد التسليم الفوري (كود في كل سطر)</label>
+                <div className="flex items-center gap-2 mb-1">
+                   <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">أكواد التسليم الفوري</label>
+                   <Info size={10} className="text-primary" />
+                   <span className="text-[8px] text-zinc-600">سيتم تصفير المخزون اليدوي واستخدام عدد الأسطر</span>
+                </div>
                 <Textarea 
                   value={form.shippingCodes} 
                   onChange={e => setForm({...form, shippingCodes: e.target.value})} 
-                  className="min-h-[120px] rounded-[2rem] bg-zinc-900 border-none p-6 font-mono text-sm text-primary" 
-                  placeholder="CODE-1..." 
+                  className="min-h-[100px] rounded-2xl bg-zinc-900 border-none p-4 font-mono text-xs text-primary" 
+                  placeholder="CODE-XXXXX..." 
                 />
               </div>
             </div>
-            <DialogFooter className="mt-12">
-              <Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-18 royal-button text-xl">
-                {isProcessing ? <Loader2 className="animate-spin" /> : editingId ? 'تحديث المنتج' : 'تأكيد ونشر المنتج'}
+            <DialogFooter className="mt-10">
+              <Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-16 royal-button text-sm uppercase">
+                {isProcessing ? <Loader2 className="animate-spin" size={20} /> : editingId ? 'تحديث البيانات' : 'تأكيد ونشر الباقة'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -224,53 +224,53 @@ export default function AdminProducts() {
       </div>
 
       <Card className="luxury-card border-none overflow-hidden bg-zinc-950/40 shadow-2xl">
-        <CardHeader className="p-10 pb-0 flex flex-col md:flex-row justify-between items-center gap-6">
+        <CardHeader className="p-6 md:p-10 pb-0 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="relative w-full md:max-w-xl">
-            <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/40 w-5 h-5" />
+            <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/40 w-4 h-4" />
             <Input 
               placeholder="البحث في المستودع..." 
-              className="pr-14 h-14 bg-black border-none rounded-2xl text-lg"
+              className="pr-12 h-12 bg-black border-none rounded-xl text-base"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-black uppercase px-6 py-2 rounded-full tracking-widest">{filtered.length} ACTIVE ASSETS</Badge>
+          <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-black uppercase px-6 py-2 rounded-full tracking-widest">{filtered.length} ACTIVE ASSETS</Badge>
         </CardHeader>
-        <CardContent className="p-0 mt-10">
-          <ScrollArea className="max-h-[800px]">
+        <CardContent className="p-0 mt-8">
+          <ScrollArea className="max-h-[700px] responsive-table">
             <Table>
               <TableHeader className="bg-white/5 border-b border-white/5">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-right py-8 pr-12 font-black text-[10px] uppercase text-zinc-500">المنتج والتصنيف</TableHead>
-                  <TableHead className="text-right font-black text-[10px] uppercase text-zinc-500">القيمة</TableHead>
-                  <TableHead className="text-right font-black text-[10px] uppercase text-zinc-500">المخزون</TableHead>
-                  <TableHead className="text-center font-black text-[10px] uppercase text-zinc-500">الإجراءات</TableHead>
+                  <TableHead className="text-right py-6 pr-10 font-black text-[9px] uppercase text-zinc-500">الباقة والتصنيف</TableHead>
+                  <TableHead className="text-right font-black text-[9px] uppercase text-zinc-500">القيمة</TableHead>
+                  <TableHead className="text-right font-black text-[9px] uppercase text-zinc-500">المخزون</TableHead>
+                  <TableHead className="text-center font-black text-[9px] uppercase text-zinc-500">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-40"><Loader2 className="animate-spin mx-auto text-primary" size={40}/></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
                 ) : filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold">لا توجد منتجات مطابقة</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4} className="text-center py-20 text-muted-foreground font-bold">لا توجد نتائج</TableCell></TableRow>
                 ) : filtered.map((p) => (
                   <TableRow key={p.id} className="hover:bg-primary/5 border-b border-white/5 transition-all group">
-                    <TableCell className="py-8 pr-12" data-label="المنتج">
-                      <div className="flex items-center gap-6">
-                        <img src={p.imageUrl || "https://picsum.photos/seed/p/200/200"} className="w-16 h-16 rounded-2xl object-cover shadow-2xl border border-white/5" alt="" />
+                    <TableCell className="py-6 pr-10">
+                      <div className="flex items-center gap-4">
+                        <img src={p.imageUrl || "https://picsum.photos/seed/p/200/200"} className="w-12 h-12 rounded-xl object-cover shadow-lg border border-white/5" alt="" />
                         <div className="flex flex-col">
-                          <span className="text-xl font-bold text-white group-hover:gold-text">{p.name}</span>
-                          <span className="text-[10px] text-primary/60 font-black uppercase mt-1">{p.category}</span>
+                          <span className="font-bold text-white text-sm group-hover:gold-text transition-colors">{p.name}</span>
+                          <span className="text-[8px] text-primary/60 font-black uppercase">{p.category}</span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-black text-primary text-2xl tracking-tighter" data-label="السعر">${p.price}</TableCell>
-                    <TableCell className="font-black text-zinc-400" data-label="المخزون">
-                       <Badge variant="outline" className={`border-zinc-800 ${p.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>{p.stock}</Badge>
+                    <TableCell className="font-black text-primary text-lg tracking-tighter">${p.price}</TableCell>
+                    <TableCell>
+                       <Badge variant="outline" className={`border-zinc-800 text-[10px] ${p.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>{p.stock}</Badge>
                     </TableCell>
-                    <TableCell className="text-center" data-label="الإجراءات">
-                      <div className="flex justify-center gap-4 px-6">
-                        <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-primary hover:bg-primary/10 border border-white/5" onClick={() => startEdit(p)}><Edit2 size={20} /></Button>
-                        <Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-red-500 hover:bg-red-500/10 border border-white/5" onClick={() => handleDelete(p.id)}><Trash2 size={20} /></Button>
+                    <TableCell className="text-center">
+                      <div className="flex justify-center gap-3">
+                        <Button size="icon" variant="ghost" className="h-9 w-9 rounded-lg text-primary hover:bg-primary/10 border border-white/5" onClick={() => startEdit(p)}><Edit2 size={14} /></Button>
+                        <Button size="icon" variant="ghost" className="h-9 w-9 rounded-lg text-red-500 hover:bg-red-500/10 border border-white/5" onClick={() => handleDelete(p.id)}><Trash2 size={14} /></Button>
                       </div>
                     </TableCell>
                   </TableRow>

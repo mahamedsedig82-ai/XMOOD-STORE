@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -8,7 +7,7 @@ import { Product } from "@/app/lib/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Zap, AlertCircle, Edit, CheckCircle, Loader2, Lock, DollarSign } from "lucide-react";
+import { ShoppingBag, Zap, AlertCircle, Edit, CheckCircle, Loader2 } from "lucide-react";
 import { formatUSD, formatSDG } from "@/lib/currency";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, runTransaction, collection } from "firebase/firestore";
@@ -25,7 +24,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [voucher, setVoucher] = useState<{ id: string, code: string } | null>(null);
 
-  // Global settings for USD Rate
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
   const currentRate = config?.siteInfo?.usdRate || 5400;
@@ -112,8 +110,8 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <Card className={`luxury-card flex flex-col group ${isOutOfStock ? 'opacity-70 grayscale' : ''}`}>
-        <CardHeader className="p-0 relative aspect-video bg-muted">
+      <Card className={`luxury-card flex flex-col group h-full ${isOutOfStock ? 'opacity-70 grayscale' : ''}`}>
+        <CardHeader className="p-0 relative aspect-video bg-muted overflow-hidden">
           <Image 
             src={product.imageUrl || "https://picsum.photos/seed/product/600/400"} 
             alt={product.name}
@@ -123,74 +121,74 @@ export function ProductCard({ product }: ProductCardProps) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           
-          <Badge className={`absolute top-4 right-4 font-black text-[9px] px-4 py-1.5 rounded-full border-none shadow-2xl uppercase tracking-widest ${isOutOfStock ? 'bg-zinc-600 text-white' : 'bg-primary text-black'}`}>
+          <Badge className={`absolute top-3 right-3 font-black text-[8px] px-3 py-1 rounded-full border-none shadow-2xl uppercase tracking-widest ${isOutOfStock ? 'bg-zinc-600 text-white' : 'bg-primary text-black'}`}>
             {isOutOfStock ? 'نفد المخزون' : 'باقة معتمدة'}
           </Badge>
 
           {isAdmin && (
-            <Button asChild variant="secondary" className="absolute top-4 left-4 h-10 w-10 rounded-xl p-0 glass-morphism z-20">
-              <Link href={`/admin/products`}><Edit size={16} className="text-primary" /></Link>
+            <Button asChild variant="secondary" className="absolute top-3 left-3 h-8 w-8 rounded-lg p-0 glass-morphism z-20">
+              <Link href={`/admin/products`}><Edit size={14} className="text-primary" /></Link>
             </Button>
           )}
         </CardHeader>
         
-        <CardContent className="p-8 flex-1 flex flex-col">
-          <div className="mb-6">
-            <span className="text-[10px] uppercase font-black text-muted-foreground tracking-[0.2em] block mb-1">{product.category}</span>
-            <CardTitle className="text-2xl font-bold group-hover:gold-text transition-colors leading-tight">
+        <CardContent className="p-5 flex-1 flex flex-col">
+          <div className="mb-4">
+            <span className="text-[8px] uppercase font-black text-muted-foreground tracking-[0.2em] block mb-1">{product.category}</span>
+            <CardTitle className="text-lg md:text-xl font-bold group-hover:gold-text transition-colors leading-tight line-clamp-2">
               {product.name}
             </CardTitle>
           </div>
           
-          <div className="mt-auto pt-6 flex items-center justify-between border-t">
+          <div className="mt-auto pt-4 flex items-center justify-between border-t border-border/50">
             <div className="flex flex-col">
-              <span className="font-black text-3xl text-primary tracking-tighter">{formatUSD(product.price)}</span>
-              <span className="text-[9px] text-muted-foreground font-black uppercase mt-1">{formatSDG(product.price, currentRate)}</span>
+              <span className="font-black text-xl text-primary tracking-tighter">{formatUSD(product.price)}</span>
+              <span className="text-[8px] text-muted-foreground font-black uppercase">{formatSDG(product.price, currentRate)}</span>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
-               <Zap size={20} className={!isOutOfStock ? "animate-pulse" : ""} />
+            <div className="w-9 h-9 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
+               <Zap size={16} className={!isOutOfStock ? "animate-pulse" : ""} />
             </div>
           </div>
         </CardContent>
 
-        <CardFooter className="p-8 pt-0">
+        <CardFooter className="p-5 pt-0">
           <Button 
             onClick={handlePurchase}
             disabled={isOutOfStock || isProcessing}
-            className={`w-full h-16 rounded-2xl transition-all shadow-xl ${
+            className={`w-full h-12 rounded-xl transition-all shadow-xl text-[10px] font-bold uppercase tracking-widest ${
               isOutOfStock 
               ? 'bg-muted text-muted-foreground cursor-not-allowed border-none' 
               : 'royal-button'
             }`}
           >
             {isProcessing ? (
-              <Loader2 className="animate-spin" />
+              <Loader2 className="animate-spin" size={18} />
             ) : isOutOfStock ? (
-              <><AlertCircle size={18} className="ml-2" /> غير متوفر حالياً</>
+              <><AlertCircle size={14} className="ml-2" /> غير متوفر</>
             ) : (
-              <><ShoppingBag size={18} className="ml-2" /> اطلب الخدمة الآن</>
+              <><ShoppingBag size={14} className="ml-2" /> اطلب الآن</>
             )}
           </Button>
         </CardFooter>
       </Card>
 
       <Dialog open={!!voucher} onOpenChange={() => setVoucher(null)}>
-        <DialogContent className="max-w-md glass-morphism border-none rounded-[2.5rem] p-12 shadow-2xl">
+        <DialogContent className="max-w-md bg-card border-none rounded-[2rem] p-10 shadow-2xl">
           <DialogHeader className="text-center">
-            <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-primary/20">
-              <CheckCircle size={40} className="text-primary" />
+            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-primary/20">
+              <CheckCircle size={32} className="text-primary" />
             </div>
-            <DialogTitle className="text-3xl font-black mb-2">تم تأكيد الطلب</DialogTitle>
-            <DialogDescription className="text-muted-foreground font-medium">إليك كود التفعيل المخصص لك، يرجى حفظه فوراً:</DialogDescription>
+            <DialogTitle className="text-2xl font-black mb-1">تم تأكيد الطلب</DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs font-medium">إليك كود التفعيل المخصص لك، يرجى حفظه فوراً:</DialogDescription>
           </DialogHeader>
 
-          <div className="mt-10 space-y-8">
-            <div className="bg-muted p-8 rounded-[2rem] border-2 border-dashed border-primary/40 text-center">
-              <div className="text-3xl font-black tracking-[0.2em] select-all uppercase gold-text">
+          <div className="mt-8 space-y-6">
+            <div className="bg-muted/50 p-6 rounded-2xl border-2 border-dashed border-primary/30 text-center">
+              <div className="text-2xl font-black tracking-[0.2em] select-all uppercase gold-text">
                 {voucher?.code}
               </div>
             </div>
-            <Button onClick={() => setVoucher(null)} className="royal-button w-full h-16 text-lg">العودة للمتجر</Button>
+            <Button onClick={() => setVoucher(null)} className="royal-button w-full h-14 text-sm uppercase">العودة للمتجر</Button>
           </div>
         </DialogContent>
       </Dialog>

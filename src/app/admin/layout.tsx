@@ -3,7 +3,7 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Monitor, Bot, Terminal, BarChart, Image as ImageIcon
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -24,17 +24,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     setIsMounted(true);
-    const allowedRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'];
-    if (!loading) {
-      if (!user) router.push('/login');
-      else if (profile && !allowedRoles.includes(profile.role)) router.push('/'); 
-    }
-  }, [profile, loading, user, router]);
+  }, []);
 
-  if (!isClient || loading) return (
+  useEffect(() => {
+    if (!loading && isClient) {
+      const allowedRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'];
+      
+      if (!user) {
+        router.push('/login');
+      } else if (profile && !allowedRoles.includes(profile.role)) {
+        router.push('/');
+      }
+    }
+  }, [profile, loading, user, router, isClient]);
+
+  // Loading Screen for Auth Protection
+  if (!isClient || loading || !user || !profile) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-4">
       <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Verifying Operational Access...</p>
+      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] animate-pulse">Authenticating Sovereign Access...</p>
     </div>
   );
 
@@ -107,7 +115,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
              </div>
           </header>
-          <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
