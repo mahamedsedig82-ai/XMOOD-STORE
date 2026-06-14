@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 
@@ -29,15 +29,12 @@ export function useUser() {
   useEffect(() => {
     if (!auth) return;
     
-    // مستمع حالة الدخول - هو المصدر الأول للحقيقة
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      
       if (!firebaseUser) {
         setProfile(null);
-        setLoading(false); // لا يوجد مستخدم، توقف عن التحميل فوراً
+        setLoading(false);
       }
-      // إذا وجد مستخدم، لا نغير حالة التحميل هنا، ننتظر الملف الشخصي
     });
 
     return () => unsubscribeAuth();
@@ -46,13 +43,10 @@ export function useUser() {
   useEffect(() => {
     if (!user || !db) return;
 
-    // نبدأ حالة التحميل للملف الشخصي بشكل إجباري
     setLoading(true);
-
     const userDocRef = doc(db, 'users', user.uid);
     let isMounted = true;
 
-    // مستمع لحظي للملف الشخصي لضمان ثبات الجلسة
     const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
       if (isMounted) {
         if (snapshot.exists()) {
@@ -65,8 +59,9 @@ export function useUser() {
           }
 
           setProfile({ ...data, uid: snapshot.id });
+          setLoading(false);
         } else {
-          // إذا لم يوجد ملف شخصي، نقوم بإنشائه (حالة تسجيل جديد)
+          // إنشاء ملف شخصي جديد
           const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
           const initialProfile: UserProfile = {
             uid: user.uid,
@@ -81,12 +76,13 @@ export function useUser() {
             isVerified: user.emailVerified,
             affinityPoints: isMaster ? 1000 : 50
           };
-          setDoc(userDocRef, initialProfile);
-          setProfile(initialProfile);
+          setDoc(userDocRef, initialProfile).then(() => {
+            if (isMounted) {
+              setProfile(initialProfile);
+              setLoading(false);
+            }
+          });
         }
-        
-        // الأهم: ننهي حالة التحميل فقط بعد التأكد من وصول الملف الشخصي
-        setLoading(false);
       }
     }, (err) => {
       console.error("Firestore Sync Error:", err);
@@ -99,7 +95,6 @@ export function useUser() {
     };
   }, [user, db]);
 
-  // صلاحية طاقم العمل - تشمل كافة الرتب التشغيلية
   const isStaff = !!(user && (
     MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || 
     (profile?.role && staffRoles.includes(profile.role))

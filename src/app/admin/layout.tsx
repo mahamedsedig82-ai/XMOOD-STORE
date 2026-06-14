@@ -1,10 +1,10 @@
 
 "use client";
 
-import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Menu
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Menu, X
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -48,8 +48,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
         <div className="text-center space-y-3">
-           <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">جاري التحقق من الهوية السيادية</h2>
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Staff Access Protocol v6.0</p>
+           <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">جاري التحقق من الصلاحيات السيادية</h2>
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Identity Verification Protocol v7.0</p>
         </div>
       </div>
     );
@@ -57,7 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!user || !isAdmin || !profile) return null;
 
-  // تعريف الأقسام مع تحديد الأدوار المسموح لها (تطبيق مبدأ الاقتصار على العمل فقط)
+  // تعريف الأقسام مع تحديد الأدوار المسموح لها (فصل سيادي تام)
   const allSections = [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman', 'store_manager', 'accountant', 'support'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
@@ -73,25 +73,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
 
-  // تصفية القائمة الجانبية بناءً على رتبة المستخدم (اقتصار تام)
+  // تصفية القائمة الجانبية بناءً على رتبة المستخدم (الاقتصار على المهام فقط)
   const visibleSections = allSections.filter(item => 
     profile?.role === 'owner' || profile?.role === 'admin' || (profile?.role && item.roles.includes(profile.role))
   );
 
   const isPathAllowed = profile?.role === 'owner' || profile?.role === 'admin' || visibleSections.some(s => s.href === pathname);
 
+  // في حال حاول الدخول لرابط غير مصرح له به يدوياً
   if (!isPathAllowed && pathname !== "/admin") {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-center p-10 bg-background" dir="rtl">
         <div className="w-24 h-24 bg-red-500/10 rounded-[2.5rem] flex items-center justify-center text-red-500 mb-8 border border-red-500/20 shadow-2xl">
            <ShieldAlert size={48} />
         </div>
-        <h2 className="text-4xl font-black mb-4 gold-text">وصول تخصصي محدود</h2>
+        <h2 className="text-4xl font-black mb-4 gold-text">وصول محدود</h2>
         <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed text-lg font-medium">
-          عذراً <span className="text-foreground font-bold">{profile.displayName}</span>، هذا القسم مخصص لمهام تخصصية أخرى. يرجى الالتزام بالأدوات المتاحة في قائمتك.
+          عذراً <span className="text-foreground font-bold">{profile.displayName}</span>، هذا القسم مخصص لمهام تخصصية أخرى. يرجى استخدام الأدوات المتاحة في قائمتك الجانبية.
         </p>
         <Button asChild className="mt-12 royal-button px-16 h-16 text-lg">
-          <Link href="/admin">العودة لمساحة عملي</Link>
+          <Link href="/admin">العودة للوحة القيادة</Link>
         </Button>
       </div>
     );
@@ -100,6 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
+        
         {/* Desktop Sidebar */}
         <Sidebar className="border-l border-border bg-card hidden lg:flex" side="right">
           <SidebarHeader className="p-10 border-b text-center">
@@ -111,7 +113,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <ScrollArea className="flex-1 p-5">
             <SidebarGroup>
                <SidebarGroupLabel className="text-right px-4 mb-4 text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">
-                 قائمة مهام التخصص الحصرية
+                 قائمة المهام الحصرية
                </SidebarGroupLabel>
                <SidebarMenu className="gap-2.5">
                  {visibleSections.map((item) => (
@@ -142,19 +144,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </Sidebar>
 
         <main className="flex-1 overflow-hidden flex flex-col relative">
+          
           {/* Enhanced Mobile Header */}
-          <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl z-40 sticky top-0">
+          <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl z-[60] sticky top-0">
              <div className="flex items-center gap-4">
-                {/* Mobile Menu Trigger */}
+                {/* Mobile Menu Trigger (Sheet) */}
                 <Sheet dir="rtl">
                    <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon" className="lg:hidden h-12 w-12 rounded-xl bg-primary/5 text-primary border border-primary/20 shadow-sm">
+                      <Button variant="ghost" size="icon" className="lg:hidden h-12 w-12 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-md">
                          <Menu size={24} />
                       </Button>
                    </SheetTrigger>
-                   <SheetContent side="right" className="w-[85%] max-w-sm p-0 border-none bg-background shadow-2xl">
+                   <SheetContent side="right" className="w-[85%] max-w-sm p-0 border-none bg-background shadow-2xl z-[100]">
                       <SheetHeader className="p-8 border-b text-center bg-muted/5">
-                         <SheetTitle className="handwritten-logo text-3xl mb-2">XMOOD ADMIN</SheetTitle>
+                         <div className="flex justify-between items-center mb-6">
+                            <SheetClose asChild>
+                               <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-red-500/10 text-red-500"><X size={24}/></Button>
+                            </SheetClose>
+                            <span className="handwritten-logo text-3xl">XMOOD ADMIN</span>
+                         </div>
                          <Badge className="bg-primary/10 text-primary border-none px-4 py-1 rounded-full text-[9px] font-black uppercase">
                             {profile?.label || profile?.role}
                          </Badge>
@@ -185,23 +193,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                    </SheetContent>
                 </Sheet>
 
-                <div className="hidden sm:flex items-center gap-5">
-                   <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
+                <div className="flex items-center gap-5">
+                   <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20">
                       <Terminal size={22} />
                    </div>
                    <div className="flex flex-col text-right">
-                      <span className="text-[11px] md:text-sm font-black uppercase tracking-widest text-foreground">وحدة التحكم السيادية</span>
-                      <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Terminal</span>
+                      <span className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground">وحدة التحكم</span>
+                      <span className="text-[8px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Terminal</span>
                    </div>
                 </div>
              </div>
              
              <div className="flex items-center gap-3">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-xs font-black px-4 py-1.5 rounded-full">Encrypted Session</Badge>
+                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-xs font-black px-4 py-1.5 rounded-full hidden sm:block">Encrypted Session</Badge>
                 <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_#22c55e]" />
              </div>
           </header>
 
+          {/* Page Content */}
           <div className="flex-1 overflow-y-auto p-4 md:p-14 custom-scrollbar">
             <AnimatePresence mode="wait">
               <motion.div
@@ -217,12 +226,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </AnimatePresence>
           </div>
 
-          {/* Bottom Task Bar for Mobile Specialists */}
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-background/80 backdrop-blur-2xl border-t z-50 flex items-center justify-around px-6">
+          {/* Bottom Navigation for Mobile Specialists */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-background/90 backdrop-blur-2xl border-t z-50 flex items-center justify-around px-4 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
              {visibleSections.slice(0, 5).map((item) => (
-                <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1 transition-all ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}>
-                   <item.icon size={20} className={pathname === item.href ? 'scale-110' : 'opacity-60'} />
-                   <span className="text-[8px] font-black uppercase tracking-widest">{item.label.split(' ')[0]}</span>
+                <Link 
+                  key={item.href} 
+                  href={item.href} 
+                  className={`flex flex-col items-center gap-1 transition-all flex-1 py-2 ${pathname === item.href ? 'text-primary scale-110' : 'text-muted-foreground opacity-60'}`}
+                >
+                   <item.icon size={20} className={pathname === item.href ? 'drop-shadow-[0_0_8px_var(--primary)]' : ''} />
+                   <span className="text-[7px] font-black uppercase tracking-widest text-center truncate w-full">{item.label.split(' ')[0]}</span>
+                   {pathname === item.href && <motion.div layoutId="bottom-indicator" className="w-1 h-1 bg-primary rounded-full mt-0.5" />}
                 </Link>
              ))}
           </div>
@@ -231,4 +245,3 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </SidebarProvider>
   );
 }
-
