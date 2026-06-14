@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -28,7 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // بروتوكول الحماية ومنع الطرد المتسرع
+  // منع الطرد المتسرع: ننتظر دائماً اكتمال التحميل
   useEffect(() => {
     if (isClient && !loading) {
       if (!user) {
@@ -39,22 +38,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [loading, user, isAdmin, profile, isClient, router]);
 
-  // مصفوفة الأقسام مع التحديد الصارم للأدوار
+  // تعريف الأقسام مع الربط الصارم بالأدوار لضمان "العزل التخصصي"
   const allSections = useMemo(() => [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
-    { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
-    { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
-    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent', 'middleman', 'designer'] },
-    { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm', 'agent', 'middleman'] },
-    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support'] },
-    { label: "المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
-    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'designer'] },
     { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'designer'] },
+    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'designer'] },
+    { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm', 'agent', 'middleman'] },
+    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent', 'middleman', 'designer'] },
+    { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
+    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support', 'agent'] },
+    { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
+    { label: "المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ], []);
 
+  // تصفية الأقسام بناءً على رتبة المستخدم الحالية
   const visibleSections = useMemo(() => {
     if (!profile?.role) return [];
     return allSections.filter(item => 
@@ -62,11 +62,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }, [profile, allSections]);
 
+  // التحقق من صلاحية المسار الحالي
   const isPathAllowed = useMemo(() => {
     if (loading || !profile) return true;
-    if (pathname === "/admin") return true;
+    if (pathname === "/admin") {
+       // لوحة القيادة متاحة للكل كطاقم عمل، لكن المحتوى داخلها قد يختلف
+       return isAdmin;
+    }
     return profile.role === 'owner' || profile.role === 'admin' || visibleSections.some(s => s.href === pathname);
-  }, [profile, loading, pathname, visibleSections]);
+  }, [profile, loading, pathname, visibleSections, isAdmin]);
 
   if (!isClient || loading || (user && !profile)) {
     return (
@@ -79,7 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <div className="text-center space-y-3">
            <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">تأمين الوصول التخصصي</h2>
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Sovereign Gate v10.0</p>
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Sovereign Gate v12.0</p>
         </div>
       </div>
     );
@@ -87,6 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!user || !isAdmin || !profile) return null;
 
+  // واجهة المنع المحترفة للمتخصصين الذين يحاولون دخول أقسام غيرهم
   if (!isPathAllowed) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-center p-10 bg-background" dir="rtl">
@@ -95,10 +100,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <h2 className="text-4xl font-black mb-4 gold-text">وصول محدود للتخصص</h2>
         <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed text-lg font-medium">
-          عذراً، هذا القسم يقع خارج نطاق مهامك المعتمدة حالياً. يرجى استخدام الأدوات المتاحة لك فقط.
+          عذراً سيادة {profile.label}، هذا القسم يقع خارج نطاق مهامك المعتمدة حالياً. يرجى استخدام الأدوات المتاحة لك فقط.
         </p>
         <Button asChild className="mt-12 royal-button px-16 h-16 text-lg">
-          <Link href="/admin">العودة لمهامي</Link>
+          <Link href={visibleSections[0]?.href || "/admin"}>الذهاب لمهامي</Link>
         </Button>
       </div>
     );
@@ -166,13 +171,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
              
              <div className="flex items-center gap-3">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-xs font-black px-4 py-1.5 rounded-full hidden sm:block">Sovereign Auth</Badge>
+                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-xs font-black px-4 py-1.5 rounded-full hidden sm:block">Identity Confirmed</Badge>
                 <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_#22c55e]" />
              </div>
           </header>
 
-          {/* Viewport */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-14 custom-scrollbar pb-32">
+          {/* Viewport Content */}
+          <div className="flex-1 overflow-y-auto p-4 md:p-14 custom-scrollbar pb-40 lg:pb-14">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
@@ -187,68 +192,69 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </AnimatePresence>
           </div>
 
-          {/* Fixed Bottom Navigation (Mobile Specialist Hub) */}
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-2xl border-t z-[100] flex items-center justify-around px-2 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] pointer-events-auto">
+          {/* Fixed Bottom Navigation (Mobile Specialist Dock) */}
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/98 backdrop-blur-3xl border-t z-[110] flex items-center justify-around px-4 shadow-[0_-15px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link 
                   key={item.href} 
                   href={item.href} 
-                  className={`flex flex-col items-center justify-center gap-1.5 transition-all flex-1 h-full relative pointer-events-auto ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
+                  className={`flex flex-col items-center justify-center gap-2 transition-all flex-1 h-full relative z-[120] pointer-events-auto ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
                 >
-                   <div className={`p-2.5 rounded-xl transition-all ${pathname === item.href ? 'bg-primary/10 shadow-lg' : ''}`}>
-                      <item.icon size={22} className={pathname === item.href ? 'drop-shadow-[0_0_8px_var(--primary)]' : 'opacity-60'} />
+                   <div className={`p-3 rounded-2xl transition-all duration-500 ${pathname === item.href ? 'bg-primary/15 shadow-[0_0_15px_rgba(212,175,55,0.2)]' : ''}`}>
+                      <item.icon size={24} className={pathname === item.href ? 'drop-shadow-[0_0_10px_var(--primary)]' : 'opacity-70'} />
                    </div>
-                   <span className={`text-[8px] font-black uppercase tracking-widest text-center truncate w-full px-1 ${pathname === item.href ? 'opacity-100' : 'opacity-50'}`}>{item.label}</span>
+                   <span className={`text-[9px] font-black uppercase tracking-widest text-center truncate w-full px-1 ${pathname === item.href ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
                    {pathname === item.href && (
                      <motion.div 
-                       layoutId="bottom-nav-indicator" 
-                       className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-b-full shadow-[0_0_10px_var(--primary)]" 
+                       layoutId="bottom-nav-active" 
+                       className="absolute -top-px left-1/2 -translate-x-1/2 w-10 h-1 bg-primary rounded-b-full shadow-[0_0_15px_var(--primary)]" 
                      />
                    )}
                 </Link>
              ))}
-             {/* Mobile Menu Button for extra links */}
+             
+             {/* Mobile "More" Menu for additional specialist tools */}
              <Sheet dir="rtl">
                 <SheetTrigger asChild>
-                   <button className="flex flex-col items-center justify-center gap-1.5 flex-1 h-full text-muted-foreground opacity-60 pointer-events-auto">
-                      <div className="p-2.5 rounded-xl hover:bg-muted">
-                        <Menu size={22} />
+                   <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-muted-foreground opacity-70 pointer-events-auto relative z-[120]">
+                      <div className="p-3 rounded-2xl hover:bg-muted/50 transition-colors">
+                        <Menu size={24} />
                       </div>
-                      <span className="text-[8px] font-black uppercase tracking-widest">المزيد</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest">المزيد</span>
                    </button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="rounded-t-[3rem] p-0 border-none bg-background shadow-2xl h-[75vh]">
-                   <SheetHeader className="p-8 border-b text-center bg-muted/5">
-                      <div className="flex justify-between items-center mb-4">
-                         <span className="handwritten-logo text-3xl">XMOOD ADMIN</span>
+                <SheetContent side="bottom" className="rounded-t-[3.5rem] p-0 border-none bg-background shadow-2xl h-[80vh] z-[150]">
+                   <SheetHeader className="p-10 border-b text-center bg-muted/5">
+                      <div className="flex justify-between items-center mb-6">
+                         <span className="handwritten-logo text-4xl">XMOOD ADMIN</span>
                          <SheetClose asChild>
-                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-red-500"><X size={24}/></Button>
+                            <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl text-red-500 bg-red-500/5 hover:bg-red-500/10"><X size={28}/></Button>
                          </SheetClose>
                       </div>
-                      <Badge className="bg-primary/10 text-primary border-none px-6 py-1 rounded-full text-[10px] font-black uppercase">
-                         {profile?.label || profile?.role}
+                      <Badge className="bg-primary/10 text-primary border-none px-8 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.2em]">
+                         {profile?.label || profile?.role} ACCESS
                       </Badge>
                    </SheetHeader>
-                   <ScrollArea className="p-6 h-full pb-32">
-                      <div className="space-y-3">
+                   <ScrollArea className="p-8 h-full pb-48">
+                      <div className="grid grid-cols-2 gap-4">
                          {visibleSections.map((item) => (
                             <SheetClose asChild key={item.href}>
                                <Link 
                                  href={item.href} 
-                                 className={`flex flex-row-reverse items-center justify-between p-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'bg-muted/30 font-bold text-muted-foreground'}`}
+                                 className={`flex flex-col items-center gap-4 p-6 rounded-3xl transition-all border ${pathname === item.href ? 'bg-primary text-white border-primary shadow-2xl' : 'bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted'}`}
                                >
-                                  <item.icon size={20} className={pathname === item.href ? 'text-white' : 'text-primary'} />
-                                  <span className="font-black text-xs uppercase">{item.label}</span>
+                                  <item.icon size={26} className={pathname === item.href ? 'text-white' : 'text-primary'} />
+                                  <span className="font-black text-[10px] uppercase text-center">{item.label}</span>
                                </Link>
                             </SheetClose>
                          ))}
                       </div>
-                      <div className="mt-8 space-y-3">
-                         <Button asChild variant="outline" className="w-full h-14 rounded-2xl font-black text-[11px] uppercase gap-3">
-                           <Link href="/"><ArrowLeft size={16} /> المتجر الرئيسي</Link>
+                      <div className="mt-12 space-y-4">
+                         <Button asChild variant="outline" className="w-full h-16 rounded-[1.5rem] font-black text-xs uppercase gap-4 border-border/60 hover:bg-card">
+                           <Link href="/"><ArrowLeft size={18} /> العودة للمتجر الرئيسي</Link>
                          </Button>
-                         <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-14 rounded-2xl text-red-500 font-black text-[11px] uppercase gap-3 hover:bg-red-50">
-                           <LogOut size={16} /> تسجيل الخروج
+                         <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-16 rounded-[1.5rem] text-red-500 font-black text-xs uppercase gap-4 hover:bg-red-500/5">
+                           <LogOut size={18} /> تسجيل خروج آمن
                          </Button>
                       </div>
                    </ScrollArea>
