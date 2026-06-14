@@ -3,7 +3,7 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Menu
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -26,35 +26,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // Secure Auth Guard - Rigid Implementation
+  // بروتوكول حماية المسارات - فحص سيادي صارم
   useEffect(() => {
     if (!loading && isClient) {
       if (!user) {
         router.replace('/login');
       } else if (!isAdmin) {
-        // Only redirect to home if we are SURE they are not an admin
+        // لا يتم الطرد إلا إذا تأكدنا تماماً من عدم وجود صلاحية
         router.replace('/');
       }
     }
   }, [loading, user, isAdmin, isClient, router]);
 
-  // Sovereign Loading Experience - Prevents flickering or unauthorized access
-  if (!isClient || loading) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6" dir="rtl">
-      <div className="relative">
-        <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+  // واجهة التحميل المركزية - تمنع وميض الواجهة غير المصرح بها
+  if (!isClient || loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6" dir="rtl">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+          </div>
+        </div>
+        <div className="text-center space-y-2">
+          <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] animate-pulse">تأمين الوصول للمركز...</p>
+          <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-widest">Verifying Admin Credentials</p>
         </div>
       </div>
-      <div className="text-center space-y-2">
-        <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] animate-pulse">تأمين الاتصال بالمركز...</p>
-        <p className="text-[8px] text-muted-foreground uppercase font-bold">Verifying Sovereign Credentials</p>
-      </div>
-    </div>
-  );
+    );
+  }
 
-  // Absolute blocker if unauthorized
+  // منع عرض أي محتوى إذا لم يكن المستخدم مديراً
   if (!user || !isAdmin) return null;
 
   const adminSections = [

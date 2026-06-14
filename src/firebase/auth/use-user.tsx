@@ -13,7 +13,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // MASTER ADMINS - Sovereignty List
+  // MASTER ADMINS - القائمة السيادية للمديرين
   const MASTER_ADMINS = [
     "MAHAMEDFK3@GMAIL.COM", 
     "XMOODSTORE.SUPPORT@GMAIL.COM",
@@ -64,14 +64,14 @@ export function useUser() {
           setProfile(initialProfile);
         } else {
           const currentData = docSnap.data() as UserProfile;
-          // Force master role if needed
+          // الترقية السيادية التلقائية عند الدخول
           if (isMaster && currentData.role !== 'owner') {
             await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
           }
           setProfile({ ...currentData, uid: user.uid });
         }
 
-        // Keep profile in sync
+        // الاستماع للتغييرات اللحظية
         unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
           if (snapshot.exists()) {
             const data = snapshot.data() as UserProfile;
@@ -93,13 +93,16 @@ export function useUser() {
     };
   }, [user, db]);
 
-  const isAdmin = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile?.role || '');
+  // فحص الصلاحية الإدارية - يدعم الفحص الفوري بالبريد والفحص بالرتبة
+  const isMasterByEmail = user && MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
+  const isAdmin = !!(isMasterByEmail || ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile?.role || ''));
 
   return { 
     user, 
     profile, 
     loading, 
     isVerified: user?.emailVerified || false,
-    isAdmin
+    isAdmin,
+    isMaster: isMasterByEmail
   };
 }
