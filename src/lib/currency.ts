@@ -1,9 +1,10 @@
+
 /**
- * @fileOverview Currency utilities for the Exigo platform.
- * Handles USD to SDG conversion based on the fixed rate 1 USD = 5400 SDG.
+ * @fileOverview Currency utilities for the XMOOD platform.
+ * Handles USD to SDG conversion based on a dynamic rate.
  */
 
-export const USD_TO_SDG_RATE = 5400;
+export const DEFAULT_USD_TO_SDG_RATE = 5400;
 
 /**
  * Formats a number as USD currency.
@@ -16,10 +17,10 @@ export function formatUSD(amount: number): string {
 }
 
 /**
- * Formats a number (assumed in USD) as SDG currency using the fixed rate.
+ * Formats a number (assumed in USD) as SDG currency using a provided or default rate.
  */
-export function formatSDG(usdAmount: number): string {
-  const sdgAmount = usdAmount * USD_TO_SDG_RATE;
+export function formatSDG(usdAmount: number, rate: number = DEFAULT_USD_TO_SDG_RATE): string {
+  const sdgAmount = usdAmount * rate;
   return new Intl.NumberFormat('ar-SD', {
     style: 'currency',
     currency: 'SDG',
@@ -30,6 +31,6 @@ export function formatSDG(usdAmount: number): string {
 /**
  * Returns a dual-price string for display.
  */
-export function getDualPrice(usdAmount: number): string {
-  return `${formatUSD(usdAmount)} (${formatSDG(usdAmount)})`;
+export function getDualPrice(usdAmount: number, rate: number = DEFAULT_USD_TO_SDG_RATE): string {
+  return `${formatUSD(usdAmount)} (${formatSDG(usdAmount, rate)})`;
 }

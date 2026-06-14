@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -7,9 +8,9 @@ import { Product } from "@/app/lib/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Zap, AlertCircle, Edit, CheckCircle, Loader2, Lock } from "lucide-react";
+import { ShoppingBag, Zap, AlertCircle, Edit, CheckCircle, Loader2, Lock, DollarSign } from "lucide-react";
 import { formatUSD, formatSDG } from "@/lib/currency";
-import { useUser, useFirestore } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, runTransaction, collection } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -23,6 +24,11 @@ export function ProductCard({ product }: ProductCardProps) {
   const db = useFirestore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [voucher, setVoucher] = useState<{ id: string, code: string } | null>(null);
+
+  // Global settings for USD Rate
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const { data: config } = useDoc(settingsRef);
+  const currentRate = config?.siteInfo?.usdRate || 5400;
 
   const isOutOfStock = product.status === 'out_of_stock' || product.stock <= 0;
   const isAdmin = ['owner', 'admin'].includes(profile?.role || '');
@@ -44,75 +50,64 @@ export function ProductCard({ product }: ProductCardProps) {
     }
 
     setIsProcessing(true);
-    try {
-      const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+    const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+    
+    runTransaction(db, async (transaction) => {
+      const userRef = doc(db, "users", user.uid);
+      const productRef = doc(db, "products", product.id);
       
-      await runTransaction(db, async (transaction) => {
-        const userRef = doc(db, "users", user.uid);
-        const productRef = doc(db, "products", product.id);
-        
-        const userSnap = await transaction.get(userRef);
-        const prodSnap = await transaction.get(productRef);
-        
-        if (!userSnap.exists() || !prodSnap.exists()) throw new Error("بيانات غير متوفرة");
-        
-        const currentProdData = prodSnap.data();
-        const codes = (currentProdData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
-        
-        if (codes.length === 0 && currentProdData.stock > 0) {
-          throw new Error("عذراً، لا توجد أكواد متوفرة حالياً لهذه الباقة.");
-        }
+      const userSnap = await transaction.get(userRef);
+      const prodSnap = await transaction.get(productRef);
+      
+      if (!userSnap.exists() || !prodSnap.exists()) throw new Error("بيانات غير متوفرة");
+      
+      const currentProdData = prodSnap.data();
+      const codes = (currentProdData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
+      
+      if (codes.length === 0 && currentProdData.stock > 0) {
+        throw new Error("عذراً، لا توجد أكواد متوفرة حالياً لهذه الباقة.");
+      }
 
-        const selectedCode = codes[0] || "AUTO-GEN-" + orderId;
-        const remainingCodes = codes.slice(1).join('\n');
-        
-        const newBalance = (userSnap.data().walletBalance || 0) - product.price;
-        const newStock = Math.max(0, (currentProdData.stock || 0) - 1);
+      const selectedCode = codes[0] || "AUTO-GEN-" + orderId;
+      const remainingCodes = codes.slice(1).join('\n');
+      
+      const newBalance = (userSnap.data().walletBalance || 0) - product.price;
+      const newStock = Math.max(0, (currentProdData.stock || 0) - 1);
 
-        transaction.update(userRef, { walletBalance: newBalance });
-        transaction.update(productRef, { 
-          stock: newStock,
-          shippingCodes: remainingCodes,
-          status: newStock <= 0 ? 'out_of_stock' : currentProdData.status
-        });
-
-        transaction.set(doc(db, "orders", orderId), {
-          userId: user.uid,
-          userEmail: user.email,
-          productId: product.id,
-          productName: product.name,
-          amount: product.price,
-          status: 'completed',
-          shippingCodeSent: selectedCode,
-          createdAt: new Date().toISOString()
-        });
-
-        transaction.set(doc(collection(db, "users", user.uid, "transactions")), {
-          type: 'purchase',
-          amount: product.price,
-          description: `شراء باقة: ${product.name}`,
-          createdAt: new Date().toISOString()
-        });
-
-        transaction.set(doc(collection(db, "transactions")), {
-          userId: user.uid,
-          amount: -product.price,
-          type: 'purchase',
-          description: `عملية شراء: ${product.name} بواسطة ${profile.displayName}`,
-          createdAt: new Date().toISOString()
-        });
-
-        return selectedCode;
-      }).then((code) => {
-        setVoucher({ id: orderId, code: code as string });
-        toast({ title: "تم الشراء بنجاح", description: "تم استخراج كود التفعيل الخاص بك." });
+      transaction.update(userRef, { walletBalance: newBalance });
+      transaction.update(productRef, { 
+        stock: newStock,
+        shippingCodes: remainingCodes,
+        status: newStock <= 0 ? 'out_of_stock' : currentProdData.status
       });
 
-    } catch (e: any) {
+      transaction.set(doc(db, "orders", orderId), {
+        userId: user.uid,
+        userEmail: user.email,
+        productId: product.id,
+        productName: product.name,
+        amount: product.price,
+        status: 'completed',
+        shippingCodeSent: selectedCode,
+        createdAt: new Date().toISOString()
+      });
+
+      transaction.set(doc(collection(db, "users", user.uid, "transactions")), {
+        type: 'purchase',
+        amount: product.price,
+        description: `شراء باقة: ${product.name}`,
+        createdAt: new Date().toISOString()
+      });
+
+      return selectedCode;
+    }).then((code) => {
+      setVoucher({ id: orderId, code: code as string });
+      toast({ title: "تم الشراء بنجاح", description: "تم استخراج كود التفعيل الخاص بك." });
+    }).catch((e: any) => {
       toast({ variant: "destructive", title: "فشل العملية", description: e.message || "حدث خطأ أثناء معالجة الطلب." });
-    } finally {
+    }).finally(() => {
       setIsProcessing(false);
-    }
+    });
   };
 
   return (
@@ -150,7 +145,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="mt-auto pt-6 flex items-center justify-between border-t">
             <div className="flex flex-col">
               <span className="font-black text-3xl text-primary tracking-tighter">{formatUSD(product.price)}</span>
-              <span className="text-[9px] text-muted-foreground font-black uppercase mt-1">{formatSDG(product.price)}</span>
+              <span className="text-[9px] text-muted-foreground font-black uppercase mt-1">{formatSDG(product.price, currentRate)}</span>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
                <Zap size={20} className={!isOutOfStock ? "animate-pulse" : ""} />
