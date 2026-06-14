@@ -49,6 +49,16 @@ export default function AdminOtherServices() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (Firestore limit is 1MB total document size)
+      if (file.size > 800000) {
+        toast({
+          variant: "destructive",
+          title: "حجم الملف كبير",
+          description: "يرجى اختيار صورة أصغر من 800 كيلوبايت لضمان استقرار النظام."
+        });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setForm({ ...form, imageUrl: reader.result as string });
