@@ -27,12 +27,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // بروتوكول الحماية ومنع الطرد الخاطئ - لا يتم اتخاذ قرار إلا بعد اكتمال التحميل تماماً
+  // بروتوكول الحماية ومنع الطرد الخاطئ - ننتظر اكتمال التحميل تماماً
   useEffect(() => {
-    if (!loading && isClient) {
+    if (isClient && !loading) {
       if (!user) {
         router.replace('/login');
-      } else if (isAdmin === false) {
+      } else if (!isAdmin) {
         // إذا تأكد النظام أن المستخدم ليس طاقم عمل بعد انتهاء التحميل، يتم طرده
         router.replace('/');
       }
@@ -42,16 +42,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // واجهة تأمين الوصول تظهر طالما لم نتأكد من الصلاحيات بعد
   if (!isClient || loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6" dir="rtl">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-8" dir="rtl">
         <div className="relative">
-          <div className="w-20 h-20 border-4 border-primary/10 border-t-primary rounded-full animate-spin" />
+          <div className="w-24 h-24 border-[6px] border-primary/10 border-t-primary rounded-full animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_15px_var(--primary)]" />
+            <div className="w-4 h-4 bg-primary rounded-full animate-pulse shadow-[0_0_20px_var(--primary)]" />
           </div>
         </div>
-        <div className="text-center space-y-2">
-           <p className="text-[11px] font-black text-primary uppercase tracking-[0.5em] animate-pulse">جاري فحص بروتوكول الوصول...</p>
-           <p className="text-[9px] text-muted-foreground uppercase font-bold opacity-50">Sovereign Identity Verification</p>
+        <div className="text-center space-y-3">
+           <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">جاري التحقق من الهوية السيادية</h2>
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Staff Access Protocol v2.5</p>
         </div>
       </div>
     );
@@ -61,7 +61,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!user || !isAdmin) return null;
 
   const allSections = [
-    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman'] },
+    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman', 'store_manager', 'accountant'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
     { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
     { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
@@ -75,6 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
 
+  // تصفية الأقسام بناءً على الرتبة الحالية للمستخدم
   const visibleSections = allSections.filter(item => 
     profile?.role === 'owner' || (profile?.role && item.roles.includes(profile.role))
   );
@@ -82,15 +83,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const currentSection = allSections.find(s => s.href === pathname);
   const isAllowed = profile?.role === 'owner' || (profile?.role && currentSection?.roles.includes(profile.role));
 
-  // إذا حاول الدخول لرابط لا يملكه، تظهر شاشة المنع بدلاً من الطرد للمنزل
+  // شاشة المنع إذا حاول مستخدم الدخول لرابط تخصص آخر
   if (pathname !== "/admin" && !isAllowed && currentSection) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-10" dir="rtl">
-        <Terminal size={64} className="text-red-500 mb-6" />
-        <h2 className="text-2xl font-bold mb-2">وصول غير مصرح به</h2>
-        <p className="text-muted-foreground">عذراً، هذا القسم مخصص لمتخصصين آخرين. يرجى العودة للقسم الخاص بتخصصك.</p>
-        <Button asChild className="mt-8 royal-button">
-          <Link href="/admin">العودة للرئيسية</Link>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-10 bg-background" dir="rtl">
+        <div className="w-20 h-20 bg-red-500/10 rounded-[2rem] flex items-center justify-center text-red-500 mb-8">
+           <Terminal size={40} />
+        </div>
+        <h2 className="text-3xl font-black mb-3">وصول غير مصرح به</h2>
+        <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
+          عذراً، هذا القسم مخصص لمتخصصين آخرين. يرجى استخدام الأدوات المتاحة في تخصصك الحالي: <span className="text-primary font-bold">{profile?.label || profile?.role}</span>.
+        </p>
+        <Button asChild className="mt-10 royal-button px-12 h-14">
+          <Link href="/admin">العودة للوحة القيادة</Link>
         </Button>
       </div>
     );
@@ -100,28 +105,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
         <Sidebar className="border-l border-border bg-card hidden md:flex" side="right">
-          <SidebarHeader className="p-8 border-b text-center">
-            <span className="handwritten-logo block mb-2 text-2xl">XMOOD STORE</span>
-            <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/20 text-primary px-3 py-0.5 rounded-full">
+          <SidebarHeader className="p-10 border-b text-center">
+            <span className="handwritten-logo block mb-3 text-3xl">XMOOD STORE</span>
+            <Badge variant="outline" className="text-[9px] uppercase font-black border-primary/30 text-primary px-4 py-1 rounded-full bg-primary/5">
               {profile?.label || profile?.role}
             </Badge>
           </SidebarHeader>
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-5">
             <SidebarGroup>
-               <SidebarGroupLabel className="text-right px-4 mb-2 text-[8px] font-black uppercase text-muted-foreground tracking-widest">
-                 قسم التخصص: {profile?.role}
+               <SidebarGroupLabel className="text-right px-4 mb-4 text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">
+                 قائمة مهام التخصص
                </SidebarGroupLabel>
-               <SidebarMenu className="gap-2">
+               <SidebarMenu className="gap-2.5">
                  {visibleSections.map((item) => (
                    <SidebarMenuItem key={item.href}>
                      <SidebarMenuButton 
                        asChild 
                        isActive={pathname === item.href}
-                       className={`h-12 px-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-primary-foreground shadow-lg' : 'hover:bg-primary/5 text-muted-foreground'}`}
+                       className={`h-14 px-6 rounded-2xl transition-all duration-300 ${pathname === item.href ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-[1.02]' : 'hover:bg-primary/10 text-muted-foreground'}`}
                      >
-                       <Link href={item.href} className="flex flex-row-reverse items-center gap-4 w-full">
-                         <item.icon size={18} />
-                         <span className="font-bold text-[11px] uppercase tracking-wider">{item.label}</span>
+                       <Link href={item.href} className="flex flex-row-reverse items-center gap-5 w-full">
+                         <item.icon size={20} className={pathname === item.href ? 'text-white' : 'text-primary'} />
+                         <span className="font-black text-xs uppercase tracking-wider">{item.label}</span>
                        </Link>
                      </SidebarMenuButton>
                    </SidebarMenuItem>
@@ -129,40 +134,42 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                </SidebarMenu>
             </SidebarGroup>
           </ScrollArea>
-          <div className="p-6 border-t bg-muted/5 space-y-3">
-            <Button asChild variant="outline" className="w-full h-11 rounded-xl text-[10px] font-black uppercase gap-2 border-border">
-              <Link href="/"><ArrowLeft size={16} /> الواجهة العامة</Link>
+          <div className="p-8 border-t bg-muted/5 space-y-4">
+            <Button asChild variant="outline" className="w-full h-12 rounded-xl text-[10px] font-black uppercase gap-3 border-border hover:bg-card">
+              <Link href="/"><ArrowLeft size={16} /> العودة للمتجر</Link>
             </Button>
-            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-11 rounded-xl text-red-500 font-black text-[10px] uppercase gap-2 hover:bg-red-500/5">
+            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-12 rounded-xl text-red-500 font-black text-[10px] uppercase gap-3 hover:bg-red-500/10">
               <LogOut size={16} /> خروج آمن
             </Button>
           </div>
         </Sidebar>
 
         <main className="flex-1 overflow-hidden flex flex-col relative">
-          <header className="h-16 md:h-20 border-b flex items-center justify-between px-6 md:px-10 bg-background/80 backdrop-blur-md z-40 sticky top-0">
-             <div className="flex items-center gap-4">
-                <Terminal size={18} className="text-primary" />
+          <header className="h-20 md:h-24 border-b flex items-center justify-between px-8 md:px-12 bg-background/90 backdrop-blur-xl z-40 sticky top-0">
+             <div className="flex items-center gap-5">
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
+                   <Terminal size={22} />
+                </div>
                 <div className="flex flex-col text-right">
-                   <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-foreground">وحدة التحكم التخصصية</span>
-                   <span className="text-[8px] text-muted-foreground uppercase">{profile?.role} Department Console</span>
+                   <span className="text-[11px] md:text-sm font-black uppercase tracking-widest text-foreground">وحدة التحكم السيادية</span>
+                   <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Professional Terminal</span>
                 </div>
              </div>
-             <div className="flex items-center gap-4">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-[10px] font-black px-4 py-1 rounded-full">Secure Session</Badge>
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]" />
+             <div className="flex items-center gap-5">
+                <Badge className="bg-green-500/10 text-green-600 border-none text-[9px] md:text-xs font-black px-5 py-1.5 rounded-full shadow-sm">Encrypted Session</Badge>
+                <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_#22c55e]" />
              </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-4 md:p-12 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-6 md:p-14 custom-scrollbar">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="max-w-6xl mx-auto pb-24"
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="max-w-7xl mx-auto pb-32"
               >
                 {children}
               </motion.div>

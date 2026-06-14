@@ -20,9 +20,11 @@ export function useUser() {
     "ADMIN@XMOOD.COM"
   ];
 
+  // القائمة الكاملة لرتب طاقم العمل المصرح لهم بدخول لوحة الإدارة
   const staffRoles = [
-    'owner', 'admin', 'gm', 'store_manager', 'design_manager', 
-    'designer', 'accountant', 'support', 'middleman', 'agent', 'community_mod'
+    'owner', 'admin', 'gm', 'community_admin', 'community_mod', 
+    'store_manager', 'design_manager', 'designer', 'accountant', 
+    'support', 'middleman', 'agent'
   ];
 
   useEffect(() => {
@@ -47,7 +49,7 @@ export function useUser() {
       try {
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         
-        // جلب البيانات لأول مرة للتأكد من وجود المستند
+        // محاولة جلب الملف الشخصي
         const docSnap = await getDoc(userDocRef);
         
         if (!docSnap.exists()) {
@@ -65,20 +67,17 @@ export function useUser() {
             affinityPoints: isMaster ? 1000 : 50
           };
           await setDoc(userDocRef, initialProfile);
-          if (isMounted) {
-            setProfile(initialProfile);
-          }
+          if (isMounted) setProfile(initialProfile);
         } else {
           const currentData = docSnap.data() as UserProfile;
+          // تحديث رتبة المالك إذا كان البريد في القائمة العليا
           if (isMaster && currentData.role !== 'owner') {
             await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
           }
-          if (isMounted) {
-            setProfile({ ...currentData, uid: docSnap.id });
-          }
+          if (isMounted) setProfile({ ...currentData, uid: docSnap.id });
         }
 
-        // المستمع اللحظي للتحديثات هو المصدر النهائي والوحيد لتغيير حالة التحميل
+        // الاستماع للتغييرات اللحظية لضمان ثبات الصلاحيات
         const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
           if (isMounted) {
             if (snapshot.exists()) {
@@ -87,16 +86,16 @@ export function useUser() {
             } else {
               setProfile(null);
             }
-            setLoading(false); 
+            setLoading(false); // تم جلب البيانات بنجاح، ننهي حالة التحميل
           }
         }, (err) => {
-          console.error("Firestore Profile Sync Error:", err);
+          console.error("Firestore Sync Error:", err);
           if (isMounted) setLoading(false);
         });
 
         return unsubscribe;
       } catch (err) {
-        console.error("Profile Sync Logic Error:", err);
+        console.error("Profile Logic Error:", err);
         if (isMounted) setLoading(false);
         return () => {};
       }
@@ -107,12 +106,12 @@ export function useUser() {
     return () => {
       isMounted = false;
       unsubPromise.then(unsub => {
-        if (unsub) unsub();
+        if (typeof unsub === 'function') unsub();
       });
     };
   }, [user, db]);
 
-  // التحقق من أن المستخدم هو طاقم عمل
+  // التحقق من أن المستخدم يملك رتبة إدارية أو تشغيلية
   const isStaff = !!(user && (
     MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || 
     (profile?.role && staffRoles.includes(profile.role))
