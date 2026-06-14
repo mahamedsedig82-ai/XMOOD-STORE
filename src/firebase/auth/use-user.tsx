@@ -13,7 +13,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // MASTER ADMINS - يتم منحهم رتبة مالك سيادي تلقائياً عند الدخول
+  // MASTER ADMINS - Sovereignty List
   const MASTER_ADMINS = [
     "MAHAMEDFK3@GMAIL.COM", 
     "XMOODSTORE.SUPPORT@GMAIL.COM",
@@ -49,12 +49,12 @@ export function useUser() {
         if (!docSnap.exists()) {
           const initialProfile: UserProfile = {
             uid: user.uid,
-            displayName: user.displayName || user.email?.split('@')[0] || "عضو معتمد",
+            displayName: user.displayName || user.email?.split('@')[0] || "عضو",
             fullName: user.displayName || "",
             email: user.email || "",
             walletBalance: isMaster ? 999999 : 0,
             role: isMaster ? 'owner' : 'user',
-            label: isMaster ? 'المدير العام للمنصة' : 'عضو بريميوم',
+            label: isMaster ? 'المدير العام' : 'عضو موثق',
             photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
             createdAt: new Date().toISOString(),
             isVerified: user.emailVerified,
@@ -64,31 +64,24 @@ export function useUser() {
           setProfile(initialProfile);
         } else {
           const currentData = docSnap.data() as UserProfile;
-          // Force Owner role for master admins
+          // Force master role if needed
           if (isMaster && currentData.role !== 'owner') {
-            const updatePayload = { 
-              role: 'owner', 
-              label: 'المدير العام للمنصة',
-              isVerified: true 
-            };
-            await updateDoc(userDocRef, updatePayload);
-            setProfile({ ...currentData, ...updatePayload, uid: user.uid });
-          } else {
-            setProfile({ ...currentData, uid: user.uid });
+            await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
           }
+          setProfile({ ...currentData, uid: user.uid });
         }
 
-        // Setup real-time listener for profile updates to ensure role changes are instant
+        // Keep profile in sync
         unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
           if (snapshot.exists()) {
             const data = snapshot.data() as UserProfile;
             setProfile({ ...data, uid: snapshot.id });
           }
+          setLoading(false);
         });
 
       } catch (err) {
-        console.error("Profile Sync Error:", err);
-      } finally {
+        console.error("Critical Auth Sync Error:", err);
         setLoading(false);
       }
     };

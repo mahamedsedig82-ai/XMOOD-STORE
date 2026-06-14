@@ -26,19 +26,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // Secure Auth Guard - يمنع الطرد العشوائي ويتحقق من الصلاحيات بعد اكتمال التحميل
+  // Secure Auth Guard - Rigid Implementation
   useEffect(() => {
     if (!loading && isClient) {
       if (!user) {
         router.replace('/login');
       } else if (!isAdmin) {
+        // Only redirect to home if we are SURE they are not an admin
         router.replace('/');
       }
     }
   }, [loading, user, isAdmin, isClient, router]);
 
-  // شاشة التحميل السيادية - تمنع وميض الواجهة أو الطرد قبل تحميل الصلاحية
-  if (!isClient || loading || (!isAdmin && user)) return (
+  // Sovereign Loading Experience - Prevents flickering or unauthorized access
+  if (!isClient || loading) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6" dir="rtl">
       <div className="relative">
         <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -53,8 +54,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </div>
   );
 
-  // منع عرض المحتوى إذا كان المستخدم غير مخول نهائياً
-  if (!isAdmin) return null;
+  // Absolute blocker if unauthorized
+  if (!user || !isAdmin) return null;
 
   const adminSections = [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
