@@ -3,7 +3,7 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Menu
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -43,11 +43,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [profile, loading, user, router, isClient]);
 
-  // Loading Screen for Auth Protection
   if (!isClient || loading || isAuthorized === null) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-4">
       <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] animate-pulse">Authenticating Sovereign Access...</p>
+      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] animate-pulse text-center px-6">تحميل مركز العمليات السيادي...</p>
     </div>
   );
 
@@ -74,11 +73,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <SidebarMenuButton 
           asChild 
           isActive={pathname === item.href}
-          className={`h-11 px-4 rounded-xl transition-all ${pathname === item.href ? 'bg-primary text-white shadow-md' : 'hover:bg-primary/5 text-muted-foreground'}`}
+          className={`h-12 px-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-white shadow-lg' : 'hover:bg-primary/5 text-muted-foreground'}`}
         >
-          <Link href={item.href} className="flex flex-row-reverse items-center gap-3 w-full">
-            <item.icon size={16} />
-            <span className="font-bold text-[10px] uppercase tracking-wider">{item.label}</span>
+          <Link href={item.href} className="flex flex-row-reverse items-center gap-4 w-full">
+            <item.icon size={18} />
+            <span className="font-bold text-[11px] uppercase tracking-wider">{item.label}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -86,8 +85,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-background" dir="rtl">
-        <Sidebar className="border-l border-border bg-card" side="right">
+      <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
+        <Sidebar className="border-l border-border bg-card hidden md:flex" side="right">
           <SidebarHeader className="p-8 border-b text-center">
             <span className="handwritten-logo block mb-2 text-2xl">XMOOD STORE</span>
             <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/20 text-primary px-3 py-0.5 rounded-full">{profile?.role}</Badge>
@@ -95,42 +94,50 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <ScrollArea className="flex-1 p-4">
             <SidebarGroup className="mb-6">
                <SidebarGroupLabel className="text-right px-4 mb-2 text-[8px] font-black uppercase text-muted-foreground tracking-widest">العمليات المركزية</SidebarGroupLabel>
-               <SidebarMenu className="gap-1">{renderMenuItems(adminSections)}</SidebarMenu>
+               <SidebarMenu className="gap-2">{renderMenuItems(adminSections)}</SidebarMenu>
             </SidebarGroup>
             <SidebarGroup>
                <SidebarGroupLabel className="text-right px-4 mb-2 text-[8px] font-black uppercase text-muted-foreground tracking-widest">الأدوات والتحكم</SidebarGroupLabel>
-               <SidebarMenu className="gap-1">{renderMenuItems(toolsSections)}</SidebarMenu>
+               <SidebarMenu className="gap-2">{renderMenuItems(toolsSections)}</SidebarMenu>
             </SidebarGroup>
           </ScrollArea>
-          <div className="p-4 border-t bg-muted/5 space-y-2">
-            <Button asChild variant="outline" className="w-full h-10 rounded-xl text-[9px] font-black uppercase gap-2 border-border">
-              <Link href="/"><ArrowLeft size={14} /> الواجهة العامة</Link>
+          <div className="p-6 border-t bg-muted/5 space-y-3">
+            <Button asChild variant="outline" className="w-full h-11 rounded-xl text-[10px] font-black uppercase gap-2 border-border">
+              <Link href="/"><ArrowLeft size={16} /> الواجهة العامة</Link>
             </Button>
-            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-10 rounded-xl text-red-500 font-black text-[9px] uppercase gap-2 hover:bg-red-500/5">
-              <LogOut size={14} /> خروج سيادي
+            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-11 rounded-xl text-red-500 font-black text-[10px] uppercase gap-2 hover:bg-red-500/5">
+              <LogOut size={16} /> خروج سيادي
             </Button>
           </div>
         </Sidebar>
-        <main className="flex-1 overflow-hidden flex flex-col">
-          <header className="h-14 border-b flex items-center justify-between px-8 bg-background/50 backdrop-blur-md z-20">
-             <div className="flex items-center gap-3">
-                <Terminal size={14} className="text-primary" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Admin Command Console</span>
+
+        <main className="flex-1 overflow-hidden flex flex-col relative">
+          <header className="h-16 md:h-20 border-b flex items-center justify-between px-6 md:px-10 bg-background/80 backdrop-blur-md z-40 sticky top-0">
+             <div className="flex items-center gap-4">
+                <div className="md:hidden">
+                   {/* Mobile Menu Trigger Placeholder or integrated inside layout */}
+                   <Terminal size={18} className="text-primary" />
+                </div>
+                <div className="flex flex-col">
+                   <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-foreground">مركز التحكم</span>
+                   <span className="text-[8px] text-muted-foreground uppercase">Sovereign Admin Console</span>
+                </div>
              </div>
-             <div className="flex items-center gap-3">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] font-black px-3">PROTECTED</Badge>
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+             <div className="flex items-center gap-4">
+                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-[10px] font-black px-4 py-1 rounded-full">ACTIVE SECURE</Badge>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]" />
              </div>
           </header>
-          <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+
+          <div className="flex-1 overflow-y-auto p-4 md:p-12 custom-scrollbar">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="max-w-6xl mx-auto pb-20"
+                transition={{ duration: 0.3 }}
+                className="max-w-6xl mx-auto pb-24"
               >
                 {children}
               </motion.div>

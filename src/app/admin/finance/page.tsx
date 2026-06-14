@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -110,57 +109,55 @@ export default function AdminFinanceCentralBank() {
   };
 
   return (
-    <div className="space-y-12 animate-fade-in" dir="rtl">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <h1 className="text-5xl font-headline font-bold gold-text">الخزينة والبنك المركزي</h1>
-          <p className="text-muted-foreground mt-2 font-bold uppercase tracking-widest text-[10px] italic">Global Monetary & Treasury Command</p>
+    <div className="space-y-10 md:space-y-16 animate-fade-in" dir="rtl">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 px-2">
+        <div className="space-y-2">
+          <h1 className="text-3xl md:text-5xl font-headline font-black gold-text">الخزينة والبنك المركزي</h1>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-[9px] md:text-[10px] italic">Global Monetary & Treasury Command</p>
         </div>
-        <div className="flex gap-4">
-           <Badge variant="outline" className="border-green-500/20 text-green-500 px-6 py-2 rounded-full font-bold">MONETARY SYSTEM: ONLINE</Badge>
-        </div>
+        <Badge variant="outline" className="border-green-500/20 text-green-500 px-6 py-2 rounded-full font-black text-[9px] uppercase tracking-widest shadow-sm">MONETARY SYSTEM: ONLINE</Badge>
       </header>
 
-      {/* Treasury Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card className="luxury-card border-none bg-primary text-black p-10 relative overflow-hidden">
-           <Landmark className="absolute -right-10 -bottom-10 opacity-10 w-64 h-64" />
+      {/* Treasury Cards - Responsive Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+        <Card className="luxury-card border-none bg-primary text-black p-8 md:p-12 relative overflow-hidden shadow-2xl">
+           <Landmark className="absolute -right-10 -bottom-10 opacity-10 w-48 md:w-64 h-48 md:h-64" />
            <div className="relative z-10">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4">إجمالي السيولة العائمة (أرصدة الأعضاء)</p>
-              <h2 className="text-6xl font-black tracking-tighter mb-4">{formatUSD(stats.floating)}</h2>
-              <div className="flex items-center gap-2 text-xs font-bold opacity-60">
-                 <RefreshCw size={14} /> يتم التحديث لحظياً من قاعدة البيانات
+              <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-70">إجمالي السيولة العائمة (أرصدة الأعضاء)</p>
+              <h2 className="text-4xl md:text-7xl font-black tracking-tighter mb-4">{formatUSD(stats.floating)}</h2>
+              <div className="flex items-center gap-2 text-[9px] font-black uppercase opacity-60">
+                 <RefreshCw size={14} className="animate-spin-slow" /> جاري المزامنة مع السيادة الرقمية
               </div>
            </div>
         </Card>
-        <Card className="luxury-card border-none bg-zinc-900 text-white p-10 relative overflow-hidden">
-           <TrendingUp className="absolute -right-10 -bottom-10 opacity-10 w-64 h-64 text-primary" />
+        <Card className="luxury-card border-none bg-zinc-950 text-white p-8 md:p-12 relative overflow-hidden shadow-2xl border border-white/5">
+           <TrendingUp className="absolute -right-10 -bottom-10 opacity-10 w-48 md:w-64 h-48 md:h-64 text-primary" />
            <div className="relative z-10">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-zinc-400">صافي التدفقات النقدية (المبيعات)</p>
-              <h2 className="text-6xl font-black tracking-tighter mb-4 text-primary">{formatUSD(stats.profit)}</h2>
-              <p className="text-xs font-bold text-zinc-500">إجمالي المبيعات المكتملة عبر المنصة</p>
+              <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-zinc-500">صافي التدفقات النقدية (المبيعات)</p>
+              <h2 className="text-4xl md:text-7xl font-black tracking-tighter mb-4 text-primary">{formatUSD(stats.profit)}</h2>
+              <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">إجمالي المبيعات المكتملة عبر المنصة</p>
            </div>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="space-y-10 lg:col-span-1">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+        <div className="space-y-8 md:space-y-12 lg:col-span-1">
           {/* USD Rate Control */}
-          <Card className="luxury-card border-none bg-primary/5">
-            <CardHeader className="p-8 border-b border-primary/10">
-              <CardTitle className="flex items-center gap-4 text-xl font-bold">
+          <Card className="luxury-card border-none bg-primary/5 shadow-xl">
+            <CardHeader className="p-6 md:p-8 border-b border-primary/10">
+              <CardTitle className="flex items-center gap-4 text-lg md:text-xl font-black">
                 <DollarSign className="text-primary" /> سعر الصرف السيادي
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8 space-y-6">
+            <CardContent className="p-6 md:p-8 space-y-8">
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase mb-1">السعر الحالي (SDG)</p>
-                  <p className="text-4xl font-black text-primary">{config?.siteInfo?.usdRate || "---"}</p>
+                  <p className="text-[8px] md:text-[10px] font-black text-muted-foreground uppercase mb-1">السعر الحالي (SDG)</p>
+                  <p className="text-3xl md:text-5xl font-black text-primary tracking-tighter">{config?.siteInfo?.usdRate || "---"}</p>
                 </div>
                 <div className="text-left">
-                  <p className="text-[8px] font-bold text-muted-foreground uppercase">آخر تحديث</p>
-                  <p className="text-[10px] font-bold">{config?.siteInfo?.lastRateUpdate ? new Date(config.siteInfo.lastRateUpdate).toLocaleDateString('ar-EG') : '---'}</p>
+                  <p className="text-[7px] md:text-[8px] font-bold text-muted-foreground uppercase">آخر تحديث</p>
+                  <p className="text-[9px] md:text-[10px] font-black">{config?.siteInfo?.lastRateUpdate ? new Date(config.siteInfo.lastRateUpdate).toLocaleDateString('ar-EG') : '---'}</p>
                 </div>
               </div>
               <div className="pt-6 border-t border-primary/10 space-y-4">
@@ -169,47 +166,56 @@ export default function AdminFinanceCentralBank() {
                   placeholder="أدخل السعر الجديد..." 
                   value={newRate}
                   onChange={e => setNewRate(e.target.value)}
-                  className="bg-background border-primary/20 h-12 rounded-xl text-center font-bold"
+                  className="bg-background border-primary/20 h-14 rounded-2xl text-center font-black text-lg shadow-sm"
                 />
-                <Button onClick={handleUpdateRate} disabled={isProcessing} className="w-full h-12 royal-button">
-                   تحديث سعر الصرف
+                <Button onClick={handleUpdateRate} disabled={isProcessing} className="w-full h-14 royal-button shadow-lg">
+                   تحديث سعر الصرف المركزي
                 </Button>
               </div>
             </CardContent>
           </Card>
 
           {/* Manual Deposit */}
-          <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl">
-            <CardHeader className="p-8 bg-muted/20 border-b">
-              <CardTitle className="flex items-center gap-4 text-xl font-bold">
-                <Banknote className="text-primary" /> إيداع رصيد يدوي
+          <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl shadow-xl">
+            <CardHeader className="p-6 md:p-8 bg-muted/20 border-b">
+              <CardTitle className="flex items-center gap-4 text-lg md:text-xl font-black">
+                <Banknote className="text-primary" /> تسوية الأرصدة يدوياً
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8 space-y-8">
+            <CardContent className="p-6 md:p-8 space-y-8">
               <div className="flex gap-3">
                 <Input 
-                  placeholder="بريد العضو..." 
+                  placeholder="بريد العضو الموثق..." 
                   value={searchEmail}
                   onChange={e => setSearchEmail(e.target.value)}
-                  className="bg-muted/30 border-none h-14 rounded-xl px-6 font-bold"
+                  className="bg-muted/40 border-none h-14 rounded-2xl px-6 font-bold shadow-sm flex-1"
                 />
-                <Button onClick={handleSearch} disabled={isProcessing} className="h-14 w-14 rounded-xl p-0 bg-primary text-black">
-                  {isProcessing ? <Loader2 className="animate-spin" /> : <Search size={22} />}
+                <Button onClick={handleSearch} disabled={isProcessing} className="h-14 w-14 rounded-2xl p-0 bg-primary text-black shadow-lg">
+                  {isProcessing ? <Loader2 className="animate-spin" /> : <Search size={24} />}
                 </Button>
               </div>
 
               {targetUser && (
-                <div className="p-6 bg-primary/5 rounded-[2rem] border border-primary/10 space-y-6 animate-fade-up">
+                <div className="p-6 md:p-8 bg-primary/5 rounded-[2.5rem] border border-primary/10 space-y-8 animate-fade-up shadow-inner">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-bold text-lg">{targetUser.displayName}</h3>
-                    <p className="font-black text-xl text-primary">{formatUSD(targetUser.walletBalance || 0)}</p>
+                    <div className="flex flex-col">
+                       <span className="text-[8px] font-black text-muted-foreground uppercase mb-1">صاحب الحساب</span>
+                       <h3 className="font-black text-base md:text-lg">{targetUser.displayName}</h3>
+                    </div>
+                    <div className="text-left">
+                       <span className="text-[8px] font-black text-muted-foreground uppercase mb-1">الرصيد الحالي</span>
+                       <p className="font-black text-lg md:text-2xl text-primary tracking-tighter">{formatUSD(targetUser.walletBalance || 0)}</p>
+                    </div>
                   </div>
                   
-                  <Input type="number" placeholder="المبلغ (USD)..." value={amount} onChange={e => setAmount(e.target.value)} className="h-14 text-center text-2xl font-black bg-background border-primary/20 rounded-xl" />
+                  <div className="space-y-3">
+                    <label className="text-[9px] font-black text-muted-foreground uppercase pr-2">المبلغ المطلوب تعديله (USD)</label>
+                    <Input type="number" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} className="h-16 text-center text-3xl font-black bg-background border-primary/20 rounded-2xl shadow-sm text-primary" />
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <Button onClick={() => handleUpdateBalance('deposit')} disabled={isProcessing} className="bg-green-600 hover:bg-green-700 text-white font-black h-12 rounded-xl">إيداع</Button>
-                    <Button onClick={() => handleUpdateBalance('withdrawal')} disabled={isProcessing} variant="destructive" className="font-black h-12 rounded-xl">خصم</Button>
+                    <Button onClick={() => handleUpdateBalance('deposit')} disabled={isProcessing} className="bg-green-600 hover:bg-green-700 text-white font-black h-14 rounded-2xl shadow-lg">إيداع سيادي</Button>
+                    <Button onClick={() => handleUpdateBalance('withdrawal')} disabled={isProcessing} variant="destructive" className="font-black h-14 rounded-2xl shadow-lg">خصم إداري</Button>
                   </div>
                 </div>
               )}
@@ -217,45 +223,45 @@ export default function AdminFinanceCentralBank() {
           </Card>
         </div>
 
-        <Card className="luxury-card border-none lg:col-span-2 overflow-hidden bg-card/60 backdrop-blur-xl">
-          <CardHeader className="p-8 border-b flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-4 text-xl font-bold">
-              <History className="text-primary" /> دفتر الأستاذ المالي
+        <Card className="luxury-card border-none lg:col-span-2 overflow-hidden bg-card/60 backdrop-blur-xl shadow-2xl">
+          <CardHeader className="p-6 md:p-10 border-b flex flex-row items-center justify-between bg-muted/5">
+            <CardTitle className="flex items-center gap-4 text-lg md:text-xl font-black">
+              <History className="text-primary" /> سجل التدفقات المالية PRO
             </CardTitle>
-            <Badge variant="outline" className="text-muted-foreground uppercase text-[8px] font-black px-4">Live Master Ledger</Badge>
+            <Badge variant="outline" className="text-muted-foreground uppercase text-[8px] font-black px-4 py-1 rounded-full border-border/50">Master Ledger Active</Badge>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="max-h-[700px]">
+            <ScrollArea className="max-h-[800px] responsive-table">
               <Table>
                 <TableHeader className="bg-muted/40 sticky top-0 z-20">
-                  <TableRow>
-                    <TableHead className="text-right py-6 pr-10 font-black text-[9px] uppercase">التوقيت</TableHead>
-                    <TableHead className="text-right font-black text-[9px] uppercase">التفاصيل</TableHead>
-                    <TableHead className="text-right font-black text-[9px] uppercase">النوع</TableHead>
-                    <TableHead className="text-left pl-10 font-black text-[9px] uppercase">المبلغ</TableHead>
+                  <TableRow className="border-b border-border/50">
+                    <TableHead className="text-right py-6 pr-10 font-black text-[9px] md:text-[10px] uppercase text-zinc-500">التوقيت المركزي</TableHead>
+                    <TableHead className="text-right font-black text-[9px] md:text-[10px] uppercase text-zinc-500">تفاصيل العملية</TableHead>
+                    <TableHead className="text-right font-black text-[9px] md:text-[10px] uppercase text-zinc-500">التصنيف</TableHead>
+                    <TableHead className="text-left pl-10 font-black text-[9px] md:text-[10px] uppercase text-zinc-500">القيمة المالية</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {transLoading ? (
-                    <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                    <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
                   ) : globalTransactions?.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center py-40 font-bold opacity-30">لا توجد سجلات مالية</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={4} className="text-center py-40 font-black text-muted-foreground uppercase tracking-widest opacity-30">لا توجد سجلات مالية مسجلة</TableCell></TableRow>
                   ) : globalTransactions?.map((t: any) => (
-                    <TableRow key={t.id} className="hover:bg-primary/5 border-border transition-all">
-                      <TableCell className="py-6 pr-10">
-                        <span className="text-xs font-bold block">{new Date(t.createdAt).toLocaleDateString('ar-EG')}</span>
-                        <span className="text-[8px] text-muted-foreground uppercase">{new Date(t.createdAt).toLocaleTimeString('ar-EG')}</span>
+                    <TableRow key={t.id} className="hover:bg-primary/5 border-b border-border/30 transition-all group">
+                      <TableCell className="py-6 pr-10" data-label="التوقيت">
+                        <span className="text-[11px] font-black block text-foreground">{new Date(t.createdAt).toLocaleDateString('ar-EG')}</span>
+                        <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-tighter">{new Date(t.createdAt).toLocaleTimeString('ar-EG')}</span>
                       </TableCell>
-                      <TableCell>
-                         <p className="text-[10px] font-mono font-bold uppercase">{t.userId?.substring(0,12)}...</p>
-                         <p className="text-[8px] text-muted-foreground italic truncate max-w-[150px]">{t.description}</p>
+                      <TableCell data-label="التفاصيل">
+                         <p className="text-[10px] font-mono font-black text-primary uppercase tracking-tighter mb-1">REF: {t.userId?.substring(0,14)}</p>
+                         <p className="text-[10px] text-muted-foreground font-bold leading-relaxed max-w-[220px]">{t.description}</p>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`rounded-full text-[8px] font-black uppercase px-3 ${t.type === 'deposit' ? 'text-green-500' : 'text-red-500'}`}>
+                      <TableCell data-label="النوع">
+                        <Badge variant="outline" className={`rounded-full text-[8px] font-black uppercase px-4 py-0.5 tracking-widest ${t.type === 'deposit' ? 'text-green-500 border-green-500/20 bg-green-500/5' : 'text-red-500 border-red-500/20 bg-red-500/5'}`}>
                           {t.type === 'deposit' ? 'إيداع' : 'سحب/شراء'}
                         </Badge>
                       </TableCell>
-                      <TableCell className={`text-left pl-10 font-black text-xl ${t.type === 'deposit' ? 'text-green-500' : 'text-red-500'}`}>
+                      <TableCell className={`text-left pl-10 font-black text-xl md:text-2xl tracking-tighter ${t.type === 'deposit' ? 'text-green-500' : 'text-red-500'}`} data-label="المبلغ">
                         {t.type === 'deposit' ? '+' : '-'}{formatUSD(t.amount)}
                       </TableCell>
                     </TableRow>
@@ -269,4 +275,3 @@ export default function AdminFinanceCentralBank() {
     </div>
   );
 }
-

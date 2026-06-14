@@ -56,9 +56,9 @@
   }
 }
 
-/* Luxury Components */
+/* Mobile Optimized Luxury Cards */
 .luxury-card {
-  @apply rounded-[1.5rem] border bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary/30 overflow-hidden relative;
+  @apply rounded-[1.25rem] md:rounded-[2rem] border bg-card shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary/30 overflow-hidden relative;
 }
 
 .gold-text {
@@ -73,29 +73,24 @@
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
+  @apply bg-primary text-primary-foreground font-bold rounded-xl px-4 md:px-8 py-3 md:py-4 shadow-md hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
 }
 
 .accent-button {
-  @apply bg-foreground text-background font-bold rounded-xl px-8 py-3 shadow-md hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
+  @apply bg-foreground text-background font-bold rounded-xl px-4 md:px-8 py-3 md:py-4 shadow-md hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
 }
 
-/* UI Image Control */
-img {
-  @apply object-cover;
-}
-
-.aspect-video-pro {
-  aspect-ratio: 16 / 9;
-}
-
-/* UI Indexing and Clarity */
-.responsive-table {
-  @apply w-full overflow-x-auto;
-}
-
+/* Mobile Responsive Table Transformation */
 @media (max-width: 768px) {
-  .responsive-table table, .responsive-table thead, .responsive-table tbody, .responsive-table th, .responsive-table td, .responsive-table tr {
+  .responsive-table {
+    @apply w-full;
+  }
+  .responsive-table table, 
+  .responsive-table thead, 
+  .responsive-table tbody, 
+  .responsive-table th, 
+  .responsive-table td, 
+  .responsive-table tr {
     display: block;
   }
   .responsive-table thead tr {
@@ -104,19 +99,34 @@ img {
     left: -9999px;
   }
   .responsive-table tr {
-    @apply mb-4 border rounded-2xl p-4 bg-card shadow-sm;
+    @apply mb-6 border border-border/50 rounded-3xl p-5 bg-card shadow-sm relative overflow-hidden;
   }
   .responsive-table td {
-    @apply flex justify-between items-center py-2 border-b last:border-0;
-    text-align: left;
+    @apply flex justify-between items-center py-3 border-b border-border/30 last:border-0 text-right;
   }
   .responsive-table td::before {
     content: attr(data-label);
-    @apply font-black text-[8px] uppercase text-muted-foreground mr-4 shrink-0;
+    @apply font-black text-[9px] uppercase text-muted-foreground ml-4 shrink-0 text-left;
+  }
+  .responsive-table td:last-child {
+    @apply justify-center pt-4;
+  }
+  .responsive-table td:last-child::before {
+    display: none;
   }
 }
 
-/* Custom Scrollbar */
+/* Touch friendly scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { @apply bg-transparent; }
 ::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full hover:bg-primary/40; }
+
+/* Section Spacing Fix for Mobile */
+.section-padding {
+  @apply px-4 md:px-12 py-10 md:py-24;
+}
+
+/* Header Text scaling */
+.font-headline {
+  @apply leading-[1.1] tracking-tight;
+}
