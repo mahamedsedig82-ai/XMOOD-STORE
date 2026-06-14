@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, getDoc, updateDoc, Unsubscribe } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 
@@ -39,7 +39,7 @@ export function useUser() {
     const userDocRef = doc(db, 'users', user.uid);
     let isMounted = true;
 
-    const syncProfile = async () => {
+    const syncProfile = async (): Promise<Unsubscribe | null> => {
       try {
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         
@@ -89,6 +89,7 @@ export function useUser() {
       } catch (err) {
         console.error("Critical Auth Sync Error:", err);
         if (isMounted) setLoading(false);
+        return null;
       }
     };
 
@@ -96,7 +97,11 @@ export function useUser() {
 
     return () => {
       isMounted = false;
-      unsubscribePromise.then(unsub => unsubscribe && unsub?.());
+      unsubscribePromise.then(unsub => {
+        if (typeof unsub === 'function') {
+          unsub();
+        }
+      });
     };
   }, [user, db]);
 
