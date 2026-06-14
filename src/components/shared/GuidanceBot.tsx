@@ -2,11 +2,12 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Sparkles, X, Heart, Cpu } from "lucide-react";
+import { Sparkles, X, Heart, Cpu, Send, Bot, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function GuidanceBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +21,6 @@ export function GuidanceBot() {
   useEffect(() => {
     setIsMounted(true);
     const timer = setTimeout(() => {
-      // Don't auto-open on small screens to avoid blocking UI
       if (window.innerWidth > 768 && !isOpen) setIsOpen(true);
     }, 4000);
     return () => clearTimeout(timer);
@@ -30,7 +30,7 @@ export function GuidanceBot() {
     if (config?.bot?.greeting) {
       setMessage(config.bot.greeting);
     } else {
-      setMessage("مرحباً بك! أنا المحلل الذكي لمتجر XMOOD. كيف يمكنني مساعدتك في تحليل خياراتك اليوم؟ ✨");
+      setMessage("مرحباً بك! أنا المحلل الذكي لمتجر XMOOD. كيف يمكنني مساعدتك اليوم؟ ✨");
     }
   }, [config]);
 
@@ -51,6 +51,8 @@ export function GuidanceBot() {
     setMessage(randomTip);
   };
 
+  const botColor = config?.bot?.primaryColor || "var(--primary)";
+
   return (
     <div className="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-[90]" dir="rtl">
       <AnimatePresence>
@@ -59,36 +61,54 @@ export function GuidanceBot() {
             initial={{ opacity: 0, scale: 0.8, y: 50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 50 }}
-            className="mb-4 w-[280px] md:w-80 luxury-card p-5 md:p-6 border-primary/20 relative shadow-2xl bg-zinc-950/95 backdrop-blur-3xl overflow-hidden"
+            className="mb-4 w-[300px] md:w-96 luxury-card p-0 border-primary/20 relative shadow-2xl bg-card/95 backdrop-blur-3xl overflow-hidden"
           >
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-primary to-red-600" />
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="absolute top-4 right-4 text-zinc-500 hover:text-white"
-            >
-              <X size={14} />
-            </button>
-            <div className="flex gap-3 mb-4 items-center">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                <Cpu size={16} />
+            <div className="p-6 bg-primary/10 border-b border-primary/20 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                   <Avatar className="w-12 h-12 border-2 border-primary/30">
+                      <AvatarImage src={config?.bot?.avatarUrl} />
+                      <AvatarFallback className="bg-primary text-black font-black">
+                         <Bot size={24} />
+                      </AvatarFallback>
+                   </Avatar>
+                   <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                </div>
+                <div>
+                   <p className="text-[10px] font-black text-primary uppercase tracking-widest">{config?.bot?.name || "X-ANALYST"}</p>
+                   <p className="text-[8px] text-muted-foreground font-bold">مستشارك الرقمي المعتمد</p>
+                </div>
               </div>
-              <div className="text-right">
-                 <p className="text-[9px] font-black text-primary uppercase">XMOOD ANALYST</p>
-                 <p className="text-[7px] text-zinc-500 font-bold">المحلل الرقمي الذكي</p>
-              </div>
-            </div>
-            <p className="text-[11px] font-bold leading-relaxed text-zinc-300 mb-4 min-h-[2.5rem]">
-              {message}
-            </p>
-            <div className="flex justify-between items-center border-t border-white/5 pt-4">
-              <Button 
-                onClick={handleNextTip}
-                variant="ghost" 
-                className="text-[9px] font-black text-zinc-500 hover:text-primary p-0 h-auto"
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="text-zinc-500 hover:text-primary transition-colors p-2"
               >
-                تحليل آخر؟ 💡
-              </Button>
-              <Heart size={12} className="text-red-600 fill-red-600 animate-pulse" />
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-6">
+               <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10">
+                  <p className="text-sm font-bold leading-relaxed text-foreground min-h-[3rem]">
+                    {message}
+                  </p>
+               </div>
+               
+               <div className="grid grid-cols-2 gap-3">
+                  <Button variant="outline" className="h-10 text-[9px] font-black uppercase rounded-xl border-primary/20 text-primary" onClick={handleNextTip}>
+                     نصيحة أخرى 💡
+                  </Button>
+                  <Button asChild className="h-10 text-[9px] font-black uppercase rounded-xl royal-button">
+                     <a href={`https://wa.me/${config?.contact?.whatsapp?.replace(/\+/g, '')}`} target="_blank">
+                        دعم بشري 👨‍💻
+                     </a>
+                  </Button>
+               </div>
+            </div>
+
+            <div className="px-8 pb-8 flex items-center justify-between opacity-50">
+               <span className="text-[8px] font-black uppercase tracking-[0.3em]">AI Core Powered</span>
+               <Heart size={10} className="text-red-500 fill-current animate-pulse" />
             </div>
           </motion.div>
         )}
@@ -98,12 +118,16 @@ export function GuidanceBot() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative h-12 w-12 md:h-16 md:px-6 bg-zinc-950 rounded-2xl flex items-center justify-center md:justify-start gap-3 shadow-2xl shadow-primary/20 border border-primary/30 group"
+        className="relative h-14 w-14 md:h-20 md:w-20 bg-primary rounded-3xl flex items-center justify-center shadow-2xl shadow-primary/40 border-4 border-background group"
       >
-        <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
-          <Sparkles size={16} />
+        <div className="text-black group-hover:scale-110 transition-transform">
+           {isOpen ? <MessageCircle size={32} /> : <Bot size={36} />}
         </div>
-        <span className="hidden md:block text-[10px] font-black text-white uppercase tracking-widest">X-ANALYST</span>
+        {!isOpen && (
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-background animate-bounce">
+            1
+          </div>
+        )}
       </motion.button>
     </div>
   );

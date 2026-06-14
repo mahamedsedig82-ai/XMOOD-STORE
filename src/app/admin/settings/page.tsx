@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
   Palette, Globe, Save, Loader2, Phone, Instagram, 
   Mail, Megaphone, Sparkles, Layout, MessageSquare, 
   ShieldCheck, Zap, Facebook, Youtube, Clock,
-  Send, Info, DollarSign, Image as ImageIcon, Store, Monitor
+  Send, Info, DollarSign, Image as ImageIcon, Store, Monitor, Cpu
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,6 +54,16 @@ export default function AdminSettingsUniversalControl() {
       tiktok: "",
       youtube: "",
       workHours: "24/7 Professional Support"
+    },
+    bot: {
+      name: "X-ANALYST",
+      avatarUrl: "",
+      greeting: "مرحباً بك! أنا المحلل الذكي لمتجر XMOOD. كيف يمكنني مساعدتك اليوم؟",
+      personality: "professional",
+      primaryColor: "#d4af37",
+      tip1: "بناءً على تحليل المبيعات، قسم شحن الألعاب هو الأكثر طلباً حالياً. 🎮",
+      tip2: "أنصحك بشحن المحفظة مسبقاً لتفادي ضياع العروض المحدودة. 💸",
+      tip3: "نظام التحويل لدينا يخضع لبروتوكول أمان عالٍ لضمان سلامة رصيدك. 🚀"
     }
   });
 
@@ -65,7 +75,8 @@ export default function AdminSettingsUniversalControl() {
         appearance: { ...prev.appearance, ...config.appearance },
         siteInfo: { ...prev.siteInfo, ...config.siteInfo },
         pageContent: { ...prev.pageContent, ...config.pageContent },
-        contact: { ...prev.contact, ...config.contact }
+        contact: { ...prev.contact, ...config.contact },
+        bot: { ...prev.bot, ...config.bot }
       }));
     }
   }, [config]);
@@ -108,6 +119,9 @@ export default function AdminSettingsUniversalControl() {
           <TabsTrigger value="site" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest py-4">
             <Globe size={16} className="ml-2" /> محتوى الصفحات
           </TabsTrigger>
+          <TabsTrigger value="bot" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest py-4">
+            <Cpu size={16} className="ml-2" /> المساعد الذكي
+          </TabsTrigger>
           <TabsTrigger value="finance" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest py-4">
             <DollarSign size={16} className="ml-2" /> الإعدادات المالية
           </TabsTrigger>
@@ -137,6 +151,33 @@ export default function AdminSettingsUniversalControl() {
               </div>
             </div>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="bot">
+           <Card className="luxury-card p-10 space-y-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                 <div className="space-y-4">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">اسم المساعد الذكي</Label>
+                    <Input value={form.bot.name} onChange={e => setForm({...form, bot: {...form.bot, name: e.target.value}})} className="h-14 bg-muted border-none rounded-xl font-bold" />
+                 </div>
+                 <div className="space-y-4">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">رابط صورة المساعد</Label>
+                    <Input value={form.bot.avatarUrl} onChange={e => setForm({...form, bot: {...form.bot, avatarUrl: e.target.value}})} placeholder="https://..." className="h-14 bg-muted border-none rounded-xl" />
+                 </div>
+                 <div className="space-y-4 col-span-full">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">الرسالة الترحيبية</Label>
+                    <Textarea value={form.bot.greeting} onChange={e => setForm({...form, bot: {...form.bot, greeting: e.target.value}})} className="bg-muted border-none rounded-xl min-h-[100px]" />
+                 </div>
+                 <div className="space-y-4">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">نصيحة إرشادية 1</Label>
+                    <Input value={form.bot.tip1} onChange={e => setForm({...form, bot: {...form.bot, tip1: e.target.value}})} className="h-12 bg-muted border-none rounded-xl" />
+                 </div>
+                 <div className="space-y-4">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">نصيحة إرشادية 2</Label>
+                    <Input value={form.bot.tip2} onChange={e => setForm({...form, bot: {...form.bot, tip2: e.target.value}})} className="h-12 bg-muted border-none rounded-xl" />
+                 </div>
+              </div>
+           </Card>
         </TabsContent>
 
         <TabsContent value="site">
