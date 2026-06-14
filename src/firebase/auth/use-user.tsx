@@ -42,8 +42,9 @@ export function useUser() {
       try {
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         
-        // Initial fetch to speed up UI
+        // جلب البيانات لأول مرة للتأكد من وجود المستند
         const docSnap = await getDoc(userDocRef);
+        
         if (!docSnap.exists()) {
           const initialProfile: UserProfile = {
             uid: user.uid,
@@ -59,19 +60,24 @@ export function useUser() {
             affinityPoints: isMaster ? 1000 : 50
           };
           await setDoc(userDocRef, initialProfile);
-          if (isMounted) setProfile(initialProfile);
+          if (isMounted) {
+            setProfile(initialProfile);
+            setLoading(false);
+          }
         } else {
           const currentData = docSnap.data() as UserProfile;
           if (isMaster && currentData.role !== 'owner') {
             await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
           }
+          // إذا كان المستند موجوداً، سننتظر الـ onSnapshot لتحديث الحالة
         }
 
-        // Persistent Listener for real-time role updates
+        // المستمع اللحظي للتحديثات (هو المصدر النهائي للبيانات)
         const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
           if (snapshot.exists() && isMounted) {
-            setProfile({ ...(snapshot.data() as UserProfile), uid: snapshot.id });
-            setLoading(false);
+            const data = snapshot.data() as UserProfile;
+            setProfile({ ...data, uid: snapshot.id });
+            setLoading(false); // تحميل البيانات اكتمل بنجاح
           }
         }, (err) => {
           if (isMounted) setLoading(false);
@@ -88,19 +94,25 @@ export function useUser() {
 
     return () => {
       isMounted = false;
-      unsubPromise.then(unsub => unsub && (unsub as Unsubscribe)());
+      unsubPromise.then(unsub => {
+        if (typeof unsub === 'function') {
+          unsub();
+        }
+      });
     };
   }, [user, db]);
 
   const staffRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent', 'community_mod'];
-  const isAdmin = !!(user && (MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || (profile?.role && staffRoles.includes(profile.role))));
-
+  
+  // التحقق من أن المستخدم هو طاقم عمل (بما في ذلك المصمم والوكيل)
+  const isStaff = !!(user && (MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || (profile?.role && staffRoles.includes(profile.role))));
+  
   return { 
     user, 
     profile, 
     loading, 
     isVerified: user?.emailVerified || false,
-    isAdmin,
+    isAdmin: isStaff, // نستخدم isAdmin كمصطلح عام لكل طاقم الإدارة
     role: profile?.role
   };
 }

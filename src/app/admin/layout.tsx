@@ -27,16 +27,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
+  // بروتوكول الحماية ومنع الطرد الخاطئ
   useEffect(() => {
     if (!loading && isClient) {
       if (!user) {
+        // لا يوجد مستخدم مسجل
         router.replace('/login');
-      } else if (!isAdmin) {
+      } else if (isAdmin === false) {
+        // المستخدم مسجل ولكن رتبته ليست ضمن طاقم العمل (بعد انتهاء التحميل)
         router.replace('/');
       }
     }
   }, [loading, user, isAdmin, isClient, router]);
 
+  // واجهة تأمين الوصول تظهر طالما لم نتأكد من الصلاحيات بعد
   if (!isClient || loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6" dir="rtl">
@@ -46,30 +50,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_15px_var(--primary)]" />
           </div>
         </div>
-        <p className="text-[11px] font-black text-primary uppercase tracking-[0.5em] animate-pulse">جاري تأمين الوصول للمركز...</p>
+        <div className="text-center space-y-2">
+           <p className="text-[11px] font-black text-primary uppercase tracking-[0.5em] animate-pulse">جاري فحص بروتوكول الوصول...</p>
+           <p className="text-[9px] text-muted-foreground uppercase font-bold opacity-50">Sovereign Identity Verification</p>
+        </div>
       </div>
     );
   }
 
+  // منع عرض المحتوى إذا كان المستخدم غير مخول قطعاً
   if (!user || !isAdmin) return null;
 
-  // تعريف الأقسام مع تحديد الرتب المسموح لها بالوصول لكل قسم
   const allSections = [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
     { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
     { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
-    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman'] },
+    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman', 'designer'] },
     { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'designer', 'agent'] },
     { label: "الخزينة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager', 'designer'] },
-    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'designer'] }, // حصري للمصمم والمالك
+    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'designer'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
 
-  // فلترة الأقسام الظاهرة بناءً على رتبة المستخدم الحالية
   const visibleSections = allSections.filter(item => 
     profile?.role === 'owner' || (profile?.role && item.roles.includes(profile.role))
   );
@@ -77,7 +83,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const currentSection = allSections.find(s => s.href === pathname);
   const isAllowed = profile?.role === 'owner' || (profile?.role && currentSection?.roles.includes(profile.role));
 
-  // منع الوصول المباشر عبر الرابط إذا كانت الرتبة غير مخولة
   if (pathname !== "/admin" && !isAllowed && currentSection) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-10" dir="rtl">
@@ -104,7 +109,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <ScrollArea className="flex-1 p-4">
             <SidebarGroup>
                <SidebarGroupLabel className="text-right px-4 mb-2 text-[8px] font-black uppercase text-muted-foreground tracking-widest">
-                 مركز التخصص: {profile?.role}
+                 قسم التخصص: {profile?.role}
                </SidebarGroupLabel>
                <SidebarMenu className="gap-2">
                  {visibleSections.map((item) => (
