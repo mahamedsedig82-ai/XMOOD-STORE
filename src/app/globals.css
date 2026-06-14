@@ -23,7 +23,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 43 70% 50%;
-    --radius: 1.25rem;
+    --radius: 1.5rem;
   }
 
   .dark {
@@ -57,7 +57,7 @@
 }
 
 .luxury-card {
-  @apply rounded-[2rem] border bg-card shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/30 overflow-hidden relative;
+  @apply rounded-[2.5rem] border bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:border-primary/30 overflow-hidden relative;
 }
 
 .gold-text {
@@ -79,13 +79,17 @@
   @apply bg-foreground text-background font-bold rounded-2xl px-10 py-4 shadow-sm hover:opacity-90 active:scale-95 transition-all text-xs flex items-center justify-center gap-3 uppercase tracking-wider;
 }
 
+.glass-morphism {
+  @apply bg-background/60 backdrop-blur-xl border border-white/5;
+}
+
 .responsive-table {
   @apply w-full overflow-x-auto;
 }
 
 @media (max-width: 768px) {
   .responsive-table table { @apply block; }
-  .responsive-table tr { @apply block mb-6 p-6 rounded-3xl border bg-card shadow-sm; }
+  .responsive-table tr { @apply block mb-6 p-6 rounded-[2rem] border bg-card shadow-sm; }
   .responsive-table td { @apply flex justify-between items-center py-3 border-none !important; }
   .responsive-table td::before {
     content: attr(data-label);

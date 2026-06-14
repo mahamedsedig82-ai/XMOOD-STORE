@@ -5,8 +5,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { GuidanceBot } from '@/components/shared/GuidanceBot';
 
 export const metadata: Metadata = {
-  title: 'XMOOD STORE | المتجر الرقمي المتكامل',
-  description: 'منصة متخصصة في الخدمات الرقمية والألعاب، توفر شحن الألعاب، الحسابات، البطاقات الرقمية، الخدمات التقنية، والتعامل مع وكلاء موثوقين ضمن بيئة آمنة وسهلة الاستخدام.',
+  title: 'XMOOD STORE | منصة الخدمات الرقمية المعتمدة',
+  description: 'وجهتك الأولى لشحن الألعاب، الحسابات المميزة، والخدمات الرقمية بأعلى جودة وأمان.',
 };
 
 export default function RootLayout({

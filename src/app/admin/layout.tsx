@@ -3,7 +3,7 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Monitor, Image as ImageIcon
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -31,16 +31,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [profile, loading, user, router]);
 
   if (!isClient || loading) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-4">
-      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">تأمين الاتصال بمركز العمليات...</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6">
+      <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-xl" />
+      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Authenticating Operations Command...</p>
     </div>
   );
 
   const mainSections = [
-    { label: "لوحة التحكم", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
+    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
     { label: "المساعد الذكي", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
-    { label: "إدارة السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm'] },
+    { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm'] },
     { label: "طلبات العملاء", icon: ShoppingBag, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager'] },
     { label: "مستودع الأصول", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
     { label: "معرض الأعمال", icon: Palette, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer'] },
@@ -50,7 +50,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const businessSections = [
     { label: "السجل المالي", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
-    { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
+    { label: "الهوية والمحتوى", icon: Monitor, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
 
   const renderMenuItems = (items: any[]) => 
@@ -59,11 +59,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <SidebarMenuButton 
           asChild 
           isActive={pathname === item.href}
-          className={`h-14 px-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'hover:bg-muted text-muted-foreground'}`}
+          className={`h-14 px-6 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20' : 'hover:bg-muted text-muted-foreground'}`}
         >
-          <Link href={item.href} className="flex flex-row-reverse items-center gap-4 w-full">
+          <Link href={item.href} className="flex flex-row-reverse items-center gap-5 w-full">
             <item.icon size={20} />
-            <span className="font-bold text-[12px] uppercase tracking-wider">{item.label}</span>
+            <span className="font-bold text-xs uppercase tracking-widest">{item.label}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -72,32 +72,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background" dir="rtl">
-        <Sidebar className="border-l border-border bg-card/80 backdrop-blur-3xl" side="right">
-          <SidebarHeader className="p-8 border-b text-center">
-            <span className="handwritten-logo block mb-3 text-3xl">XMOOD STORE</span>
-            <Badge variant="outline" className="text-[10px] uppercase font-bold border-primary/20 text-primary px-4 py-1 rounded-full">{profile?.role}</Badge>
+        <Sidebar className="border-l border-border bg-card/95 backdrop-blur-3xl" side="right">
+          <SidebarHeader className="p-10 border-b text-center">
+            <span className="handwritten-logo block mb-3 text-4xl">XMOOD STORE</span>
+            <Badge variant="outline" className="text-[9px] uppercase font-black border-primary/20 text-primary px-4 py-1.5 rounded-full tracking-widest">{profile?.role}</Badge>
           </SidebarHeader>
-          <ScrollArea className="flex-1 p-6">
-            <SidebarGroup className="mb-10">
-               <SidebarGroupLabel className="text-right px-4 mb-4 text-[10px] font-black uppercase text-muted-foreground tracking-widest">إدارة العمليات</SidebarGroupLabel>
-               <SidebarMenu className="gap-2">{renderMenuItems(mainSections)}</SidebarMenu>
+          <ScrollArea className="flex-1 p-8">
+            <SidebarGroup className="mb-12">
+               <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-black uppercase text-muted-foreground tracking-[0.3em]">إدارة العمليات</SidebarGroupLabel>
+               <SidebarMenu className="gap-3">{renderMenuItems(mainSections)}</SidebarMenu>
             </SidebarGroup>
             <SidebarGroup>
-               <SidebarGroupLabel className="text-right px-4 mb-4 text-[10px] font-black uppercase text-muted-foreground tracking-widest">الأدوات المركزية</SidebarGroupLabel>
-               <SidebarMenu className="gap-2">{renderMenuItems(businessSections)}</SidebarMenu>
+               <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-black uppercase text-muted-foreground tracking-[0.3em]">إدارة الموقع المركزي</SidebarGroupLabel>
+               <SidebarMenu className="gap-3">{renderMenuItems(businessSections)}</SidebarMenu>
             </SidebarGroup>
           </ScrollArea>
-          <div className="p-8 border-t bg-muted/30 space-y-4">
-            <Button asChild variant="outline" className="w-full h-14 rounded-2xl text-xs font-bold uppercase gap-3 border-border">
-              <Link href="/"><ArrowLeft size={16} /> العودة للموقع</Link>
+          <div className="p-10 border-t bg-muted/30 space-y-4">
+            <Button asChild variant="outline" className="w-full h-14 rounded-2xl text-[10px] font-black uppercase gap-3 border-border bg-background hover:bg-muted">
+              <Link href="/"><ArrowLeft size={16} /> العودة للواجهة</Link>
             </Button>
-            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-14 rounded-2xl text-destructive font-bold text-xs gap-3 hover:bg-destructive/10">
+            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-14 rounded-2xl text-destructive font-black text-[10px] uppercase gap-3 hover:bg-destructive/10">
               <LogOut size={16} /> تسجيل الخروج
             </Button>
           </div>
         </Sidebar>
-        <main className="flex-1 overflow-y-auto p-6 md:p-12 animate-fade-in custom-scrollbar">
-          <div className="max-w-7xl mx-auto pb-32">{children}</div>
+        <main className="flex-1 overflow-y-auto p-6 md:p-16 animate-fade-in custom-scrollbar">
+          <div className="max-w-7xl mx-auto pb-40">{children}</div>
         </main>
       </div>
     </SidebarProvider>

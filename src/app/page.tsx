@@ -13,7 +13,7 @@ import { doc } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 
-export default function HomeProfessional() {
+export default function HomeCorporate() {
   const db = useFirestore();
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
@@ -22,7 +22,8 @@ export default function HomeProfessional() {
     <main className="min-h-screen bg-background" dir="rtl">
       <Navbar />
       
-      <section className="relative pt-48 pb-32 md:pt-64 md:pb-56 overflow-hidden bg-muted/20">
+      {/* Dynamic Hero Section */}
+      <section className="relative pt-48 pb-32 md:pt-64 md:pb-56 overflow-hidden bg-muted/20 border-b">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
              <defs>
@@ -41,18 +42,18 @@ export default function HomeProfessional() {
              </Badge>
              
              <h1 className="text-6xl md:text-9xl mb-12 font-headline font-black leading-tight tracking-tighter text-foreground">
-                حلول رقمية <span className="gold-text">متقدمة وموثوقة</span>
+                {config?.pageContent?.heroTitle || "حلول رقمية متقدمة وموثوقة"}
              </h1>
 
              <p className="text-2xl md:text-3xl text-muted-foreground max-w-5xl mx-auto mb-20 leading-relaxed font-medium">
-               منصة متخصصة في الخدمات الرقمية والألعاب، توفر شحن الألعاب، الحسابات، البطاقات الرقمية، الخدمات التقنية، والتعامل مع وكلاء موثوقين ضمن بيئة آمنة وسهلة الاستخدام. نركز على السرعة والجودة وتقديم تجربة احترافية تضمن للمستخدم الوصول إلى الخدمات التي يحتاجها بأفضل الأسعار وأعلى درجات الموثوقية.
+               {config?.pageContent?.heroDescription || "نقدم لك أفضل باقات شحن الألعاب، الحسابات المميزة، والخدمات الاحترافية بأعلى معايير الأمان والسرعة."}
              </p>
              
              <div className="flex flex-wrap justify-center gap-8">
-               <Button asChild className="royal-button h-20 px-16 text-xl">
+               <Button asChild className="royal-button h-20 px-16 text-xl shadow-primary/20">
                  <Link href="/store"><Store className="ml-3" size={28} /> تصفح المتجر</Link>
                </Button>
-               <Button asChild className="accent-button h-20 px-16 text-xl">
+               <Button asChild className="accent-button h-20 px-16 text-xl shadow-foreground/10">
                  <Link href="/marketplace"><ShoppingBag className="ml-3" size={28} /> السوق المفتوح</Link>
                </Button>
              </div>
@@ -60,7 +61,8 @@ export default function HomeProfessional() {
         </div>
       </section>
 
-      <section className="py-40 bg-background border-y">
+      {/* Features Grid */}
+      <section className="py-40 bg-background">
         <div className="container mx-auto px-6">
           <div className="text-center mb-32 space-y-6">
              <h2 className="text-5xl md:text-7xl font-black leading-tight tracking-tighter text-foreground">لماذا يختارنا المحترفون؟</h2>
@@ -88,34 +90,38 @@ export default function HomeProfessional() {
         </div>
       </section>
 
+      {/* Dynamic Footer */}
       <footer className="py-40 bg-muted/30 border-t">
         <div className="container mx-auto px-6 text-center">
-          <div className="handwritten-logo text-6xl mb-12">XMOOD STORE</div>
+          <div className="handwritten-logo text-7xl mb-12">
+            {config?.siteInfo?.title || "XMOOD STORE"}
+          </div>
           <p className="text-muted-foreground max-w-3xl mx-auto mb-20 text-2xl leading-relaxed font-medium">
-            {config?.siteInfo?.description || "المنصة الرائدة والموثوقة لتقديم كافة الحلول والخدمات الرقمية المتكاملة، نسعى دائماً للابتكار والسرعة لخدمة عملائنا في كل مكان."}
+            {config?.pageContent?.footerAbout || "المنصة الرائدة والموثوقة لتقديم كافة الحلول والخدمات الرقمية المتكاملة، نسعى دائماً للابتكار والسرعة لخدمة عملائنا في كل مكان."}
           </p>
           
           <div className="flex flex-wrap justify-center gap-10 mb-32">
              {config?.contact?.whatsapp && (
-               <a href={`https://wa.me/${config.contact.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-foreground hover:gold-text transition-all font-black text-sm bg-card px-10 py-5 rounded-3xl shadow-xl border">
+               <a href={config.contact.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-foreground hover:gold-text transition-all font-black text-sm bg-card px-10 py-5 rounded-[2rem] shadow-xl border">
                   <MessageSquare size={24} className="text-green-500" /> الدعم الفني المباشر
                </a>
              )}
              {config?.contact?.email && (
-               <a href={`mailto:${config.contact.email}`} className="flex items-center gap-4 text-foreground hover:gold-text transition-all font-black text-sm bg-card px-10 py-5 rounded-3xl shadow-xl border">
+               <a href={`mailto:${config.contact.email}`} className="flex items-center gap-4 text-foreground hover:gold-text transition-all font-black text-sm bg-card px-10 py-5 rounded-[2rem] shadow-xl border">
                   <Mail size={24} className="text-primary" /> البريد الإلكتروني الرسمي
                </a>
              )}
           </div>
 
-          <div className="flex flex-wrap justify-center gap-12 text-[13px] font-black uppercase tracking-widest text-muted-foreground mb-24 border-b pb-24">
+          <div className="flex flex-wrap justify-center gap-12 text-[12px] font-black uppercase tracking-widest text-muted-foreground mb-24 border-b pb-24 border-border/50">
+            <Link href="/store" className="hover:text-primary transition-all">المتجر</Link>
             <Link href="/marketplace" className="hover:text-primary transition-all">السوق المفتوح</Link>
             <Link href="/designs/gallery" className="hover:text-primary transition-all">معرض الأعمال</Link>
-            <Link href="/middleman" className="hover:text-primary transition-all">الوكلاء المعتمدون</Link>
-            <Link href="/admin" className="hover:text-primary transition-all opacity-40">لوحة الإدارة</Link>
+            <Link href="/middleman" className="hover:text-primary transition-all">الوكلاء</Link>
+            <Link href="/admin" className="hover:text-primary transition-all opacity-40">الإدارة</Link>
           </div>
           
-          <p className="text-[12px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
+          <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
             {config?.siteInfo?.copyright || "© 2025 XMOOD STORE PROFESSIONAL SERVICES. ALL RIGHTS RESERVED."}
           </p>
         </div>
