@@ -4,7 +4,7 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon
+  Settings, Palette, LogOut, ArrowLeft, Zap, ShoppingBag, Cpu, Terminal, Image as ImageIcon, ClipboardList
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -27,7 +27,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // بروتوكول حماية المسارات - فحص سيادي هادئ
   useEffect(() => {
     if (!loading && isClient) {
       if (!user) {
@@ -38,7 +37,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [loading, user, isAdmin, isClient, router]);
 
-  // واجهة التحميل المركزية
   if (!isClient || loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6" dir="rtl">
@@ -48,41 +46,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_15px_var(--primary)]" />
           </div>
         </div>
-        <div className="text-center space-y-3">
-          <p className="text-[11px] font-black text-primary uppercase tracking-[0.5em] animate-pulse">جاري تأمين الوصول للمركز...</p>
-          <div className="flex items-center justify-center gap-2">
-             <div className="h-px w-8 bg-primary/20" />
-             <p className="text-[8px] text-muted-foreground uppercase font-bold tracking-widest">Sovereign Encryption Active</p>
-             <div className="h-px w-8 bg-primary/20" />
-          </div>
-        </div>
+        <p className="text-[11px] font-black text-primary uppercase tracking-[0.5em] animate-pulse">جاري تأمين الوصول للمركز...</p>
       </div>
     );
   }
 
   if (!user || !isAdmin) return null;
 
-  // تعريف الأقسام مع تحديد الأدوار المسموح لها بدقة
   const allSections = [
-    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
+    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
     { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm', 'community_mod'] },
     { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
-    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman'] },
+    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman', 'designer'] },
     { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
+    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'designer', 'agent'] },
     { label: "الخزينة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
-    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager'] },
+    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager', 'designer'] },
     { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'designer', 'design_manager'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ];
 
-  // تصفية الأقسام بناءً على دور المستخدم الحالي
   const visibleSections = allSections.filter(item => 
     profile?.role === 'owner' || (profile?.role && item.roles.includes(profile.role))
   );
 
-  // حماية إضافية: إذا حاول المستخدم دخول مسار غير مسموح له عبر الرابط المباشر
   const currentSection = allSections.find(s => s.href === pathname);
   const isAllowed = profile?.role === 'owner' || (profile?.role && currentSection?.roles.includes(profile.role));
 
@@ -99,22 +88,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  const renderMenuItems = (items: any[]) => 
-    items.map((item) => (
-      <SidebarMenuItem key={item.href}>
-        <SidebarMenuButton 
-          asChild 
-          isActive={pathname === item.href}
-          className={`h-12 px-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-primary-foreground shadow-lg' : 'hover:bg-primary/5 text-muted-foreground'}`}
-        >
-          <Link href={item.href} className="flex flex-row-reverse items-center gap-4 w-full">
-            <item.icon size={18} />
-            <span className="font-bold text-[11px] uppercase tracking-wider">{item.label}</span>
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    ));
-
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
@@ -126,11 +99,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Badge>
           </SidebarHeader>
           <ScrollArea className="flex-1 p-4">
-            <SidebarGroup className="mb-6">
+            <SidebarGroup>
                <SidebarGroupLabel className="text-right px-4 mb-2 text-[8px] font-black uppercase text-muted-foreground tracking-widest">
-                 لوحة التخصص: {profile?.role}
+                 مركز التخصص: {profile?.role}
                </SidebarGroupLabel>
-               <SidebarMenu className="gap-2">{renderMenuItems(visibleSections)}</SidebarMenu>
+               <SidebarMenu className="gap-2">
+                 {visibleSections.map((item) => (
+                   <SidebarMenuItem key={item.href}>
+                     <SidebarMenuButton 
+                       asChild 
+                       isActive={pathname === item.href}
+                       className={`h-12 px-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-primary-foreground shadow-lg' : 'hover:bg-primary/5 text-muted-foreground'}`}
+                     >
+                       <Link href={item.href} className="flex flex-row-reverse items-center gap-4 w-full">
+                         <item.icon size={18} />
+                         <span className="font-bold text-[11px] uppercase tracking-wider">{item.label}</span>
+                       </Link>
+                     </SidebarMenuButton>
+                   </SidebarMenuItem>
+                 ))}
+               </SidebarMenu>
             </SidebarGroup>
           </ScrollArea>
           <div className="p-6 border-t bg-muted/5 space-y-3">
@@ -148,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              <div className="flex items-center gap-4">
                 <Terminal size={18} className="text-primary" />
                 <div className="flex flex-col text-right">
-                   <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-foreground">مركز التحكم التخصصي</span>
+                   <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-foreground">وحدة التحكم التخصصية</span>
                    <span className="text-[8px] text-muted-foreground uppercase">{profile?.role} Department Console</span>
                 </div>
              </div>

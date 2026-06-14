@@ -14,7 +14,6 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // MASTER ADMINS - القائمة السيادية للإدارة العليا
   const MASTER_ADMINS = [
     "MAHAMEDFK3@GMAIL.COM", 
     "XMOODSTORE.SUPPORT@GMAIL.COM",
@@ -42,8 +41,9 @@ export function useUser() {
     const syncProfile = async () => {
       try {
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
-        const docSnap = await getDoc(userDocRef);
         
+        // Initial fetch to speed up UI
+        const docSnap = await getDoc(userDocRef);
         if (!docSnap.exists()) {
           const initialProfile: UserProfile = {
             uid: user.uid,
@@ -64,25 +64,21 @@ export function useUser() {
           const currentData = docSnap.data() as UserProfile;
           if (isMaster && currentData.role !== 'owner') {
             await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
-            if (isMounted) setProfile({ ...currentData, role: 'owner', uid: user.uid });
-          } else {
-            if (isMounted) setProfile({ ...currentData, uid: user.uid });
           }
         }
 
+        // Persistent Listener for real-time role updates
         const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
           if (snapshot.exists() && isMounted) {
             setProfile({ ...(snapshot.data() as UserProfile), uid: snapshot.id });
             setLoading(false);
           }
         }, (err) => {
-          console.error("Profile Snapshot Error:", err);
           if (isMounted) setLoading(false);
         });
 
         return unsubscribe;
       } catch (err) {
-        console.error("Critical Auth Sync Error:", err);
         if (isMounted) setLoading(false);
         return null;
       }
@@ -96,10 +92,8 @@ export function useUser() {
     };
   }, [user, db]);
 
-  // فحص الصلاحية الإدارية - يشمل كافة المتخصصين المعتمدين في النظام
-  const isMasterByEmail = user && MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
   const staffRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent', 'community_mod'];
-  const isAdmin = !!(isMasterByEmail || (profile?.role && staffRoles.includes(profile.role)));
+  const isAdmin = !!(user && (MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || (profile?.role && staffRoles.includes(profile.role))));
 
   return { 
     user, 
@@ -107,7 +101,6 @@ export function useUser() {
     loading, 
     isVerified: user?.emailVerified || false,
     isAdmin,
-    isMaster: isMasterByEmail,
     role: profile?.role
   };
 }
