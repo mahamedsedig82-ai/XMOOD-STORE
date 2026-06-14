@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "المساعد الذكي", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
     { label: "السوق المفتوح", icon: ShoppingBag, href: "/admin/community", roles: ['owner', 'admin', 'gm'] },
     { label: "طلبات العملاء", icon: ShoppingBag, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager'] },
-    { label: "مستودع الأصول", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
+    { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'store_manager'] },
     { label: "معرض الأعمال", icon: Palette, href: "/admin/designs", roles: ['owner', 'admin', 'design_manager', 'designer'] },
     { label: "خدمات أخرى", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent'] },
   ];

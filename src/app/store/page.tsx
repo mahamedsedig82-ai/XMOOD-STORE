@@ -46,7 +46,7 @@ export default function StorePage() {
                 <Zap size={16} className="animate-pulse" />
                 <span>مركز الأصول الرقمية المعتمدة</span>
               </div>
-              <h1 className="text-6xl md:text-8xl font-headline font-black gold-text leading-tight">مستودع الخدمات</h1>
+              <h1 className="text-6xl md:text-8xl font-headline font-black gold-text leading-tight">الخدمات الإلكترونية</h1>
               <p className="text-zinc-500 text-xl font-medium mt-6 max-w-2xl leading-relaxed">اكتشف أرقى باقات الشحن والخدمات الرقمية الموثوقة والمجهزة للتسليم الفوري.</p>
             </div>
             

@@ -60,7 +60,7 @@ export function Navbar() {
 
   const navLinks = [
     { name: "الرئيسية", href: "/", icon: Home },
-    { name: "المتجر الرقمي", href: "/store", icon: Store },
+    { name: "الخدمات الإلكترونية", href: "/store", icon: Store },
     { name: "السوق المفتوح", href: "/marketplace", icon: ShoppingBag },
     { name: "معرض الأعمال", href: "/designs/gallery", icon: Palette },
     { name: "الوكلاء المعتمدون", href: "/middleman", icon: ShieldCheck },

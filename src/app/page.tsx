@@ -51,7 +51,7 @@ export default function HomeCorporate() {
              
              <div className="flex flex-wrap justify-center gap-8">
                <Button asChild className="royal-button h-20 px-16 text-xl shadow-primary/20">
-                 <Link href="/store"><Store className="ml-3" size={28} /> تصفح المتجر</Link>
+                 <Link href="/store"><Store className="ml-3" size={28} /> الخدمات الإلكترونية</Link>
                </Button>
                <Button asChild className="accent-button h-20 px-16 text-xl shadow-foreground/10">
                  <Link href="/marketplace"><ShoppingBag className="ml-3" size={28} /> السوق المفتوح</Link>
@@ -114,7 +114,7 @@ export default function HomeCorporate() {
           </div>
 
           <div className="flex flex-wrap justify-center gap-12 text-[12px] font-black uppercase tracking-widest text-muted-foreground mb-24 border-b pb-24 border-border/50">
-            <Link href="/store" className="hover:text-primary transition-all">المتجر</Link>
+            <Link href="/store" className="hover:text-primary transition-all">الخدمات الإلكترونية</Link>
             <Link href="/marketplace" className="hover:text-primary transition-all">السوق المفتوح</Link>
             <Link href="/designs/gallery" className="hover:text-primary transition-all">معرض الأعمال</Link>
             <Link href="/middleman" className="hover:text-primary transition-all">الوكلاء</Link>
