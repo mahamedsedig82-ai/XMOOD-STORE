@@ -1,29 +1,37 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, where } from "firebase/firestore";
+import { collection, query, orderBy } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Zap, MessageSquare, Loader2, UserCheck, CheckCircle } from "lucide-react";
+import { Zap, MessageSquare, Loader2, UserCheck } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 
 export default function OtherServicesPublic() {
   const db = useFirestore();
 
   // استعلام عام وموحد لضمان ظهور العروض لكافة المستخدمين والزوار
+  // سنقوم بالتصفية في الذاكرة (Client-side) لضمان العمل الفوري دون الحاجة لفهارس مركبة
   const servicesQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(
       collection(db, "other_services"), 
-      where("isAvailable", "==", true),
       orderBy("createdAt", "desc")
     );
   }, [db]);
 
-  const { data: services, loading } = useCollection(servicesQuery);
+  const { data: allServices, loading } = useCollection(servicesQuery);
+
+  // تصفية الخدمات النشطة فقط في الذاكرة
+  const services = useMemo(() => {
+    if (!allServices) return [];
+    return allServices.filter((s: any) => s.isAvailable === true);
+  }, [allServices]);
 
   const handleOrder = (whatsapp: string, serviceName: string) => {
     const text = encodeURIComponent(`مرحباً، أريد طلب خدمة: ${serviceName} المعروضة في متجركم الاحترافي.`);

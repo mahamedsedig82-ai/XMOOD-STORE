@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -27,7 +28,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // تعريف الأقسام مع الربط الصارم بالأدوار لضمان "العزل التخصصي"
   const allSections = useMemo(() => [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
     { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
@@ -43,7 +43,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
   ], []);
 
-  // تصفية الأقسام بناءً على رتبة المستخدم الحالية (العزل البصري)
   const visibleSections = useMemo(() => {
     if (!profile?.role) return [];
     return allSections.filter(item => 
@@ -51,14 +50,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }, [profile, allSections]);
 
-  // التحقق من صلاحية المسار الحالي (العزل البرمجي)
   const isPathAllowed = useMemo(() => {
-    if (loading || !profile) return true;
+    if (!isClient || loading || !profile) return true;
     if (pathname === "/admin") return isAdmin;
     return profile.role === 'owner' || profile.role === 'admin' || visibleSections.some(s => s.href === pathname);
-  }, [profile, loading, pathname, visibleSections, isAdmin]);
+  }, [profile, loading, pathname, visibleSections, isAdmin, isClient]);
 
-  // منع الطرد المتسرع
   useEffect(() => {
     if (isClient && !loading) {
       if (!user) {
@@ -69,15 +66,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [loading, user, isAdmin, profile, isClient, router]);
 
-  // شاشة التحميل السيادية الموحدة (Fix Hydration)
   if (!isClient || loading || (user && !profile)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-8" dir="rtl">
         <div className="relative">
           <div className="w-24 h-24 border-[6px] border-primary/10 border-t-primary rounded-full animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-4 h-4 bg-primary rounded-full animate-pulse shadow-[0_0_20px_var(--primary)]" />
-          </div>
         </div>
         <div className="text-center space-y-3">
            <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">تأمين الوصول التخصصي</h2>
@@ -89,7 +82,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!user || !isAdmin || !profile) return null;
 
-  // واجهة المنع المحترفة للمتخصصين الذين يحاولون دخول أقسام غيرهم
   if (!isPathAllowed) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-center p-10 bg-background" dir="rtl">
@@ -110,8 +102,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
-        
-        {/* Desktop Sidebar */}
         <Sidebar className="border-l border-border bg-card hidden lg:flex" side="right">
           <SidebarHeader className="p-10 border-b text-center">
             <span className="handwritten-logo block mb-3 text-3xl">XMOOD ADMIN</span>
@@ -153,8 +143,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </Sidebar>
 
         <main className="flex-1 overflow-hidden flex flex-col relative">
-          
-          {/* Main Header */}
           <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl z-[60] sticky top-0">
              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-5">
@@ -174,7 +162,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          {/* Viewport Content */}
           <div className="flex-1 overflow-y-auto p-4 md:p-14 custom-scrollbar pb-40 lg:pb-14">
             <AnimatePresence mode="wait">
               <motion.div
@@ -190,38 +177,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </AnimatePresence>
           </div>
 
-          {/* Fixed Bottom Navigation (Mobile specialist Dock) - RECONSTRUCTED */}
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/98 backdrop-blur-3xl border-t z-[110] flex items-center justify-around px-4 shadow-[0_-15px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/98 backdrop-blur-3xl border-t z-[150] flex items-center justify-around px-4 shadow-[0_-15px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link 
                   key={item.href} 
                   href={item.href} 
-                  className={`flex flex-col items-center justify-center gap-2 transition-all flex-1 h-full relative z-[120] pointer-events-auto ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
+                  className={`flex flex-col items-center justify-center gap-2 transition-all flex-1 h-full relative z-[160] pointer-events-auto ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
                 >
                    <div className={`p-3 rounded-2xl transition-all duration-500 ${pathname === item.href ? 'bg-primary/15 shadow-[0_0_15px_rgba(212,175,55,0.2)]' : ''}`}>
                       <item.icon size={24} className={pathname === item.href ? 'drop-shadow-[0_0_10px_var(--primary)]' : 'opacity-70'} />
                    </div>
                    <span className={`text-[9px] font-black uppercase tracking-widest text-center truncate w-full px-1 ${pathname === item.href ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
-                   {pathname === item.href && (
-                     <motion.div 
-                       layoutId="bottom-nav-active" 
-                       className="absolute -top-px left-1/2 -translate-x-1/2 w-10 h-1 bg-primary rounded-b-full shadow-[0_0_15px_var(--primary)]" 
-                     />
-                   )}
                 </Link>
              ))}
              
-             {/* Mobile "More" Menu for additional tools */}
              <Sheet dir="rtl">
                 <SheetTrigger asChild>
-                   <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-muted-foreground opacity-70 pointer-events-auto relative z-[120]">
+                   <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-muted-foreground opacity-70 pointer-events-auto relative z-[160]">
                       <div className="p-3 rounded-2xl hover:bg-muted/50 transition-colors">
                         <Menu size={24} />
                       </div>
                       <span className="text-[9px] font-black uppercase tracking-widest">المزيد</span>
                    </button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="rounded-t-[3.5rem] p-0 border-none bg-background shadow-2xl h-[80vh] z-[150]">
+                <SheetContent side="bottom" className="rounded-t-[3.5rem] p-0 border-none bg-background shadow-2xl h-[80vh] z-[200]">
                    <SheetHeader className="p-10 border-b text-center bg-muted/5">
                       <div className="flex justify-between items-center mb-6">
                          <span className="handwritten-logo text-4xl">XMOOD ADMIN</span>

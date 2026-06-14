@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from "@/firebase";
 import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatSDG } from "@/lib/currency";
+import { formatSDG, formatUSD } from "@/lib/currency";
 
 export default function AdminOtherServices() {
   const { profile } = useUser();
@@ -39,10 +40,18 @@ export default function AdminOtherServices() {
 
   const servicesQuery = useMemoFirebase(() => {
     if (!db) return null;
+    // استعلام عام لضمان استرجاع كافة البيانات، وسنقوم بالتصفية برمجياً لضمان استقرار العرض
     return query(collection(db, "other_services"), orderBy("createdAt", "desc"));
   }, [db]);
 
-  const { data: services, loading } = useCollection(servicesQuery);
+  const { data: allServices, loading } = useCollection(servicesQuery);
+
+  // تصفية الخدمات بناءً على الرتبة (المتخصص يرى خدماته فقط، المدير يرى الكل)
+  const services = useMemo(() => {
+    if (!allServices || !profile) return [];
+    if (['owner', 'admin', 'gm'].includes(profile.role)) return allServices;
+    return allServices.filter((s: any) => s.agentId === profile.uid);
+  }, [allServices, profile]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -74,6 +83,7 @@ export default function AdminOtherServices() {
       ...form,
       price: Number(form.price),
       agentId: profile?.uid || "",
+      agentName: profile?.displayName || form.agentName,
       updatedAt: serverTimestamp(),
     };
 
@@ -97,7 +107,16 @@ export default function AdminOtherServices() {
   };
 
   const resetForm = () => {
-    setForm({ name: "", agentName: profile?.displayName || "", whatsapp: profile?.phoneNumber || "", imageUrl: "", type: "تقني", description: "", price: "", isAvailable: true });
+    setForm({ 
+      name: "", 
+      agentName: profile?.displayName || "", 
+      whatsapp: profile?.phoneNumber || "", 
+      imageUrl: "", 
+      type: "تقني", 
+      description: "", 
+      price: "", 
+      isAvailable: true 
+    });
     setEditingId(null);
   };
 
@@ -209,7 +228,7 @@ export default function AdminOtherServices() {
               {loading ? (
                 <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
               ) : services?.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold">لا توجد خدمات حالياً</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold">لا توجد خدمات مسجلة لك حالياً</TableCell></TableRow>
               ) : services?.map((s: any) => (
                 <TableRow key={s.id} className="hover:bg-primary/5 transition-all border-b border-border/50">
                   <TableCell className="py-6 pr-8" data-label="الخدمة">
