@@ -77,7 +77,7 @@ export function Navbar() {
         
         <Link href="/" className="flex flex-col items-start group">
           <span className="handwritten-logo text-2xl md:text-3xl group-hover:scale-105 transition-transform text-foreground">XMOOD STORE</span>
-          <span className="text-[8px] font-black tracking-[0.3em] text-muted-foreground uppercase">{config?.siteInfo?.subtitle || "Professional Digital Services"}</span>
+          <span className="text-[8px] font-black tracking-[0.3em] text-muted-foreground uppercase">{config?.siteInfo?.subtitle || "مركز الخدمات الرقمية الموثوقة"}</span>
         </Link>
 
         <div className="hidden lg:flex items-center gap-8">
@@ -133,7 +133,7 @@ export function Navbar() {
                   <p className="text-[10px] text-muted-foreground truncate">{profile?.email}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="opacity-50" />
-                <DropdownMenuItem asChild className="rounded-2xl h-14 cursor-pointer mt-4">
+                <DropdownMenuItem asChild className="rounded-2xl h-14 cursor-pointer mt-4 hover:bg-muted">
                   <Link href="/wallet" className="flex items-center w-full gap-4 justify-end font-bold text-sm">
                     <span>المحفظة الرقمية</span>
                     <Wallet size={18} className="text-primary" />
@@ -226,7 +226,7 @@ export function Navbar() {
                    </Button>
                 ) : (
                   <Button asChild className="royal-button w-full h-14 text-xs">
-                    <Link href="/login">دخول الأعضاء المعتمدين</Link>
+                    <Link href="/login">دخول الأعضاء</Link>
                   </Button>
                 )}
               </div>

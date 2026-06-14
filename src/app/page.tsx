@@ -5,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, Zap, Store, Palette, Award, CheckCircle, 
-  MessageSquare, Mail, ShoppingBag, Users, Globe
+  MessageSquare, Mail, ShoppingBag, Users, Globe, Activity
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -13,7 +13,7 @@ import { doc } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 
-export default function HomeCorporate() {
+export default function HomeProfessional() {
   const db = useFirestore();
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
