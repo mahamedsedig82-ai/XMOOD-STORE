@@ -13,7 +13,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Optimized Admin Check - MASTER EMAILS
+  // MASTER ADMINS - يتم منحهم رتبة مالك سيادي تلقائياً عند الدخول
   const MASTER_ADMINS = [
     "MAHAMEDFK3@GMAIL.COM", 
     "XMOODSTORE.SUPPORT@GMAIL.COM",
@@ -64,27 +64,26 @@ export function useUser() {
           setProfile(initialProfile);
         } else {
           const currentData = docSnap.data() as UserProfile;
-          // Forced check for Master Admin status to prevent accidental lockout
+          // Force Owner role for master admins
           if (isMaster && currentData.role !== 'owner') {
-            await updateDoc(userDocRef, { 
+            const updatePayload = { 
               role: 'owner', 
               label: 'المدير العام للمنصة',
               isVerified: true 
-            });
-            setProfile({ ...currentData, role: 'owner', uid: user.uid });
+            };
+            await updateDoc(userDocRef, updatePayload);
+            setProfile({ ...currentData, ...updatePayload, uid: user.uid });
           } else {
             setProfile({ ...currentData, uid: user.uid });
           }
         }
 
-        // Setup real-time listener for profile updates
+        // Setup real-time listener for profile updates to ensure role changes are instant
         unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
           if (snapshot.exists()) {
             const data = snapshot.data() as UserProfile;
             setProfile({ ...data, uid: snapshot.id });
           }
-        }, (err) => {
-          console.error("Real-time Profile Error:", err);
         });
 
       } catch (err) {
@@ -101,11 +100,13 @@ export function useUser() {
     };
   }, [user, db]);
 
+  const isAdmin = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile?.role || '');
+
   return { 
     user, 
     profile, 
     loading, 
     isVerified: user?.emailVerified || false,
-    isAdmin: ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile?.role || '')
+    isAdmin
   };
 }

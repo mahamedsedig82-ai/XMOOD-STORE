@@ -16,41 +16,45 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { profile, loading, user } = useUser();
+  const { profile, loading, user, isAdmin } = useUser();
   const auth = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [isClient, setIsMounted] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  // Secure Auth Guard - يمنع الطرد العشوائي ويتحقق من الصلاحيات بعد اكتمال التحميل
   useEffect(() => {
     if (!loading && isClient) {
-      const allowedRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'];
-      
       if (!user) {
-        setIsAuthorized(false);
-        router.push('/login');
-      } else if (profile && allowedRoles.includes(profile.role)) {
-        setIsAuthorized(true);
-      } else if (profile) {
-        setIsAuthorized(false);
-        router.push('/');
+        router.replace('/login');
+      } else if (!isAdmin) {
+        router.replace('/');
       }
     }
-  }, [profile, loading, user, router, isClient]);
+  }, [loading, user, isAdmin, isClient, router]);
 
-  if (!isClient || loading || isAuthorized === null) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-4">
-      <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] animate-pulse text-center px-6">تحميل مركز العمليات السيادي...</p>
+  // شاشة التحميل السيادية - تمنع وميض الواجهة أو الطرد قبل تحميل الصلاحية
+  if (!isClient || loading || (!isAdmin && user)) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6" dir="rtl">
+      <div className="relative">
+        <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+        </div>
+      </div>
+      <div className="text-center space-y-2">
+        <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] animate-pulse">تأمين الاتصال بالمركز...</p>
+        <p className="text-[8px] text-muted-foreground uppercase font-bold">Verifying Sovereign Credentials</p>
+      </div>
     </div>
   );
 
-  if (isAuthorized === false) return null;
+  // منع عرض المحتوى إذا كان المستخدم غير مخول نهائياً
+  if (!isAdmin) return null;
 
   const adminSections = [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
@@ -73,7 +77,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <SidebarMenuButton 
           asChild 
           isActive={pathname === item.href}
-          className={`h-12 px-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-white shadow-lg' : 'hover:bg-primary/5 text-muted-foreground'}`}
+          className={`h-12 px-5 rounded-2xl transition-all ${pathname === item.href ? 'bg-primary text-primary-foreground shadow-lg' : 'hover:bg-primary/5 text-muted-foreground'}`}
         >
           <Link href={item.href} className="flex flex-row-reverse items-center gap-4 w-full">
             <item.icon size={18} />
@@ -89,7 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Sidebar className="border-l border-border bg-card hidden md:flex" side="right">
           <SidebarHeader className="p-8 border-b text-center">
             <span className="handwritten-logo block mb-2 text-2xl">XMOOD STORE</span>
-            <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/20 text-primary px-3 py-0.5 rounded-full">{profile?.role}</Badge>
+            <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/20 text-primary px-3 py-0.5 rounded-full">{profile?.label || profile?.role}</Badge>
           </SidebarHeader>
           <ScrollArea className="flex-1 p-4">
             <SidebarGroup className="mb-6">
@@ -106,7 +110,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link href="/"><ArrowLeft size={16} /> الواجهة العامة</Link>
             </Button>
             <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-11 rounded-xl text-red-500 font-black text-[10px] uppercase gap-2 hover:bg-red-500/5">
-              <LogOut size={16} /> خروج سيادي
+              <LogOut size={16} /> خروج آمن
             </Button>
           </div>
         </Sidebar>
@@ -114,17 +118,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <main className="flex-1 overflow-hidden flex flex-col relative">
           <header className="h-16 md:h-20 border-b flex items-center justify-between px-6 md:px-10 bg-background/80 backdrop-blur-md z-40 sticky top-0">
              <div className="flex items-center gap-4">
-                <div className="md:hidden">
-                   {/* Mobile Menu Trigger Placeholder or integrated inside layout */}
-                   <Terminal size={18} className="text-primary" />
-                </div>
+                <Terminal size={18} className="text-primary" />
                 <div className="flex flex-col">
                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-foreground">مركز التحكم</span>
                    <span className="text-[8px] text-muted-foreground uppercase">Sovereign Admin Console</span>
                 </div>
              </div>
              <div className="flex items-center gap-4">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-[10px] font-black px-4 py-1 rounded-full">ACTIVE SECURE</Badge>
+                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-[10px] font-black px-4 py-1 rounded-full">Active Secure</Badge>
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]" />
              </div>
           </header>

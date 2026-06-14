@@ -2,7 +2,7 @@
 
 import { Navbar } from "@/components/layout/Navbar";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
+import { collection, query, orderBy, where } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,14 @@ import { motion } from "framer-motion";
 export default function OtherServicesPublic() {
   const db = useFirestore();
 
+  // استعلام عام وموحد لضمان ظهور العروض لكافة المستخدمين والزوار
   const servicesQuery = useMemoFirebase(() => {
     if (!db) return null;
-    // استعلام عام بدون فلاتر لضمان الظهور لكافة المستخدمين
-    return query(collection(db, "other_services"), orderBy("createdAt", "desc"));
+    return query(
+      collection(db, "other_services"), 
+      where("isAvailable", "==", true),
+      orderBy("createdAt", "desc")
+    );
   }, [db]);
 
   const { data: services, loading } = useCollection(servicesQuery);
@@ -30,7 +34,7 @@ export default function OtherServicesPublic() {
     <main className="min-h-screen bg-background" dir="rtl">
       <Navbar />
       <div className="container mx-auto px-6 py-32 max-w-7xl">
-        <header className="text-center mb-16 md:mb-24 space-y-6 animate-fade-up">
+        <header className="text-center mb-16 md:mb-24 space-y-6">
           <Badge className="bg-primary/10 text-primary border-primary/20 px-8 py-2 rounded-full font-black uppercase text-[10px] tracking-widest shadow-sm">
             سوق الخدمات والحلول الرقمية
           </Badge>
@@ -45,14 +49,15 @@ export default function OtherServicesPublic() {
             <Loader2 className="animate-spin text-primary" size={60} />
             <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">جاري جلب قائمة الخدمات...</p>
           </div>
-        ) : services?.length === 0 ? (
+        ) : !services || services.length === 0 ? (
           <div className="py-40 text-center luxury-card border-dashed opacity-30 flex flex-col items-center">
             <Zap size={100} className="text-muted-foreground mb-6" />
             <h3 className="text-2xl font-black uppercase tracking-widest">لا توجد خدمات نشطة حالياً</h3>
+            <p className="text-sm text-muted-foreground mt-2">تواصل مع الإدارة لنشر أول خدمة احترافية.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-            {services?.map((s: any, i: number) => (
+            {services.map((s: any, i: number) => (
               <motion.div
                 key={s.id}
                 initial={{ opacity: 0, y: 30 }}
@@ -67,7 +72,7 @@ export default function OtherServicesPublic() {
                       alt={s.name} 
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <Badge className="absolute top-4 right-4 bg-primary text-black font-black text-[8px] px-4 py-1.5 rounded-full shadow-lg uppercase tracking-widest">
+                    <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground font-black text-[8px] px-4 py-1.5 rounded-full shadow-lg uppercase tracking-widest">
                       {s.type}
                     </Badge>
                   </div>
@@ -86,7 +91,7 @@ export default function OtherServicesPublic() {
                       <div className="text-left">
                         <p className="text-[8px] font-black text-muted-foreground uppercase mb-1">المسؤول</p>
                         <div className="flex items-center gap-1.5 text-xs font-black">
-                          <UserCheck size={14} className="text-primary" /> {s.agentName}
+                          <UserCheck size={14} className="text-primary" /> {s.agentName || "وكيل معتمد"}
                         </div>
                       </div>
                     </div>
