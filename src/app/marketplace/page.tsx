@@ -38,6 +38,7 @@ export default function OpenMarketPage() {
     contactValue: ""
   });
 
+  // Simplified query to ensure items show up even without complex indexes initially
   const listingsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(

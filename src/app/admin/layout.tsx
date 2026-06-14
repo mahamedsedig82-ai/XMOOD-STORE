@@ -21,6 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [isClient, setIsMounted] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -31,20 +32,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const allowedRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'];
       
       if (!user) {
+        setIsAuthorized(false);
         router.push('/login');
-      } else if (profile && !allowedRoles.includes(profile.role)) {
+      } else if (profile && allowedRoles.includes(profile.role)) {
+        setIsAuthorized(true);
+      } else if (profile) {
+        setIsAuthorized(false);
         router.push('/');
       }
     }
   }, [profile, loading, user, router, isClient]);
 
   // Loading Screen for Auth Protection
-  if (!isClient || loading || !user || !profile) return (
+  if (!isClient || loading || isAuthorized === null) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-4">
       <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] animate-pulse">Authenticating Sovereign Access...</p>
     </div>
   );
+
+  if (isAuthorized === false) return null;
 
   const adminSections = [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
