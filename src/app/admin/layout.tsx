@@ -27,20 +27,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // بروتوكول الحماية ومنع الطرد الخاطئ - ننتظر اكتمال التحميل تماماً
+  // بروتوكول الحماية ومنع الطرد الخاطئ - ننتظر اكتمال التحميل تماماً واليقين من الرتبة
   useEffect(() => {
     if (isClient && !loading) {
       if (!user) {
+        // لا يوجد مستخدم إطلاقاً
         router.replace('/login');
-      } else if (!isAdmin) {
-        // إذا تأكد النظام أن المستخدم ليس طاقم عمل بعد انتهاء التحميل، يتم طرده
-        router.replace('/');
+      } else {
+        // يوجد مستخدم، ننتظر وجود الملف الشخصي لاتخاذ قرار الطرد
+        if (profile) {
+          if (!isAdmin) {
+            // تأكدنا أنه ليس طاقم عمل
+            router.replace('/');
+          }
+        } else {
+          // إذا انتهى التحميل ولم يوجد ملف شخصي (حالة نادرة)
+          router.replace('/');
+        }
       }
     }
-  }, [loading, user, isAdmin, isClient, router]);
+  }, [loading, user, isAdmin, profile, isClient, router]);
 
   // واجهة تأمين الوصول تظهر طالما لم نتأكد من الصلاحيات بعد
-  if (!isClient || loading) {
+  if (!isClient || loading || (user && !profile)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-8" dir="rtl">
         <div className="relative">
@@ -51,14 +60,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <div className="text-center space-y-3">
            <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">جاري التحقق من الهوية السيادية</h2>
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Staff Access Protocol v2.5</p>
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Staff Access Protocol v3.0</p>
         </div>
       </div>
     );
   }
 
   // منع عرض المحتوى إذا كان المستخدم غير مخول قطعاً
-  if (!user || !isAdmin) return null;
+  if (!user || !isAdmin || !profile) return null;
 
   const allSections = [
     { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm', 'designer', 'agent', 'middleman', 'store_manager', 'accountant'] },
@@ -68,7 +77,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'agent', 'middleman', 'designer'] },
     { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'designer', 'agent'] },
-    { label: "الخزينة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
+    { label: "المالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'design_manager', 'designer'] },
     { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'designer'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },

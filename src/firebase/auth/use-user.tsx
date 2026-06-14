@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 
@@ -20,7 +20,6 @@ export function useUser() {
     "ADMIN@XMOOD.COM"
   ];
 
-  // القائمة الكاملة لرتب طاقم العمل المصرح لهم بدخول لوحة الإدارة
   const staffRoles = [
     'owner', 'admin', 'gm', 'community_admin', 'community_mod', 
     'store_manager', 'design_manager', 'designer', 'accountant', 
@@ -31,6 +30,7 @@ export function useUser() {
     if (!auth) return;
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
+      // إذا لم يوجد مستخدم نهائياً، ننهي حالة التحميل فوراً
       if (!firebaseUser) {
         setProfile(null);
         setLoading(false);
@@ -42,6 +42,9 @@ export function useUser() {
   useEffect(() => {
     if (!user || !db) return;
 
+    // نبدأ حالة التحميل للملف الشخصي
+    setLoading(true);
+
     const userDocRef = doc(db, 'users', user.uid);
     let isMounted = true;
 
@@ -49,7 +52,7 @@ export function useUser() {
       try {
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         
-        // محاولة جلب الملف الشخصي
+        // جلب أولي سريع للملف
         const docSnap = await getDoc(userDocRef);
         
         if (!docSnap.exists()) {
@@ -67,17 +70,22 @@ export function useUser() {
             affinityPoints: isMaster ? 1000 : 50
           };
           await setDoc(userDocRef, initialProfile);
-          if (isMounted) setProfile(initialProfile);
+          if (isMounted) {
+            setProfile(initialProfile);
+            setLoading(false);
+          }
         } else {
           const currentData = docSnap.data() as UserProfile;
-          // تحديث رتبة المالك إذا كان البريد في القائمة العليا
           if (isMaster && currentData.role !== 'owner') {
             await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
           }
-          if (isMounted) setProfile({ ...currentData, uid: docSnap.id });
+          if (isMounted) {
+            setProfile({ ...currentData, uid: docSnap.id });
+            // لا ننهي التحميل هنا، ننتظر مستمع اللحظات Snapshots لضمان ثبات البيانات
+          }
         }
 
-        // الاستماع للتغييرات اللحظية لضمان ثبات الصلاحيات
+        // الاستماع اللحظي - هو الضمان الحقيقي لبقاء المستخدم في صفحته
         const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
           if (isMounted) {
             if (snapshot.exists()) {
@@ -86,7 +94,7 @@ export function useUser() {
             } else {
               setProfile(null);
             }
-            setLoading(false); // تم جلب البيانات بنجاح، ننهي حالة التحميل
+            setLoading(false); // تم جلب البيانات وتثبيتها، ننهي حالة التحميل بأمان
           }
         }, (err) => {
           console.error("Firestore Sync Error:", err);
@@ -111,7 +119,7 @@ export function useUser() {
     };
   }, [user, db]);
 
-  // التحقق من أن المستخدم يملك رتبة إدارية أو تشغيلية
+  // صلاحية طاقم العمل
   const isStaff = !!(user && (
     MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || 
     (profile?.role && staffRoles.includes(profile.role))
