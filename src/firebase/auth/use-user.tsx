@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, getDoc, updateDoc, Unsubscribe } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 
@@ -18,6 +18,11 @@ export function useUser() {
     "MAHAMEDFK3@GMAIL.COM", 
     "XMOODSTORE.SUPPORT@GMAIL.COM",
     "ADMIN@XMOOD.COM"
+  ];
+
+  const staffRoles = [
+    'owner', 'admin', 'gm', 'store_manager', 'design_manager', 
+    'designer', 'accountant', 'support', 'middleman', 'agent', 'community_mod'
   ];
 
   useEffect(() => {
@@ -62,31 +67,38 @@ export function useUser() {
           await setDoc(userDocRef, initialProfile);
           if (isMounted) {
             setProfile(initialProfile);
-            setLoading(false);
           }
         } else {
           const currentData = docSnap.data() as UserProfile;
           if (isMaster && currentData.role !== 'owner') {
             await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
           }
-          // إذا كان المستند موجوداً، سننتظر الـ onSnapshot لتحديث الحالة
+          if (isMounted) {
+            setProfile({ ...currentData, uid: docSnap.id });
+          }
         }
 
-        // المستمع اللحظي للتحديثات (هو المصدر النهائي للبيانات)
+        // المستمع اللحظي للتحديثات هو المصدر النهائي والوحيد لتغيير حالة التحميل
         const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
-          if (snapshot.exists() && isMounted) {
-            const data = snapshot.data() as UserProfile;
-            setProfile({ ...data, uid: snapshot.id });
-            setLoading(false); // تحميل البيانات اكتمل بنجاح
+          if (isMounted) {
+            if (snapshot.exists()) {
+              const data = snapshot.data() as UserProfile;
+              setProfile({ ...data, uid: snapshot.id });
+            } else {
+              setProfile(null);
+            }
+            setLoading(false); 
           }
         }, (err) => {
+          console.error("Firestore Profile Sync Error:", err);
           if (isMounted) setLoading(false);
         });
 
         return unsubscribe;
       } catch (err) {
+        console.error("Profile Sync Logic Error:", err);
         if (isMounted) setLoading(false);
-        return null;
+        return () => {};
       }
     };
 
@@ -95,24 +107,23 @@ export function useUser() {
     return () => {
       isMounted = false;
       unsubPromise.then(unsub => {
-        if (typeof unsub === 'function') {
-          unsub();
-        }
+        if (unsub) unsub();
       });
     };
   }, [user, db]);
 
-  const staffRoles = ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent', 'community_mod'];
-  
-  // التحقق من أن المستخدم هو طاقم عمل (بما في ذلك المصمم والوكيل)
-  const isStaff = !!(user && (MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || (profile?.role && staffRoles.includes(profile.role))));
+  // التحقق من أن المستخدم هو طاقم عمل
+  const isStaff = !!(user && (
+    MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || 
+    (profile?.role && staffRoles.includes(profile.role))
+  ));
   
   return { 
     user, 
     profile, 
     loading, 
     isVerified: user?.emailVerified || false,
-    isAdmin: isStaff, // نستخدم isAdmin كمصطلح عام لكل طاقم الإدارة
+    isAdmin: isStaff,
     role: profile?.role
   };
 }

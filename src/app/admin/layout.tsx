@@ -27,14 +27,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // بروتوكول الحماية ومنع الطرد الخاطئ
+  // بروتوكول الحماية ومنع الطرد الخاطئ - لا يتم اتخاذ قرار إلا بعد اكتمال التحميل تماماً
   useEffect(() => {
     if (!loading && isClient) {
       if (!user) {
-        // لا يوجد مستخدم مسجل
         router.replace('/login');
       } else if (isAdmin === false) {
-        // المستخدم مسجل ولكن رتبته ليست ضمن طاقم العمل (بعد انتهاء التحميل)
+        // إذا تأكد النظام أن المستخدم ليس طاقم عمل بعد انتهاء التحميل، يتم طرده
         router.replace('/');
       }
     }
@@ -83,6 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const currentSection = allSections.find(s => s.href === pathname);
   const isAllowed = profile?.role === 'owner' || (profile?.role && currentSection?.roles.includes(profile.role));
 
+  // إذا حاول الدخول لرابط لا يملكه، تظهر شاشة المنع بدلاً من الطرد للمنزل
   if (pathname !== "/admin" && !isAllowed && currentSection) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-10" dir="rtl">
