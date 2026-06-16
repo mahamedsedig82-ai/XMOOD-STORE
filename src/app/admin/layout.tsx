@@ -1,8 +1,9 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, Layers, ClipboardList, Users, Wallet, ShieldAlert, Palette
+  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, Layers, ClipboardList, Users, Wallet, ShieldAlert, Palette, MailCheck
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -32,6 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "مركز الأمان", icon: ShieldCheck, href: "/admin/security", roles: ['owner', 'admin'] },
+    { label: "أمن البريد", icon: MailCheck, href: "/admin/email-security", roles: ['owner', 'admin'] },
     { label: "المالية والبنك", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "محتوى الموقع", icon: Database, href: "/admin/content", roles: ['owner', 'admin', 'gm'] },
     { label: "الوكلاء", icon: ShieldAlert, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
@@ -118,7 +120,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          {/* Fixed Scrolling Container */}
           <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-4 md:px-16 py-12 pb-32 bg-background h-[calc(100vh-6rem)]">
             <div className="max-w-7xl mx-auto h-full">
               <AnimatePresence mode="wait">

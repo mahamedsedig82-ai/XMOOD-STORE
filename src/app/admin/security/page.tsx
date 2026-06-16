@@ -6,8 +6,10 @@ import { collection, query, orderBy, limit } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck, ShieldAlert, Cpu, Activity, UserCheck, Zap, Lock, Globe, Loader2 } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Cpu, Activity, UserCheck, Zap, Lock, Globe, Loader2, MailCheck, ExternalLink } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function AdminSecurityCenter() {
   const db = useFirestore();
@@ -20,7 +22,7 @@ export default function AdminSecurityCenter() {
   const { data: logs, loading } = useCollection(logsQuery);
 
   return (
-    <div className="space-y-12 animate-fade-in" dir="rtl">
+    <div className="space-y-12 animate-fade-in pb-32" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b pb-12">
         <div className="text-right">
           <h1 className="text-5xl font-headline font-black gold-text">مركز الأمان والرقابة</h1>
@@ -38,20 +40,25 @@ export default function AdminSecurityCenter() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <Card className="luxury-card border-none bg-primary/5 p-8 space-y-6">
-           <ShieldCheck className="text-primary" size={40} />
-           <div>
-              <h3 className="text-xl font-black mb-2">التحقق البشري (CAPTCHA)</h3>
-              <p className="text-sm text-muted-foreground font-medium">تم تفعيل التحدي المنطقي لكافة عمليات التسجيل الجديدة لمنع البوتات.</p>
+        <Card className="luxury-card border-none bg-primary/5 p-8 space-y-6 group">
+           <div className="flex justify-between items-start">
+              <ShieldCheck className="text-primary" size={40} />
+              <Badge className="bg-primary text-black font-black">STRICT MODE</Badge>
            </div>
-           <Badge className="bg-primary text-black font-black">STRICT MODE ON</Badge>
+           <div>
+              <h3 className="text-xl font-black mb-2">أمن المراسلات والبريد</h3>
+              <p className="text-sm text-muted-foreground font-medium">توثيق سجلات SPF/DKIM لضمان وصول الرسائل لـ Inbox.</p>
+           </div>
+           <Button asChild variant="outline" className="w-full h-12 rounded-xl border-primary/20 hover:bg-primary hover:text-black transition-all">
+              <Link href="/admin/email-security" className="gap-2">إدارة أمن البريد <ExternalLink size={14} /></Link>
+           </Button>
         </Card>
 
         <Card className="luxury-card border-none bg-muted/20 p-8 space-y-6">
            <Lock className="text-zinc-500" size={40} />
            <div>
-              <h3 className="text-xl font-black mb-2">تشفير البيانات</h3>
-              <p className="text-sm text-muted-foreground font-medium">كافة البيانات الحساسة مشفرة سيادياً ولا يمكن الوصول إليها إلا عبر صلاحيات 'Owner'.</p>
+              <h3 className="text-xl font-black mb-2">تشفير البيانات السيادي</h3>
+              <p className="text-sm text-muted-foreground font-medium">كافة البيانات الحساسة مشفرة سيادياً ولا يمكن الوصول إليها إلا بصلاحية المالك.</p>
            </div>
            <Badge variant="outline" className="font-black">AES-256 SECURED</Badge>
         </Card>
@@ -60,7 +67,7 @@ export default function AdminSecurityCenter() {
            <Activity className="text-blue-500" size={40} />
            <div>
               <h3 className="text-xl font-black mb-2">مراقبة الجلسات</h3>
-              <p className="text-sm text-muted-foreground font-medium">يتم تسجيل كل محاولة دخول فاشلة أو ناجحة في السجل المركزي.</p>
+              <p className="text-sm text-muted-foreground font-medium">يتم تسجيل كل محاولة دخول فاشلة أو ناجحة في السجل المركزي فوراً.</p>
            </div>
            <Badge className="bg-blue-500 text-white font-black">LOGGING ACTIVE</Badge>
         </Card>

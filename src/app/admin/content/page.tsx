@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Save, Loader2, Globe, Layout, MessageSquare, Zap, Megaphone, 
   Palette, Share2, Info, Image as ImageIcon, Shield, Wallet, 
-  ArrowRightLeft, Settings, Type, Smartphone, Eye, Sparkles
+  ArrowRightLeft, Settings, Type, Smartphone, Eye, Sparkles, Mail
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +30,7 @@ export default function AdminContentManager() {
     siteInfo: { title: "XMOOD STORE", subtitle: "", description: "", copyright: "" },
     pageContent: { heroTitle: "", heroDescription: "", footerAbout: "" },
     contact: { whatsapp: "", email: "", telegram: "", facebook: "", instagram: "", youtube: "", tiktok: "", workHours: "" },
+    emailBranding: { senderName: "XMOOD SECURITY", senderEmail: "", footerText: "© 2025 XMOOD STORE. All Rights Reserved." },
     ads: { headerBanner: "", promoText: "", isActive: false, buttonText: "اطلب الآن" },
     loginPage: {
       title: "تأمين الهوية الرقمية",
@@ -57,6 +59,7 @@ export default function AdminContentManager() {
         ...prev, 
         ...config,
         appearance: { ...prev.appearance, ...(config.appearance || {}) },
+        emailBranding: { ...prev.emailBranding, ...(config.emailBranding || {}) },
         contact: { ...prev.contact, ...(config.contact || {}) },
         loginPage: { ...prev.loginPage, ...(config.loginPage || {}) },
         walletPage: { ...prev.walletPage, ...(config.walletPage || {}) },
@@ -100,6 +103,9 @@ export default function AdminContentManager() {
           <TabsTrigger value="visual" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Palette size={16} className="text-primary" /> الهوية واللوقو
           </TabsTrigger>
+          <TabsTrigger value="emails" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
+            <Mail size={16} className="text-primary" /> هوية المراسلات
+          </TabsTrigger>
           <TabsTrigger value="login" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Shield size={16} className="text-primary" /> نصوص الدخول
           </TabsTrigger>
@@ -111,9 +117,6 @@ export default function AdminContentManager() {
           </TabsTrigger>
           <TabsTrigger value="social" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Share2 size={16} className="text-primary" /> التواصل
-          </TabsTrigger>
-          <TabsTrigger value="ads" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
-            <Megaphone size={16} className="text-primary" /> الإعلانات
           </TabsTrigger>
         </TabsList>
 
@@ -162,8 +165,32 @@ export default function AdminContentManager() {
                           )}
                        </div>
                     </div>
-                    <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">Smart Cropping: Object-Cover Active</p>
                  </div>
+              </div>
+           </Card>
+        </TabsContent>
+
+        <TabsContent value="emails">
+           <Card className="luxury-card p-8 md:p-12 space-y-10 border-none">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">اسم المرسل (From Name)</Label>
+                    <Input value={form.emailBranding.senderName} onChange={e => setForm({...form, emailBranding: {...form.emailBranding, senderName: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" placeholder="XMOOD SECURITY" />
+                 </div>
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">بريد الإرسال المخصص</Label>
+                    <Input value={form.emailBranding.senderEmail} onChange={e => setForm({...form, emailBranding: {...form.emailBranding, senderEmail: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-mono text-xs" placeholder="info@xmood.com" />
+                 </div>
+                 <div className="col-span-full space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">تذييل الرسالة (Footer)</Label>
+                    <Textarea value={form.emailBranding.footerText} onChange={e => setForm({...form, emailBranding: {...form.emailBranding, footerText: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[100px] p-4" />
+                 </div>
+              </div>
+              <div className="p-6 bg-primary/5 rounded-2xl border border-primary/20 flex gap-4">
+                 <Info size={24} className="text-primary shrink-0" />
+                 <p className="text-xs font-bold leading-relaxed">
+                   ملاحظة: لضمان تفعيل بريد الإرسال المخصص، يجب توثيق النطاق في مركز "أمن البريد" أولاً.
+                 </p>
               </div>
            </Card>
         </TabsContent>
@@ -178,14 +205,6 @@ export default function AdminContentManager() {
                  <div className="space-y-3">
                     <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">وصف الهوية الرقمية</Label>
                     <Input value={form.loginPage.subtitle} onChange={e => setForm({...form, loginPage: {...form.loginPage, subtitle: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-medium" />
-                 </div>
-                 <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">عنوان بطاقة الدخول</Label>
-                    <Input value={form.loginPage.cardTitle} onChange={e => setForm({...form, loginPage: {...form.loginPage, cardTitle: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-black" />
-                 </div>
-                 <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">النص الفرعي للبطاقة</Label>
-                    <Input value={form.loginPage.cardSubtitle} onChange={e => setForm({...form, loginPage: {...form.loginPage, cardSubtitle: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-mono text-[10px]" />
                  </div>
               </div>
            </Card>
@@ -205,10 +224,6 @@ export default function AdminContentManager() {
                  <div className="col-span-full space-y-3">
                     <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">وصف بروتوكول الإيداع</Label>
                     <Textarea value={form.walletPage.uidDesc} onChange={e => setForm({...form, walletPage: {...form.walletPage, uidDesc: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[100px] p-4" />
-                 </div>
-                 <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">عنوان سجل العمليات</Label>
-                    <Input value={form.walletPage.ledgerTitle} onChange={e => setForm({...form, walletPage: {...form.walletPage, ledgerTitle: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" />
                  </div>
               </div>
            </Card>
@@ -259,56 +274,6 @@ export default function AdminContentManager() {
                       />
                    </div>
                  ))}
-              </div>
-           </Card>
-        </TabsContent>
-
-        <TabsContent value="ads">
-           <Card className="luxury-card p-8 md:p-12 space-y-10 border-none">
-              <div className="flex items-center justify-between p-6 bg-primary/5 rounded-[2rem] border border-primary/20">
-                 <div className="space-y-1">
-                    <h3 className="font-black text-lg">تفعيل البانر الإعلاني</h3>
-                    <p className="text-xs text-muted-foreground">يظهر في واجهة الموقع الرئيسية فور التفعيل.</p>
-                 </div>
-                 <Switch 
-                   checked={form.ads.isActive} 
-                   onCheckedChange={(val) => setForm({...form, ads: {...form.ads, isActive: val}})}
-                 />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                 <div className="space-y-6">
-                    <div className="space-y-3">
-                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">رابط صورة البانر (21:9)</Label>
-                       <Input value={form.ads.headerBanner} onChange={e => setForm({...form, ads: {...form.ads, headerBanner: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-mono text-xs" />
-                    </div>
-                    <div className="space-y-3">
-                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">النص الترويجي الضخم</Label>
-                       <Input value={form.ads.promoText} onChange={e => setForm({...form, ads: {...form.ads, promoText: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-black" />
-                    </div>
-                 </div>
-
-                 <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest pr-4">
-                       <Eye size={14} /> معاينة الإعلان المباشرة
-                    </div>
-                    <div className="relative h-48 rounded-[2.5rem] overflow-hidden bg-muted border-2 border-dashed border-primary/20">
-                       {form.ads.headerBanner ? (
-                         <>
-                            <img src={form.ads.headerBanner} className="w-full h-full object-cover" alt="" />
-                            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-6 text-center">
-                               <p className="text-white font-black text-lg line-clamp-2">{form.ads.promoText || "نص ترويجي هنا"}</p>
-                               <Badge className="mt-4 bg-primary text-black font-black uppercase text-[8px]">AD PREVIEW</Badge>
-                            </div>
-                         </>
-                       ) : (
-                         <div className="h-full flex flex-col items-center justify-center opacity-20">
-                            <Megaphone size={40} />
-                            <span className="text-[10px] font-black mt-2 tracking-widest">UPLOAD BANNER</span>
-                         </div>
-                       )}
-                    </div>
-                 </div>
               </div>
            </Card>
         </TabsContent>

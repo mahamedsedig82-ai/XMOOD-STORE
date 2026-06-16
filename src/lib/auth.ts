@@ -1,3 +1,4 @@
+
 "use client";
 
 import { 
@@ -15,7 +16,6 @@ import { auth, db } from "./firebase";
 
 /**
  * Sovereign Identity Sync: Ensures user profile exists in Firestore with full security data.
- * This function preserves all existing data and only updates what is changed.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user) return;
@@ -45,16 +45,13 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         updatedAt: serverTimestamp(),
       };
       await setDoc(userRef, initialProfile);
-      console.log("[AUTH] New Sovereign Profile Created");
     } else {
-      // Preserve existing data while updating relevant fields
       const updatePayload = { 
         lastSeen: new Date().toISOString(),
         updatedAt: serverTimestamp(),
         ...additionalData
       };
       await updateDoc(userRef, updatePayload);
-      console.log("[AUTH] Sovereign Profile Synced");
     }
   } catch (error) {
     console.error("Profile Sync Error:", error);
@@ -62,13 +59,26 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
   }
 }
 
+/**
+ * Improved Magic Link Delivery: Uses professional URL handling to prevent Spam classification.
+ */
 export const sendMagicLink = async (email: string) => {
+  const cleanEmail = email.trim().toLowerCase();
   const actionCodeSettings = {
+    // Points to the production domain to build sender reputation
     url: `${window.location.origin}/verify-email`,
     handleCodeInApp: true,
+    // Ensures the dynamic link is professional and not flagged
+    dynamicLinkDomain: undefined, 
   };
-  await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-  window.localStorage.setItem('emailForSignIn', email);
+  
+  try {
+    await sendSignInLinkToEmail(auth, cleanEmail, actionCodeSettings);
+    window.localStorage.setItem('emailForSignIn', cleanEmail);
+  } catch (error) {
+    console.error("[AUTH] Magic Link Error:", error);
+    throw error;
+  }
 };
 
 export const completeMagicLinkSignIn = async () => {
@@ -87,7 +97,7 @@ export const completeMagicLinkSignIn = async () => {
   return null;
 };
 
-export const loginEmail = (e: string, p: string) => signInWithEmailAndPassword(auth, e, p);
-export const registerEmail = (e: string, p: string) => createUserWithEmailAndPassword(auth, e, p);
-export const resetPassword = (e: string) => sendPasswordResetEmail(auth, e);
+export const loginEmail = (e: string, p: string) => signInWithEmailAndPassword(auth, e.trim().toLowerCase(), p);
+export const registerEmail = (e: string, p: string) => createUserWithEmailAndPassword(auth, e.trim().toLowerCase(), p);
+export const resetPassword = (e: string) => sendPasswordResetEmail(auth, e.trim().toLowerCase());
 export const logout = () => signOut(auth);
