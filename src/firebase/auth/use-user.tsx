@@ -9,7 +9,7 @@ import { UserProfile } from '@/app/lib/types';
 
 /**
  * Sovereign hook for Identity & Role Management.
- * Implements debounced profile synchronization to prevent race conditions during Google Login.
+ * Optimized to prevent race conditions during Login phase.
  */
 export function useUser() {
   const auth = useAuth();
@@ -60,7 +60,7 @@ export function useUser() {
       if (snapshot.exists()) {
         const data = snapshot.data() as UserProfile;
         
-        // Critical: Check and force Master Admin role if email matches
+        // Forced Sovereign Sync for Masters
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         if (isMaster && data.role !== 'owner') {
           updateDoc(userDocRef, { role: 'owner', label: 'المدير العام', updatedAt: serverTimestamp() });
@@ -69,7 +69,13 @@ export function useUser() {
         setProfile({ ...data, uid: snapshot.id });
         setLoading(false); 
       } else {
-        // Safe Profile Auto-Creation (Self-Healing)
+        // Safe Auto-Creation Logic
+        // We only attempt auto-creation if we are NOT on the login page to avoid race conditions
+        if (typeof window !== 'undefined' && window.location.pathname.includes('/login')) {
+           console.log("[AUTH-DEBUG] useUser skipping auto-create on login page to avoid race condition.");
+           return;
+        }
+
         if (syncInProgress.current) return;
         syncInProgress.current = true;
 

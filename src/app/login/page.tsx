@@ -15,7 +15,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Loader2, Mail, ShieldCheck, RefreshCw, UserCircle, LogIn, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -36,7 +36,6 @@ export default function SecureLoginPage() {
   const db = useFirestore();
   const router = useRouter();
   
-  // Guard to prevent multiple concurrent calls and re-renders
   const isAuthProcessing = useRef(false);
 
   const handleResetPassword = async () => {
@@ -56,36 +55,39 @@ export default function SecureLoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    console.log("[AUTH-DEBUG] Google Login triggered. Current Origin:", window.location.origin);
-    
     if (isAuthProcessing.current) {
-      console.warn("[AUTH-DEBUG] Blocked: Auth is already in progress.");
+      console.warn("[AUTH-DEBUG] Blocked: Authentication already in progress.");
       return;
     }
     
     if (!auth || !db) {
-      console.error("[AUTH-DEBUG] Blocked: Firebase Auth/Firestore not initialized.");
+      console.error("[AUTH-DEBUG] Firebase services not ready.");
       return;
     }
     
     isAuthProcessing.current = true;
     setLoading(true);
+    console.log("[AUTH-PHASE-1] Triggering Google Popup. Origin:", window.location.origin);
 
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
 
-      console.log("[AUTH-DEBUG] Attempting signInWithPopup...");
+      // The critical call
       const result = await signInWithPopup(auth, provider);
       
-      console.log("[AUTH-DEBUG] Popup SUCCESS. User UID:", result.user.uid);
-      const user = result.user;
+      console.log("[AUTH-PHASE-2] signInWithPopup SUCCESS!");
+      console.log("[AUTH-PHASE-2] User UID:", result.user.uid);
+      console.log("[AUTH-PHASE-2] User Email:", result.user.email);
       
+      const user = result.user;
       const userDocRef = doc(db, "users", user.uid);
+      
+      console.log("[AUTH-PHASE-3] Checking Firestore Profile...");
       const userDoc = await getDoc(userDocRef);
       
       if (!userDoc.exists()) {
-        console.log("[AUTH-DEBUG] Profile not found, creating new document...");
+        console.log("[AUTH-PHASE-4] Profile not found. Creating new document...");
         await setDoc(userDocRef, {
           uid: user.uid,
           displayName: user.displayName?.split(" ")[0] || "عضو",
@@ -102,39 +104,42 @@ export default function SecureLoginPage() {
           affinityPoints: 50,
           updatedAt: serverTimestamp()
         });
-        console.log("[AUTH-DEBUG] Document created successfully.");
+        console.log("[AUTH-PHASE-5] New Profile Created Successfully.");
       } else {
-        console.log("[AUTH-DEBUG] Existing profile found. Updating lastSeen.");
-        await setDoc(userDocRef, { lastSeen: new Date().toISOString(), updatedAt: serverTimestamp() }, { merge: true });
+        console.log("[AUTH-PHASE-4] Profile exists. Updating activity...");
+        await updateDoc(userDocRef, { 
+          lastSeen: new Date().toISOString(), 
+          updatedAt: serverTimestamp() 
+        });
+        console.log("[AUTH-PHASE-5] Profile Activity Updated.");
       }
       
       toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في عالم XMOOD." });
-      console.log("[AUTH-DEBUG] Triggering redirection...");
-      router.push("/");
+      console.log("[AUTH-PHASE-6] All operations complete. Redirecting...");
+      
+      // Short delay to ensure state stabilizes before navigation
+      setTimeout(() => {
+        router.push("/");
+      }, 500);
+
     } catch (error: any) {
-      console.error("[AUTH-DEBUG] SIGN-IN ERROR OBJECT:", error);
-      console.error("[AUTH-DEBUG] Error Code:", error.code);
-      console.error("[AUTH-DEBUG] Error Message:", error.message);
+      console.error("[AUTH-PHASE-ERROR] Full Error Object:", error);
       
       if (error.code === 'auth/popup-closed-by-user') {
         toast({ 
           variant: "destructive",
           title: "تنبيه هام", 
-          description: "تم إغلاق نافذة الدخول قبل اكتمال العملية. يرجى التأكد من السماح بالنوافذ المنبثقة ومن أن النطاق مضاف في Authorized Domains بـ Firebase Console." 
-        });
-      } else if (error.code === 'auth/unauthorized-domain') {
-        toast({
-          variant: "destructive",
-          title: "نطاق غير مصرح",
-          description: "هذا النطاق غير مضاف في إعدادات Firebase Authentication. يرجى إضافة النطاق الحالي في الـ Console."
+          description: "تم إغلاق نافذة الدخول قبل اكتمال العملية. يرجى التأكد من اختيار الحساب والانتظار حتى تغلق النافذة تلقائياً." 
         });
       } else {
         toast({ variant: "destructive", title: "فشل الدخول", description: error.message || "حدث خطأ غير متوقع." });
       }
     } finally {
       setLoading(false);
-      isAuthProcessing.current = false;
-      console.log("[AUTH-DEBUG] handleGoogleLogin cycle finished.");
+      // Reset the lock after a safe period
+      setTimeout(() => {
+        isAuthProcessing.current = false;
+      }, 2000);
     }
   };
 
