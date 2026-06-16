@@ -89,7 +89,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <h2 className="text-4xl font-black mb-4 gold-text">وصول متخصص محدود</h2>
         <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed text-lg font-medium">
-          عذراً سيادة {profile.label}، هذا القسم يقع خارج نطاق مهامك المعتمدة. يرجى استخدام أدواتك المخصصة فقط.
+          عذراً سيادة {profile.label}، هذا القسم يقع خارج نطاق مهامك المعتمدة.
         </p>
         <Button asChild className="mt-12 royal-button px-16 h-16 text-lg">
           <Link href={visibleSections[0]?.href || "/admin"}>العودة لمهامي</Link>
@@ -101,6 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
+        {/* Desktop Sidebar */}
         <Sidebar className="border-l border-border bg-card hidden lg:flex" side="right">
           <SidebarHeader className="p-10 border-b text-center">
             <span className="handwritten-logo block mb-3 text-3xl">XMOOD ADMIN</span>
@@ -141,7 +142,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </Sidebar>
 
-        <main className="flex-1 flex flex-col relative min-w-0 h-full overflow-hidden">
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden">
           <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl z-[60] shrink-0">
              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-5">
@@ -161,8 +163,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar">
-            <div className="p-4 md:p-14 pb-40 lg:pb-14 min-h-full">
+          {/* Scrollable Body */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth custom-scrollbar">
+            <div className="p-4 md:p-14 pb-48 lg:pb-14 min-h-full">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
@@ -178,12 +181,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
 
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/98 backdrop-blur-3xl border-t z-[150] flex items-center justify-around px-4 shadow-[0_-15px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
+          {/* Mobile Bottom Navigation - FIXED Z-INDEX and Interaction */}
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-3xl border-t z-[160] flex items-center justify-around px-4 shadow-[0_-15px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link 
                   key={item.href} 
                   href={item.href} 
-                  className={`flex flex-col items-center justify-center gap-2 transition-all flex-1 h-full relative z-[160] pointer-events-auto ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
+                  className={`flex flex-col items-center justify-center gap-2 transition-all flex-1 h-full relative z-[170] pointer-events-auto ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
                 >
                    <div className={`p-3 rounded-2xl transition-all duration-500 ${pathname === item.href ? 'bg-primary/15 shadow-[0_0_15px_rgba(212,175,55,0.2)]' : ''}`}>
                       <item.icon size={24} className={pathname === item.href ? 'drop-shadow-[0_0_10px_var(--primary)]' : 'opacity-70'} />
@@ -194,14 +198,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              
              <Sheet dir="rtl">
                 <SheetTrigger asChild>
-                   <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-muted-foreground opacity-70 pointer-events-auto relative z-[160]">
+                   <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-muted-foreground opacity-70 pointer-events-auto relative z-[170]">
                       <div className="p-3 rounded-2xl hover:bg-muted/50 transition-colors">
                         <Menu size={24} />
                       </div>
                       <span className="text-[9px] font-black uppercase tracking-widest">المزيد</span>
                    </button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="rounded-t-[3.5rem] p-0 border-none bg-background shadow-2xl h-[80vh] z-[200]">
+                <SheetContent side="bottom" className="rounded-t-[3.5rem] p-0 border-none bg-background shadow-2xl h-[85vh] z-[200]">
                    <SheetHeader className="p-10 border-b text-center bg-muted/5">
                       <div className="flex justify-between items-center mb-6">
                          <SheetTitle className="handwritten-logo text-4xl text-right block">XMOOD ADMIN</SheetTitle>
@@ -213,7 +217,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                          {profile?.label || profile?.role} ACCESS
                       </Badge>
                    </SheetHeader>
-                   <ScrollArea className="p-8 h-full pb-48">
+                   <div className="p-8 h-full pb-48 overflow-y-auto">
                       <div className="grid grid-cols-2 gap-4">
                          {visibleSections.map((item) => (
                             <SheetClose asChild key={item.href}>
@@ -235,7 +239,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                            <LogOut size={18} /> خروج آمن
                          </Button>
                       </div>
-                   </ScrollArea>
+                   </div>
                 </SheetContent>
              </Sheet>
           </nav>
