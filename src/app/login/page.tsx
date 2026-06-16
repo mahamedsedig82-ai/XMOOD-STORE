@@ -59,6 +59,7 @@ export default function SecureLoginPage() {
     provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
+      // تفعيل استمرارية المتصفح لضمان عدم ضياع الجلسة
       await setPersistence(auth, browserLocalPersistence);
       const result = await signInWithPopup(auth, provider);
       const user = result.user;

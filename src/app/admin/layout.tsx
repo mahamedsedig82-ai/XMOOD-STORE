@@ -175,7 +175,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </main>
 
           {/* Mobile Bottom Navigation */}
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-3xl border-t z-[160] flex items-center justify-around px-4 shadow-2xl pointer-events-auto">
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-3xl border-t z-[150] flex items-center justify-around px-4 shadow-2xl pointer-events-auto">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link 
                   key={item.href} 
