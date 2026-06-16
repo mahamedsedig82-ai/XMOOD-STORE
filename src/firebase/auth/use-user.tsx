@@ -70,9 +70,9 @@ export function useUser() {
         setLoading(false); 
       } else {
         // Safe Auto-Creation Logic
-        // We only attempt auto-creation if we are NOT on the login page to avoid race conditions
+        // We avoid auto-create on login page if handleGoogleLogin is doing it
         if (typeof window !== 'undefined' && window.location.pathname.includes('/login')) {
-           console.log("[AUTH-DEBUG] useUser skipping auto-create on login page to avoid race condition.");
+           console.log("[AUTH-DEBUG] useUser waiting for manual profile creation on login page.");
            return;
         }
 

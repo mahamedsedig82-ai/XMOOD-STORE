@@ -13,7 +13,8 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithRedirect,
+  getRedirectResult
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
@@ -35,9 +36,58 @@ export default function SecureLoginPage() {
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
-  
-  // قفل أمان لمنع التكرار
   const isAuthProcessing = useRef(false);
+
+  // Handle Redirect Result
+  useEffect(() => {
+    if (!auth || !db) return;
+
+    const checkRedirect = async () => {
+      try {
+        setLoading(true);
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          console.log("[AUTH-DEBUG] Redirect result received for:", result.user.email);
+          const user = result.user;
+          const userDocRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          if (!userDoc.exists()) {
+            await setDoc(userDocRef, {
+              uid: user.uid,
+              displayName: user.displayName?.split(" ")[0] || "عضو",
+              fullName: user.displayName || "",
+              email: user.email?.toLowerCase(),
+              phoneNumber: user.phoneNumber || "",
+              walletBalance: 0,
+              role: 'user',
+              label: 'عضو بريميوم',
+              photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
+              createdAt: new Date().toISOString(),
+              lastSeen: new Date().toISOString(),
+              isVerified: true,
+              affinityPoints: 50,
+              updatedAt: serverTimestamp()
+            });
+          } else {
+            await updateDoc(userDocRef, { 
+              lastSeen: new Date().toISOString(), 
+              updatedAt: serverTimestamp() 
+            });
+          }
+          toast({ title: "تم الدخول بنجاح", description: "مرحباً بك مجدداً." });
+          router.push("/");
+        }
+      } catch (error: any) {
+        console.error("[AUTH-DEBUG] Redirect Error:", error);
+        toast({ variant: "destructive", title: "فشل الدخول", description: error.message });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkRedirect();
+  }, [auth, db, router]);
 
   const handleResetPassword = async () => {
     if (!auth || !resetEmail.trim()) {
@@ -56,97 +106,26 @@ export default function SecureLoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    if (isAuthProcessing.current) {
-      console.warn("[AUTH-DEBUG] محاولة دخول محجوبة: العملية قيد التنفيذ بالفعل.");
-      return;
-    }
-    
-    if (!auth || !db) {
-      console.error("[AUTH-DEBUG] خدمات Firebase غير جاهزة.");
-      return;
-    }
-    
+    if (isAuthProcessing.current || !auth) return;
     isAuthProcessing.current = true;
     setLoading(true);
-    console.log("[AUTH-PHASE-1] تشغيل نافذة Google. النطاق الحالي:", window.location.origin);
 
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-
-      // المرحلة الحرجة: المصادقة
-      const result = await signInWithPopup(auth, provider);
-      
-      console.log("[AUTH-PHASE-2] نجاح المصادقة مع Google!");
-      console.log("[AUTH-PHASE-2] User UID:", result.user.uid);
-      console.log("[AUTH-PHASE-2] User Email:", result.user.email);
-      
-      const user = result.user;
-      const userDocRef = doc(db, "users", user.uid);
-      
-      console.log("[AUTH-PHASE-3] التحقق من وجود ملف المستخدم في Firestore...");
-      const userDoc = await getDoc(userDocRef);
-      
-      if (!userDoc.exists()) {
-        console.log("[AUTH-PHASE-4] الملف غير موجود. جاري إنشاء سجل جديد...");
-        await setDoc(userDocRef, {
-          uid: user.uid,
-          displayName: user.displayName?.split(" ")[0] || "عضو",
-          fullName: user.displayName || "",
-          email: user.email?.toLowerCase(),
-          phoneNumber: user.phoneNumber || "",
-          walletBalance: 0,
-          role: 'user',
-          label: 'عضو بريميوم',
-          photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
-          createdAt: new Date().toISOString(),
-          lastSeen: new Date().toISOString(),
-          isVerified: true,
-          affinityPoints: 50,
-          updatedAt: serverTimestamp()
-        });
-        console.log("[AUTH-PHASE-5] تم إنشاء الملف الشخصي بنجاح.");
-      } else {
-        console.log("[AUTH-PHASE-4] الملف موجود مسبقاً. تحديث النشاط...");
-        await updateDoc(userDocRef, { 
-          lastSeen: new Date().toISOString(), 
-          updatedAt: serverTimestamp() 
-        });
-        console.log("[AUTH-PHASE-5] تم تحديث بيانات النشاط.");
-      }
-      
-      toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في عالم XMOOD." });
-      console.log("[AUTH-PHASE-6] اكتملت كافة العمليات. جاري التوجيه للرئيسية...");
-      
-      // تأخير بسيط لضمان استقرار الحالة قبل الانتقال
-      setTimeout(() => {
-        router.push("/");
-      }, 500);
-
+      // Switch to Redirect for ultimate stability
+      await signInWithRedirect(auth, provider);
     } catch (error: any) {
-      console.error("[AUTH-PHASE-ERROR] تفاصيل الخطأ الكاملة:", error);
-      
-      if (error.code === 'auth/popup-closed-by-user') {
-        toast({ 
-          variant: "destructive",
-          title: "تنبيه هام", 
-          description: "تم إغلاق نافذة الدخول قبل اكتمال العملية. يرجى التأكد من اختيار الحساب والانتظار حتى تغلق النافذة تلقائياً." 
-        });
-      } else {
-        toast({ variant: "destructive", title: "فشل الدخول", description: error.message || "حدث خطأ غير متوقع." });
-      }
-    } finally {
+      console.error("[AUTH-PHASE-ERROR] Google Init Error:", error);
+      toast({ variant: "destructive", title: "خطأ في الاتصال", description: error.message });
       setLoading(false);
-      // فك القفل بعد فترة أمان
-      setTimeout(() => {
-        isAuthProcessing.current = false;
-      }, 2000);
+      isAuthProcessing.current = false;
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !db || loading || isAuthProcessing.current) return;
+    if (!auth || !db || loading) return;
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
@@ -180,7 +159,7 @@ export default function SecureLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !db || loading || isAuthProcessing.current) return;
+    if (!auth || !db || loading) return;
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
@@ -232,7 +211,7 @@ export default function SecureLoginPage() {
              <div className="space-y-4">
                 <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Sovereign Access Protocol</Badge>
                 <h1 className="text-7xl font-headline font-black leading-tight tracking-tighter">بوابة <span className="gold-text">النخبة</span> الرقمية</h1>
-                <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-md">نظام دخول مشفر وآمن يمنحك الوصول الكامل لكافة الخدمات والمحفظة السيادية.</p>
+                <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-md">نظام دخول آمن يمنحك الوصول الكامل لكافة الخدمات والمحفظة السيادية.</p>
              </div>
              <div className="grid grid-cols-2 gap-6">
                 {[
