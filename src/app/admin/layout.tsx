@@ -98,7 +98,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
-        {/* Desktop Sidebar */}
+        {/* Sidebar */}
         <Sidebar className="border-l border-border bg-card hidden lg:flex shrink-0" side="right">
           <SidebarHeader className="p-8 border-b text-center">
             <span className="handwritten-logo block mb-3 text-3xl">XMOOD ADMIN</span>
@@ -139,30 +139,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </Sidebar>
 
-        {/* Main Content Area - THE CORE FIX FOR SCROLLING */}
+        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-full relative bg-background overflow-hidden">
           {/* Main Header - Fixed at Top */}
-          <header className="h-20 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl sticky top-0 z-[60] shrink-0">
+          <header className="h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl sticky top-0 z-[60] shrink-0">
              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-5">
-                   <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20">
-                      <Terminal size={20} />
+                   <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20">
+                      <Terminal size={24} />
                    </div>
                    <div className="flex flex-col text-right">
-                      <span className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground">وحدة التحكم</span>
-                      <span className="text-[8px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Active</span>
+                      <span className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground">وحدة التحكم السيادية</span>
+                      <span className="text-[8px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Active Session</span>
                    </div>
                 </div>
              </div>
              <div className="flex items-center gap-3">
                 <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] font-black px-4 py-1.5 rounded-full hidden sm:block">Identity Confirmed</Badge>
-                <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_#22c55e]" />
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_#22c55e]" />
              </div>
           </header>
 
           {/* Independent Scrollable Area */}
-          <main className="flex-1 overflow-y-auto scroll-smooth relative bg-muted/5">
-            <div className="p-6 md:p-10 lg:p-12 pb-32">
+          <main className="flex-1 overflow-y-auto scroll-smooth relative bg-muted/5 pt-10">
+            <div className="p-6 md:p-10 lg:p-12 pb-40">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
@@ -225,14 +225,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                </Link>
                             </SheetClose>
                          ))}
-                      </div>
-                      <div className="mt-10 space-y-3">
-                         <Button asChild variant="outline" className="w-full h-14 rounded-2xl font-black text-[10px] uppercase gap-4">
-                           <Link href="/"><ArrowLeft size={18} /> العودة للمتجر</Link>
-                         </Button>
-                         <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-14 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-4">
-                           <LogOut size={18} /> خروج آمن
-                         </Button>
                       </div>
                    </div>
                 </SheetContent>

@@ -9,7 +9,7 @@ import { UserProfile } from '@/app/lib/types';
 
 /**
  * Sovereign hook for Identity & Role Management.
- * Optimized for Redirect flows and prevents race conditions.
+ * Optimized to handle redirect flows and prevent background race conditions.
  */
 export function useUser() {
   const auth = useAuth();
@@ -26,17 +26,11 @@ export function useUser() {
     "ADMIN@XMOOD.COM"
   ];
 
-  const staffRoles = [
-    'owner', 'admin', 'gm', 'community_admin', 'community_mod', 
-    'store_manager', 'design_manager', 'designer', 'accountant', 
-    'support', 'middleman', 'agent'
-  ];
-
   useEffect(() => {
     if (!auth) return;
     
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log("[AUTH-DEBUG] useUser state changed:", firebaseUser?.email);
+      console.log("[AUTH-DEBUG] Auth state changed:", firebaseUser?.email);
       setUser(firebaseUser);
       if (!firebaseUser) {
         setProfile(null);
@@ -51,9 +45,9 @@ export function useUser() {
   useEffect(() => {
     if (!user || !db) return;
 
-    // Skip auto-sync if we are on the login page to avoid conflicts with manual creation logic
+    // تعطيل المزامنة التلقائية إذا كان المستخدم في صفحة الدخول لإعطاء الأولوية لمعالج التوجيه (Redirect Handler)
     if (typeof window !== 'undefined' && window.location.pathname.includes('/login')) {
-      console.log("[AUTH-DEBUG] useUser skipping auto-sync on login page.");
+      console.log("[AUTH-DEBUG] useUser waiting for Login Page handler...");
       return;
     }
 
@@ -67,7 +61,7 @@ export function useUser() {
       if (snapshot.exists()) {
         const data = snapshot.data() as UserProfile;
         
-        // Forced Sovereign Sync for Masters
+        // المزامنة السيادية للمدراء
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         if (isMaster && data.role !== 'owner') {
           updateDoc(userDocRef, { role: 'owner', label: 'المدير العام', updatedAt: serverTimestamp() });
@@ -76,10 +70,11 @@ export function useUser() {
         setProfile({ ...data, uid: snapshot.id });
         setLoading(false); 
       } else {
+        // حماية من التكرار أثناء الإنشاء التلقائي
         if (syncInProgress.current) return;
         syncInProgress.current = true;
 
-        console.log("[AUTH-DEBUG] useUser auto-creating profile...");
+        console.log("[AUTH-DEBUG] No profile found, creating default...");
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         const initialProfile: UserProfile = {
           uid: user.uid,
@@ -120,7 +115,7 @@ export function useUser() {
 
   const isStaff = !!(user && (
     MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || 
-    (profile?.role && staffRoles.includes(profile.role))
+    ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile?.role || '')
   ));
   
   return { 
