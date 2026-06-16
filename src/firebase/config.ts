@@ -1,5 +1,6 @@
 /**
  * @fileOverview Firebase configuration for XMOOD STORE.
+ * تم تحديث الإعدادات لضمان الاتصال بالمشروع الصحيح.
  */
 
 export const firebaseConfig = {

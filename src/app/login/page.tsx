@@ -36,6 +36,7 @@ export default function SecureLoginPage() {
   const db = useFirestore();
   const router = useRouter();
   
+  // قفل أمان لمنع التكرار
   const isAuthProcessing = useRef(false);
 
   const handleResetPassword = async () => {
@@ -56,38 +57,38 @@ export default function SecureLoginPage() {
 
   const handleGoogleLogin = async () => {
     if (isAuthProcessing.current) {
-      console.warn("[AUTH-DEBUG] Blocked: Authentication already in progress.");
+      console.warn("[AUTH-DEBUG] محاولة دخول محجوبة: العملية قيد التنفيذ بالفعل.");
       return;
     }
     
     if (!auth || !db) {
-      console.error("[AUTH-DEBUG] Firebase services not ready.");
+      console.error("[AUTH-DEBUG] خدمات Firebase غير جاهزة.");
       return;
     }
     
     isAuthProcessing.current = true;
     setLoading(true);
-    console.log("[AUTH-PHASE-1] Triggering Google Popup. Origin:", window.location.origin);
+    console.log("[AUTH-PHASE-1] تشغيل نافذة Google. النطاق الحالي:", window.location.origin);
 
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
 
-      // The critical call
+      // المرحلة الحرجة: المصادقة
       const result = await signInWithPopup(auth, provider);
       
-      console.log("[AUTH-PHASE-2] signInWithPopup SUCCESS!");
+      console.log("[AUTH-PHASE-2] نجاح المصادقة مع Google!");
       console.log("[AUTH-PHASE-2] User UID:", result.user.uid);
       console.log("[AUTH-PHASE-2] User Email:", result.user.email);
       
       const user = result.user;
       const userDocRef = doc(db, "users", user.uid);
       
-      console.log("[AUTH-PHASE-3] Checking Firestore Profile...");
+      console.log("[AUTH-PHASE-3] التحقق من وجود ملف المستخدم في Firestore...");
       const userDoc = await getDoc(userDocRef);
       
       if (!userDoc.exists()) {
-        console.log("[AUTH-PHASE-4] Profile not found. Creating new document...");
+        console.log("[AUTH-PHASE-4] الملف غير موجود. جاري إنشاء سجل جديد...");
         await setDoc(userDocRef, {
           uid: user.uid,
           displayName: user.displayName?.split(" ")[0] || "عضو",
@@ -104,26 +105,26 @@ export default function SecureLoginPage() {
           affinityPoints: 50,
           updatedAt: serverTimestamp()
         });
-        console.log("[AUTH-PHASE-5] New Profile Created Successfully.");
+        console.log("[AUTH-PHASE-5] تم إنشاء الملف الشخصي بنجاح.");
       } else {
-        console.log("[AUTH-PHASE-4] Profile exists. Updating activity...");
+        console.log("[AUTH-PHASE-4] الملف موجود مسبقاً. تحديث النشاط...");
         await updateDoc(userDocRef, { 
           lastSeen: new Date().toISOString(), 
           updatedAt: serverTimestamp() 
         });
-        console.log("[AUTH-PHASE-5] Profile Activity Updated.");
+        console.log("[AUTH-PHASE-5] تم تحديث بيانات النشاط.");
       }
       
       toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في عالم XMOOD." });
-      console.log("[AUTH-PHASE-6] All operations complete. Redirecting...");
+      console.log("[AUTH-PHASE-6] اكتملت كافة العمليات. جاري التوجيه للرئيسية...");
       
-      // Short delay to ensure state stabilizes before navigation
+      // تأخير بسيط لضمان استقرار الحالة قبل الانتقال
       setTimeout(() => {
         router.push("/");
       }, 500);
 
     } catch (error: any) {
-      console.error("[AUTH-PHASE-ERROR] Full Error Object:", error);
+      console.error("[AUTH-PHASE-ERROR] تفاصيل الخطأ الكاملة:", error);
       
       if (error.code === 'auth/popup-closed-by-user') {
         toast({ 
@@ -136,7 +137,7 @@ export default function SecureLoginPage() {
       }
     } finally {
       setLoading(false);
-      // Reset the lock after a safe period
+      // فك القفل بعد فترة أمان
       setTimeout(() => {
         isAuthProcessing.current = false;
       }, 2000);
