@@ -2,7 +2,7 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, Layers, ClipboardList, Users, Wallet, ShieldAlert, Palette
+  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, Layers, ClipboardList, Users, Wallet, ShieldAlert, Palette, GitBranch
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -27,7 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const allSections = useMemo(() => [
     { label: "نظرة عامة", icon: BarChart3, href: "/admin", roles: ['owner', 'admin', 'gm'] },
-    { label: "الأقسام", icon: Layers, href: "/admin/categories", roles: ['owner', 'admin', 'gm', 'store_manager'] },
+    { label: "فروع المنصة", icon: GitBranch, href: "/admin/branches", roles: ['owner', 'admin', 'gm'] },
     { label: "المخزون والمنتجات", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
     { label: "سوق الخدمات", icon: Briefcase, href: "/admin/other-services", roles: ['owner', 'admin', 'agent'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support'] },
@@ -67,7 +67,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
-        {/* Sidebar Desktop */}
         <Sidebar className="border-l border-border bg-card hidden lg:flex shrink-0 shadow-2xl" side="right">
           <SidebarHeader className="p-10 border-b text-center">
             <span className="handwritten-logo block mb-4 text-4xl">XMOOD</span>
@@ -75,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {profile?.label || "ADMIN ACCESS"}
             </Badge>
           </SidebarHeader>
-          <SidebarContent className="p-6 overflow-y-auto">
+          <SidebarContent className="p-6 overflow-y-auto custom-scrollbar">
              <SidebarMenu className="gap-3">
                {visibleSections.map((item) => (
                  <SidebarMenuItem key={item.href}>
@@ -103,7 +102,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </Sidebar>
 
-        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background">
           <header className="h-24 border-b flex items-center justify-between px-6 md:px-10 bg-background/90 backdrop-blur-xl z-[60] shrink-0">
              <div className="flex items-center gap-4 md:gap-6">
@@ -122,7 +120,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </header>
 
           <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-4 md:px-16 py-12 pb-32 bg-background">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto h-full">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
@@ -137,7 +135,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </main>
 
-          {/* Mobile Navigation Bar */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-background/95 backdrop-blur-xl border-t z-[100] flex items-center justify-around px-4 shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${pathname === item.href ? 'text-primary scale-110' : 'text-muted-foreground opacity-60'}`}>
@@ -153,7 +150,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                    <div className="p-8 border-b bg-muted/20">
                       <SheetTitle className="text-2xl font-black gold-text">قائمة التحكم الشاملة</SheetTitle>
                    </div>
-                   <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-4">
+                   <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-4 custom-scrollbar">
                       {visibleSections.map((item) => (
                          <SheetClose asChild key={item.href}>
                             <Link href={item.href} className={`flex flex-col items-center gap-4 p-6 rounded-3xl border transition-all ${pathname === item.href ? 'bg-primary text-white border-primary shadow-xl' : 'bg-muted/50 border-transparent'}`}>

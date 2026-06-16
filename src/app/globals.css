@@ -80,6 +80,16 @@
   @apply bg-background/60 backdrop-blur-xl border border-white/10 dark:border-white/5;
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-primary/20 rounded-full hover:bg-primary/40;
+}
+
 @media (max-width: 768px) {
   .responsive-table tr {
     @apply mb-6 border rounded-[2rem] p-6 bg-card shadow-lg block;
@@ -92,10 +102,6 @@
     @apply font-black text-[9px] uppercase text-muted-foreground ml-4;
   }
 }
-
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { @apply bg-transparent; }
-::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full hover:bg-primary/40; }
 
 .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
