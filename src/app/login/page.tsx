@@ -38,21 +38,24 @@ export default function SecureLoginPage() {
   const router = useRouter();
   const isAuthProcessing = useRef(false);
 
-  // Handle Redirect Result
+  // Handle Redirect Result (The core fix for Google Auth)
   useEffect(() => {
     if (!auth || !db) return;
 
     const checkRedirect = async () => {
       try {
         setLoading(true);
+        console.log("[AUTH-DEBUG] Checking for redirect result...");
         const result = await getRedirectResult(auth);
+        
         if (result?.user) {
-          console.log("[AUTH-DEBUG] Redirect result received for:", result.user.email);
+          console.log("[AUTH-DEBUG] Redirect success for:", result.user.email);
           const user = result.user;
           const userDocRef = doc(db, "users", user.uid);
           const userDoc = await getDoc(userDocRef);
 
           if (!userDoc.exists()) {
+            console.log("[AUTH-DEBUG] Creating new profile after redirect...");
             await setDoc(userDocRef, {
               uid: user.uid,
               displayName: user.displayName?.split(" ")[0] || "عضو",
@@ -75,13 +78,15 @@ export default function SecureLoginPage() {
               updatedAt: serverTimestamp() 
             });
           }
-          toast({ title: "تم الدخول بنجاح", description: "مرحباً بك مجدداً." });
+          toast({ title: "تم الدخول بنجاح", description: "مرحباً بك مجدداً في XMOOD." });
           router.push("/");
+        } else {
+          console.log("[AUTH-DEBUG] No redirect result found or processed.");
+          setLoading(false);
         }
       } catch (error: any) {
         console.error("[AUTH-DEBUG] Redirect Error:", error);
         toast({ variant: "destructive", title: "فشل الدخول", description: error.message });
-      } finally {
         setLoading(false);
       }
     };
@@ -111,9 +116,9 @@ export default function SecureLoginPage() {
     setLoading(true);
 
     try {
+      console.log("[AUTH-DEBUG] Initiating Google Redirect...");
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      // Switch to Redirect for ultimate stability
       await signInWithRedirect(auth, provider);
     } catch (error: any) {
       console.error("[AUTH-PHASE-ERROR] Google Init Error:", error);
@@ -203,9 +208,9 @@ export default function SecureLoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white" dir="rtl">
+    <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden" dir="rtl">
       <Navbar />
-      <div className="container mx-auto px-6 py-24 flex justify-center items-center min-h-screen pt-32">
+      <div className="container mx-auto px-6 flex justify-center items-center min-h-screen pt-24 pb-12">
         <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="hidden lg:block space-y-10">
              <div className="space-y-4">
@@ -226,16 +231,16 @@ export default function SecureLoginPage() {
              </div>
           </div>
 
-          <Card className="luxury-card border-none overflow-hidden bg-zinc-950/80 backdrop-blur-3xl shadow-2xl border border-white/5">
-            <div className="p-10 text-center border-b border-white/5 bg-white/5">
-              <UserCircle size={50} className="text-primary mx-auto mb-4" />
-              <h2 className="text-2xl font-black uppercase tracking-tight">تسجيل الدخول الموحد</h2>
+          <Card className="luxury-card border-none overflow-hidden bg-zinc-950/80 backdrop-blur-3xl shadow-2xl border border-white/5 w-full">
+            <div className="p-8 text-center border-b border-white/5 bg-white/5">
+              <UserCircle size={40} className="text-primary mx-auto mb-3" />
+              <h2 className="text-xl font-black uppercase tracking-tight">تسجيل الدخول الموحد</h2>
               <p className="text-zinc-500 text-[8px] font-black uppercase tracking-[0.4em] mt-2">Elite User Authentication</p>
             </div>
             
-            <CardContent className="p-8 md:p-12">
+            <CardContent className="p-6 md:p-10">
               <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-10 bg-white/5 rounded-2xl p-1.5 h-14">
+                <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/5 rounded-2xl p-1.5 h-14">
                   <TabsTrigger value="login" className="rounded-xl font-bold text-xs uppercase data-[state=active]:bg-primary data-[state=active]:text-black">الدخول</TabsTrigger>
                   <TabsTrigger value="signup" className="rounded-xl font-bold text-xs uppercase data-[state=active]:bg-primary data-[state=active]:text-black">التسجيل</TabsTrigger>
                 </TabsList>
@@ -275,7 +280,7 @@ export default function SecureLoginPage() {
                       {loading ? <Loader2 className="animate-spin" /> : <><LogIn size={20} className="ml-2" /> دخول آمن</>}
                     </Button>
 
-                    <div className="relative py-6">
+                    <div className="relative py-4">
                        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
                        <div className="relative flex justify-center text-[8px] uppercase font-black"><span className="bg-[#0c0c0c] px-6 text-zinc-600 tracking-[0.4em]">Sovereign Identity</span></div>
                     </div>

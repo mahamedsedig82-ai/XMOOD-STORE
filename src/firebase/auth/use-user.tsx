@@ -9,7 +9,7 @@ import { UserProfile } from '@/app/lib/types';
 
 /**
  * Sovereign hook for Identity & Role Management.
- * Optimized to prevent race conditions during Login phase.
+ * Optimized for Redirect flows and prevents race conditions.
  */
 export function useUser() {
   const auth = useAuth();
@@ -36,6 +36,7 @@ export function useUser() {
     if (!auth) return;
     
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      console.log("[AUTH-DEBUG] useUser state changed:", firebaseUser?.email);
       setUser(firebaseUser);
       if (!firebaseUser) {
         setProfile(null);
@@ -49,6 +50,12 @@ export function useUser() {
 
   useEffect(() => {
     if (!user || !db) return;
+
+    // Skip auto-sync if we are on the login page to avoid conflicts with manual creation logic
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/login')) {
+      console.log("[AUTH-DEBUG] useUser skipping auto-sync on login page.");
+      return;
+    }
 
     setLoading(true);
     const userDocRef = doc(db, 'users', user.uid);
@@ -69,20 +76,14 @@ export function useUser() {
         setProfile({ ...data, uid: snapshot.id });
         setLoading(false); 
       } else {
-        // Safe Auto-Creation Logic
-        // We avoid auto-create on login page if handleGoogleLogin is doing it
-        if (typeof window !== 'undefined' && window.location.pathname.includes('/login')) {
-           console.log("[AUTH-DEBUG] useUser waiting for manual profile creation on login page.");
-           return;
-        }
-
         if (syncInProgress.current) return;
         syncInProgress.current = true;
 
+        console.log("[AUTH-DEBUG] useUser auto-creating profile...");
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         const initialProfile: UserProfile = {
           uid: user.uid,
-          displayName: user.displayName || user.email?.split('@')[0] || "عضو",
+          displayName: user.displayName?.split(' ')[0] || user.email?.split('@')[0] || "عضو",
           fullName: user.displayName || "",
           email: user.email || "",
           walletBalance: isMaster ? 999999 : 0,
