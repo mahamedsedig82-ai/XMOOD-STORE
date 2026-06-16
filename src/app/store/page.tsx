@@ -7,7 +7,7 @@ import { useFirestore } from "@/firebase";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Loader2, Zap, ArrowDownWideArrow } from "lucide-react";
+import { Search, Filter, Loader2, Zap, ArrowDownWideNarrow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -52,7 +52,7 @@ export default function StorePage() {
               </div>
               <h1 className="text-6xl md:text-8xl font-headline font-black gold-text leading-tight">الخدمات الإلكترونية</h1>
               <div className="flex items-center gap-2 text-zinc-500 mt-4 text-xs font-bold uppercase tracking-widest">
-                 <ArrowDownWideArrow size={14} className="text-primary" /> مرتبة تصاعدياً حسب القيمة
+                 <ArrowDownWideNarrow size={14} className="text-primary" /> مرتبة تصاعدياً حسب القيمة
               </div>
             </div>
             
