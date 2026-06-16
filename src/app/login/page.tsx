@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,20 +28,28 @@ export default function SecureLoginPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start true to check redirect
   const [resetEmail, setResetEmail] = useState("");
   const [step, setStep] = useState<'auth' | 'verify_pending'>('auth');
   
   const router = useRouter();
+  const checkPerformed = useRef(false);
 
-  // Handle Google Redirect Result on mount
+  // Handle Redirect Result on mount
   useEffect(() => {
+    if (checkPerformed.current) return;
+    checkPerformed.current = true;
+
     const processRedirect = async () => {
-      setLoading(true);
-      const user = await handleAuthRedirect();
-      if (user) {
-        router.replace("/");
-      } else {
+      try {
+        const user = await handleAuthRedirect();
+        if (user) {
+          toast({ title: "تم الدخول بنجاح", description: "مرحباً بك مجدداً." });
+          router.replace("/");
+        } else {
+          setLoading(false);
+        }
+      } catch (e) {
         setLoading(false);
       }
     };
@@ -53,14 +61,11 @@ export default function SecureLoginPage() {
       toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إدخال البريد الإلكتروني." });
       return;
     }
-    setLoading(true);
     try {
       await sendPasswordResetEmail(auth, resetEmail.trim());
       toast({ title: "تم إرسال الرابط", description: "تفقد بريدك الإلكتروني لإعادة تعيين كلمة المرور." });
     } catch (error) {
       toast({ variant: "destructive", title: "خطأ", description: "لم نتمكن من إرسال رابط الاستعادة." });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -116,6 +121,15 @@ export default function SecureLoginPage() {
       setLoading(false);
     }
   };
+
+  if (loading && step === 'auth') {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6">
+        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">Sovereign Auth Protocol Active</p>
+      </div>
+    );
+  }
 
   if (step === 'verify_pending') {
     return (
