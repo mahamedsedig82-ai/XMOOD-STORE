@@ -5,15 +5,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Zap, ShoppingBag, User, Briefcase, X, ChevronRight, Layers, Sparkles, GitBranch
+  Wallet, LayoutDashboard, LogOut, Zap, ShoppingBag, User, Briefcase, X, ChevronRight, Layers, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useUser, useAuth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatUSD } from "@/lib/currency";
-import { collection, query, orderBy } from "firebase/firestore";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -27,29 +26,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 export function Navbar() {
   const { user, profile } = useUser();
   const auth = useAuth();
-  const db = useFirestore();
   const pathname = usePathname();
   const router = useRouter();
   
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isMounted, setIsMounted] = useState(false);
-
-  // Dynamic Navigation Branches
-  const branchesQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    return query(collection(db, "site_branches"), orderBy("order", "asc"));
-  }, [db]);
-
-  const { data: dynamicBranches } = useCollection(branchesQuery);
-
-  const iconsMap: Record<string, any> = {
-    Home: Home,
-    ShoppingBag: ShoppingBag,
-    Briefcase: Briefcase,
-    Palette: Palette,
-    ShieldCheck: ShieldCheck,
-    Zap: Zap
-  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -71,6 +52,14 @@ export function Navbar() {
       router.push("/");
     }
   };
+
+  const navLinks = [
+    { label: "الرئيسية", href: "/", icon: Home },
+    { label: "المتجر", href: "/store", icon: Store },
+    { label: "سوق الخدمات", href: "/other-services", icon: Briefcase },
+    { label: "معرض الإبداع", href: "/designs/gallery", icon: Palette },
+    { label: "الوكلاء", href: "/middleman", icon: ShieldCheck },
+  ];
 
   const isAdmin = ['owner', 'admin', 'gm', 'store_manager'].includes(profile?.role || '');
 
@@ -110,35 +99,24 @@ export function Navbar() {
                 )}
 
                 <div className="space-y-4">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest pr-2 mb-2 flex items-center gap-2">
-                    <GitBranch size={12} /> تفرعات المنصة السيادية
-                  </p>
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest pr-2 mb-2">تفرعات المتجر السيادية</p>
                   <div className="grid grid-cols-1 gap-3">
-                    {dynamicBranches?.map((branch: any) => {
-                      const IconComp = iconsMap[branch.icon] || ShoppingBag;
-                      return (
-                        <SheetClose asChild key={branch.id}>
-                          <Link 
-                            href={branch.href} 
-                            className={`flex items-center justify-between p-4 rounded-2xl transition-all border group ${pathname === branch.href ? 'bg-primary text-black border-primary shadow-xl' : 'bg-card hover:bg-muted border-border/50'}`}
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${pathname === branch.href ? 'bg-black/10' : 'bg-primary/10 text-primary'}`}>
-                                 <IconComp size={20} />
-                              </div>
-                              <div className="text-right">
-                                 <p className="text-xs font-black uppercase tracking-wider">{branch.name}</p>
-                                 <p className="text-[8px] opacity-60 font-bold">{branch.description}</p>
-                              </div>
+                    {navLinks.map((link) => (
+                      <SheetClose asChild key={link.href}>
+                        <Link 
+                          href={link.href} 
+                          className={`flex items-center justify-between p-4 rounded-2xl transition-all border group ${pathname === link.href ? 'bg-primary text-black border-primary shadow-xl' : 'bg-card hover:bg-muted border-border/50'}`}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${pathname === link.href ? 'bg-black/10' : 'bg-primary/10 text-primary'}`}>
+                               <link.icon size={20} />
                             </div>
-                            <ChevronRight size={14} className={pathname === branch.href ? 'opacity-100' : 'opacity-20'} />
-                          </Link>
-                        </SheetClose>
-                      );
-                    })}
-                    {!dynamicBranches || dynamicBranches.length === 0 && (
-                       <p className="text-[10px] text-center opacity-30 font-bold uppercase tracking-widest py-10">جاري تحميل الفروع...</p>
-                    )}
+                            <span className="text-xs font-black uppercase tracking-wider">{link.label}</span>
+                          </div>
+                          <ChevronRight size={14} className={pathname === link.href ? 'opacity-100' : 'opacity-20'} />
+                        </Link>
+                      </SheetClose>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -166,13 +144,13 @@ export function Navbar() {
         </Link>
 
         <div className="hidden lg:flex items-center gap-10">
-          {dynamicBranches?.slice(0, 5).map((link: any) => (
+          {navLinks.map((link) => (
             <Link 
-              key={link.id} 
+              key={link.href} 
               href={link.href} 
               className={`text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:text-primary relative group ${pathname === link.href ? 'text-primary' : 'text-muted-foreground'}`}
             >
-              {link.name}
+              {link.label}
               <span className={`absolute -bottom-2 right-0 h-0.5 bg-primary transition-all duration-300 ${pathname === link.href ? 'w-full' : 'w-0 group-hover:w-full'}`} />
             </Link>
           ))}

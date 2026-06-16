@@ -1,18 +1,20 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { Navbar } from "@/components/layout/Navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Calendar, Award, Zap, ShieldCheck, TrendingUp, Heart, MessageSquare } from "lucide-react";
+import { Loader2, Calendar, Award, Zap, ShieldCheck, TrendingUp, Heart, MessageSquare, ShoppingBag, Briefcase, Palette, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function PublicProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const uid = params.uid as string;
   const db = useFirestore();
 
@@ -31,6 +33,13 @@ export default function PublicProfilePage() {
     </div>
   );
 
+  const sections = [
+    { label: "المتجر الرئيسي", icon: ShoppingBag, href: "/store", desc: "شحن ألعاب وباقات رقمية" },
+    { label: "سوق الخدمات", icon: Briefcase, href: "/other-services", desc: "خدمات تقنية وإبداعية" },
+    { label: "معرض الإبداع", icon: Palette, href: "/designs/gallery", desc: "بورتفوليو أعمال النخبة" },
+    { label: "الوكلاء المعتمدون", icon: Users, href: "/middleman", desc: "وسطاء الشحن والضمان" },
+  ];
+
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-primary/30" dir="rtl">
       <Navbar />
@@ -39,6 +48,9 @@ export default function PublicProfilePage() {
       <section className="relative pt-40 pb-16 md:pt-60 md:pb-32 overflow-hidden border-b bg-muted/20">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <pattern id="grid-modern" width="80" height="80" patternUnits="userSpaceOnUse">
+               <path d="M 80 0 L 0 0 0 80" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+            </pattern>
             <rect width="100%" height="100%" fill="url(#grid-modern)" />
           </svg>
         </div>
@@ -93,17 +105,36 @@ export default function PublicProfilePage() {
 
       {/* Activity Content */}
       <section className="container mx-auto px-6 py-20 pb-40">
-         <Tabs defaultValue="activity" className="space-y-12">
+         <Tabs defaultValue="sections" className="space-y-12">
             <div className="flex items-center justify-between border-b pb-8">
-               <TabsList className="bg-card p-2 rounded-[2rem] h-20 border inline-flex gap-4 px-6 shadow-2xl">
-                  <TabsTrigger value="activity" className="rounded-[1.5rem] px-10 md:px-16 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">
+               <TabsList className="bg-card p-2 rounded-[2rem] h-20 border inline-flex gap-4 px-6 shadow-2xl overflow-x-auto max-w-full">
+                  <TabsTrigger value="sections" className="rounded-[1.5rem] px-8 md:px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">
+                     <ShoppingBag size={18} className="ml-3" /> الأقسام
+                  </TabsTrigger>
+                  <TabsTrigger value="activity" className="rounded-[1.5rem] px-8 md:px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">
                      <Zap size={18} className="ml-3" /> النشاط الأخير
                   </TabsTrigger>
-                  <TabsTrigger value="achievements" className="rounded-[1.5rem] px-10 md:px-16 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">
+                  <TabsTrigger value="achievements" className="rounded-[1.5rem] px-8 md:px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">
                      <Award size={18} className="ml-3" /> الأوسمة
                   </TabsTrigger>
                </TabsList>
             </div>
+
+            <TabsContent value="sections">
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {sections.map((sec, i) => (
+                    <Link key={i} href={sec.href}>
+                      <Card className="luxury-card p-8 group hover:border-primary transition-all">
+                        <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+                          <sec.icon size={28} />
+                        </div>
+                        <h4 className="text-xl font-black mb-2">{sec.label}</h4>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">{sec.desc}</p>
+                      </Card>
+                    </Link>
+                  ))}
+               </div>
+            </TabsContent>
 
             <TabsContent value="activity">
                <Card className="luxury-card p-10 md:p-16 bg-card/40 border-none shadow-2xl">

@@ -107,7 +107,7 @@ export default function AdminUsersIntelligence() {
                 {loading ? (
                   <TableRow><TableCell colSpan={5} className="text-center py-40"><Loader2 className="animate-spin mx-auto text-primary" size={60} /></TableCell></TableRow>
                 ) : filtered?.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="text-center py-40 text-muted-foreground font-bold uppercase tracking-widest opacity-40 italic">NO_RECORDS_FOUND_IN_INTELLIGENCE_BASE</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center py-40 text-muted-foreground font-bold uppercase tracking-widest opacity-40 italic">لا توجد سجلات</TableCell></TableRow>
                 ) : filtered?.map((u) => (
                   <TableRow key={u.id} className="hover:bg-primary/5 border-b border-border/30 group transition-all duration-300">
                     <TableCell className="py-8 pr-12" data-label="الهوية">
@@ -133,7 +133,7 @@ export default function AdminUsersIntelligence() {
                           <span className="font-black text-xs flex items-center gap-2 text-foreground"><Phone size={12} className="text-primary" /> {u.phoneNumber || "---"}</span>
                           <div className="flex items-center gap-2">
                              <UserCheck size={12} className={u.isVerified ? "text-green-500" : "text-zinc-300"} />
-                             <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">{u.isVerified ? 'VERIFIED' : 'PENDING'}</span>
+                             <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">{u.isVerified ? 'موثق' : 'قيد الانتظار'}</span>
                           </div>
                        </div>
                     </TableCell>
