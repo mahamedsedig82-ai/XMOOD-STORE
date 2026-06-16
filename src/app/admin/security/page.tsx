@@ -5,7 +5,7 @@ import { collection, query, orderBy, limit } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck, ShieldAlert, Cpu, Activity, UserCheck, Zap, Lock, Globe } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Cpu, Activity, UserCheck, Zap, Lock, Globe, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function AdminSecurityCenter() {
