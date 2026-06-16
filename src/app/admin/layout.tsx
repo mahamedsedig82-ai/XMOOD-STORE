@@ -68,7 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-[#f8f8f8] dark:bg-[#020202] overflow-hidden" dir="rtl">
-        {/* Sidebar */}
+        {/* Sidebar Desktop */}
         <Sidebar className="border-l border-border bg-card hidden lg:flex shrink-0 shadow-2xl" side="right">
           <SidebarHeader className="p-10 border-b text-center">
             <span className="handwritten-logo block mb-4 text-4xl">XMOOD</span>
@@ -104,26 +104,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </Sidebar>
 
-        {/* Main Content Area */}
+        {/* Main Content Area - FIXED SCROLLING */}
         <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-background">
-          <header className="h-24 border-b flex items-center justify-between px-10 bg-background/90 backdrop-blur-xl absolute top-0 left-0 right-0 z-[60] shrink-0">
-             <div className="flex items-center gap-6">
-                <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
-                   <Terminal size={28} />
+          <header className="h-24 border-b flex items-center justify-between px-6 md:px-10 bg-background/90 backdrop-blur-xl absolute top-0 left-0 right-0 z-[60] shrink-0">
+             <div className="flex items-center gap-4 md:gap-6">
+                <div className="w-10 h-10 md:w-14 md:h-14 bg-primary/10 rounded-xl md:rounded-2xl flex items-center justify-center text-primary border border-primary/20">
+                   <Terminal size={24} />
                 </div>
                 <div className="flex flex-col text-right">
-                   <span className="text-sm font-black uppercase tracking-widest">وحدة التحكم السيادية</span>
-                   <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest opacity-60">Master Command Portal Pro</span>
+                   <span className="text-xs md:text-sm font-black uppercase tracking-widest">وحدة التحكم السيادية</span>
+                   <span className="text-[7px] md:text-[9px] text-muted-foreground uppercase font-bold tracking-widest opacity-60">Master Command Pro</span>
                 </div>
              </div>
-             <div className="flex items-center gap-6">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[9px] font-black px-5 py-2 rounded-full tracking-widest uppercase">System Secured</Badge>
-                <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse shadow-[0_0_15px_#22c55e]" />
+             <div className="flex items-center gap-3 md:gap-6">
+                <Badge className="hidden sm:inline-flex bg-green-500/10 text-green-600 border-none text-[9px] font-black px-5 py-2 rounded-full tracking-widest uppercase">System Secured</Badge>
+                <div className="w-3 h-3 md:w-4 md:h-4 bg-green-500 rounded-full animate-pulse shadow-[0_0_15px_#22c55e]" />
              </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto scroll-smooth relative custom-scrollbar pt-32 pb-40">
-            <div className="p-6 md:p-16 max-w-7xl mx-auto">
+          <main className="flex-1 overflow-y-auto scroll-smooth relative custom-scrollbar h-full pt-32 pb-40">
+            <div className="px-4 md:px-16 max-w-7xl mx-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
@@ -138,27 +138,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </main>
 
-          {/* Mobile Nav */}
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-background/95 backdrop-blur-xl border-t z-[100] flex items-center justify-around px-4 shadow-2xl">
+          {/* Mobile Navigation Bar - Elegant Layout */}
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-background/95 backdrop-blur-xl border-t z-[100] flex items-center justify-around px-4 shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
              {visibleSections.slice(0, 4).map((item) => (
-                <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1 flex-1 ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}>
-                   <item.icon size={22} />
-                   <span className="text-[8px] font-black uppercase">{item.label}</span>
+                <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${pathname === item.href ? 'text-primary scale-110' : 'text-muted-foreground opacity-60'}`}>
+                   <item.icon size={22} className={pathname === item.href ? 'fill-primary/10' : ''} />
+                   <span className="text-[8px] font-black uppercase tracking-tighter">{item.label}</span>
                 </Link>
              ))}
              <Sheet dir="rtl">
                 <SheetTrigger asChild>
-                   <button className="flex flex-col items-center gap-1 flex-1 text-muted-foreground"><Menu size={22} /><span className="text-[8px] font-black uppercase">القائمة</span></button>
+                   <button className="flex flex-col items-center gap-1.5 flex-1 text-muted-foreground opacity-60 hover:opacity-100"><Menu size={22} /><span className="text-[8px] font-black uppercase">المزيد</span></button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="rounded-t-[3rem] h-[80vh] p-8 border-none shadow-2xl">
-                   <div className="grid grid-cols-2 gap-4 mt-10">
+                <SheetContent side="bottom" className="rounded-t-[3rem] h-[85vh] p-0 border-none shadow-2xl overflow-hidden flex flex-col">
+                   <div className="p-8 border-b bg-muted/20">
+                      <SheetTitle className="text-2xl font-black gold-text">قائمة التحكم الشاملة</SheetTitle>
+                   </div>
+                   <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-4">
                       {visibleSections.map((item) => (
                          <SheetClose asChild key={item.href}>
-                            <Link href={item.href} className={`flex flex-col items-center gap-4 p-6 rounded-3xl border ${pathname === item.href ? 'bg-primary text-white' : 'bg-muted/50'}`}>
-                               <item.icon size={24} /><span className="font-black text-[10px] uppercase text-center">{item.label}</span>
+                            <Link href={item.href} className={`flex flex-col items-center gap-4 p-6 rounded-3xl border transition-all ${pathname === item.href ? 'bg-primary text-white border-primary shadow-xl' : 'bg-muted/50 border-transparent'}`}>
+                               <item.icon size={24} /><span className="font-black text-[10px] uppercase text-center leading-tight">{item.label}</span>
                             </Link>
                          </SheetClose>
                       ))}
+                   </div>
+                   <div className="p-8 border-t bg-muted/30">
+                      <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-14 rounded-2xl text-red-500 font-black text-xs uppercase gap-3">
+                         <LogOut size={18} /> خروج من النظام
+                      </Button>
                    </div>
                 </SheetContent>
              </Sheet>
