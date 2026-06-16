@@ -5,13 +5,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Zap, ChevronLeft, X, ShoppingBag, User, Briefcase
+  Wallet, LayoutDashboard, LogOut, Zap, ShoppingBag, User, Briefcase, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useUser, useAuth, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
-import { doc } from "firebase/firestore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatUSD } from "@/lib/currency";
 import { 
@@ -27,7 +26,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 export function Navbar() {
   const { user, profile } = useUser();
   const auth = useAuth();
-  const db = useFirestore();
   const pathname = usePathname();
   const router = useRouter();
   
@@ -71,13 +69,75 @@ export function Navbar() {
     <nav className="fixed top-0 z-[90] w-full border-b bg-background/80 backdrop-blur-3xl transition-all duration-500 h-20 md:h-24">
       <div className="container mx-auto px-6 h-full flex items-center justify-between">
         
+        {/* Mobile Menu Trigger (Hamburger) - RESTORED */}
+        <div className="lg:hidden flex items-center gap-4">
+          <Sheet dir="rtl">
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-primary rounded-2xl bg-primary/5 h-12 w-12 border border-primary/20 shadow-sm active:scale-95 transition-all">
+                <Menu size={28} />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[85%] max-w-sm bg-background p-0 flex flex-col rounded-l-[3rem] border-none shadow-2xl overflow-hidden">
+              <SheetHeader className="p-10 border-b bg-slate-50 dark:bg-white/5 relative">
+                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-30" />
+                 <SheetTitle className="handwritten-logo text-5xl text-right">XMOOD</SheetTitle>
+                 <p className="text-[9px] text-muted-foreground uppercase tracking-[0.4em] font-black text-right mt-3">Elite Access Portal</p>
+              </SheetHeader>
+              
+              <div className="flex-1 p-8 space-y-4 overflow-y-auto custom-scrollbar">
+                {user && profile && (
+                  <div className="mb-10 p-6 bg-primary/5 rounded-[2rem] border border-primary/10 flex items-center gap-5">
+                    <Avatar className="w-14 h-14 border-2 border-primary/20 rounded-2xl">
+                      <AvatarImage src={profile.photoURL} className="object-cover" />
+                      <AvatarFallback className="bg-zinc-100 font-bold text-primary">XM</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col text-right">
+                      <span className="font-black text-lg gold-text truncate">{profile.displayName}</span>
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{profile.role}</span>
+                    </div>
+                  </div>
+                )}
+
+                {navLinks.map((link) => (
+                  <SheetClose asChild key={link.href}>
+                    <Link 
+                      href={link.href} 
+                      className={`flex items-center flex-row-reverse justify-between gap-5 p-6 rounded-3xl transition-all border ${pathname === link.href ? 'bg-primary text-white border-primary shadow-xl shadow-primary/20' : 'hover:bg-muted border-transparent font-black'}`}
+                    >
+                      <div className="flex items-center flex-row-reverse gap-5">
+                        <link.icon size={22} className={pathname === link.href ? 'text-white' : 'text-primary'} />
+                        <span className="text-sm uppercase tracking-widest">{link.name}</span>
+                      </div>
+                      {pathname === link.href && <Zap size={14} className="fill-white" />}
+                    </Link>
+                  </SheetClose>
+                ))}
+              </div>
+
+              <div className="p-10 border-t bg-muted/20">
+                {user ? (
+                   <Button variant="ghost" onClick={handleSignOut} className="w-full h-16 rounded-[2rem] text-red-500 font-black text-[11px] uppercase tracking-widest gap-4 bg-red-50 border border-red-100 shadow-sm">
+                     <LogOut size={20} /> خروج آمن من الجلسة
+                   </Button>
+                ) : (
+                  <Button asChild className="royal-button w-full h-16 text-xs uppercase tracking-widest shadow-xl">
+                    <Link href="/login">دخول الأعضاء الموثق</Link>
+                  </Button>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-4 group">
-          <div className="flex flex-col items-start leading-none">
+          <div className="flex flex-col items-start leading-none text-right">
              <span className="handwritten-logo text-2xl md:text-4xl font-black transition-all group-hover:scale-105">XMOOD STORE</span>
              <span className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-60">Elite Digital Services</span>
           </div>
         </Link>
 
+        {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-12">
           {navLinks.map((link) => (
             <Link 
@@ -91,31 +151,32 @@ export function Navbar() {
           ))}
         </div>
 
+        {/* Action Buttons */}
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={toggleTheme} 
-            className="rounded-2xl h-11 w-11 border bg-muted/20 hover:bg-primary/10 hover:text-primary transition-all"
+            className="rounded-2xl h-12 w-12 border bg-muted/20 hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
           >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </Button>
 
           {user && profile && (
-            <div className="hidden sm:flex items-center gap-3 bg-primary/5 px-5 py-2.5 rounded-2xl border border-primary/20 shadow-sm group cursor-pointer" onClick={() => router.push('/wallet')}>
+            <div className="hidden sm:flex items-center gap-3 bg-primary/5 px-6 py-3 rounded-2xl border border-primary/20 shadow-sm group cursor-pointer active:scale-95 transition-all" onClick={() => router.push('/wallet')}>
               <span className="text-sm font-black text-primary tracking-tighter">{formatUSD(profile.walletBalance || 0)}</span>
               <Wallet size={18} className="text-primary group-hover:rotate-12 transition-transform" />
             </div>
           )}
 
           {!user ? (
-            <Button asChild className="royal-button h-11 px-8">
-              <Link href="/login">دخول الأعضاء</Link>
+            <Button asChild className="royal-button h-12 px-8 shadow-lg">
+              <Link href="/login">دخول</Link>
             </Button>
           ) : (
             <DropdownMenu dir="rtl">
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 h-12 w-12 rounded-2xl overflow-hidden border-2 border-primary/20 hover:border-primary transition-all shadow-xl">
+                <Button variant="ghost" className="p-0 h-14 w-14 rounded-2xl overflow-hidden border-2 border-primary/20 hover:border-primary transition-all shadow-xl active:scale-95">
                   <Avatar className="h-full w-full rounded-none">
                     <AvatarImage src={profile?.photoURL} className="object-cover" />
                     <AvatarFallback className="bg-slate-100 dark:bg-zinc-900 text-primary font-bold text-xl">{profile?.displayName?.charAt(0)}</AvatarFallback>
@@ -125,7 +186,7 @@ export function Navbar() {
               <DropdownMenuContent className="w-80 mt-6 rounded-[2.5rem] p-6 shadow-2xl border bg-card/98 backdrop-blur-3xl" align="start">
                 <DropdownMenuLabel className="p-2 mb-4 text-right">
                   <Badge className="bg-primary text-primary-foreground border-none text-[8px] font-black uppercase mb-4 px-5 py-1.5 rounded-full">{profile?.role}</Badge>
-                  <p className="font-black text-xl truncate leading-none mb-1">{profile?.displayName}</p>
+                  <p className="font-black text-2xl truncate leading-none mb-1 gold-text">{profile?.displayName}</p>
                   <p className="text-[10px] text-muted-foreground truncate opacity-60">{profile?.email}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="opacity-50" />
@@ -155,44 +216,6 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-
-          <Sheet dir="rtl">
-            <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="icon" className="text-primary rounded-2xl bg-primary/5 h-11 w-11 border border-primary/20">
-                <Menu size={22} />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[85%] max-w-sm bg-background p-0 flex flex-col rounded-l-[3rem] border-none shadow-2xl">
-              <SheetHeader className="p-10 border-b bg-slate-50 dark:bg-white/5">
-                 <SheetTitle className="handwritten-logo text-4xl text-right">XMOOD</SheetTitle>
-                 <p className="text-[9px] text-muted-foreground uppercase tracking-[0.4em] font-black text-right mt-2">Elite Access</p>
-              </SheetHeader>
-              <div className="flex-1 p-8 space-y-4">
-                {navLinks.map((link) => (
-                  <SheetClose asChild key={link.href}>
-                    <Link 
-                      href={link.href} 
-                      className={`flex items-center flex-row-reverse gap-5 p-6 rounded-3xl transition-all ${pathname === link.href ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'hover:bg-muted font-black'}`}
-                    >
-                      <link.icon size={20} className={pathname === link.href ? 'text-white' : 'text-primary'} />
-                      <span className="text-xs uppercase tracking-widest">{link.name}</span>
-                    </Link>
-                  </SheetClose>
-                ))}
-              </div>
-              <div className="p-10 border-t">
-                {user ? (
-                   <Button variant="ghost" onClick={handleSignOut} className="w-full h-16 rounded-3xl text-red-500 font-black text-[11px] uppercase tracking-widest gap-4 bg-red-50">
-                     <LogOut size={20} /> تسجيل الخروج
-                   </Button>
-                ) : (
-                  <Button asChild className="royal-button w-full h-16 text-xs uppercase tracking-widest">
-                    <Link href="/login">دخول الأعضاء الموثق</Link>
-                  </Button>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
         </div>
       </div>
     </nav>

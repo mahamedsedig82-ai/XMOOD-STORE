@@ -1,14 +1,16 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
+import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { Navbar } from "@/components/layout/Navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Calendar, Award, Zap, ShieldCheck, TrendingUp, Heart, MessageSquare } from "lucide-react";
+import { Loader2, Calendar, Award, Zap, ShieldCheck, TrendingUp, Heart, MessageSquare, Store, Briefcase, Palette, ShieldAlert } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -30,92 +32,118 @@ export default function PublicProfilePage() {
     </div>
   );
 
+  const navigationHub = [
+    { name: "المتجر الرئيسي", desc: "استعرض باقات الشحن المتاحة", icon: Store, href: "/store", color: "text-blue-500" },
+    { name: "سوق الخدمات", desc: "حلول تقنية وإبداعية متكاملة", icon: Briefcase, href: "/other-services", color: "text-amber-500" },
+    { name: "معرض الأعمال", desc: "شاهد أرقى التصاميم المنفذة", icon: Palette, href: "/designs/gallery", color: "text-purple-500" },
+    { name: "الوكلاء المعتمدون", desc: "تواصل مع وسطاء الثقة", icon: ShieldCheck, href: "/middleman", color: "text-green-500" }
+  ];
+
   return (
-    <main className="min-h-screen bg-black text-white" dir="rtl">
+    <main className="min-h-screen bg-background text-foreground selection:bg-primary/30" dir="rtl">
       <Navbar />
       
       {/* Sovereign Header */}
-      <section className="relative pt-48 pb-20 overflow-hidden border-b border-white/5 bg-zinc-950/40">
+      <section className="relative pt-48 pb-20 overflow-hidden border-b bg-muted/20">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <rect width="100%" height="100%" fill="url(#grid-v6)" />
+            <rect width="100%" height="100%" fill="url(#grid-modern)" />
           </svg>
         </div>
         
-        <div className="container mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center gap-12">
-          <div className="relative">
-             <Avatar className="w-48 h-48 border-4 border-primary/20 shadow-[0_0_80px_rgba(212,175,55,0.15)] rounded-[3rem]">
-                <AvatarImage src={profile.photoURL} />
-                <AvatarFallback className="bg-zinc-900 text-6xl text-primary font-black">{profile.displayName?.charAt(0)}</AvatarFallback>
+        <div className="container mx-auto px-6 relative z-10 flex flex-col lg:flex-row items-center gap-12">
+          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative">
+             <Avatar className="w-48 h-48 border-4 border-white dark:border-zinc-800 shadow-[0_20px_80px_rgba(212,175,55,0.15)] rounded-[3rem] overflow-hidden">
+                <AvatarImage src={profile.photoURL} className="object-cover" />
+                <AvatarFallback className="bg-zinc-100 dark:bg-zinc-900 text-6xl text-primary font-black">{profile.displayName?.charAt(0)}</AvatarFallback>
              </Avatar>
-             <div className="absolute -bottom-4 -right-4 bg-primary text-black p-4 rounded-2xl border-4 border-black shadow-2xl">
+             <div className="absolute -bottom-4 -right-4 bg-primary text-black p-4 rounded-2xl border-4 border-background shadow-2xl">
                 <Award size={32} />
              </div>
-          </div>
+          </motion.div>
 
-          <div className="text-center md:text-right flex-1 space-y-6">
+          <div className="text-center lg:text-right flex-1 space-y-6">
              <div>
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-4">
-                   <h1 className="text-5xl md:text-7xl font-headline font-bold gold-text leading-tight">{profile.displayName}</h1>
-                   <Badge className="bg-red-600/20 text-red-500 border-red-600/30 px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">{profile.role}</Badge>
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-4">
+                   <h1 className="text-5xl md:text-7xl font-headline font-black gold-text leading-tight">{profile.displayName}</h1>
+                   <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">{profile.label || "عضو سيادي"}</Badge>
                 </div>
-                <p className="text-xl text-zinc-500 font-light max-w-2xl">{profile.bio || "عضو سيادي في مجتمع XMOOD STORE الموثق."}</p>
+                <p className="text-xl text-muted-foreground font-medium max-w-2xl">{profile.bio || "عضو سيادي موثق في مجتمع XMOOD الرقمي."}</p>
              </div>
 
-             <div className="flex flex-wrap justify-center md:justify-start gap-8">
-                <div className="flex items-center gap-3 text-zinc-400 font-bold uppercase text-[10px] tracking-widest">
+             <div className="flex flex-wrap justify-center lg:justify-start gap-8">
+                <div className="flex items-center gap-3 text-zinc-500 font-bold uppercase text-[10px] tracking-widest bg-card px-5 py-2.5 rounded-xl border">
                    <Calendar size={16} className="text-primary" /> عضو منذ {new Date(profile.createdAt).getFullYear()}
                 </div>
-                <div className="flex items-center gap-3 text-zinc-400 font-bold uppercase text-[10px] tracking-widest">
-                   <ShieldCheck size={16} className="text-green-500" /> هوية موثقة سيادياً
+                <div className="flex items-center gap-3 text-zinc-500 font-bold uppercase text-[10px] tracking-widest bg-card px-5 py-2.5 rounded-xl border">
+                   <ShieldCheck size={16} className="text-green-500" /> الهوية: موثقة سيادياً
                 </div>
              </div>
           </div>
 
-          <Card className="w-full md:w-80 luxury-card p-10 bg-primary/5 border-primary/10">
+          <Card className="w-full lg:w-80 luxury-card p-10 bg-primary/5 border-primary/10 shadow-2xl">
              <div className="space-y-8">
-                <div>
-                   <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-2 flex items-center gap-2">
+                <div className="text-center lg:text-right">
+                   <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-2 flex items-center justify-center lg:justify-start gap-2">
                      <TrendingUp size={12} /> سمعة المتداول
                    </p>
-                   <p className="text-4xl font-black text-white">{profile.affinityPoints || 0}</p>
-                   <p className="text-[9px] text-zinc-500 uppercase font-bold mt-1">Sovereign Points</p>
+                   <p className="text-5xl font-black text-foreground tracking-tighter">{profile.affinityPoints || 50}</p>
+                   <p className="text-[9px] text-muted-foreground uppercase font-bold mt-1">Sovereign Trust Points</p>
                 </div>
-                <div className="h-px bg-white/5" />
-                <div>
-                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.4em] mb-2">عمليات ناجحة</p>
-                   <p className="text-4xl font-black text-white">{profile.completedDeals || 0}</p>
-                   <p className="text-[9px] text-zinc-500 uppercase font-bold mt-1">Confirmed Deals</p>
+                <div className="h-px bg-border/50" />
+                <div className="text-center lg:text-right">
+                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] mb-2">عمليات ناجحة</p>
+                   <p className="text-5xl font-black text-foreground tracking-tighter">{profile.completedDeals || 0}</p>
+                   <p className="text-[9px] text-muted-foreground uppercase font-bold mt-1">Confirmed Transactions</p>
                 </div>
              </div>
           </Card>
         </div>
       </section>
 
-      {/* Profile Activity */}
+      {/* Profile Activity & Navigation Hub */}
       <section className="container mx-auto px-6 py-20">
-         <Tabs defaultValue="activity" className="space-y-12">
-            <TabsList className="bg-zinc-950 p-2 rounded-3xl h-20 border border-white/5 inline-flex gap-2 px-4 shadow-2xl">
-               <TabsTrigger value="activity" className="rounded-2xl px-10 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
-                  <Zap size={16} className="ml-2" /> النشاط الأخير
+         <Tabs defaultValue="categories" className="space-y-12">
+            <TabsList className="bg-card p-2 rounded-[2rem] h-20 border inline-flex gap-2 px-4 shadow-xl">
+               <TabsTrigger value="categories" className="rounded-2xl px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
+                  <Zap size={16} className="ml-2" /> الأقسام السيادية
+               </TabsTrigger>
+               <TabsTrigger value="activity" className="rounded-2xl px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
+                  <Heart size={16} className="ml-2" /> النشاط الأخير
                </TabsTrigger>
             </TabsList>
 
+            <TabsContent value="categories" className="animate-fade-up">
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {navigationHub.map((item, i) => (
+                    <Link key={i} href={item.href} className="group">
+                      <Card className="luxury-card p-10 hover:border-primary transition-all h-full bg-card/60 backdrop-blur-xl border-none shadow-lg">
+                        <div className={`w-16 h-16 rounded-[1.5rem] bg-muted flex items-center justify-center mb-8 group-hover:scale-110 transition-transform ${item.color}`}>
+                           <item.icon size={32} />
+                        </div>
+                        <h3 className="text-2xl font-black mb-3 group-hover:gold-text transition-colors">{item.name}</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed font-medium">{item.desc}</p>
+                      </Card>
+                    </Link>
+                  ))}
+               </div>
+            </TabsContent>
+
             <TabsContent value="activity">
-               <Card className="luxury-card p-10 bg-zinc-950/40">
-                  <div className="space-y-10">
+               <Card className="luxury-card p-12 bg-card/40 border-none shadow-xl">
+                  <div className="space-y-12">
                      {[
                        { icon: Heart, label: "قام بالإعجاب بباقة شحن جديدة", date: "منذ ساعتين", color: "text-red-500" },
                        { icon: MessageSquare, label: "استفسر عن خدمة تصميم هوية", date: "منذ 5 ساعات", color: "text-primary" },
                        { icon: ShieldCheck, label: "أتم عملية شحن محفظة بنجاح", date: "أمس", color: "text-green-500" }
                      ].map((item, i) => (
-                       <div key={i} className="flex items-center gap-6 group">
-                          <div className={`w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center ${item.color} border border-white/5 group-hover:border-current transition-all`}>
-                             <item.icon size={24} />
+                       <div key={i} className="flex items-center gap-8 group animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                          <div className={`w-16 h-16 rounded-[1.5rem] bg-muted flex items-center justify-center ${item.color} border border-transparent group-hover:border-current transition-all shadow-sm`}>
+                             <item.icon size={28} />
                           </div>
                           <div>
-                             <p className="text-xl font-bold text-white mb-1">{item.label}</p>
-                             <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">{item.date}</p>
+                             <p className="text-2xl font-bold text-foreground mb-1.5">{item.label}</p>
+                             <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">{item.date}</p>
                           </div>
                        </div>
                      ))}
