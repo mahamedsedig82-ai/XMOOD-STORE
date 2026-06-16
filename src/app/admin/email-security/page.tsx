@@ -93,7 +93,7 @@ export default function EmailSecurityDashboard() {
                     تخصيص قوالب الرسائل
                  </h4>
                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    في قسم <b>Authentication</b> -> <b>Templates</b>، قم بتعديل قالب "Email address verification". اجعل النص بسيطاً ورسمياً، وقلل من الروابط الخارجية الإضافية.
+                    في قسم <b>Authentication</b> &rarr; <b>Templates</b>، قم بتعديل قالب "Email address verification". اجعل النص بسيطاً ورسمياً، وقلل من الروابط الخارجية الإضافية.
                  </p>
               </div>
            </div>
@@ -106,7 +106,7 @@ export default function EmailSecurityDashboard() {
                  </p>
               </div>
               <Button asChild variant="outline" className="h-14 px-8 border-blue-500/30 text-blue-400 hover:bg-blue-500 hover:text-white transition-all whitespace-nowrap">
-                 <a href="https://console.firebase.google.com/" target="_blank" className="gap-2">فتح Firebase Console <ExternalLink size={16} /></a>
+                 <a href="https://console.firebase.google.com/" target="_blank" className="flex items-center gap-2">فتح Firebase Console <ExternalLink size={16} /></a>
               </Button>
            </div>
         </CardContent>
