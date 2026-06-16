@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -25,7 +26,6 @@ export default function AdminUsersManagement() {
   const { data: users, loading } = useCollection(usersQuery);
   const [searchTerm, setSearchTerm] = useState("");
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const handleUpdateRole = async (userId: string, newRole: string) => {
     setIsUpdating(userId);
@@ -130,7 +130,7 @@ export default function AdminUsersManagement() {
                                  </DialogHeader>
                                  <div className="space-y-8 mt-10">
                                     <div className="flex items-center gap-6 p-6 bg-white/5 rounded-3xl border border-white/10">
-                                       <img src={u.photoURL} className="w-20 h-20 rounded-2xl object-cover border-2 border-primary/20" alt=""/>
+                                       <img src={u.photoURL || `https://picsum.photos/seed/${u.uid}/200/200`} className="w-20 h-20 rounded-2xl object-cover border-2 border-primary/20" alt=""/>
                                        <div>
                                           <h3 className="text-xl font-bold">{u.fullName || u.displayName}</h3>
                                           <p className="text-xs text-zinc-500">{u.email}</p>

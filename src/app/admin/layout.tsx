@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -22,9 +23,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [isClient, setIsMounted] = useState(false);
+  const [gateVersion, setGateVersion] = useState("");
 
   useEffect(() => {
     setIsMounted(true);
+    // تفعيل النص بعد التحميل لمنع خطأ Hydration
+    setGateVersion("Sovereign Gate v12.0");
   }, []);
 
   const allSections = useMemo(() => [
@@ -70,7 +74,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <div className="text-center space-y-3">
            <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">تأمين الوصول التخصصي</h2>
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Sovereign Gate v12.0</p>
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">
+             {gateVersion || "Authenticating Protocol..."}
+           </p>
         </div>
       </div>
     );
