@@ -12,7 +12,6 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   onAuthStateChanged,
-  signOut,
   GoogleAuthProvider,
   signInWithPopup,
   browserLocalPersistence,
@@ -93,8 +92,11 @@ export default function SecureLoginPage() {
       toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في عالم XMOOD." });
       router.replace("/");
     } catch (error: any) {
-      console.error("Google Auth Error:", error);
-      toast({ variant: "destructive", title: "فشل الدخول", description: "حدث خطأ أثناء الاتصال بجوجل." });
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast({ title: "تنبيه", description: "تم إغلاق نافذة الدخول قبل الإكمال." });
+      } else {
+        toast({ variant: "destructive", title: "فشل الدخول", description: "حدث خطأ أثناء الاتصال بجوجل." });
+      }
     } finally {
       setLoading(false);
     }
