@@ -60,12 +60,13 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * Improved Magic Link Delivery: Uses professional URL handling to prevent Spam classification.
+ * Improved Magic Link Delivery: Optimized for default subdomains.
+ * We use the current origin to ensure the link matches the domain it's sent from.
  */
 export const sendMagicLink = async (email: string) => {
   const cleanEmail = email.trim().toLowerCase();
   
-  // لضمان الوصول للـ Inbox، نستخدم النطاق الفعلي للموقع
+  // لضمان الوصول للـ Inbox عند استخدام نطاق افتراضي، يجب أن يكون الرابط بسيطاً ومباشراً
   const actionCodeSettings = {
     url: `${window.location.origin}/verify-email`,
     handleCodeInApp: true,

@@ -178,18 +178,18 @@ export default function AdminContentManager() {
                     <Input value={form.emailBranding.senderName} onChange={e => setForm({...form, emailBranding: {...form.emailBranding, senderName: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" placeholder="XMOOD SECURITY" />
                  </div>
                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">بريد الإرسال المخصص</Label>
-                    <Input value={form.emailBranding.senderEmail} onChange={e => setForm({...form, emailBranding: {...form.emailBranding, senderEmail: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-mono text-xs" placeholder="info@xmood.com" />
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">بريد الإرسال (للعرض فقط)</Label>
+                    <Input value={form.emailBranding.senderEmail} readOnly className="h-14 bg-muted/20 border-none rounded-2xl font-mono text-xs opacity-60" placeholder="noreply@xmood-36c92.firebaseapp.com" />
                  </div>
                  <div className="col-span-full space-y-3">
                     <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">تذييل الرسالة (Footer)</Label>
                     <Textarea value={form.emailBranding.footerText} onChange={e => setForm({...form, emailBranding: {...form.emailBranding, footerText: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[100px] p-4" />
                  </div>
               </div>
-              <div className="p-6 bg-primary/5 rounded-2xl border border-primary/20 flex gap-4">
+              <div className="p-6 bg-primary/5 rounded-2xl border border-primary/10 flex gap-4">
                  <Info size={24} className="text-primary shrink-0" />
                  <p className="text-xs font-bold leading-relaxed">
-                   ملاحظة: لضمان تفعيل بريد الإرسال المخصص، يجب توثيق النطاق في مركز "أمن البريد" أولاً.
+                   <b>مهم:</b> بما أنك تستخدم النطاق الافتراضي، قم بنسخ "اسم المرسل" و "التذييل" أعلاه وضعهما يدوياً في <b>Firebase Console -> Authentication -> Templates</b> لتحسين وصول الرسائل.
                  </p>
               </div>
            </Card>
