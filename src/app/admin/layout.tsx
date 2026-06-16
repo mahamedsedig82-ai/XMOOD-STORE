@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -27,7 +26,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     setIsMounted(true);
-    // تفعيل النص بعد التحميل لمنع خطأ Hydration
     setGateVersion("Sovereign Gate v12.0");
   }, []);
 
@@ -146,7 +144,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </Sidebar>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-y-auto overflow-x-hidden custom-scrollbar bg-background">
+        <div className="flex-1 flex flex-col min-w-0 h-full relative bg-background">
           <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl sticky top-0 z-[60] shrink-0">
              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-5">
@@ -166,20 +164,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          <div className="p-4 md:p-14 pb-48 lg:pb-14">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={pathname}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="max-w-7xl mx-auto"
-              >
-                {children}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+          <main className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+            <div className="p-4 md:p-14 pb-48 lg:pb-14">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={pathname}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="max-w-7xl mx-auto"
+                >
+                  {children}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </main>
 
           {/* Mobile Bottom Navigation - High Priority Z-Index */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-3xl border-t z-[160] flex items-center justify-around px-4 shadow-[0_-15px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
@@ -243,7 +243,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </SheetContent>
              </Sheet>
           </nav>
-        </main>
+        </div>
       </div>
     </SidebarProvider>
   );

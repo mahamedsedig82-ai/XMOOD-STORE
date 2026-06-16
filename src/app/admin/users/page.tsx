@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -111,16 +110,16 @@ export default function AdminUsersManagement() {
                 <TableRow key={u.id} className="hover:bg-primary/5 border-b border-white/5 transition-all group">
                   <TableCell className="py-8 pr-12" data-label="العضو">
                     <div className="flex items-center gap-6">
-                      <div className="relative">
+                      <div className="relative shrink-0">
                          <img src={u.photoURL || `https://picsum.photos/seed/${u.id}/100/100`} className="w-14 h-14 rounded-2xl object-cover border-2 border-white/5 shadow-xl group-hover:border-primary/40 transition-all" alt="" />
                          {u.role === 'owner' && <Award className="absolute -top-2 -right-2 text-primary bg-black rounded-full p-1" size={20} />}
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-2">
-                           <span className="font-bold text-lg text-white group-hover:gold-text transition-colors">{u.displayName}</span>
+                           <span className="font-bold text-lg text-white group-hover:gold-text transition-colors truncate">{u.displayName}</span>
                            <Dialog>
                               <DialogTrigger asChild>
-                                 <Button size="icon" variant="ghost" className="h-6 w-6 text-zinc-500 hover:text-primary"><Eye size={14}/></Button>
+                                 <Button size="icon" variant="ghost" className="h-6 w-6 text-zinc-500 hover:text-primary shrink-0"><Eye size={14}/></Button>
                               </DialogTrigger>
                               <DialogContent className="bg-zinc-950 border-primary/20 rounded-[2.5rem] p-10 text-white max-w-lg shadow-2xl">
                                  <DialogHeader>
@@ -175,7 +174,7 @@ export default function AdminUsersManagement() {
                               </DialogContent>
                            </Dialog>
                         </div>
-                        <span className="text-[9px] opacity-40 font-mono uppercase tracking-tighter">{u.email}</span>
+                        <span className="text-[9px] opacity-40 font-mono uppercase tracking-tighter truncate">{u.email}</span>
                       </div>
                     </div>
                   </TableCell>
