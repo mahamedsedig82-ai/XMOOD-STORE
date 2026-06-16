@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -52,10 +51,6 @@ export default function AdminProducts() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 800000) {
-        toast({ variant: "destructive", title: "حجم الصورة كبير جداً", description: "يرجى اختيار صورة أقل من 800 كيلوبايت." });
-        return;
-      }
       const reader = new FileReader();
       reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string });
       reader.readAsDataURL(file);
@@ -73,9 +68,15 @@ export default function AdminProducts() {
     const data = { ...form, price: Number(form.price), stock: calculatedStock, updatedAt: serverTimestamp(), status: calculatedStock > 0 ? 'active' : 'out_of_stock' };
 
     if (editingId) {
-      updateDoc(doc(db, "products", editingId), data).then(() => { toast({ title: "تم التحديث بنجاح" }); setIsOpen(false); resetForm(); }).finally(() => setIsProcessing(false));
+      updateDoc(doc(db, "products", editingId), data)
+        .then(() => { toast({ title: "تم التحديث بنجاح" }); setIsOpen(false); resetForm(); })
+        .catch(() => toast({ variant: "destructive", title: "خطأ في الحفظ", description: "قد يكون حجم الصور كبيراً جداً، يرجى المحاولة بصورة أصغر." }))
+        .finally(() => setIsProcessing(false));
     } else {
-      addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() }).then(() => { toast({ title: "تم النشر في المتجر" }); setIsOpen(false); resetForm(); }).finally(() => setIsProcessing(false));
+      addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() })
+        .then(() => { toast({ title: "تم النشر في المتجر" }); setIsOpen(false); resetForm(); })
+        .catch(() => toast({ variant: "destructive", title: "خطأ في النشر", description: "فشل الحفظ، يرجى التحقق من حجم الملفات." }))
+        .finally(() => setIsProcessing(false));
     }
   };
 
@@ -120,7 +121,7 @@ export default function AdminProducts() {
               <div className="space-y-2"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">المخزون (يدوي)</label><Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="h-12 rounded-xl bg-zinc-900 border-none px-6 font-bold" /></div>
               <div className="col-span-full space-y-2"><div className="flex items-center gap-2 mb-1"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">مميزات الباقة (تميز)</label><Sparkles size={12} className="text-primary" /></div><Textarea value={form.highlights} onChange={e => setForm({...form, highlights: e.target.value})} className="min-h-[80px] rounded-xl bg-zinc-900 border-none p-4 text-xs font-bold" placeholder="أدخل ميزة في كل سطر..." /></div>
               <div className="col-span-full space-y-4">
-                 <div className="flex items-center justify-between"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">صورة الباقة</label><Badge variant="outline" className="text-[7px] border-primary/20 text-primary">Aspect Ratio: 16/9</Badge></div>
+                 <div className="flex items-center justify-between"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">صورة الباقة</label><Badge variant="outline" className="text-[7px] border-primary/20 text-primary">أي حجم مقبول</Badge></div>
                  <Tabs defaultValue="url" className="w-full"><TabsList className="bg-zinc-900 p-1 rounded-xl mb-4"><TabsTrigger value="url" className="flex-1 gap-2 h-10"><LinkIcon size={12}/> رابط خارجي</TabsTrigger><TabsTrigger value="upload" className="flex-1 gap-2 h-10"><Upload size={12}/> رفع ملف</TabsTrigger></TabsList><TabsContent value="url"><Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-12 bg-zinc-900 border-none rounded-xl" /></TabsContent><TabsContent value="upload"><Input type="file" accept="image/*" onChange={handleImageUpload} className="h-12 bg-zinc-900 border-none pt-3 text-xs" /></TabsContent></Tabs>
               </div>
               <div className="col-span-full space-y-2"><div className="flex items-center gap-2 mb-1"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">أكواد التسليم الفوري</label><Info size={10} className="text-primary" /></div><Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="min-h-[100px] rounded-2xl bg-zinc-900 border-none p-4 font-mono text-xs text-primary" placeholder="CODE-XXXXX..." /></div>

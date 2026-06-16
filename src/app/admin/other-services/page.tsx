@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -45,12 +44,10 @@ export default function AdminOtherServices() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.size < 800000) {
+    if (file) {
       const reader = new FileReader();
       reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string });
       reader.readAsDataURL(file);
-    } else if (file) {
-      toast({ variant: "destructive", title: "حجم الملف كبير", description: "يرجى اختيار صورة أصغر من 800 كيلوبايت." });
     }
   };
 
@@ -59,9 +56,15 @@ export default function AdminOtherServices() {
     setIsProcessing(true);
     const data = { ...form, price: Number(form.price), agentId: profile?.uid || "", agentName: profile?.displayName || form.agentName, updatedAt: serverTimestamp() };
     if (editingId) {
-      updateDoc(doc(db, "other_services", editingId), data).then(() => { toast({ title: "تم التحديث بنجاح" }); setIsOpen(false); resetForm(); }).finally(() => setIsProcessing(false));
+      updateDoc(doc(db, "other_services", editingId), data)
+        .then(() => { toast({ title: "تم التحديث بنجاح" }); setIsOpen(false); resetForm(); })
+        .catch(() => toast({ variant: "destructive", title: "خطأ", description: "فشل الحفظ، حاول استخدام صورة بحجم أصغر." }))
+        .finally(() => setIsProcessing(false));
     } else {
-      addDoc(collection(db, "other_services"), { ...data, createdAt: serverTimestamp() }).then(() => { toast({ title: "تم إضافة الخدمة ونشرها" }); setIsOpen(false); resetForm(); }).finally(() => setIsProcessing(false));
+      addDoc(collection(db, "other_services"), { ...data, createdAt: serverTimestamp() })
+        .then(() => { toast({ title: "تم إضافة الخدمة ونشرها" }); setIsOpen(false); resetForm(); })
+        .catch(() => toast({ variant: "destructive", title: "خطأ", description: "فشل الإضافة، تأكد من حجم الصور." }))
+        .finally(() => setIsProcessing(false));
     }
   };
 

@@ -84,9 +84,9 @@ export default function ProfessionalWalletPage() {
         updatedAt: new Date().toISOString()
       });
       setIsEditing(false);
-      toast({ title: "تم تحديث الملف الشخصي" });
+      toast({ title: "تم تحديث الملف الشخصي بنجاح" });
     } catch (e) {
-      toast({ variant: "destructive", title: "فشل التحديث" });
+      toast({ variant: "destructive", title: "فشل التحديث", description: "قد يكون حجم الصورة كبيراً جداً، يرجى محاولة استخدام صورة أصغر قليلاً." });
     } finally {
       setIsUpdating(false);
     }
@@ -95,14 +95,10 @@ export default function ProfessionalWalletPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 1024 * 1024) { // 1MB Limit for Base64 efficiency
-        toast({ variant: "destructive", title: "حجم الصورة كبير", description: "يرجى اختيار صورة أقل من 1 ميجابايت." });
-        return;
-      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewPhotoURL(reader.result as string);
-        toast({ title: "تم تجهيز الصورة", description: "اضغط حفظ لتثبيتها في ملفك." });
+        toast({ title: "تم تجهيز الصورة بنجاح", description: "اضغط على حفظ لتثبيتها في ملفك الشخصي." });
       };
       reader.readAsDataURL(file);
     }
@@ -122,7 +118,7 @@ export default function ProfessionalWalletPage() {
         createdAt: new Date().toISOString()
       });
       setIsAgentDialogOpen(false);
-      toast({ title: "تم إرسال الطلب", description: "طلبك قيد المراجعة حالياً من قبل الإدارة." });
+      toast({ title: "تم إرسال الطلب بنجاح", description: "طلبك قيد المراجعة حالياً من قبل الإدارة." });
     } catch (e) {
       toast({ variant: "destructive", title: "فشل الإرسال" });
     } finally {
@@ -150,15 +146,15 @@ export default function ProfessionalWalletPage() {
         
         {/* Modern Profile Header */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          <Card className="luxury-card border-none p-8 lg:col-span-2 bg-white dark:bg-zinc-900 flex flex-col md:flex-row items-center gap-8">
-            <div className="relative group cursor-pointer" onClick={() => setIsEditing(true)}>
-              <Avatar className="w-32 h-32 rounded-[2.5rem] border-4 border-zinc-50 dark:border-zinc-800 shadow-xl overflow-hidden transition-all group-hover:border-primary/30">
-                <AvatarImage src={profile?.photoURL} className="object-cover" />
+          <Card className="luxury-card border-none p-8 lg:col-span-2 bg-white dark:bg-zinc-900 flex flex-col md:flex-row items-center gap-8 shadow-xl">
+            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              <Avatar className="w-32 h-32 rounded-[2.5rem] border-4 border-zinc-50 dark:border-zinc-800 shadow-2xl overflow-hidden transition-all group-hover:border-primary/50">
+                <AvatarImage src={profile?.photoURL} className="object-cover w-full h-full" />
                 <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-primary text-4xl font-bold">
                   {profile?.displayName?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -bottom-2 -right-2 bg-primary text-white p-2.5 rounded-xl shadow-lg border-4 border-white dark:border-zinc-900">
+              <div className="absolute -bottom-2 -right-2 bg-primary text-white p-2.5 rounded-xl shadow-lg border-4 border-white dark:border-zinc-900 group-hover:scale-110 transition-transform">
                 <Camera size={18} />
               </div>
             </div>
@@ -303,14 +299,14 @@ export default function ProfessionalWalletPage() {
                <div className="flex flex-col items-center gap-6">
                   <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                      <Avatar className="w-28 h-28 border-4 border-primary/20 shadow-2xl rounded-3xl transition-transform group-hover:scale-105">
-                        <AvatarImage src={newPhotoURL} className="object-cover" />
+                        <AvatarImage src={newPhotoURL} className="object-cover w-full h-full" />
                         <AvatarFallback className="bg-muted text-primary text-3xl font-bold">XM</AvatarFallback>
                      </Avatar>
                      <div className="absolute inset-0 bg-black/40 rounded-3xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <Upload size={24} className="text-white" />
                      </div>
                   </div>
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">انقر فوق الصورة لتغييرها من الهاتف</p>
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-center">انقر فوق الصورة لتغييرها (نحن نقبل كافة الأحجام)</p>
                </div>
 
                <div className="space-y-5">
