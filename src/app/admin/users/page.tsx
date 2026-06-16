@@ -8,11 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Shield, User as UserIcon, Star, Loader2, Award, Zap } from "lucide-react";
+import { Search, Shield, User as UserIcon, Star, Loader2, Award, Zap, Eye, Phone, MapPin, Calendar, Clock } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function AdminUsersManagement() {
   const db = useFirestore();
@@ -24,6 +25,7 @@ export default function AdminUsersManagement() {
   const { data: users, loading } = useCollection(usersQuery);
   const [searchTerm, setSearchTerm] = useState("");
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const handleUpdateRole = async (userId: string, newRole: string) => {
     setIsUpdating(userId);
@@ -64,8 +66,8 @@ export default function AdminUsersManagement() {
     <div className="space-y-10 animate-fade-in" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/5 pb-10">
         <div>
-          <h1 className="text-4xl font-headline font-bold gold-text">إدارة الأعضاء والرتب</h1>
-          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">XMOOD Professional Role Management Center</p>
+          <h1 className="text-4xl font-headline font-bold gold-text">إدارة الأعضاء والتحري</h1>
+          <p className="text-zinc-500 mt-3 font-bold uppercase tracking-widest text-[10px]">Security, Roles & Identity Intelligence Center</p>
         </div>
         <div className="flex gap-4">
            <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex items-center gap-4">
@@ -95,11 +97,11 @@ export default function AdminUsersManagement() {
           <Table>
             <TableHeader className="bg-black/60">
               <TableRow className="hover:bg-transparent border-white/5">
-                <TableHead className="text-right py-8 pr-12 font-black uppercase text-[10px] text-zinc-500">العضو والهوية</TableHead>
+                <TableHead className="text-right py-8 pr-12 font-black uppercase text-[10px] text-zinc-500">العضو والتحري</TableHead>
                 <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500">المحفظة</TableHead>
                 <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500">الرتبة</TableHead>
                 <TableHead className="text-right font-black uppercase text-[10px] text-zinc-500">التاريخ</TableHead>
-                <TableHead className="text-center font-black uppercase text-[10px] text-zinc-500">تعديل الدور</TableHead>
+                <TableHead className="text-center font-black uppercase text-[10px] text-zinc-500">الإجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -114,8 +116,66 @@ export default function AdminUsersManagement() {
                          {u.role === 'owner' && <Award className="absolute -top-2 -right-2 text-primary bg-black rounded-full p-1" size={20} />}
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-bold text-lg text-white group-hover:gold-text transition-colors">{u.displayName}</span>
-                        <span className="text-[9px] opacity-40 font-mono uppercase tracking-tighter">{u.uid}</span>
+                        <div className="flex items-center gap-2">
+                           <span className="font-bold text-lg text-white group-hover:gold-text transition-colors">{u.displayName}</span>
+                           <Dialog>
+                              <DialogTrigger asChild>
+                                 <Button size="icon" variant="ghost" className="h-6 w-6 text-zinc-500 hover:text-primary"><Eye size={14}/></Button>
+                              </DialogTrigger>
+                              <DialogContent className="bg-zinc-950 border-primary/20 rounded-[2.5rem] p-10 text-white max-w-lg shadow-2xl">
+                                 <DialogHeader>
+                                    <DialogTitle className="text-2xl font-bold gold-text flex items-center gap-3">
+                                       <Shield size={24} /> بطاقة التحري الأمنية
+                                    </DialogTitle>
+                                 </DialogHeader>
+                                 <div className="space-y-8 mt-10">
+                                    <div className="flex items-center gap-6 p-6 bg-white/5 rounded-3xl border border-white/10">
+                                       <img src={u.photoURL} className="w-20 h-20 rounded-2xl object-cover border-2 border-primary/20" alt=""/>
+                                       <div>
+                                          <h3 className="text-xl font-bold">{u.fullName || u.displayName}</h3>
+                                          <p className="text-xs text-zinc-500">{u.email}</p>
+                                       </div>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 gap-4">
+                                       <div className="p-5 bg-zinc-900/50 rounded-2xl flex items-center gap-4">
+                                          <MapPin className="text-primary" size={20} />
+                                          <div>
+                                             <p className="text-[8px] font-black uppercase text-zinc-500">الموقع المسجل (Residence)</p>
+                                             <p className="text-sm font-bold">{u.residence || "غير محدد"}</p>
+                                          </div>
+                                       </div>
+                                       <div className="p-5 bg-zinc-900/50 rounded-2xl flex items-center gap-4">
+                                          <Phone className="text-primary" size={20} />
+                                          <div>
+                                             <p className="text-[8px] font-black uppercase text-zinc-500">رقم التواصل الموثق</p>
+                                             <p className="text-sm font-bold font-mono tracking-widest">{u.phoneNumber || "---"}</p>
+                                          </div>
+                                       </div>
+                                       <div className="p-5 bg-zinc-900/50 rounded-2xl flex items-center gap-4">
+                                          <Clock className="text-green-500" size={20} />
+                                          <div>
+                                             <p className="text-[8px] font-black uppercase text-zinc-500">آخر تواجد مسجل</p>
+                                             <p className="text-sm font-bold">{u.lastSeen ? new Date(u.lastSeen).toLocaleString('ar-EG') : 'غير متوفر'}</p>
+                                          </div>
+                                       </div>
+                                       <div className="p-5 bg-zinc-900/50 rounded-2xl flex items-center gap-4">
+                                          <Zap className="text-amber-500" size={20} />
+                                          <div>
+                                             <p className="text-[8px] font-black uppercase text-zinc-500">المعرف الرقمي السيادي (UID)</p>
+                                             <p className="text-[10px] font-mono font-bold break-all text-primary">{u.uid}</p>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    
+                                    <div className="pt-6 border-t border-white/5 text-center">
+                                       <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-[0.3em]">XMOOD Digital Intelligence Protocol</p>
+                                    </div>
+                                 </div>
+                              </DialogContent>
+                           </Dialog>
+                        </div>
+                        <span className="text-[9px] opacity-40 font-mono uppercase tracking-tighter">{u.email}</span>
                       </div>
                     </div>
                   </TableCell>

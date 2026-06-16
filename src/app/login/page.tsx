@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -17,7 +16,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Loader2, Mail, ShieldCheck, Key, RefreshCw, UserCircle, Phone, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -60,9 +59,10 @@ export default function SecureLoginPage() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
-      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
       if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
+        await setDoc(userDocRef, {
           uid: user.uid,
           displayName: user.displayName?.split(" ")[0] || "عضو",
           fullName: user.displayName || "",
@@ -73,9 +73,12 @@ export default function SecureLoginPage() {
           label: 'عضو بريميوم',
           photoURL: user.photoURL || '',
           createdAt: new Date().toISOString(),
+          lastSeen: new Date().toISOString(),
           isVerified: true,
           affinityPoints: 50
         });
+      } else {
+        await updateDoc(userDocRef, { lastSeen: new Date().toISOString() });
       }
       router.push("/");
     } catch (error) {
@@ -104,6 +107,7 @@ export default function SecureLoginPage() {
         label: 'عضو بريميوم',
         photoURL: '',
         createdAt: new Date().toISOString(),
+        lastSeen: new Date().toISOString(),
         isVerified: false,
         affinityPoints: 50
       });
@@ -121,7 +125,7 @@ export default function SecureLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || loading) return;
+    if (!auth || !db || loading) return;
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
@@ -129,6 +133,7 @@ export default function SecureLoginPage() {
         setStep('verify_pending');
         toast({ variant: "destructive", title: "تفعيل الحساب مطلوب", description: "يرجى الضغط على الرابط المرسل لبريدك." });
       } else {
+        await updateDoc(doc(db, "users", userCredential.user.uid), { lastSeen: new Date().toISOString() });
         router.push("/");
       }
     } catch (error: any) {

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -29,13 +28,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const allSections = useMemo(() => [
-    { label: "لوحة القيادة", icon: LayoutDashboard, href: "/admin", roles: ['owner', 'admin', 'gm'] },
-    { label: "مساعد الإدارة AI", icon: Cpu, href: "/admin/ai", roles: ['owner', 'admin'] },
-    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'designer'] },
     { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'designer'] },
+    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'designer'] },
     { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm', 'agent', 'middleman'] },
     { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent', 'middleman', 'designer'] },
-    { label: "المنتجات الرقمية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
+    { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support', 'agent'] },
     { label: "الخزينة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
@@ -143,8 +140,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </Sidebar>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden">
-          <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl z-[60] shrink-0">
+        <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-y-auto overflow-x-hidden custom-scrollbar bg-background">
+          <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl sticky top-0 z-[60] shrink-0">
              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-5">
                    <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20">
@@ -163,25 +160,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          {/* Scrollable Body */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth custom-scrollbar">
-            <div className="p-4 md:p-14 pb-48 lg:pb-14 min-h-full">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={pathname}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="max-w-7xl mx-auto"
-                >
-                  {children}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+          <div className="p-4 md:p-14 pb-48 lg:pb-14">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="max-w-7xl mx-auto"
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          {/* Mobile Bottom Navigation - FIXED Z-INDEX and Interaction */}
+          {/* Mobile Bottom Navigation - High Priority Z-Index */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-3xl border-t z-[160] flex items-center justify-around px-4 shadow-[0_-15px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link 

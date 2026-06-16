@@ -15,6 +15,7 @@ export interface UserProfile {
   isVerified?: boolean;
   affinityPoints?: number;
   createdAt: string;
+  lastSeen?: string;
   label?: string;
   bio?: string;
   completedDeals?: number;
