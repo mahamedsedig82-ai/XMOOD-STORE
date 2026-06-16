@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,7 +7,7 @@ import { useFirestore } from "@/firebase";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Loader2, Zap } from "lucide-react";
+import { Search, Filter, Loader2, Zap, ArrowDownWideArrow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -21,7 +22,10 @@ export default function StorePage() {
     if (!db) return;
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      // ترتيب المنتجات حسب السعر (من الأقل للأعلى)
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const sortedData = [...data].sort((a: any, b: any) => a.price - b.price);
+      setProducts(sortedData);
       setLoading(false);
     });
     return () => unsubscribe();
@@ -47,7 +51,9 @@ export default function StorePage() {
                 <span>مركز الأصول الرقمية المعتمدة</span>
               </div>
               <h1 className="text-6xl md:text-8xl font-headline font-black gold-text leading-tight">الخدمات الإلكترونية</h1>
-              <p className="text-zinc-500 text-xl font-medium mt-6 max-w-2xl leading-relaxed">اكتشف أرقى باقات الشحن والخدمات الرقمية الموثوقة والمجهزة للتسليم الفوري.</p>
+              <div className="flex items-center gap-2 text-zinc-500 mt-4 text-xs font-bold uppercase tracking-widest">
+                 <ArrowDownWideArrow size={14} className="text-primary" /> مرتبة تصاعدياً حسب القيمة
+              </div>
             </div>
             
             <div className="flex w-full lg:w-auto gap-4">

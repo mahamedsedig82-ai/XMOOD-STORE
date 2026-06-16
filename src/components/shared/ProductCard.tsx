@@ -1,13 +1,13 @@
+
 "use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Product } from "@/app/lib/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Zap, AlertCircle, Edit, CheckCircle, Loader2 } from "lucide-react";
+import { ShoppingBag, Zap, AlertCircle, Edit, CheckCircle, Loader2, Star } from "lucide-react";
 import { formatUSD, formatSDG } from "@/lib/currency";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, runTransaction, collection } from "firebase/firestore";
@@ -15,7 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface ProductCardProps {
-  product: Product;
+  product: any;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -108,6 +108,8 @@ export function ProductCard({ product }: ProductCardProps) {
     });
   };
 
+  const highlights = product.highlights ? product.highlights.split('\n').filter((h: string) => h.trim() !== "") : [];
+
   return (
     <>
       <Card className={`luxury-card flex flex-col group h-full ${isOutOfStock ? 'opacity-70 grayscale' : ''}`}>
@@ -139,6 +141,17 @@ export function ProductCard({ product }: ProductCardProps) {
               {product.name}
             </CardTitle>
           </div>
+
+          {highlights.length > 0 && (
+            <div className="space-y-1.5 mb-6 bg-primary/5 p-3 rounded-xl border border-primary/10">
+               {highlights.slice(0, 3).map((h: string, i: number) => (
+                 <div key={i} className="flex items-center gap-2 text-[9px] font-bold text-zinc-600 dark:text-zinc-400">
+                    <Star size={10} className="text-primary fill-primary" />
+                    <span>{h}</span>
+                 </div>
+               ))}
+            </div>
+          )}
           
           <div className="mt-auto pt-4 flex items-center justify-between border-t border-border/50">
             <div className="flex flex-col">

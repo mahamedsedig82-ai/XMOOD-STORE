@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit2, Trash2, Loader2, Search, Box, Upload, Link as LinkIcon, DollarSign, Info } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, Search, Box, Upload, Link as LinkIcon, DollarSign, Info, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +36,8 @@ export default function AdminProducts() {
     stock: "0",
     imageUrl: "",
     description: "",
-    shippingCodes: ""
+    shippingCodes: "",
+    highlights: "" // إضافة تميزات المنتج
   });
 
   useEffect(() => {
@@ -113,7 +115,7 @@ export default function AdminProducts() {
   };
 
   const resetForm = () => {
-    setForm({ name: "", price: "", category: "شحن ألعاب", stock: "0", imageUrl: "", description: "", shippingCodes: "" });
+    setForm({ name: "", price: "", category: "شحن ألعاب", stock: "0", imageUrl: "", description: "", shippingCodes: "", highlights: "" });
     setEditingId(null);
   };
 
@@ -125,7 +127,8 @@ export default function AdminProducts() {
       stock: p.stock.toString(),
       imageUrl: p.imageUrl || "",
       description: p.description || "",
-      shippingCodes: p.shippingCodes || ""
+      shippingCodes: p.shippingCodes || "",
+      highlights: p.highlights || ""
     });
     setEditingId(p.id);
     setIsOpen(true);
@@ -175,6 +178,19 @@ export default function AdminProducts() {
                 <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">المخزون (يدوي)</label>
                 <Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="h-12 rounded-xl bg-zinc-900 border-none px-6 font-bold" />
               </div>
+
+              <div className="col-span-full space-y-2">
+                 <div className="flex items-center gap-2 mb-1">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">مميزات الباقة (تميز)</label>
+                    <Sparkles size={12} className="text-primary" />
+                 </div>
+                 <Textarea 
+                   value={form.highlights} 
+                   onChange={e => setForm({...form, highlights: e.target.value})} 
+                   className="min-h-[80px] rounded-xl bg-zinc-900 border-none p-4 text-xs font-bold" 
+                   placeholder="أدخل ميزة في كل سطر لإبراز الباقة للعميل..." 
+                 />
+              </div>
               
               <div className="col-span-1 md:col-span-2 space-y-4">
                  <div className="flex items-center justify-between">
@@ -193,18 +209,12 @@ export default function AdminProducts() {
                        <Input type="file" accept="image/*" onChange={handleImageUpload} className="h-12 bg-zinc-900 border-none pt-3 text-xs" />
                     </TabsContent>
                  </Tabs>
-                 {form.imageUrl && (
-                   <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-primary/20">
-                      <img src={form.imageUrl} className="w-full h-full object-cover" alt="Preview" />
-                   </div>
-                 )}
               </div>
 
               <div className="col-span-1 md:col-span-2 space-y-2">
                 <div className="flex items-center gap-2 mb-1">
                    <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">أكواد التسليم الفوري</label>
                    <Info size={10} className="text-primary" />
-                   <span className="text-[8px] text-zinc-600">سيتم تصفير المخزون اليدوي واستخدام عدد الأسطر</span>
                 </div>
                 <Textarea 
                   value={form.shippingCodes} 

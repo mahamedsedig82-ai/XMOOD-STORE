@@ -1,22 +1,33 @@
+
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, Zap, Store, Palette, Award, CheckCircle, 
-  MessageSquare, Mail, Activity
+  MessageSquare, Mail, Activity, ShoppingBag, Flame
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection } from "@/firebase";
+import { doc, collection, query, orderBy, limit } from "firebase/firestore";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
+import { ProductCard } from "@/components/shared/ProductCard";
 
 export default function HomeCorporate() {
   const db = useFirestore();
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
+
+  // استعلام لجلب المنتجات الأكثر مبيعاً (أو الأحدث كبديل)
+  const bestSellersQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "products"), orderBy("createdAt", "desc"), limit(4));
+  }, [db]);
+
+  const { data: bestSellers } = useCollection(bestSellersQuery);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -86,6 +97,30 @@ export default function HomeCorporate() {
         </div>
       </section>
 
+      {/* Best Sellers Section */}
+      {bestSellers && bestSellers.length > 0 && (
+        <section className="py-32 bg-background border-b">
+           <div className="container mx-auto px-6">
+              <div className="flex items-center justify-between mb-16 border-r-4 border-primary pr-6">
+                 <div>
+                    <h2 className="text-4xl md:text-5xl font-black flex items-center gap-4">
+                       <Flame className="text-red-500 animate-pulse" size={40} /> المنتجات الأكثر طلباً
+                    </h2>
+                    <p className="text-zinc-500 mt-2 font-medium">الباقات والخدمات التي حازت على ثقة عملائنا هذا الأسبوع.</p>
+                 </div>
+                 <Button asChild variant="ghost" className="text-primary font-black uppercase text-xs tracking-widest hover:bg-primary/5">
+                    <Link href="/store">عرض الكل</Link>
+                 </Button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+                 {bestSellers.map((product: any) => (
+                   <ProductCard key={product.id} product={product} />
+                 ))}
+              </div>
+           </div>
+        </section>
+      )}
+
       {/* Features Grid */}
       <section className="py-40 bg-background">
         <div className="container mx-auto px-6">
@@ -99,7 +134,7 @@ export default function HomeCorporate() {
               { icon: ShieldCheck, title: "حماية متكاملة", desc: "أنظمة تشفير وحماية بيانات متطورة تضمن خصوصية تامة لكافة تعاملاتك المالية والتقنية.", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/10" },
               { icon: Award, title: "جودة معتمدة", desc: "كافة الخدمات تخضع لمعايير فحص دقيقة لضمان رضاكم التام واستمرارية الخدمة بنجاح.", color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-900/10" },
               { icon: Zap, title: "تنفيذ فوري", desc: "نظام آلي متطور يضمن معالجة ووصول طلباتكم في ثوانٍ معدودة وبأعلى مستويات السرعة.", color: "text-red-600", bg: "bg-red-50 dark:bg-red-900/10" },
-              { icon: CheckCircle, title: "خبراء موثوقون", desc: "نخبة من الوكلاء المعتمدين لضمان حقوقك في كل صفقة وساطة تتم عبر المنصة باحترافية.", color: "text-green-600", bg: "bg-green-50 dark:bg-green-900/10" },
+              { icon: CheckCircle, title: "خبراء موثوقون", desc: "نخبة من الوكلاء المعتمدين لضمان حقوقك في كل صفقة وساطة تتم عبر المنصة بااحترافية.", color: "text-green-600", bg: "bg-green-50 dark:bg-green-900/10" },
             ].map((item, i) => (
               <motion.div key={i} whileHover={{ y: -15 }} transition={{ type: "spring", stiffness: 300 }}>
                 <Card className="luxury-card p-12 border-none h-full flex flex-col items-center text-center group">

@@ -13,9 +13,11 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   onAuthStateChanged,
-  signOut
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Loader2, Mail, ShieldCheck, Key, RefreshCw, UserCircle, Phone, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -49,6 +51,39 @@ export default function SecureLoginPage() {
     });
     return () => unsubscribe();
   }, [auth, router]);
+
+  const handleGoogleLogin = async () => {
+    if (!auth || !db) return;
+    setLoading(true);
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          displayName: user.displayName?.split(" ")[0] || "عضو",
+          fullName: user.displayName || "",
+          email: user.email?.toLowerCase(),
+          phoneNumber: "",
+          walletBalance: 0,
+          role: 'user',
+          label: 'عضو بريميوم',
+          photoURL: user.photoURL || '',
+          createdAt: new Date().toISOString(),
+          isVerified: true,
+          affinityPoints: 50
+        });
+      }
+      router.push("/");
+    } catch (error) {
+      toast({ variant: "destructive", title: "خطأ في الدخول", description: "فشل الاتصال بحساب جوجل." });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +221,21 @@ export default function SecureLoginPage() {
 
                   <Button type="submit" className="w-full royal-button h-16 text-lg" disabled={loading}>
                     {loading ? <Loader2 className="animate-spin" /> : "دخول سيادي آمن"}
+                  </Button>
+
+                  <div className="relative py-4">
+                     <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
+                     <div className="relative flex justify-center text-[10px] uppercase font-black"><span className="bg-zinc-950 px-4 text-zinc-500">أو عبر الهوية الموحدة</span></div>
+                  </div>
+
+                  <Button type="button" onClick={handleGoogleLogin} variant="outline" className="w-full h-16 rounded-xl border-white/10 hover:bg-white/5 font-black text-xs gap-3">
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                       <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.18 1-.78 1.85-1.63 2.42v2.84h2.64c1.66-1.53 2.63-3.79 2.63-6.27z" />
+                       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-2.64-2.84c-.73.49-1.66.78-2.64.78-2.85 0-5.27-1.92-6.13-4.51H3.18v2.92C5 20.15 8.24 23 12 23z" />
+                       <path fill="#FBBC05" d="M5.87 13.77c-.22-.66-.35-1.36-.35-2.07s.13-1.41.35-2.07V6.71H3.18C2.42 8.3 2 10.1 2 12s.42 3.7 1.18 5.29l2.69-3.52z" />
+                       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 8.24 1 5 3.85 3.18 6.71l2.69 2.92c.86-2.59 3.28-4.51 6.13-4.51z" />
+                    </svg>
+                    SIGN IN WITH GOOGLE
                   </Button>
                 </form>
               </TabsContent>
