@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
@@ -75,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {profile?.label || "ADMIN ACCESS"}
             </Badge>
           </SidebarHeader>
-          <SidebarContent className="p-6 overflow-y-auto custom-scrollbar">
+          <SidebarContent className="p-6 overflow-y-auto smooth-scroll custom-scrollbar">
              <SidebarMenu className="gap-3">
                {visibleSections.map((item) => (
                  <SidebarMenuItem key={item.href}>
@@ -120,15 +119,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-4 md:px-16 py-12 pb-32 bg-background h-[calc(100vh-6rem)]">
-            <div className="max-w-7xl mx-auto h-full">
+          <main className="flex-1 overflow-y-auto smooth-scroll custom-scrollbar px-4 md:px-16 py-12 pb-32 bg-background">
+            <div className="max-w-7xl mx-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
                 >
                   {children}
                 </motion.div>
@@ -151,7 +150,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                    <div className="p-8 border-b bg-muted/20">
                       <SheetTitle className="text-2xl font-black gold-text">قائمة التحكم الشاملة</SheetTitle>
                    </div>
-                   <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 gap-4 custom-scrollbar">
+                   <div className="flex-1 overflow-y-auto smooth-scroll p-6 grid grid-cols-2 gap-4 custom-scrollbar">
                       {visibleSections.map((item) => (
                          <SheetClose asChild key={item.href}>
                             <Link href={item.href} className={`flex flex-col items-center gap-4 p-6 rounded-3xl border transition-all ${pathname === item.href ? 'bg-primary text-white border-primary shadow-xl' : 'bg-muted/50 border-transparent'}`}>

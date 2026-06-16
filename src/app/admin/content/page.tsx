@@ -17,6 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AdminContentManager() {
   const db = useFirestore();
@@ -67,15 +69,23 @@ export default function AdminContentManager() {
     }
   }, [config]);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!db) return;
     setIsSaving(true);
-    try {
-      await setDoc(settingsRef, { ...form, updatedAt: serverTimestamp() }, { merge: true });
-      toast({ title: "تم تثبيت المحتوى والنصوص السيادية بنجاح" });
-    } finally {
-      setIsSaving(false);
-    }
+    const data = { ...form, updatedAt: serverTimestamp() };
+    
+    setDoc(settingsRef, data, { merge: true })
+      .then(() => {
+        toast({ title: "تم تثبيت المحتوى والنصوص السيادية بنجاح" });
+      })
+      .catch(async () => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: settingsRef.path,
+          operation: 'write',
+          requestResourceData: data
+        }));
+      })
+      .finally(() => setIsSaving(false));
   };
 
   if (loading) return (

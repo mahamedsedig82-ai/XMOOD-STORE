@@ -92,7 +92,7 @@ export default function EmailSecurityDashboard() {
                     تخصيص قوالب الرسائل
                  </h4>
                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    في قسم <b>Authentication</b> &rarr; <b>Templates</b>، قم بتعديل قالب "Email address verification". اجعل النص بسيطاً ورسمياً، وقلل من الروابط الخارجية الإضافية.
+                    في قسم <b>Authentication &rarr; Templates</b>، قم بتعديل قالب "Email address verification". اجعل النص بسيطاً ورسمياً، وقلل من الروابط الخارجية الإضافية.
                  </p>
               </div>
            </div>

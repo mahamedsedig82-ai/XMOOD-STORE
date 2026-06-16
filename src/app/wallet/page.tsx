@@ -32,6 +32,8 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function ProfessionalWalletPage() {
   const { profile, user, loading: userLoading, isVerified } = useUser();
@@ -87,21 +89,30 @@ export default function ProfessionalWalletPage() {
     });
   };
 
-  const handleUpdateProfile = async () => {
+  const handleUpdateProfile = () => {
     if (!user || !db) return;
     setIsUpdating(true);
-    try {
-      await updateDoc(doc(db, "users", user.uid), {
-        displayName: newDisplayName,
-        phoneNumber: newPhone,
-        photoURL: newPhotoURL,
-        updatedAt: new Date().toISOString()
-      });
-      setIsEditing(false);
-      toast({ title: "تم التحديث", description: "تم تثبيت تغييرات هويتك السيادية." });
-    } finally {
-      setIsUpdating(false);
-    }
+    const userRef = doc(db, "users", user.uid);
+    const data = {
+      displayName: newDisplayName,
+      phoneNumber: newPhone,
+      photoURL: newPhotoURL,
+      updatedAt: new Date().toISOString()
+    };
+
+    updateDoc(userRef, data)
+      .then(() => {
+        setIsEditing(false);
+        toast({ title: "تم التحديث", description: "تم تثبيت تغييرات هويتك السيادية." });
+      })
+      .catch(async () => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'update',
+          requestResourceData: data
+        }));
+      })
+      .finally(() => setIsUpdating(false));
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
