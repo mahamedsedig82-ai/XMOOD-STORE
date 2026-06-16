@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useParams } from "next/navigation";
@@ -8,9 +7,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Calendar, Award, Zap, ShieldCheck, TrendingUp, Heart, MessageSquare, Store, Briefcase, Palette, ShieldAlert, LayoutGrid } from "lucide-react";
+import { Loader2, Calendar, Award, Zap, ShieldCheck, TrendingUp, Heart, MessageSquare, LayoutGrid } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function PublicProfilePage() {
@@ -33,19 +31,12 @@ export default function PublicProfilePage() {
     </div>
   );
 
-  const navigationHub = [
-    { name: "المتجر الرئيسي", desc: "استعرض باقات الشحن المتاحة", icon: Store, href: "/store", color: "text-blue-500" },
-    { name: "سوق الخدمات", desc: "حلول تقنية وإبداعية متكاملة", icon: Briefcase, href: "/other-services", color: "text-amber-500" },
-    { name: "معرض الأعمال", desc: "شاهد أرقى التصاميم المنفذة", icon: Palette, href: "/designs/gallery", color: "text-purple-500" },
-    { name: "الوكلاء المعتمدون", desc: "تواصل مع وسطاء الثقة", icon: ShieldCheck, href: "/middleman", color: "text-green-500" }
-  ];
-
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-primary/30" dir="rtl">
       <Navbar />
       
       {/* Sovereign Header */}
-      <section className="relative pt-32 pb-12 md:pt-48 md:pb-16 overflow-hidden border-b bg-muted/20">
+      <section className="relative pt-32 pb-12 md:pt-48 md:pb-24 overflow-hidden border-b bg-muted/20">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <rect width="100%" height="100%" fill="url(#grid-modern)" />
@@ -100,38 +91,19 @@ export default function PublicProfilePage() {
         </div>
       </section>
 
-      {/* Navigation Hub - MOVED TO TOP AS REQUESTED */}
-      <section className="container mx-auto px-6 py-12 md:py-16 space-y-12">
-         <div className="space-y-8">
-            <div className="flex items-center gap-4 border-r-4 border-primary pr-6">
-               <LayoutGrid className="text-primary" size={28} />
-               <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter">الأقسام السيادية</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-               {navigationHub.map((item, i) => (
-                 <Link key={i} href={item.href} className="group">
-                   <Card className="luxury-card p-6 md:p-10 hover:border-primary transition-all h-full bg-card/60 backdrop-blur-xl border-none shadow-lg group-hover:-translate-y-2 duration-300">
-                     <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-[1.5rem] bg-muted flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 transition-transform ${item.color}`}>
-                        <item.icon size={24} className="md:w-8 md:h-8" />
-                     </div>
-                     <h3 className="text-xl md:text-2xl font-black mb-2 md:mb-3 group-hover:gold-text transition-colors">{item.name}</h3>
-                     <p className="text-xs md:text-sm text-muted-foreground leading-relaxed font-medium">{item.desc}</p>
-                   </Card>
-                 </Link>
-               ))}
-            </div>
-         </div>
-
-         {/* Activity Tabs */}
+      {/* Activity Tabs */}
+      <section className="container mx-auto px-6 py-12 md:py-24">
          <Tabs defaultValue="activity" className="space-y-12">
-            <TabsList className="bg-card p-1.5 md:p-2 rounded-2xl md:rounded-[2rem] h-14 md:h-20 border inline-flex gap-2 px-4 shadow-xl">
-               <TabsTrigger value="activity" className="rounded-xl md:rounded-2xl px-6 md:px-12 font-black text-[9px] md:text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
-                  <Zap size={14} className="ml-2" /> النشاط الأخير
-               </TabsTrigger>
-               <TabsTrigger value="achievements" className="rounded-xl md:rounded-2xl px-6 md:px-12 font-black text-[9px] md:text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
-                  <Award size={14} className="ml-2" /> الأوسمة
-               </TabsTrigger>
-            </TabsList>
+            <div className="flex items-center justify-between border-b pb-6">
+               <TabsList className="bg-card p-1.5 md:p-2 rounded-2xl md:rounded-[2rem] h-14 md:h-18 border inline-flex gap-2 px-4 shadow-xl">
+                  <TabsTrigger value="activity" className="rounded-xl md:rounded-2xl px-6 md:px-12 font-black text-[9px] md:text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
+                     <Zap size={14} className="ml-2" /> النشاط الأخير
+                  </TabsTrigger>
+                  <TabsTrigger value="achievements" className="rounded-xl md:rounded-2xl px-6 md:px-12 font-black text-[9px] md:text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black">
+                     <Award size={14} className="ml-2" /> الأوسمة
+                  </TabsTrigger>
+               </TabsList>
+            </div>
 
             <TabsContent value="activity">
                <Card className="luxury-card p-6 md:p-12 bg-card/40 border-none shadow-xl">

@@ -5,11 +5,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Zap, ShoppingBag, User, Briefcase, X
+  Wallet, LayoutDashboard, LogOut, Zap, ShoppingBag, User, Briefcase, X, ChevronRight, Layers, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useUser, useAuth, useFirestore } from "@/firebase";
+import { useUser, useAuth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatUSD } from "@/lib/currency";
@@ -53,12 +53,15 @@ export function Navbar() {
     }
   };
 
-  const navLinks = [
+  const mainLinks = [
     { name: "الرئيسية", href: "/", icon: Home },
-    { name: "المتجر", href: "/store", icon: ShoppingBag },
-    { name: "سوق الخدمات", href: "/other-services", icon: Briefcase },
-    { name: "التصاميم", href: "/designs/gallery", icon: Palette },
-    { name: "الوكلاء", href: "/middleman", icon: ShieldCheck },
+  ];
+
+  const storeBranches = [
+    { name: "المتجر الرئيسي", href: "/store", icon: ShoppingBag, desc: "شحن الألعاب والبطاقات" },
+    { name: "سوق الخدمات", href: "/other-services", icon: Briefcase, desc: "حلول تقنية وإبداعية" },
+    { name: "معرض التصاميم", href: "/designs/gallery", icon: Palette, desc: "أرقى أعمال المبدعين" },
+    { name: "الوكلاء المعتمدون", href: "/middleman", icon: ShieldCheck, desc: "وسطاء الثقة والضمان" },
   ];
 
   const isAdmin = ['owner', 'admin', 'gm', 'store_manager'].includes(profile?.role || '');
@@ -69,7 +72,7 @@ export function Navbar() {
     <nav className="fixed top-0 z-[90] w-full border-b bg-background/80 backdrop-blur-3xl transition-all duration-500 h-20 md:h-24">
       <div className="container mx-auto px-4 md:px-6 h-full flex items-center justify-between">
         
-        {/* Mobile Menu Trigger (Three Lines) - Enhanced Design */}
+        {/* Mobile Menu Trigger (3 lines) */}
         <div className="lg:hidden flex items-center gap-3">
           <Sheet dir="rtl">
             <SheetTrigger asChild>
@@ -80,39 +83,61 @@ export function Navbar() {
             <SheetContent side="right" className="w-[85%] max-w-sm bg-background/98 backdrop-blur-3xl p-0 flex flex-col rounded-l-[2.5rem] border-none shadow-2xl overflow-hidden">
               <SheetHeader className="p-8 border-b bg-muted/20 relative">
                  <SheetTitle className="handwritten-logo text-4xl text-right">XMOOD</SheetTitle>
-                 <p className="text-[8px] text-muted-foreground uppercase tracking-[0.4em] font-black text-right mt-2">Sovereign Portal</p>
+                 <p className="text-[8px] text-muted-foreground uppercase tracking-[0.4em] font-black text-right mt-2">Sovereign Access Hub</p>
               </SheetHeader>
               
-              <div className="flex-1 p-6 space-y-3 overflow-y-auto custom-scrollbar">
+              <div className="flex-1 p-6 space-y-8 overflow-y-auto custom-scrollbar">
                 {user && profile && (
-                  <div className="mb-8 p-5 bg-primary/5 rounded-[1.5rem] border border-primary/10 flex items-center gap-4">
-                    <Avatar className="w-12 h-12 border-2 border-primary/20 rounded-xl">
+                  <div className="p-5 bg-primary/5 rounded-[1.5rem] border border-primary/10 flex items-center gap-4">
+                    <Avatar className="w-14 h-14 border-2 border-primary/20 rounded-2xl">
                       <AvatarImage src={profile.photoURL} className="object-cover" />
                       <AvatarFallback className="bg-zinc-100 font-bold text-primary">XM</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col text-right truncate">
-                      <span className="font-black text-base gold-text truncate">{profile.displayName}</span>
-                      <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">{profile.label || "عضو موثق"}</span>
+                      <span className="font-black text-lg gold-text truncate">{profile.displayName}</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge className="bg-primary/20 text-primary border-none text-[7px] px-2 py-0.5 font-black uppercase">{profile.label || "عضو"}</Badge>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest pr-4 mb-2">القائمة الرئيسية</p>
-                  {navLinks.map((link) => (
-                    <SheetClose asChild key={link.href}>
-                      <Link 
-                        href={link.href} 
-                        className={`flex items-center flex-row-reverse justify-between gap-4 p-4 rounded-2xl transition-all border ${pathname === link.href ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'hover:bg-muted border-transparent font-bold'}`}
-                      >
-                        <div className="flex items-center flex-row-reverse gap-4">
-                          <link.icon size={20} className={pathname === link.href ? 'text-white' : 'text-primary'} />
-                          <span className="text-xs uppercase tracking-widest">{link.name}</span>
-                        </div>
-                        {pathname === link.href && <Zap size={12} className="fill-white" />}
-                      </Link>
-                    </SheetClose>
-                  ))}
+                <div className="space-y-4">
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest pr-2 mb-2 flex items-center gap-2">
+                    <Layers size={12} /> تفرعات المتجر السيادية
+                  </p>
+                  <div className="grid grid-cols-1 gap-3">
+                    {storeBranches.map((branch) => (
+                      <SheetClose asChild key={branch.href}>
+                        <Link 
+                          href={branch.href} 
+                          className={`flex items-center justify-between p-4 rounded-2xl transition-all border group ${pathname === branch.href ? 'bg-primary text-black border-primary shadow-xl' : 'bg-card hover:bg-muted border-border/50'}`}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${pathname === branch.href ? 'bg-black/10' : 'bg-primary/10 text-primary'}`}>
+                               <branch.icon size={20} />
+                            </div>
+                            <div className="text-right">
+                               <p className="text-xs font-black uppercase tracking-wider">{branch.name}</p>
+                               <p className="text-[8px] opacity-60 font-bold">{branch.desc}</p>
+                            </div>
+                          </div>
+                          <ChevronRight size={14} className={pathname === branch.href ? 'opacity-100' : 'opacity-20'} />
+                        </Link>
+                      </SheetClose>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                   <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest pr-2">الوصول السريع</p>
+                   {user && (
+                     <SheetClose asChild>
+                       <Link href="/wallet" className="flex items-center gap-4 p-4 rounded-2xl bg-muted/40 border border-transparent hover:border-primary/20 transition-all font-bold text-xs uppercase">
+                          <Wallet size={18} className="text-primary" /> المحفظة الشخصية
+                       </Link>
+                     </SheetClose>
+                   )}
                 </div>
               </div>
 
@@ -131,7 +156,7 @@ export function Navbar() {
           </Sheet>
         </div>
 
-        {/* Logo - Elegant Alignment */}
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="flex flex-col items-start leading-none text-right">
              <span className="handwritten-logo text-xl md:text-3xl font-black transition-all group-hover:scale-105">XMOOD STORE</span>
@@ -141,7 +166,7 @@ export function Navbar() {
 
         {/* Desktop Links */}
         <div className="hidden lg:flex items-center gap-10">
-          {navLinks.map((link) => (
+          {[...mainLinks, ...storeBranches].map((link) => (
             <Link 
               key={link.href} 
               href={link.href} 
