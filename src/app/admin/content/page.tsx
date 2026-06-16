@@ -129,7 +129,7 @@ export default function AdminContentManager() {
                          className="h-16 bg-muted/40 border-none rounded-2xl font-mono text-xs" 
                          placeholder="https://..." 
                        />
-                       <p className="text-[8px] text-muted-foreground pr-4">سيتم قص اللوقو تلقائياً وجعل حوافه دائرية انسيابية.</p>
+                       <p className="text-[8px] text-muted-foreground pr-4">سيتم قص اللوقو تلقائياً وجعل حوافه دائرية انسيابية (Smart Crop).</p>
                     </div>
                     
                     <div className="space-y-4">

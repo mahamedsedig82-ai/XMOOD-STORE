@@ -118,6 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
+          {/* Fixed Scrolling Container */}
           <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-4 md:px-16 py-12 pb-32 bg-background h-[calc(100vh-6rem)]">
             <div className="max-w-7xl mx-auto h-full">
               <AnimatePresence mode="wait">
