@@ -12,7 +12,6 @@ import {
   createUserWithEmailAndPassword, 
   sendEmailVerification,
   sendPasswordResetEmail,
-  onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup
 } from "firebase/auth";
@@ -37,18 +36,8 @@ export default function SecureLoginPage() {
   const db = useFirestore();
   const router = useRouter();
   
-  // Guard to prevent multiple concurrent calls
-  const isProcessing = useRef(false);
-
-  useEffect(() => {
-    if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.emailVerified) {
-        router.replace("/");
-      }
-    });
-    return () => unsubscribe();
-  }, [auth, router]);
+  // Guard to prevent multiple concurrent calls and re-renders
+  const isAuthProcessing = useRef(false);
 
   const handleResetPassword = async () => {
     if (!auth || !resetEmail.trim()) {
@@ -67,25 +56,36 @@ export default function SecureLoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    if (isProcessing.current || !auth || !db) return;
+    console.log("[AUTH-DEBUG] Google Login triggered. Current Origin:", window.location.origin);
     
-    isProcessing.current = true;
+    if (isAuthProcessing.current) {
+      console.warn("[AUTH-DEBUG] Blocked: Auth is already in progress.");
+      return;
+    }
+    
+    if (!auth || !db) {
+      console.error("[AUTH-DEBUG] Blocked: Firebase Auth/Firestore not initialized.");
+      return;
+    }
+    
+    isAuthProcessing.current = true;
     setLoading(true);
 
-    const provider = new GoogleAuthProvider();
-    // Use select_account to force consistent behavior
-    provider.setCustomParameters({ prompt: 'select_account' });
-
     try {
-      // Direct call to signInWithPopup without changing persistence here
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+
+      console.log("[AUTH-DEBUG] Attempting signInWithPopup...");
       const result = await signInWithPopup(auth, provider);
+      
+      console.log("[AUTH-DEBUG] Popup SUCCESS. User UID:", result.user.uid);
       const user = result.user;
       
-      // Immediate metadata check to ensure user doc exists
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       
       if (!userDoc.exists()) {
+        console.log("[AUTH-DEBUG] Profile not found, creating new document...");
         await setDoc(userDocRef, {
           uid: user.uid,
           displayName: user.displayName?.split(" ")[0] || "عضو",
@@ -102,26 +102,43 @@ export default function SecureLoginPage() {
           affinityPoints: 50,
           updatedAt: serverTimestamp()
         });
+        console.log("[AUTH-DEBUG] Document created successfully.");
+      } else {
+        console.log("[AUTH-DEBUG] Existing profile found. Updating lastSeen.");
+        await setDoc(userDocRef, { lastSeen: new Date().toISOString(), updatedAt: serverTimestamp() }, { merge: true });
       }
       
       toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في عالم XMOOD." });
+      console.log("[AUTH-DEBUG] Triggering redirection...");
       router.push("/");
     } catch (error: any) {
-      console.error("Google Auth Detailed Error:", error);
+      console.error("[AUTH-DEBUG] SIGN-IN ERROR:", error.code, error.message);
+      
       if (error.code === 'auth/popup-closed-by-user') {
-        toast({ title: "تنبيه", description: "تم إغلاق نافذة الدخول. يرجى المحاولة مرة أخرى دون إغلاق النافذة المنبثقة." });
+        toast({ 
+          variant: "destructive",
+          title: "تنبيه هام", 
+          description: "تم إغلاق نافذة الدخول قبل اكتمال العملية. يرجى التأكد من السماح بالنوافذ المنبثقة ومن أن النطاق مضاف في Authorized Domains بـ Firebase Console." 
+        });
+      } else if (error.code === 'auth/unauthorized-domain') {
+        toast({
+          variant: "destructive",
+          title: "نطاق غير مصرح",
+          description: "هذا النطاق غير مضاف في إعدادات Firebase Authentication. يرجى إضافة النطاق الحالي في الـ Console."
+        });
       } else {
-        toast({ variant: "destructive", title: "فشل الدخول", description: "حدث خطأ غير متوقع أثناء الاتصال بخوادم Google." });
+        toast({ variant: "destructive", title: "فشل الدخول", description: error.message || "حدث خطأ غير متوقع." });
       }
     } finally {
       setLoading(false);
-      isProcessing.current = false;
+      isAuthProcessing.current = false;
+      console.log("[AUTH-DEBUG] handleGoogleLogin cycle finished.");
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !db || loading) return;
+    if (!auth || !db || loading || isAuthProcessing.current) return;
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
@@ -147,9 +164,7 @@ export default function SecureLoginPage() {
       setStep('verify_pending');
       toast({ title: "اكتمل التسجيل", description: "يرجى التحقق من بريدك الإلكتروني لتنشيط الحساب." });
     } catch (error: any) {
-      let msg = "فشل إنشاء الحساب. تأكد من البيانات.";
-      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل لدينا بالفعل.";
-      toast({ variant: "destructive", title: "خطأ في التسجيل", description: msg });
+      toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message });
     } finally {
       setLoading(false);
     }
@@ -157,7 +172,7 @@ export default function SecureLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !db || loading) return;
+    if (!auth || !db || loading || isAuthProcessing.current) return;
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
