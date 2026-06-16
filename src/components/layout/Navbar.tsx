@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Zap, ShoppingBag, User, Briefcase, X, ChevronRight, Layers, Sparkles
+  Wallet, LayoutDashboard, LogOut, Briefcase, ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,12 +58,20 @@ export function Navbar() {
     }
   };
 
+  const labels = config?.navLabels || {
+    home: "الرئيسية",
+    store: "المتجر",
+    services: "سوق الخدمات",
+    gallery: "معرض الإبداع",
+    agents: "الوكلاء"
+  };
+
   const navLinks = [
-    { label: "الرئيسية", href: "/", icon: Home },
-    { label: "المتجر", href: "/store", icon: Store },
-    { label: "سوق الخدمات", href: "/other-services", icon: Briefcase },
-    { label: "معرض الإبداع", href: "/designs/gallery", icon: Palette },
-    { label: "الوكلاء", href: "/middleman", icon: ShieldCheck },
+    { label: labels.home, href: "/", icon: Home },
+    { label: labels.store, href: "/store", icon: Store },
+    { label: labels.services, href: "/other-services", icon: Briefcase },
+    { label: labels.gallery, href: "/designs/gallery", icon: Palette },
+    { label: labels.agents, href: "/middleman", icon: ShieldCheck },
   ];
 
   const isAdmin = ['owner', 'admin', 'gm', 'store_manager'].includes(profile?.role || '');
@@ -77,17 +85,17 @@ export function Navbar() {
         <div className="lg:hidden flex items-center gap-3">
           <Sheet dir="rtl">
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-primary rounded-xl bg-primary/10 h-11 w-11 border border-primary/20 shadow-sm active:scale-95 transition-all">
+              <Button variant="ghost" size="icon" className="text-primary rounded-xl bg-primary/10 h-11 w-11 border border-primary/20 shadow-sm transition-all">
                 <Menu size={24} />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[85%] max-w-sm bg-background/98 backdrop-blur-3xl p-0 flex flex-col rounded-l-[2.5rem] border-none shadow-2xl overflow-hidden">
-              <SheetHeader className="p-8 border-b bg-muted/20 relative">
+              <SheetHeader className="p-8 border-b bg-muted/20">
                  <SheetTitle className="handwritten-logo text-4xl text-right">
                     {config?.appearance?.logoUrl ? (
                         <img src={config.appearance.logoUrl} alt="XMOOD" className="h-10 w-auto object-contain ml-auto" />
                     ) : (
-                        "XMOOD"
+                        config?.siteInfo?.title || "XMOOD"
                     )}
                  </SheetTitle>
                  <p className="text-[8px] text-muted-foreground uppercase tracking-[0.4em] font-black text-right mt-2">Sovereign Access Hub</p>
@@ -152,7 +160,7 @@ export function Navbar() {
               <img src={config.appearance.logoUrl} alt="XMOOD Logo" className="h-8 md:h-12 w-auto object-contain transition-transform group-hover:scale-105" />
           ) : (
               <div className="flex flex-col items-start leading-none text-right">
-                 <span className="handwritten-logo text-xl md:text-3xl font-black transition-all group-hover:scale-105">XMOOD STORE</span>
+                 <span className="handwritten-logo text-xl md:text-3xl font-black transition-all group-hover:scale-105">{config?.siteInfo?.title || "XMOOD STORE"}</span>
                  <span className="text-[6px] md:text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">Elite Digital Services</span>
               </div>
           )}
@@ -195,7 +203,7 @@ export function Navbar() {
           ) : (
             <DropdownMenu dir="rtl">
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl overflow-hidden border-2 border-primary/20 hover:border-primary transition-all shadow-xl active:scale-95">
+                <Button variant="ghost" className="p-0 h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl overflow-hidden border-2 border-primary/20 hover:border-primary transition-all shadow-xl">
                   <Avatar className="h-full w-full rounded-none">
                     <AvatarImage src={profile?.photoURL} className="object-cover" />
                     <AvatarFallback className="bg-slate-100 dark:bg-zinc-900 text-primary font-bold text-sm md:text-xl">{profile?.displayName?.charAt(0)}</AvatarFallback>

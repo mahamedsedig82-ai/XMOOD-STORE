@@ -10,7 +10,6 @@ import {
   Loader2, 
   ArrowRightLeft, 
   Zap, 
-  UserCheck, 
   Smartphone, 
   Settings, 
   Camera, 
@@ -21,7 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useUser, useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useUser, useCollection, useFirestore, useMemoFirebase, useDoc } from "@/firebase";
 import { formatUSD, formatSDG } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { query, collection, orderBy, doc, updateDoc, addDoc, where, limit } from "firebase/firestore";
@@ -31,7 +30,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -40,16 +38,14 @@ export default function ProfessionalWalletPage() {
   const db = useFirestore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const { data: config } = useDoc(settingsRef);
+
   const [isEditing, setIsEditing] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newPhotoURL, setNewPhotoURL] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
-
-  const [isAgentDialogOpen, setIsAgentDialogOpen] = useState(false);
-  const [agentReason, setAgentReason] = useState("");
-  const [agentExperience, setAgentExperience] = useState("");
-  const [isSubmittingAgent, setIsSubmittingAgent] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -64,16 +60,8 @@ export default function ProfessionalWalletPage() {
     return query(collection(db, "users", user.uid, "transactions"), orderBy("createdAt", "desc"), limit(50));
   }, [user, db]);
 
-  const agentRequestQuery = useMemoFirebase(() => {
-    if (!user || !db) return null;
-    return query(collection(db, "agent_requests"), where("userId", "==", user.uid), limit(1));
-  }, [user, db]);
-
   const { data: transactions, loading: transLoading } = useCollection(transactionsQuery);
-  const { data: agentRequests } = useCollection(agentRequestQuery);
-  const currentAgentRequest = agentRequests?.[0];
 
-  // دالة ضغط الصور الذكية قبل التحويل لـ Base64
   const compressAndConvertToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -83,29 +71,16 @@ export default function ProfessionalWalletPage() {
         img.src = event.target?.result as string;
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          const MAX_WIDTH = 800; // حجم كافٍ للبروفايل
+          const MAX_WIDTH = 800;
           const MAX_HEIGHT = 800;
           let width = img.width;
           let height = img.height;
-
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
+          if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
+          else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+          canvas.width = width; canvas.height = height;
           const ctx = canvas.getContext("2d");
           ctx?.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.7); // ضغط بنسبة 70%
-          resolve(dataUrl);
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
         };
       };
       reader.onerror = (error) => reject(error);
@@ -123,9 +98,7 @@ export default function ProfessionalWalletPage() {
         updatedAt: new Date().toISOString()
       });
       setIsEditing(false);
-      toast({ title: "تم تحديث البيانات", description: "تم تثبيت تغييرات هويتك السيادية بنجاح." });
-    } catch (e) {
-      toast({ variant: "destructive", title: "فشل التحديث", description: "تعذر حفظ التغييرات، يرجى المحاولة لاحقاً." });
+      toast({ title: "تم التحديث", description: "تم تثبيت تغييرات هويتك السيادية." });
     } finally {
       setIsUpdating(false);
     }
@@ -136,36 +109,12 @@ export default function ProfessionalWalletPage() {
     if (file) {
       setIsUpdating(true);
       try {
-        const compressedBase64 = await compressAndConvertToBase64(file);
-        setNewPhotoURL(compressedBase64);
+        const b64 = await compressAndConvertToBase64(file);
+        setNewPhotoURL(b64);
         toast({ title: "معالجة الصورة", description: "تم ضغط وتحضير صورتك الجديدة بنجاح." });
-      } catch (error) {
-        toast({ variant: "destructive", title: "خطأ في المعالجة", description: "لم نتمكن من قراءة ملف الصورة." });
       } finally {
         setIsUpdating(false);
       }
-    }
-  };
-
-  const handleAgentRequest = async () => {
-    if (!user || !db || !agentReason.trim()) return;
-    setIsSubmittingAgent(true);
-    try {
-      await addDoc(collection(db, "agent_requests"), {
-        userId: user.uid,
-        userName: profile?.displayName || "عضو",
-        userEmail: user.email,
-        reason: agentReason,
-        experience: agentExperience,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      });
-      setIsAgentDialogOpen(false);
-      toast({ title: "تم إرسال الطلب", description: "طلب الاعتماد قيد المراجعة الأمنية الآن." });
-    } catch (e) {
-      toast({ variant: "destructive", title: "فشل الإرسال" });
-    } finally {
-      setIsSubmittingAgent(false);
     }
   };
 
@@ -180,14 +129,11 @@ export default function ProfessionalWalletPage() {
     </div>
   );
 
-  const balance = profile?.walletBalance || 0;
-
   return (
     <main className="min-h-screen bg-background text-foreground pb-20" dir="rtl">
       <Navbar />
       <div className="container mx-auto px-4 py-32 max-w-5xl animate-fade-in">
         
-        {/* Modern Profile Header */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <Card className="luxury-card border-none p-8 lg:col-span-2 bg-white dark:bg-zinc-900 flex flex-col md:flex-row items-center gap-8 shadow-xl">
             <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
@@ -197,16 +143,16 @@ export default function ProfessionalWalletPage() {
                   {profile?.displayName?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -bottom-2 -right-2 bg-primary text-white p-2.5 rounded-xl shadow-lg border-4 border-white dark:border-zinc-900 group-hover:scale-110 transition-transform">
+              <div className="absolute -bottom-2 -right-2 bg-primary text-white p-2.5 rounded-xl shadow-lg border-4 border-white dark:border-zinc-900">
                 <Camera size={18} />
               </div>
             </div>
 
             <div className="flex-1 text-center md:text-right space-y-4">
               <div>
-                <h1 className="text-3xl font-black mb-2">{profile?.displayName}</h1>
+                <h1 className="text-3xl font-black mb-2">{config?.walletPage?.title || "المحفظة السيادية"}</h1>
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                  <Badge className="bg-primary/10 text-primary border-none text-[10px] px-4 py-1.5 font-black uppercase tracking-widest">{profile?.role}</Badge>
+                  <Badge className="bg-primary/10 text-primary border-none text-[10px] px-4 py-1.5 font-black uppercase tracking-widest">{profile?.displayName}</Badge>
                   <Badge variant="outline" className="text-[10px] px-4 py-1.5 font-black uppercase tracking-widest border-muted-foreground/20">{profile?.label || "عضو موثق"}</Badge>
                 </div>
               </div>
@@ -227,31 +173,25 @@ export default function ProfessionalWalletPage() {
                <Button onClick={() => setIsEditing(true)} variant="outline" className="h-12 rounded-xl font-black text-[10px] uppercase gap-2 border-primary/20 hover:bg-primary/5">
                  <Edit2 size={14} /> تحديث الهوية
                </Button>
-               {!currentAgentRequest && profile?.role !== 'agent' && profile?.role !== 'owner' && (
-                <Button onClick={() => setIsAgentDialogOpen(true)} variant="ghost" className="text-[9px] font-black uppercase h-10 tracking-widest text-muted-foreground hover:text-primary">
-                   طلب اعتماد وكيل
-                </Button>
-               )}
             </div>
           </Card>
 
           <Card className="luxury-card border-none p-8 bg-zinc-900 text-white dark:bg-zinc-900 flex flex-col justify-center text-center shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[60px] rounded-full -mr-16 -mt-16" />
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4 relative z-10">السيولة الرقمية المتوفرة</p>
-            <div className="text-5xl font-black mb-3 tracking-tighter text-primary relative z-10">{formatUSD(balance)}</div>
-            <div className="text-[10px] font-black text-zinc-400 opacity-60 uppercase tracking-widest relative z-10">{formatSDG(balance)}</div>
+            <div className="text-5xl font-black mb-3 tracking-tighter text-primary relative z-10">{formatUSD(profile?.walletBalance || 0)}</div>
+            <div className="text-[10px] font-black text-zinc-400 opacity-60 uppercase tracking-widest relative z-10">{formatSDG(profile?.walletBalance || 0)}</div>
           </Card>
         </div>
 
-        {/* User Identity Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
            <Card className="luxury-card p-8 flex flex-col justify-between border-none bg-card/60 backdrop-blur-xl shadow-xl">
               <div>
                  <h3 className="text-xl font-black mb-4 flex items-center gap-3 text-zinc-900 dark:text-white">
-                    <Zap size={22} className="text-primary animate-pulse" /> بروتوكول الإيداع السيادي
+                    <Zap size={22} className="text-primary animate-pulse" /> {config?.walletPage?.uidTitle || "بروتوكول الإيداع السيادي"}
                  </h3>
                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8 font-medium leading-relaxed">
-                    زود محفظتك بالرصيد عبر أحد وكلائنا المعتمدين؛ قدم معرفك الرقمي (UID) الموحد أدناه لضمان وصول الحوالة في الوقت الفعلي.
+                    {config?.walletPage?.uidDesc || "زود محفظتك بالرصيد عبر أحد وكلائنا المعتمدين؛ قدم معرفك الرقمي (UID) الموحد أدناه لضمان وصول الحوالة في الوقت الفعلي."}
                  </p>
               </div>
               <div className="bg-zinc-100 dark:bg-zinc-800/50 px-6 py-5 rounded-2xl border border-dashed border-primary/30 flex items-center justify-between gap-4 cursor-pointer hover:bg-primary/5 transition-all group" onClick={() => copyToClipboard(user?.uid || "")}>
@@ -281,11 +221,10 @@ export default function ProfessionalWalletPage() {
            </Card>
         </div>
 
-        {/* Professional Transaction Ledger */}
         <Card className="luxury-card border-none overflow-hidden bg-card/60 backdrop-blur-xl shadow-2xl">
           <CardHeader className="p-8 border-b flex flex-row items-center justify-between bg-muted/5">
             <CardTitle className="text-xl font-black flex items-center gap-4">
-              <History size={24} className="text-primary" /> سجل التدفقات والعمليات
+              <History size={24} className="text-primary" /> {config?.walletPage?.ledgerTitle || "سجل التدفقات والعمليات"}
             </CardTitle>
             <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-primary/20 text-primary px-4 py-1 rounded-full">Universal Ledger Pro</Badge>
           </CardHeader>
@@ -322,7 +261,6 @@ export default function ProfessionalWalletPage() {
         </Card>
       </div>
 
-      {/* Edit Profile Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
          <DialogContent className="max-w-lg bg-card border-none rounded-[2.5rem] p-10 shadow-2xl">
             <DialogHeader>
@@ -330,15 +268,7 @@ export default function ProfessionalWalletPage() {
                <DialogDescription className="font-bold text-zinc-500 text-xs mt-2 uppercase tracking-widest">Update Sovereign Profile Identity</DialogDescription>
             </DialogHeader>
             <div className="space-y-8 mt-10">
-               {/* Hidden Image Input */}
-               <input 
-                 type="file" 
-                 ref={fileInputRef} 
-                 onChange={handleImageChange} 
-                 accept="image/*" 
-                 className="hidden" 
-               />
-               
+               <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
                <div className="flex flex-col items-center gap-6">
                   <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                      <Avatar className="w-28 h-28 border-4 border-primary/20 shadow-2xl rounded-3xl transition-transform group-hover:scale-105 overflow-hidden">
@@ -349,16 +279,15 @@ export default function ProfessionalWalletPage() {
                         {isUpdating ? <Loader2 className="animate-spin text-white" /> : <Upload size={24} className="text-white" />}
                      </div>
                   </div>
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-center">انقر لتغيير الصورة (النظام يدعم كافة الأحجام والضغط الآلي)</p>
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-center">انقر لتغيير الصورة</p>
                </div>
-
                <div className="space-y-5">
                   <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">اسم العرض (Sovereign Name)</label>
+                     <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">اسم العرض</Label>
                      <Input value={newDisplayName} onChange={e => setNewDisplayName(e.target.value)} className="h-14 bg-muted/50 border-none rounded-2xl font-black px-6 shadow-inner" />
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">رقم الهاتف الدولي الفعال</label>
+                     <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">رقم الهاتف الدولي</Label>
                      <Input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="h-14 bg-muted/50 border-none rounded-2xl font-black px-6 text-left shadow-inner" placeholder="+966" />
                   </div>
                </div>
@@ -369,33 +298,6 @@ export default function ProfessionalWalletPage() {
                </Button>
             </DialogFooter>
          </DialogContent>
-      </Dialog>
-
-      {/* Agent Request Dialog */}
-      <Dialog open={isAgentDialogOpen} onOpenChange={setIsAgentDialogOpen}>
-        <DialogContent className="max-w-lg bg-card border-none rounded-[2.5rem] p-10 shadow-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-3xl font-black flex items-center gap-4 gold-text">
-              <UserCheck className="text-primary" /> طلب اعتماد وكيل
-            </DialogTitle>
-            <DialogDescription className="mt-3 font-bold text-zinc-500 text-xs uppercase tracking-widest leading-relaxed">Identity Verification for Service Agents</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6 mt-10">
-             <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">الاسم الكامل الرسمي</label>
-                <Input value={profile?.fullName || ""} disabled className="h-14 bg-zinc-100 dark:bg-zinc-800 border-none rounded-2xl font-black px-6 opacity-60" />
-             </div>
-             <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">الخبرات ودوافع الانضمام</label>
-                <Textarea value={agentReason} onChange={e => setAgentReason(e.target.value)} placeholder="اشرح لنا مهاراتك في تقديم الخدمات الرقمية..." className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-3xl min-h-[120px] p-6 font-bold shadow-inner" />
-             </div>
-          </div>
-          <DialogFooter className="mt-10">
-             <Button onClick={handleAgentRequest} disabled={isSubmittingAgent} className="royal-button w-full h-16 text-lg">
-                {isSubmittingAgent ? <Loader2 className="animate-spin" /> : "إرسال طلب الاعتماد الرسمي"}
-             </Button>
-          </DialogFooter>
-        </DialogContent>
       </Dialog>
     </main>
   );
