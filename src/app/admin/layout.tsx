@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -201,7 +202,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <SheetContent side="bottom" className="rounded-t-[3.5rem] p-0 border-none bg-background shadow-2xl h-[80vh] z-[200]">
                    <SheetHeader className="p-10 border-b text-center bg-muted/5">
                       <div className="flex justify-between items-center mb-6">
-                         <span className="handwritten-logo text-4xl">XMOOD ADMIN</span>
+                         <SheetTitle className="handwritten-logo text-4xl text-right block">XMOOD ADMIN</SheetTitle>
                          <SheetClose asChild>
                             <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl text-red-500 bg-red-500/5 hover:bg-red-500/10"><X size={28}/></Button>
                          </SheetClose>
