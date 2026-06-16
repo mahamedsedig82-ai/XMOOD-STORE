@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -8,7 +9,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/shared/ProductCard";
-import { ShoppingBag, Palette, Megaphone, Zap, Award, Flame, MessageSquare, Mail, ChevronLeft, ExternalLink } from "lucide-react";
+import { ShoppingBag, Palette, Megaphone, Zap, Award, Flame, MessageSquare, Mail, ChevronLeft, ExternalLink, Facebook, Instagram, Youtube, Send } from "lucide-react";
 
 export default function HomeElite() {
   const db = useFirestore();
@@ -115,14 +116,18 @@ export default function HomeElite() {
       {/* Footer Sovereign */}
       <footer className="py-24 bg-muted/10 border-t">
         <div className="container mx-auto px-6 text-center">
-          <div className="handwritten-logo text-6xl mb-10">
-            {config?.siteInfo?.title || "XMOOD STORE"}
+          <div className="mb-10 flex flex-col items-center">
+            {config?.appearance?.logoUrl ? (
+                <img src={config.appearance.logoUrl} alt={config?.siteInfo?.title || "XMOOD"} className="h-16 md:h-24 w-auto object-contain mb-4" />
+            ) : (
+                <div className="handwritten-logo text-6xl">{config?.siteInfo?.title || "XMOOD STORE"}</div>
+            )}
           </div>
           <p className="text-muted-foreground max-w-2xl mx-auto mb-16 text-lg md:text-xl leading-relaxed font-medium">
             {config?.pageContent?.footerAbout || "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية المتكاملة."}
           </p>
           
-          <div className="flex flex-wrap justify-center gap-8 mb-20">
+          <div className="flex flex-wrap justify-center gap-8 mb-12">
              {config?.contact?.whatsapp && (
                <a href={`https://wa.me/${config.contact.whatsapp.replace(/\+/g, '')}`} target="_blank" className="flex items-center gap-4 text-foreground hover:gold-text transition-all font-black text-xs bg-card px-10 py-5 rounded-2xl shadow-xl border">
                   <MessageSquare size={24} className="text-green-500" /> الدعم التنفيذي
@@ -131,6 +136,30 @@ export default function HomeElite() {
              {config?.contact?.email && (
                <a href={`mailto:${config.contact.email}`} className="flex items-center gap-4 text-foreground hover:gold-text transition-all font-black text-xs bg-card px-10 py-5 rounded-2xl shadow-xl border">
                   <Mail size={24} className="text-primary" /> التواصل الرسمي
+               </a>
+             )}
+          </div>
+
+          {/* Social Links Hub */}
+          <div className="flex justify-center gap-6 mb-16">
+             {config?.contact?.facebook && (
+               <a href={config.contact.facebook} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-blue-600 hover:scale-110 transition-all border shadow-sm">
+                 <Facebook size={24} />
+               </a>
+             )}
+             {config?.contact?.instagram && (
+               <a href={config.contact.instagram} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-pink-600 hover:scale-110 transition-all border shadow-sm">
+                 <Instagram size={24} />
+               </a>
+             )}
+             {config?.contact?.youtube && (
+               <a href={config.contact.youtube} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-red-600 hover:scale-110 transition-all border shadow-sm">
+                 <Youtube size={24} />
+               </a>
+             )}
+             {config?.contact?.telegram && (
+               <a href={`https://t.me/${config.contact.telegram}`} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-blue-400 hover:scale-110 transition-all border shadow-sm">
+                 <Send size={24} />
                </a>
              )}
           </div>

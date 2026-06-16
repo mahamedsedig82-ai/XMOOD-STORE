@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,10 +10,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useUser, useAuth } from "@/firebase";
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatUSD } from "@/lib/currency";
+import { doc } from "firebase/firestore";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -26,9 +28,13 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 export function Navbar() {
   const { user, profile } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   const pathname = usePathname();
   const router = useRouter();
   
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const { data: config } = useDoc(settingsRef);
+
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isMounted, setIsMounted] = useState(false);
 
@@ -78,7 +84,13 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[85%] max-w-sm bg-background/98 backdrop-blur-3xl p-0 flex flex-col rounded-l-[2.5rem] border-none shadow-2xl overflow-hidden">
               <SheetHeader className="p-8 border-b bg-muted/20 relative">
-                 <SheetTitle className="handwritten-logo text-4xl text-right">XMOOD</SheetTitle>
+                 <SheetTitle className="handwritten-logo text-4xl text-right">
+                    {config?.appearance?.logoUrl ? (
+                        <img src={config.appearance.logoUrl} alt="XMOOD" className="h-10 w-auto object-contain ml-auto" />
+                    ) : (
+                        "XMOOD"
+                    )}
+                 </SheetTitle>
                  <p className="text-[8px] text-muted-foreground uppercase tracking-[0.4em] font-black text-right mt-2">Sovereign Access Hub</p>
               </SheetHeader>
               
@@ -137,10 +149,14 @@ export function Navbar() {
         </div>
 
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex flex-col items-start leading-none text-right">
-             <span className="handwritten-logo text-xl md:text-3xl font-black transition-all group-hover:scale-105">XMOOD STORE</span>
-             <span className="text-[6px] md:text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">Elite Digital Services</span>
-          </div>
+          {config?.appearance?.logoUrl ? (
+              <img src={config.appearance.logoUrl} alt="XMOOD Logo" className="h-8 md:h-12 w-auto object-contain transition-transform group-hover:scale-105" />
+          ) : (
+              <div className="flex flex-col items-start leading-none text-right">
+                 <span className="handwritten-logo text-xl md:text-3xl font-black transition-all group-hover:scale-105">XMOOD STORE</span>
+                 <span className="text-[6px] md:text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">Elite Digital Services</span>
+              </div>
+          )}
         </Link>
 
         <div className="hidden lg:flex items-center gap-10">

@@ -13,7 +13,7 @@ import {
   Palette, Globe, Save, Loader2, Phone, 
   Mail, Megaphone, Sparkles, Layout, MessageSquare, 
   ShieldCheck, Zap, Facebook, Youtube, Clock,
-  Send, Info, DollarSign, Image as ImageIcon, Store, Monitor, Cpu, ExternalLink, Bot
+  Send, Info, DollarSign, Image as ImageIcon, Store, Monitor, Cpu, ExternalLink, Bot, Instagram, Tent
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
@@ -127,7 +127,7 @@ export default function AdminSettingsUniversalControl() {
             <DollarSign size={16} className="ml-2" /> الإعدادات المالية
           </TabsTrigger>
           <TabsTrigger value="contact" className="flex-1 rounded-2xl font-bold text-[10px] uppercase tracking-widest py-4">
-            <Phone size={16} className="ml-2" /> التواصل
+            <Phone size={16} className="ml-2" /> التواصل الاجتماعي
           </TabsTrigger>
         </TabsList>
 
@@ -135,7 +135,7 @@ export default function AdminSettingsUniversalControl() {
           <Card className="luxury-card p-10 space-y-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-4">
-                <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">رابط الشعار الرئيسي</Label>
+                <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">رابط الشعار الرسمي (Logo URL)</Label>
                 <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} placeholder="https://..." className="h-14 bg-muted border-none rounded-xl" />
               </div>
               <div className="space-y-4">
@@ -218,6 +218,8 @@ export default function AdminSettingsUniversalControl() {
                    { label: "واتساب الدعم", key: "whatsapp", icon: MessageSquare },
                    { label: "تيليجرام", key: "telegram", icon: Send },
                    { label: "فيسبوك", key: "facebook", icon: Facebook },
+                   { label: "إنستغرام", key: "instagram", icon: Instagram },
+                   { label: "يوتيوب", key: "youtube", icon: Youtube },
                    { label: "البريد الإلكتروني", key: "email", icon: Mail },
                    { label: "ساعات العمل", key: "workHours", icon: Clock },
                  ].map((item) => (
@@ -239,4 +241,3 @@ export default function AdminSettingsUniversalControl() {
     </div>
   );
 }
-
