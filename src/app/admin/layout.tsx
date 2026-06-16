@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
@@ -102,7 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </Sidebar>
 
-        <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background">
+        <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background overflow-hidden">
           <header className="h-24 border-b flex items-center justify-between px-6 md:px-10 bg-background/90 backdrop-blur-xl z-[60] shrink-0">
              <div className="flex items-center gap-4 md:gap-6">
                 <div className="w-10 h-10 md:w-14 md:h-14 bg-primary/10 rounded-xl md:rounded-2xl flex items-center justify-center text-primary border border-primary/20">
@@ -119,7 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-4 md:px-16 py-12 pb-32 bg-background">
+          <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-4 md:px-16 py-12 pb-32 bg-background h-[calc(100vh-6rem)]">
             <div className="max-w-7xl mx-auto h-full">
               <AnimatePresence mode="wait">
                 <motion.div

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -64,7 +63,7 @@ export default function HomeElite() {
         </div>
       </section>
 
-      {/* Ad Banner - Real Content */}
+      {/* Ad Banner */}
       {config?.ads?.isActive && (
         <section className="container mx-auto px-6 mb-24 animate-fade-up">
            <div className="relative rounded-[3rem] overflow-hidden group shadow-2xl border-4 border-primary/20">

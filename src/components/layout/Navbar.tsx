@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -97,7 +96,7 @@ export function Navbar() {
               <div className="flex-1 p-6 space-y-8 overflow-y-auto custom-scrollbar">
                 {user && profile && (
                   <div className="p-5 bg-primary/5 rounded-[1.5rem] border border-primary/10 flex items-center gap-4">
-                    <Avatar className="w-14 h-14 border-2 border-primary/20 rounded-2xl">
+                    <Avatar className="w-14 h-14 border-2 border-primary/20 rounded-2xl shadow-lg">
                       <AvatarImage src={profile.photoURL} className="object-cover" />
                       <AvatarFallback className="bg-zinc-100 font-bold text-primary">XM</AvatarFallback>
                     </Avatar>
