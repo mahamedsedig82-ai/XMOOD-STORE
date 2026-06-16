@@ -12,7 +12,8 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, googleProvider, db } from "./firebase";
 
 /**
- * Sovereign Sync: Ensures user profile exists in Firestore.
+ * مزامنة ملف المستخدم: تضمن وجود مستند للمستخدم في Firestore فور الدخول.
+ * تم جعلها Idempotent لمنع التكرار.
  */
 export async function syncUserProfile(user: User) {
   if (!user) return;
@@ -37,59 +38,59 @@ export async function syncUserProfile(user: User) {
         updatedAt: serverTimestamp()
       };
       await setDoc(userRef, initialProfile);
-      console.log("[AUTH-DEBUG] New profile created for:", user.email);
+      console.log("[AUTH-DEBUG] تم إنشاء ملف شخصي جديد بنجاح.");
     } else {
       await setDoc(userRef, { 
         lastSeen: new Date().toISOString(),
         updatedAt: serverTimestamp() 
       }, { merge: true });
+      console.log("[AUTH-DEBUG] تم تحديث وقت النشاط.");
     }
   } catch (error) {
-    console.error("[AUTH-DEBUG] Sync Error:", error);
+    console.error("[AUTH-DEBUG] خطأ في مزامنة Firestore:", error);
   }
 }
 
 /**
- * Hybrid Login Strategy:
- * Tries Popup first, falls back to Redirect on mobile/blocked environments.
+ * دخول جوجل الذكي:
+ * يستخدم Redirect فوراً في الهواتف، و Popup في الحاسوب مع Fallback.
  */
 export const loginWithGoogle = async () => {
-  console.log("[AUTH-DEBUG] Initiating Hybrid Login...");
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
+  if (isMobile) {
+    console.log("[AUTH-DEBUG] بيئة هاتف: بدء إعادة التوجيه (Redirect)...");
+    return await signInWithRedirect(auth, googleProvider);
+  }
+
   try {
-    // Try Popup first (Best UX for Desktop)
+    console.log("[AUTH-DEBUG] بيئة حاسوب: محاولة فتح نافذة (Popup)...");
     const result = await signInWithPopup(auth, googleProvider);
     await syncUserProfile(result.user);
     return result.user;
   } catch (error: any) {
-    console.warn("[AUTH-DEBUG] Popup failed/blocked, falling back to Redirect. Code:", error.code);
-    
-    // Logic for falling back to Redirect
-    if (
-      error.code === 'auth/popup-blocked' || 
-      error.code === 'auth/cancelled-popup-request' ||
-      error.code === 'auth/popup-closed-by-user' ||
-      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) // Auto-redirect on mobile
-    ) {
+    console.warn("[AUTH-DEBUG] تعذر فتح النافذة، التحويل لـ Redirect. الكود:", error.code);
+    if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
       return await signInWithRedirect(auth, googleProvider);
     }
-    
     throw error;
   }
 };
 
 /**
- * Recovery Handler: Catches user returning from Redirect.
+ * معالج العودة: يلتقط النتيجة بعد إعادة التوجيه من جوجل.
  */
 export const handleAuthRedirect = async () => {
   try {
+    console.log("[AUTH-DEBUG] فحص نتائج إعادة التوجيه...");
     const result = await getRedirectResult(auth);
     if (result?.user) {
-      console.log("[AUTH-DEBUG] Redirect success for:", result.user.email);
+      console.log("[AUTH-DEBUG] نجاح العودة من جوجل لـ:", result.user.email);
       await syncUserProfile(result.user);
       return result.user;
     }
   } catch (error) {
-    console.error("[AUTH-DEBUG] Redirect Recovery Error:", error);
+    console.error("[AUTH-DEBUG] خطأ في معالجة العودة:", error);
   }
   return null;
 };

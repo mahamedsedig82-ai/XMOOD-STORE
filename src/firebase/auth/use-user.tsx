@@ -5,9 +5,10 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
+import { syncUserProfile } from '@/lib/auth';
 
 /**
- * Sovereign hook for Identity & Role Management.
+ * خطاف الهوية السيادي: يدير الجلسة والملف الشخصي للأعضاء.
  */
 export function useUser() {
   const auth = useAuth();
@@ -16,7 +17,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const syncInProgress = useRef(false);
+  const isSyncing = useRef(false);
 
   const MASTER_ADMINS = [
     "MAHAMEDFK3@GMAIL.COM", 
@@ -28,11 +29,12 @@ export function useUser() {
     if (!auth) return;
     
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      console.log("[AUTH-DEBUG] تغيرت حالة المصادقة:", firebaseUser?.email);
       setUser(firebaseUser);
       if (!firebaseUser) {
         setProfile(null);
         setLoading(false);
-        syncInProgress.current = false;
+        isSyncing.current = false;
       }
     });
 
@@ -42,7 +44,7 @@ export function useUser() {
   useEffect(() => {
     if (!user || !db) return;
 
-    // Wait for the login page handler if we're in the middle of a redirect flow
+    // منع التداخل إذا كان المستخدم في صفحة الدخول (تترك المهمة لمعالج الصفحة)
     if (typeof window !== 'undefined' && window.location.pathname === '/login') {
       return;
     }
@@ -57,7 +59,7 @@ export function useUser() {
       if (snapshot.exists()) {
         const data = snapshot.data() as UserProfile;
         
-        // Auto-promote Master Admins
+        // ترقية تلقائية للمدراء الأساسيين
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         if (isMaster && data.role !== 'owner') {
           updateDoc(userDocRef, { role: 'owner', label: 'المدير العام', updatedAt: serverTimestamp() });
@@ -66,37 +68,19 @@ export function useUser() {
         setProfile({ ...data, uid: snapshot.id });
         setLoading(false); 
       } else {
-        if (syncInProgress.current) return;
-        syncInProgress.current = true;
-
-        const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
-        const initialProfile: UserProfile = {
-          uid: user.uid,
-          displayName: user.displayName?.split(' ')[0] || user.email?.split('@')[0] || "عضو",
-          fullName: user.displayName || "",
-          email: user.email || "",
-          walletBalance: isMaster ? 999999 : 0,
-          role: isMaster ? 'owner' : 'user',
-          label: isMaster ? 'المدير العام' : 'عضو بريميوم',
-          photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
-          createdAt: new Date().toISOString(),
-          isVerified: user.emailVerified,
-          affinityPoints: isMaster ? 1000 : 50
-        };
-
-        try {
-          await setDoc(userDocRef, { ...initialProfile, updatedAt: serverTimestamp() }, { merge: true });
-          if (isMounted) {
-            setProfile(initialProfile);
-            setLoading(false);
-          }
-        } catch (e) {
-          console.error("Auto-Profile creation failed:", e);
-        } finally {
-          syncInProgress.current = false;
+        // إذا لم يوجد ملف شخصي، نقوم بإنشائه (Idempotent)
+        if (isSyncing.current) return;
+        isSyncing.current = true;
+        
+        await syncUserProfile(user);
+        
+        if (isMounted) {
+           isSyncing.current = false;
+           // سنعتمد على التحديث القادم من onSnapshot
         }
       }
     }, (err) => {
+      console.error("[AUTH-DEBUG] خطأ في مراقبة البروفايل:", err);
       if (isMounted) setLoading(false);
     });
 

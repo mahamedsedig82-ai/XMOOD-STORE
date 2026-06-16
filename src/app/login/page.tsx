@@ -28,23 +28,25 @@ export default function SecureLoginPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [loading, setLoading] = useState(true); // Start true to check redirect
+  const [loading, setLoading] = useState(true);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [step, setStep] = useState<'auth' | 'verify_pending'>('auth');
   
   const router = useRouter();
-  const checkPerformed = useRef(false);
+  const initChecked = useRef(false);
 
-  // Handle Redirect Result on mount
+  // الكشف الفوري عن العودة من جوجل (Redirect Result)
   useEffect(() => {
-    if (checkPerformed.current) return;
-    checkPerformed.current = true;
+    if (initChecked.current) return;
+    initChecked.current = true;
 
-    const processRedirect = async () => {
+    const checkRedirect = async () => {
       try {
         const user = await handleAuthRedirect();
         if (user) {
-          toast({ title: "تم الدخول بنجاح", description: "مرحباً بك مجدداً." });
+          setIsRedirecting(true);
+          toast({ title: "تم تأكيد الهوية", description: "مرحباً بك في متجر XMOOD." });
           router.replace("/");
         } else {
           setLoading(false);
@@ -53,7 +55,7 @@ export default function SecureLoginPage() {
         setLoading(false);
       }
     };
-    processRedirect();
+    checkRedirect();
   }, [router]);
 
   const handleResetPassword = async () => {
@@ -98,7 +100,6 @@ export default function SecureLoginPage() {
       toast({ title: "اكتمل التسجيل", description: "يرجى التحقق من بريدك الإلكتروني لتنشيط الحساب." });
     } catch (error: any) {
       toast({ variant: "destructive", title: "خطأ في التسجيل", description: error.message });
-    } finally {
       setLoading(false);
     }
   };
@@ -112,21 +113,27 @@ export default function SecureLoginPage() {
       if (!userCredential.user.emailVerified) {
         setStep('verify_pending');
         toast({ variant: "destructive", title: "تفعيل الحساب مطلوب", description: "يرجى الضغط على الرابط المرسل لبريدك." });
+        setLoading(false);
       } else {
         router.replace("/");
       }
     } catch (error: any) {
       toast({ variant: "destructive", title: "فشل الدخول", description: "البريد أو كلمة المرور غير صحيحة." });
-    } finally {
       setLoading(false);
     }
   };
 
-  if (loading && step === 'auth') {
+  if (loading || isRedirecting) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6">
-        <Loader2 className="w-12 h-12 text-primary animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">Sovereign Auth Protocol Active</p>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-8">
+        <div className="relative">
+          <div className="w-24 h-24 border-[4px] border-primary/10 border-t-primary rounded-full animate-spin" />
+          <Sparkles className="absolute inset-0 m-auto text-primary animate-pulse" size={32} />
+        </div>
+        <div className="text-center space-y-2">
+           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">Sovereign Auth Protocol</p>
+           <h2 className="text-xl font-bold gold-text animate-pulse">جاري تأمين الجلسة الرقمية...</h2>
+        </div>
       </div>
     );
   }
