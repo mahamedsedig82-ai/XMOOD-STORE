@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
 import { loginEmail, registerEmail, sendMagicLink, resetPassword, syncUserProfile } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Loader2, Mail, Lock, UserPlus, Zap, ShieldCheck, Sparkles, Smartphone, Calendar, AlertCircle } from "lucide-react";
@@ -84,6 +85,16 @@ export default function SecurityLoginPage() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!email) return toast({ variant: "destructive", title: "أدخل بريدك الإلكتروني أولاً" });
+    try {
+      await resetPassword(email);
+      toast({ title: "تم إرسال رابط الاستعادة", description: "تفقد بريدك الإلكتروني الآن." });
+    } catch (error) {
+      toast({ variant: "destructive", title: "خطأ في الإرسال" });
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#fafafa] dark:bg-[#030303] text-foreground" dir="rtl">
       <Navbar />
@@ -148,7 +159,7 @@ export default function SecurityLoginPage() {
                       <Button onClick={handleMagicLink} variant="outline" className="w-full h-14 rounded-2xl border-dashed border-primary/30 text-primary font-bold text-xs uppercase" disabled={loading}>
                          أرسل لي رابط دخول سحري
                       </Button>
-                      <button onClick={() => email && resetPassword(email).then(() => toast({title: "تم الإرسال"}))} className="w-full text-center text-[10px] font-black text-muted-foreground uppercase hover:text-primary transition-colors mt-4">استعادة كلمة المرور</button>
+                      <button onClick={handleResetPassword} className="w-full text-center text-[10px] font-black text-muted-foreground uppercase hover:text-primary transition-colors mt-4">استعادة كلمة المرور</button>
                    </TabsContent>
 
                    <TabsContent value="signup" className="space-y-6">

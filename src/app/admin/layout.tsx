@@ -1,9 +1,9 @@
 "use client";
 
-import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
+import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Layers, Menu, X, BarChart3, Database, ShieldCheck
+  Settings, Palette, LogOut, ArrowLeft, Zap, Terminal, ClipboardList, ShieldAlert, Layers, Menu, BarChart3, Database, ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -105,7 +105,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-background">
-          <header className="h-24 border-b flex items-center justify-between px-10 bg-background/90 backdrop-blur-xl sticky top-0 z-[60] shrink-0">
+          <header className="h-24 border-b flex items-center justify-between px-10 bg-background/90 backdrop-blur-xl absolute top-0 left-0 right-0 z-[60] shrink-0">
              <div className="flex items-center gap-6">
                 <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
                    <Terminal size={28} />
@@ -121,8 +121,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto scroll-smooth relative custom-scrollbar">
-            <div className="p-6 md:p-16 max-w-7xl mx-auto pb-40">
+          <main className="flex-1 overflow-y-auto scroll-smooth relative custom-scrollbar pt-32 pb-40">
+            <div className="p-6 md:p-16 max-w-7xl mx-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
