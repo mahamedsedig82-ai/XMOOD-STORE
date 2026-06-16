@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Zap, ChevronLeft, X, ShoppingBag, User
+  Wallet, LayoutDashboard, LogOut, Zap, ChevronLeft, X, ShoppingBag, User, Briefcase
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +58,7 @@ export function Navbar() {
   const navLinks = [
     { name: "الرئيسية", href: "/", icon: Home },
     { name: "المتجر", href: "/store", icon: ShoppingBag },
+    { name: "سوق الخدمات", href: "/other-services", icon: Briefcase },
     { name: "التصاميم", href: "/designs/gallery", icon: Palette },
     { name: "الوكلاء", href: "/middleman", icon: ShieldCheck },
   ];
