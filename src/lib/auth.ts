@@ -64,15 +64,15 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
  */
 export const sendMagicLink = async (email: string) => {
   const cleanEmail = email.trim().toLowerCase();
+  
+  // لضمان الوصول للـ Inbox، نستخدم النطاق الفعلي للموقع
   const actionCodeSettings = {
-    // Points to the production domain to build sender reputation
     url: `${window.location.origin}/verify-email`,
     handleCodeInApp: true,
-    // Ensures the dynamic link is professional and not flagged
-    dynamicLinkDomain: undefined, 
   };
   
   try {
+    // تسجيل البريد في التخزين المحلي لتسهيل عملية التحقق عند العودة
     await sendSignInLinkToEmail(auth, cleanEmail, actionCodeSettings);
     window.localStorage.setItem('emailForSignIn', cleanEmail);
   } catch (error) {
