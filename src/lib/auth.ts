@@ -28,7 +28,6 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         displayName: user.displayName || additionalData.displayName || user.email?.split("@")[0] || "عضو",
         email: user.email?.toLowerCase(),
         phoneNumber: additionalData.phoneNumber || "",
-        age: Number(additionalData.age) || 0,
         walletBalance: 0,
         role: 'user',
         label: 'عضو بريميوم',

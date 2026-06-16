@@ -6,7 +6,6 @@ export interface UserProfile {
   fullName?: string;
   email: string;
   phoneNumber: string; // Mandatory
-  age: number;         // Mandatory
   walletBalance: number;
   role: UserRole;
   isTrusted?: boolean;
@@ -23,6 +22,7 @@ export interface UserProfile {
   bio?: string;
   completedDeals?: number;
   residence?: string;
+  age?: number; // Made optional
   middlemanInfo?: {
     services: string[];
     isAvailable: boolean;
