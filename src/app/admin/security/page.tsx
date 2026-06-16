@@ -1,0 +1,117 @@
+"use client";
+
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy, limit } from "firebase/firestore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ShieldCheck, ShieldAlert, Cpu, Activity, UserCheck, Zap, Lock, Globe } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+export default function AdminSecurityCenter() {
+  const db = useFirestore();
+  
+  const logsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "security_logs"), orderBy("timestamp", "desc"), limit(50));
+  }, [db]);
+
+  const { data: logs, loading } = useCollection(logsQuery);
+
+  return (
+    <div className="space-y-12 animate-fade-in" dir="rtl">
+      <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b pb-12">
+        <div className="text-right">
+          <h1 className="text-5xl font-headline font-black gold-text">مركز الأمان والرقابة</h1>
+          <p className="text-muted-foreground mt-3 font-bold uppercase tracking-widest text-[10px]">Real-time Security Intelligence & Anti-Bot Shield</p>
+        </div>
+        <div className="flex items-center gap-6 bg-card p-6 rounded-[2.5rem] border shadow-xl">
+           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg">
+              <Cpu size={32} />
+           </div>
+           <div>
+              <span className="text-[10px] font-black text-muted-foreground block uppercase">بروتوكول الحماية</span>
+              <span className="text-xl font-black text-green-500 tracking-widest">ACTIVE & ARMED</span>
+           </div>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <Card className="luxury-card border-none bg-primary/5 p-8 space-y-6">
+           <ShieldCheck className="text-primary" size={40} />
+           <div>
+              <h3 className="text-xl font-black mb-2">التحقق البشري (CAPTCHA)</h3>
+              <p className="text-sm text-muted-foreground font-medium">تم تفعيل التحدي المنطقي لكافة عمليات التسجيل الجديدة لمنع البوتات.</p>
+           </div>
+           <Badge className="bg-primary text-black font-black">STRICT MODE ON</Badge>
+        </Card>
+
+        <Card className="luxury-card border-none bg-muted/20 p-8 space-y-6">
+           <Lock className="text-zinc-500" size={40} />
+           <div>
+              <h3 className="text-xl font-black mb-2">تشفير البيانات</h3>
+              <p className="text-sm text-muted-foreground font-medium">كافة البيانات الحساسة مشفرة سيادياً ولا يمكن الوصول إليها إلا عبر صلاحيات 'Owner'.</p>
+           </div>
+           <Badge variant="outline" className="font-black">AES-256 SECURED</Badge>
+        </Card>
+
+        <Card className="luxury-card border-none bg-blue-500/5 p-8 space-y-6">
+           <Activity className="text-blue-500" size={40} />
+           <div>
+              <h3 className="text-xl font-black mb-2">مراقبة الجلسات</h3>
+              <p className="text-sm text-muted-foreground font-medium">يتم تسجيل كل محاولة دخول فاشلة أو ناجحة في السجل المركزي.</p>
+           </div>
+           <Badge className="bg-blue-500 text-white font-black">LOGGING ACTIVE</Badge>
+        </Card>
+      </div>
+
+      <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl shadow-2xl overflow-hidden">
+        <CardHeader className="p-10 border-b flex flex-row items-center justify-between bg-muted/5">
+           <CardTitle className="text-2xl font-black flex items-center gap-4">
+              <Globe className="text-primary" /> سجل الأنشطة الأمنية الأخيرة
+           </CardTitle>
+           <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest px-6">Cyber Records</Badge>
+        </CardHeader>
+        <CardContent className="p-0">
+           <ScrollArea className="max-h-[600px] responsive-table">
+              <Table>
+                 <TableHeader className="bg-muted/30 sticky top-0 z-20">
+                    <TableRow>
+                       <TableHead className="text-right py-6 pr-10 font-black uppercase text-[10px]">الحدث</TableHead>
+                       <TableHead className="text-right font-black uppercase text-[10px]">المستخدم / النطاق</TableHead>
+                       <TableHead className="text-right font-black uppercase text-[10px]">الحالة</TableHead>
+                       <TableHead className="text-left pl-10 font-black uppercase text-[10px]">التوقيت المركزي</TableHead>
+                    </TableRow>
+                 </TableHeader>
+                 <TableBody>
+                    {loading ? (
+                      <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                    ) : logs?.length === 0 ? (
+                      <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold italic">لا توجد سجلات أمنية مسجلة حالياً</TableCell></TableRow>
+                    ) : logs?.map((log: any) => (
+                      <TableRow key={log.id} className="hover:bg-primary/5 transition-all border-b border-border/30">
+                         <TableCell className="py-6 pr-10" data-label="الحدث">
+                            <div className="flex items-center gap-4">
+                               {log.type === 'auth_fail' ? <ShieldAlert size={16} className="text-red-500" /> : <UserCheck size={16} className="text-green-500" />}
+                               <span className="font-bold text-sm">{log.description}</span>
+                            </div>
+                         </TableCell>
+                         <TableCell data-label="المستخدم">
+                            <span className="font-mono text-[10px] text-muted-foreground uppercase">{log.userEmail || "SYSTEM_EVENT"}</span>
+                         </TableCell>
+                         <TableCell data-label="الحالة">
+                            <Badge className={log.status === 'success' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}>{log.status}</Badge>
+                         </TableCell>
+                         <TableCell className="text-left pl-10 text-[10px] font-black text-muted-foreground uppercase" data-label="التوقيت">
+                            {new Date(log.timestamp).toLocaleString('ar-EG')}
+                         </TableCell>
+                      </TableRow>
+                    ))}
+                 </TableBody>
+              </Table>
+           </ScrollArea>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

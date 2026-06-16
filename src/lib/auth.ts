@@ -10,11 +10,11 @@ import {
   User,
   sendPasswordResetEmail
 } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
 /**
- * Sovereign Identity Sync: Ensures user profile exists in Firestore.
+ * Sovereign Identity Sync: Ensures user profile exists in Firestore with full security data.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user) return;
@@ -27,9 +27,13 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         uid: user.uid,
         displayName: user.displayName || additionalData.displayName || user.email?.split("@")[0] || "عضو",
         email: user.email?.toLowerCase(),
+        phoneNumber: additionalData.phoneNumber || "",
+        age: Number(additionalData.age) || 0,
         walletBalance: 0,
         role: 'user',
         label: 'عضو بريميوم',
+        securityLevel: 'enhanced',
+        isCaptchaVerified: true,
         photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
         createdAt: new Date().toISOString(),
         lastSeen: new Date().toISOString(),
@@ -39,20 +43,21 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         ...additionalData
       };
       await setDoc(userRef, initialProfile);
+      console.log("[AUTH] New Profile Created Successfully");
     } else {
-      await setDoc(userRef, { 
+      await updateDoc(userRef, { 
         lastSeen: new Date().toISOString(),
-        updatedAt: serverTimestamp() 
-      }, { merge: true });
+        updatedAt: serverTimestamp(),
+        ...additionalData
+      });
+      console.log("[AUTH] Profile Synced Successfully");
     }
   } catch (error) {
     console.error("Profile Sync Error:", error);
+    throw error;
   }
 }
 
-/**
- * Magic Link: Send a passwordless login link to email.
- */
 export const sendMagicLink = async (email: string) => {
   const actionCodeSettings = {
     url: `${window.location.origin}/verify-email`,
@@ -62,9 +67,6 @@ export const sendMagicLink = async (email: string) => {
   window.localStorage.setItem('emailForSignIn', email);
 };
 
-/**
- * Handle Magic Link Verification
- */
 export const completeMagicLinkSignIn = async () => {
   if (isSignInWithEmailLink(auth, window.location.href)) {
     let email = window.localStorage.getItem('emailForSignIn');

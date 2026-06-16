@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
 /**
- * خطاف الهوية السيادي: يدير الجلسة والملف الشخصي للأعضاء.
+ * خطاف الهوية السيادي المطور: يدير الجلسة والتحقق الأمني.
  */
 export function useUser() {
   const auth = useAuth();
@@ -17,24 +17,16 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const isSyncing = useRef(false);
-
-  const MASTER_ADMINS = [
-    "MAHAMEDFK3@GMAIL.COM", 
-    "XMOODSTORE.SUPPORT@GMAIL.COM",
-    "ADMIN@XMOOD.COM"
-  ];
+  const MASTER_ADMINS = ["MAHAMEDFK3@GMAIL.COM", "XMOODSTORE.SUPPORT@GMAIL.COM", "ADMIN@XMOOD.COM"];
 
   useEffect(() => {
     if (!auth) return;
     
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log("[AUTH-DEBUG] تغيرت حالة المصادقة:", firebaseUser?.email);
       setUser(firebaseUser);
       if (!firebaseUser) {
         setProfile(null);
         setLoading(false);
-        isSyncing.current = false;
       }
     });
 
@@ -44,9 +36,9 @@ export function useUser() {
   useEffect(() => {
     if (!user || !db) return;
 
-    // منع التداخل إذا كان المستخدم في صفحة الدخول (تترك المهمة لمعالج الصفحة)
+    // منع التداخل أثناء التواجد في صفحة الدخول (تتم المزامنة هناك يدوياً)
     if (typeof window !== 'undefined' && window.location.pathname === '/login') {
-      return;
+       return;
     }
 
     setLoading(true);
@@ -62,25 +54,17 @@ export function useUser() {
         // ترقية تلقائية للمدراء الأساسيين
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         if (isMaster && data.role !== 'owner') {
-          updateDoc(userDocRef, { role: 'owner', label: 'المدير العام', updatedAt: serverTimestamp() });
+          await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام السيادي' });
         }
 
         setProfile({ ...data, uid: snapshot.id });
         setLoading(false); 
       } else {
-        // إذا لم يوجد ملف شخصي، نقوم بإنشائه (Idempotent)
-        if (isSyncing.current) return;
-        isSyncing.current = true;
-        
+        // إنشاء ملف أولي إذا كان مفقوداً (للحماية)
         await syncUserProfile(user);
-        
-        if (isMounted) {
-           isSyncing.current = false;
-           // سنعتمد على التحديث القادم من onSnapshot
-        }
       }
     }, (err) => {
-      console.error("[AUTH-DEBUG] خطأ في مراقبة البروفايل:", err);
+      console.error("[AUTH] Profile Stream Error:", err);
       if (isMounted) setLoading(false);
     });
 

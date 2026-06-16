@@ -5,20 +5,24 @@ export interface UserProfile {
   displayName: string;
   fullName?: string;
   email: string;
-  phoneNumber?: string;
-  residence?: string;
+  phoneNumber: string; // Mandatory
+  age: number;         // Mandatory
   walletBalance: number;
   role: UserRole;
   isTrusted?: boolean;
   communityStatus?: 'active' | 'muted' | 'banned';
   photoURL?: string;
   isVerified?: boolean;
-  affinityPoints?: number;
+  securityLevel: 'basic' | 'enhanced' | 'sovereign';
+  isCaptchaVerified: boolean;
+  securityQuestion?: string;
+  securityAnswer?: string;
   createdAt: string;
   lastSeen?: string;
   label?: string;
   bio?: string;
   completedDeals?: number;
+  residence?: string;
   middlemanInfo?: {
     services: string[];
     isAvailable: boolean;
