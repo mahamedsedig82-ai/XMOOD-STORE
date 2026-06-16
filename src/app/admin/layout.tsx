@@ -1,10 +1,9 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Menu, X, ChevronLeft
+  Settings, Palette, LogOut, ArrowLeft, Zap, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Layers, Menu, X, BarChart3, Database
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,15 +27,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const allSections = useMemo(() => [
-    { label: "أدوات التصميم", icon: Palette, href: "/admin/design-tools", roles: ['owner', 'admin', 'designer'] },
-    { label: "معرض أعمالي", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'designer'] },
-    { label: "إدارة الوكلاء", icon: Users, href: "/admin/middleman", roles: ['owner', 'admin', 'gm', 'agent', 'middleman'] },
-    { label: "سوق الخدمات", icon: Zap, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent', 'middleman', 'designer'] },
-    { label: "الخدمات الإلكترونية", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
-    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support', 'agent'] },
-    { label: "الخزينة والمالية", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
+    { label: "نظرة عامة", icon: BarChart3, href: "/admin", roles: ['owner', 'admin', 'gm'] },
+    { label: "الأقسام", icon: Layers, href: "/admin/categories", roles: ['owner', 'admin', 'gm', 'store_manager'] },
+    { label: "المخزون والمنتجات", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
+    { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
-    { label: "إعدادات المنصة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin'] },
+    { label: "المالية والبنك", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'accountant'] },
+    { label: "محتوى الموقع", icon: Database, href: "/admin/content", roles: ['owner', 'admin', 'gm'] },
+    { label: "الوكلاء", icon: ShieldAlert, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
+    { label: "التصاميم", icon: Palette, href: "/admin/designs", roles: ['owner', 'admin', 'designer'] },
   ], []);
 
   const visibleSections = useMemo(() => {
@@ -46,82 +45,51 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }, [profile, allSections]);
 
-  const isPathAllowed = useMemo(() => {
-    if (!isClient || loading || !profile) return true;
-    if (pathname === "/admin") return isAdmin;
-    return profile.role === 'owner' || profile.role === 'admin' || visibleSections.some(s => s.href === pathname);
-  }, [profile, loading, pathname, visibleSections, isAdmin, isClient]);
-
   useEffect(() => {
     if (isClient && !loading) {
-      if (!user) {
-        router.replace('/login');
-      } else if (profile && !isAdmin) {
-        router.replace('/');
-      }
+      if (!user) router.replace('/login');
+      else if (profile && !isAdmin) router.replace('/');
     }
   }, [loading, user, isAdmin, profile, isClient, router]);
 
   if (!isClient || loading || (user && !profile)) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-8" dir="rtl">
-        <div className="relative">
-          <div className="w-24 h-24 border-[6px] border-primary/10 border-t-primary rounded-full animate-spin" />
-        </div>
-        <div className="text-center space-y-3">
-           <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">تأمين الوصول التخصصي</h2>
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Sovereign Gate Protocol</p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-black gap-8" dir="rtl">
+        <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">تأمين الوصول السيادي</h2>
       </div>
     );
   }
 
   if (!user || !isAdmin || !profile) return null;
 
-  if (!isPathAllowed) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-center p-10 bg-background" dir="rtl">
-        <div className="w-24 h-24 bg-red-500/10 rounded-[2.5rem] flex items-center justify-center text-red-500 mb-8 border border-red-500/20 shadow-2xl">
-           <ShieldAlert size={48} />
-        </div>
-        <h2 className="text-4xl font-black mb-4 gold-text">وصول متخصص محدود</h2>
-        <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed text-lg font-medium">
-          عذراً سيادة {profile.label}، هذا القسم يقع خارج نطاق مهامك المعتمدة.
-        </p>
-        <Button asChild className="mt-12 royal-button px-16 h-16 text-lg">
-          <Link href={visibleSections[0]?.href || "/admin"}>العودة لمهامي</Link>
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
-        {/* Sidebar */}
-        <Sidebar className="border-l border-border bg-card hidden lg:flex shrink-0" side="right">
-          <SidebarHeader className="p-8 border-b text-center">
-            <span className="handwritten-logo block mb-3 text-3xl">XMOOD ADMIN</span>
-            <Badge variant="outline" className="text-[10px] uppercase font-black border-primary/30 text-primary px-4 py-1 rounded-full bg-primary/5">
-              {profile?.label || profile?.role}
+      <div className="flex h-screen w-full bg-slate-50 dark:bg-black overflow-hidden" dir="rtl">
+        {/* Modern Sidebar */}
+        <Sidebar className="border-l border-border bg-white dark:bg-zinc-950 hidden lg:flex shrink-0" side="right">
+          <SidebarHeader className="p-10 border-b text-center">
+            <span className="handwritten-logo block mb-4 text-4xl">XMOOD</span>
+            <Badge variant="outline" className="text-[9px] uppercase font-black border-primary/30 text-primary px-5 py-1 rounded-full bg-primary/5">
+              {profile?.label || "ADMIN ACCESS"}
             </Badge>
           </SidebarHeader>
-          <SidebarContent className="p-4 overflow-y-auto">
+          <SidebarContent className="p-6 overflow-y-auto">
             <SidebarGroup>
-               <SidebarGroupLabel className="text-right px-4 mb-4 text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">
-                 مهامك التخصصية
+               <SidebarGroupLabel className="text-right px-4 mb-6 text-[9px] font-black uppercase text-muted-foreground tracking-[0.3em]">
+                 التحكم المركزي
                </SidebarGroupLabel>
-               <SidebarMenu className="gap-2">
+               <SidebarMenu className="gap-3">
                  {visibleSections.map((item) => (
                    <SidebarMenuItem key={item.href}>
                      <SidebarMenuButton 
                        asChild 
                        isActive={pathname === item.href}
-                       className={`h-12 px-6 rounded-xl transition-all duration-300 ${pathname === item.href ? 'bg-primary text-primary-foreground shadow-lg' : 'hover:bg-primary/5 text-muted-foreground'}`}
+                       className={`h-14 px-6 rounded-2xl transition-all duration-500 ${pathname === item.href ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'hover:bg-primary/5 text-slate-500'}`}
                      >
                        <Link href={item.href} className="flex flex-row-reverse items-center gap-5 w-full">
-                         <item.icon size={18} className={pathname === item.href ? 'text-white' : 'text-primary'} />
-                         <span className="font-black text-xs uppercase tracking-wider">{item.label}</span>
+                         <item.icon size={20} className={pathname === item.href ? 'text-white' : 'text-primary'} />
+                         <span className="font-black text-[11px] uppercase tracking-wider">{item.label}</span>
                        </Link>
                      </SidebarMenuButton>
                    </SidebarMenuItem>
@@ -129,48 +97,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>
-          <div className="p-6 border-t bg-muted/5 space-y-3">
-            <Button asChild variant="outline" className="w-full h-11 rounded-xl text-[10px] font-black uppercase gap-3">
-              <Link href="/"><ArrowLeft size={16} /> المتجر العام</Link>
+          <div className="p-8 border-t bg-slate-50 dark:bg-white/5 space-y-4">
+            <Button asChild variant="outline" className="w-full h-12 rounded-2xl text-[10px] font-black uppercase gap-4 border-slate-200">
+              <Link href="/"><ArrowLeft size={16} /> العودة للمتجر</Link>
             </Button>
-            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-11 rounded-xl text-red-500 font-black text-[10px] uppercase gap-3">
+            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-12 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-4 hover:bg-red-50">
               <LogOut size={16} /> خروج آمن
             </Button>
           </div>
         </Sidebar>
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 h-full relative bg-background overflow-hidden">
-          {/* Main Header - Fixed at Top */}
-          <header className="h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl sticky top-0 z-[60] shrink-0">
-             <div className="flex items-center gap-4">
-                <div className="flex items-center gap-5">
-                   <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20">
-                      <Terminal size={24} />
-                   </div>
-                   <div className="flex flex-col text-right">
-                      <span className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground">وحدة التحكم السيادية</span>
-                      <span className="text-[8px] text-muted-foreground uppercase font-bold tracking-tighter">{profile?.label || profile?.role} Active Session</span>
-                   </div>
+        {/* Main Command Area */}
+        <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden">
+          <header className="h-24 border-b flex items-center justify-between px-10 bg-white/80 dark:bg-black/80 backdrop-blur-3xl sticky top-0 z-[60] shrink-0">
+             <div className="flex items-center gap-6">
+                <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
+                   <Terminal size={28} />
+                </div>
+                <div className="flex flex-col text-right">
+                   <span className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">وحدة التحكم السيادية</span>
+                   <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest opacity-60">Master Command Portal</span>
                 </div>
              </div>
-             <div className="flex items-center gap-3">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] font-black px-4 py-1.5 rounded-full hidden sm:block">Identity Confirmed</Badge>
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_#22c55e]" />
+             <div className="flex items-center gap-6">
+                <Badge className="bg-green-500/10 text-green-600 border-none text-[9px] font-black px-5 py-2 rounded-full hidden sm:block tracking-widest uppercase">System Secured</Badge>
+                <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse shadow-[0_0_15px_#22c55e]" />
              </div>
           </header>
 
-          {/* Independent Scrollable Area */}
-          <main className="flex-1 overflow-y-auto scroll-smooth relative bg-muted/5 pt-10">
-            <div className="p-6 md:p-10 lg:p-12 pb-40">
+          <main className="flex-1 overflow-y-auto scroll-smooth relative bg-slate-50 dark:bg-white/5">
+            <div className="p-10 md:p-16 max-w-7xl mx-auto pb-40">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="max-w-7xl mx-auto space-y-10"
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
                 >
                   {children}
                 </motion.div>
@@ -178,50 +141,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </main>
 
-          {/* Bottom Navigation for Mobile */}
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-background/95 backdrop-blur-3xl border-t z-[100] flex items-center justify-around px-4 shadow-2xl pointer-events-auto">
+          {/* Mobile Bottom Nav */}
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-white/95 dark:bg-black/95 backdrop-blur-3xl border-t z-[100] flex items-center justify-around px-4 shadow-2xl">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link 
                   key={item.href} 
                   href={item.href} 
-                  className={`flex flex-col items-center justify-center gap-1.5 transition-all flex-1 h-full ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
+                  className={`flex flex-col items-center justify-center gap-2 transition-all flex-1 h-full ${pathname === item.href ? 'text-primary' : 'text-slate-400'}`}
                 >
-                   <div className={`p-2 rounded-xl transition-all duration-300 ${pathname === item.href ? 'bg-primary/10 shadow-sm' : ''}`}>
+                   <div className={`p-3 rounded-2xl transition-all duration-500 ${pathname === item.href ? 'bg-primary/10 shadow-sm' : ''}`}>
                       <item.icon size={22} className={pathname === item.href ? 'drop-shadow-sm' : 'opacity-60'} />
                    </div>
-                   <span className={`text-[8px] font-black uppercase tracking-widest text-center truncate w-full px-1 ${pathname === item.href ? 'opacity-100' : 'opacity-50'}`}>{item.label}</span>
+                   <span className={`text-[8px] font-black uppercase tracking-widest text-center truncate w-full px-1 ${pathname === item.href ? 'opacity-100' : 'opacity-40'}`}>{item.label}</span>
                 </Link>
              ))}
-             
              <Sheet dir="rtl">
                 <SheetTrigger asChild>
-                   <button className="flex flex-col items-center justify-center gap-1.5 flex-1 h-full text-muted-foreground opacity-60">
-                      <div className="p-2 rounded-xl hover:bg-muted transition-colors">
-                        <Menu size={22} />
-                      </div>
-                      <span className="text-[8px] font-black uppercase tracking-widest">المزيد</span>
+                   <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-slate-400 opacity-60">
+                      <div className="p-3 rounded-2xl hover:bg-muted transition-colors"><Menu size={22} /></div>
+                      <span className="text-[8px] font-black uppercase tracking-widest">القائمة</span>
                    </button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="rounded-t-[2.5rem] p-0 border-none bg-background shadow-2xl h-[80vh] z-[200]">
-                   <SheetHeader className="p-8 border-b text-center bg-muted/5">
-                      <SheetTitle className="handwritten-logo text-3xl text-right block">XMOOD ADMIN</SheetTitle>
-                      <Badge className="mt-4 bg-primary/10 text-primary border-none px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                         {profile?.label || profile?.role} ACCESS
+                <SheetContent side="bottom" className="rounded-t-[3rem] p-0 border-none bg-white dark:bg-zinc-950 shadow-2xl h-[85vh]">
+                   <SheetHeader className="p-10 border-b text-center bg-slate-50 dark:bg-white/5">
+                      <SheetTitle className="handwritten-logo text-4xl text-right">XMOOD COMMAND</SheetTitle>
+                      <Badge className="mt-6 bg-primary text-white border-none px-8 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">
+                         {profile?.label || "ADMIN"} ACCESS
                       </Badge>
-                      <SheetClose asChild>
-                         <Button variant="ghost" size="icon" className="absolute left-6 top-8 h-10 w-10 rounded-xl text-red-500 bg-red-500/5"><X size={24}/></Button>
-                      </SheetClose>
                    </SheetHeader>
-                   <div className="p-6 h-full pb-32 overflow-y-auto">
-                      <div className="grid grid-cols-2 gap-4">
+                   <div className="p-10 h-full pb-40 overflow-y-auto">
+                      <div className="grid grid-cols-2 gap-6">
                          {visibleSections.map((item) => (
                             <SheetClose asChild key={item.href}>
                                <Link 
                                  href={item.href} 
-                                 className={`flex flex-col items-center gap-3 p-5 rounded-2xl transition-all border ${pathname === item.href ? 'bg-primary text-white border-primary shadow-lg' : 'bg-muted/30 border-border/50 text-muted-foreground'}`}
+                                 className={`flex flex-col items-center gap-4 p-8 rounded-[2rem] transition-all border ${pathname === item.href ? 'bg-primary text-white border-primary shadow-xl' : 'bg-slate-50 dark:bg-white/5 border-slate-200 text-slate-500'}`}
                                >
-                                  <item.icon size={24} className={pathname === item.href ? 'text-white' : 'text-primary'} />
-                                  <span className="font-black text-[9px] uppercase text-center">{item.label}</span>
+                                  <item.icon size={28} className={pathname === item.href ? 'text-white' : 'text-primary'} />
+                                  <span className="font-black text-[10px] uppercase text-center tracking-widest">{item.label}</span>
                                </Link>
                             </SheetClose>
                          ))}

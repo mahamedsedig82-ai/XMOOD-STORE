@@ -23,7 +23,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 43 70% 50%;
-    --radius: 1rem;
+    --radius: 1.5rem;
   }
 
   .dark {
@@ -57,11 +57,11 @@
 }
 
 .luxury-card {
-  @apply rounded-[1.25rem] md:rounded-[2rem] border bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-lg hover:border-primary/30 overflow-hidden relative;
+  @apply rounded-[2rem] border bg-card text-card-foreground shadow-sm transition-all duration-500 hover:shadow-2xl hover:border-primary/30 overflow-hidden relative;
 }
 
 .gold-text {
-  @apply bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 bg-clip-text text-transparent font-bold;
+  @apply bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 bg-clip-text text-transparent font-black;
 }
 
 .handwritten-logo {
@@ -72,56 +72,28 @@
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-bold rounded-xl px-4 md:px-8 py-3 md:py-4 shadow-md hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
+  @apply bg-primary text-primary-foreground font-black rounded-2xl px-8 py-4 shadow-xl hover:opacity-90 active:scale-95 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-3 border-none;
 }
 
-.accent-button {
-  @apply bg-foreground text-background font-bold rounded-xl px-4 md:px-8 py-3 md:py-4 shadow-md hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-xs flex items-center justify-center gap-2 uppercase tracking-wider;
+.glass-morphism {
+  @apply bg-white/10 backdrop-blur-xl border border-white/20;
 }
 
 @media (max-width: 768px) {
-  .responsive-table {
-    @apply w-full;
-  }
-  .responsive-table table, 
-  .responsive-table thead, 
-  .responsive-table tbody, 
-  .responsive-table th, 
-  .responsive-table td, 
   .responsive-table tr {
-    display: block;
-  }
-  .responsive-table thead tr {
-    position: absolute;
-    top: -9999px;
-    left: -9999px;
-  }
-  .responsive-table tr {
-    @apply mb-6 border border-border/50 rounded-3xl p-5 bg-card shadow-sm relative overflow-hidden;
+    @apply mb-6 border rounded-[2rem] p-6 bg-card shadow-lg block;
   }
   .responsive-table td {
-    @apply flex justify-between items-center py-3 border-b border-border/30 last:border-0 text-right;
+    @apply flex justify-between items-center py-4 border-b last:border-0;
   }
   .responsive-table td::before {
     content: attr(data-label);
-    @apply font-black text-[9px] uppercase text-muted-foreground ml-4 shrink-0 text-left;
-  }
-  .responsive-table td:last-child {
-    @apply justify-center pt-4 border-none;
-  }
-  .responsive-table td:last-child::before {
-    display: none;
+    @apply font-black text-[9px] uppercase text-muted-foreground ml-4;
   }
 }
 
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { @apply bg-transparent; }
 ::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full hover:bg-primary/40; }
 
-.section-padding {
-  @apply px-4 md:px-12 py-10 md:py-24;
-}
-
-.font-headline {
-  @apply leading-[1.1] tracking-tight;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
