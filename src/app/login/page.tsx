@@ -49,6 +49,22 @@ export default function SecureLoginPage() {
     return () => unsubscribe();
   }, [auth, router]);
 
+  const handleResetPassword = async () => {
+    if (!auth || !resetEmail.trim()) {
+      toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إدخال البريد الإلكتروني." });
+      return;
+    }
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, resetEmail.trim());
+      toast({ title: "تم إرسال الرابط", description: "تفقد بريدك الإلكتروني لإعادة تعيين كلمة المرور." });
+    } catch (error) {
+      toast({ variant: "destructive", title: "خطأ", description: "لم نتمكن من إرسال رابط الاستعادة." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     if (!auth || !db || loading) return;
     setLoading(true);
@@ -94,22 +110,6 @@ export default function SecureLoginPage() {
       } else {
         toast({ variant: "destructive", title: "فشل الدخول", description: "حدث خطأ أثناء الاتصال بجوجل." });
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    if (!auth || !resetEmail.trim()) {
-      toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إدخال البريد الإلكتروني." });
-      return;
-    }
-    setLoading(true);
-    try {
-      await sendPasswordResetEmail(auth, resetEmail.trim());
-      toast({ title: "تم إرسال الرابط", description: "تفقد بريدك الإلكتروني لإعادة تعيين كلمة المرور." });
-    } catch (error) {
-      toast({ variant: "destructive", title: "خطأ", description: "لم نتمكن من إرسال رابط الاستعادة." });
     } finally {
       setLoading(false);
     }

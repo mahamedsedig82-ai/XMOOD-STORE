@@ -98,6 +98,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
+        {/* Desktop Sidebar */}
         <Sidebar className="border-l border-border bg-card hidden lg:flex" side="right">
           <SidebarHeader className="p-10 border-b text-center">
             <span className="handwritten-logo block mb-3 text-3xl">XMOOD ADMIN</span>
@@ -138,7 +139,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </Sidebar>
 
+        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-full relative bg-background overflow-hidden">
+          {/* Main Header */}
           <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/95 backdrop-blur-xl sticky top-0 z-[60] shrink-0">
              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-5">
@@ -157,6 +160,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
+          {/* Scrollable Main Area */}
           <main className="flex-1 overflow-y-auto scroll-smooth relative">
             <div className="p-6 md:p-14 pb-48 lg:pb-14">
               <AnimatePresence mode="wait">
@@ -174,6 +178,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </main>
 
+          {/* Bottom Navigation for Mobile */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-3xl border-t z-[150] flex items-center justify-around px-4 shadow-2xl pointer-events-auto">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link 
