@@ -1,14 +1,15 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 
 /**
- * هوك سيادي مطور لإدارة الهوية والرتب التخصصية
- * يمنع انتهاء حالة التحميل قبل التأكد اليقيني من البيانات في Firestore
+ * Sovereign hook for Identity & Role Management.
+ * Implements debounced profile synchronization to prevent race conditions during Google Login.
  */
 export function useUser() {
   const auth = useAuth();
@@ -16,6 +17,8 @@ export function useUser() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const syncInProgress = useRef(false);
 
   const MASTER_ADMINS = [
     "MAHAMEDFK3@GMAIL.COM", 
@@ -37,6 +40,7 @@ export function useUser() {
       if (!firebaseUser) {
         setProfile(null);
         setLoading(false);
+        syncInProgress.current = false;
       }
     });
 
@@ -46,50 +50,58 @@ export function useUser() {
   useEffect(() => {
     if (!user || !db) return;
 
-    // حالة التحميل تظل فعالة طالما لم نصل للملف الشخصي
     setLoading(true);
     const userDocRef = doc(db, 'users', user.uid);
     let isMounted = true;
 
-    const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
-      if (isMounted) {
-        if (snapshot.exists()) {
-          const data = snapshot.data() as UserProfile;
-          
-          // حماية سيادية لرتبة المالك
-          const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
-          if (isMaster && data.role !== 'owner') {
-            updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' });
-          }
+    const unsubscribeProfile = onSnapshot(userDocRef, async (snapshot) => {
+      if (!isMounted) return;
 
-          setProfile({ ...data, uid: snapshot.id });
-          setLoading(false); 
-        } else {
-          // إنشاء ملف شخصي إذا لم يوجد فوراً
-          const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
-          const initialProfile: UserProfile = {
-            uid: user.uid,
-            displayName: user.displayName || user.email?.split('@')[0] || "عضو",
-            fullName: user.displayName || "",
-            email: user.email || "",
-            walletBalance: isMaster ? 999999 : 0,
-            role: isMaster ? 'owner' : 'user',
-            label: isMaster ? 'المدير العام' : 'عضو بريميوم',
-            photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
-            createdAt: new Date().toISOString(),
-            isVerified: user.emailVerified,
-            affinityPoints: isMaster ? 1000 : 50
-          };
-          setDoc(userDocRef, initialProfile).then(() => {
-            if (isMounted) {
-              setProfile(initialProfile);
-              setLoading(false);
-            }
-          });
+      if (snapshot.exists()) {
+        const data = snapshot.data() as UserProfile;
+        
+        // Critical: Check and force Master Admin role if email matches
+        const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
+        if (isMaster && data.role !== 'owner') {
+          updateDoc(userDocRef, { role: 'owner', label: 'المدير العام', updatedAt: serverTimestamp() });
+        }
+
+        setProfile({ ...data, uid: snapshot.id });
+        setLoading(false); 
+      } else {
+        // Safe Profile Auto-Creation (Self-Healing)
+        if (syncInProgress.current) return;
+        syncInProgress.current = true;
+
+        const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
+        const initialProfile: UserProfile = {
+          uid: user.uid,
+          displayName: user.displayName || user.email?.split('@')[0] || "عضو",
+          fullName: user.displayName || "",
+          email: user.email || "",
+          walletBalance: isMaster ? 999999 : 0,
+          role: isMaster ? 'owner' : 'user',
+          label: isMaster ? 'المدير العام' : 'عضو بريميوم',
+          photoURL: user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
+          createdAt: new Date().toISOString(),
+          isVerified: user.emailVerified,
+          affinityPoints: isMaster ? 1000 : 50
+        };
+
+        try {
+          await setDoc(userDocRef, { ...initialProfile, updatedAt: serverTimestamp() }, { merge: true });
+          if (isMounted) {
+            setProfile(initialProfile);
+            setLoading(false);
+          }
+        } catch (e) {
+          console.error("Auto-Profile creation failed:", e);
+        } finally {
+          syncInProgress.current = false;
         }
       }
     }, (err) => {
-      console.error("Critical Access Sync Error:", err);
+      console.error("Profile Sync Error:", err);
       if (isMounted) setLoading(false);
     });
 
@@ -107,7 +119,6 @@ export function useUser() {
   return { 
     user, 
     profile, 
-    // المفتاح لثبات الدخول: عدم انتهاء التحميل إلا بوجود بيانات مؤكدة
     loading: loading || (!!user && !profile),
     isVerified: user?.emailVerified || false,
     isAdmin: isStaff,

@@ -1,21 +1,26 @@
 
 'use client';
 
-import React, { useMemo } from 'react';
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
-import { getAuth, Auth } from 'firebase/auth';
+import React, { useMemo, useEffect } from 'react';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { firebaseConfig } from './config';
 import { FirebaseProvider } from './provider';
 
 /**
  * Initializes Firebase services on the client side with singleton pattern.
+ * Sets global persistence to ensure stable session management.
  */
 export function initializeFirebase() {
   const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-  // Ensure we only get the firestore instance once per client lifecycle
   const firestore = getFirestore(firebaseApp);
   const auth = getAuth(firebaseApp);
+
+  // Set persistence once globally at initialization
+  setPersistence(auth, browserLocalPersistence).catch((err) => {
+    console.error("Auth Persistence Error:", err);
+  });
 
   return { firebaseApp, firestore, auth };
 }
@@ -23,7 +28,6 @@ export function initializeFirebase() {
 export const FirebaseClientProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  // Use useMemo to ensure firebase services are only initialized once on the client
   const services = useMemo(() => initializeFirebase(), []);
 
   return (

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,11 +14,9 @@ import {
   sendPasswordResetEmail,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup,
-  browserLocalPersistence,
-  setPersistence
+  signInWithPopup
 } from "firebase/auth";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Loader2, Mail, ShieldCheck, RefreshCw, UserCircle, LogIn, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -38,6 +36,9 @@ export default function SecureLoginPage() {
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
+  
+  // Guard to prevent multiple concurrent calls
+  const isProcessing = useRef(false);
 
   useEffect(() => {
     if (!auth) return;
@@ -66,16 +67,21 @@ export default function SecureLoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    if (!auth || !db || loading) return;
+    if (isProcessing.current || !auth || !db) return;
+    
+    isProcessing.current = true;
     setLoading(true);
+
     const provider = new GoogleAuthProvider();
+    // Use select_account to force consistent behavior
     provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
-      await setPersistence(auth, browserLocalPersistence);
+      // Direct call to signInWithPopup without changing persistence here
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
+      // Immediate metadata check to ensure user doc exists
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       
@@ -93,25 +99,23 @@ export default function SecureLoginPage() {
           createdAt: new Date().toISOString(),
           lastSeen: new Date().toISOString(),
           isVerified: true,
-          affinityPoints: 50
-        });
-      } else {
-        await updateDoc(userDocRef, { 
-          lastSeen: new Date().toISOString(),
-          photoURL: user.photoURL || userDoc.data()?.photoURL
+          affinityPoints: 50,
+          updatedAt: serverTimestamp()
         });
       }
       
       toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في عالم XMOOD." });
-      router.replace("/");
+      router.push("/");
     } catch (error: any) {
+      console.error("Google Auth Detailed Error:", error);
       if (error.code === 'auth/popup-closed-by-user') {
-        toast({ title: "تنبيه", description: "تم إغلاق نافذة الدخول قبل الإكمال." });
+        toast({ title: "تنبيه", description: "تم إغلاق نافذة الدخول. يرجى المحاولة مرة أخرى دون إغلاق النافذة المنبثقة." });
       } else {
-        toast({ variant: "destructive", title: "فشل الدخول", description: "حدث خطأ أثناء الاتصال بجوجل." });
+        toast({ variant: "destructive", title: "فشل الدخول", description: "حدث خطأ غير متوقع أثناء الاتصال بخوادم Google." });
       }
     } finally {
       setLoading(false);
+      isProcessing.current = false;
     }
   };
 
@@ -136,7 +140,8 @@ export default function SecureLoginPage() {
         createdAt: new Date().toISOString(),
         lastSeen: new Date().toISOString(),
         isVerified: false,
-        affinityPoints: 50
+        affinityPoints: 50,
+        updatedAt: serverTimestamp()
       });
       
       setStep('verify_pending');
@@ -155,13 +160,11 @@ export default function SecureLoginPage() {
     if (!auth || !db || loading) return;
     setLoading(true);
     try {
-      await setPersistence(auth, browserLocalPersistence);
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       if (!userCredential.user.emailVerified) {
         setStep('verify_pending');
         toast({ variant: "destructive", title: "تفعيل الحساب مطلوب", description: "يرجى الضغط على الرابط المرسل لبريدك." });
       } else {
-        await updateDoc(doc(db, "users", userCredential.user.uid), { lastSeen: new Date().toISOString() });
         router.replace("/");
       }
     } catch (error: any) {
