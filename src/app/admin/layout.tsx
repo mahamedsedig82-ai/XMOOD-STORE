@@ -3,7 +3,7 @@
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, Cpu, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Menu, X, ChevronLeft
+  Settings, Palette, LogOut, ArrowLeft, Zap, Terminal, Image as ImageIcon, ClipboardList, ShieldAlert, Menu, X, ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -12,7 +12,6 @@ import { useEffect, useState, useMemo } from "react";
 import { signOut } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 
@@ -22,11 +21,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [isClient, setIsMounted] = useState(false);
-  const [gateVersion, setGateVersion] = useState("");
 
   useEffect(() => {
     setIsMounted(true);
-    setGateVersion("Sovereign Gate v12.0");
   }, []);
 
   const allSections = useMemo(() => [
@@ -72,9 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <div className="text-center space-y-3">
            <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">تأمين الوصول التخصصي</h2>
-           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">
-             {gateVersion || "Authenticating Protocol..."}
-           </p>
+           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.3em] opacity-60">Sovereign Gate Protocol</p>
         </div>
       </div>
     );
@@ -110,7 +105,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {profile?.label || profile?.role}
             </Badge>
           </SidebarHeader>
-          <ScrollArea className="flex-1 p-5">
+          <SidebarContent className="p-5 overflow-y-auto">
             <SidebarGroup>
                <SidebarGroupLabel className="text-right px-4 mb-4 text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">
                  مهامك التخصصية
@@ -132,20 +127,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                  ))}
                </SidebarMenu>
             </SidebarGroup>
-          </ScrollArea>
+          </SidebarContent>
           <div className="p-8 border-t bg-muted/5 space-y-4">
-            <Button asChild variant="outline" className="w-full h-12 rounded-xl text-[10px] font-black uppercase gap-3 border-border hover:bg-card">
+            <Button asChild variant="outline" className="w-full h-12 rounded-xl text-[10px] font-black uppercase gap-3">
               <Link href="/"><ArrowLeft size={16} /> المتجر العام</Link>
             </Button>
-            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-12 rounded-xl text-red-500 font-black text-[10px] uppercase gap-3 hover:bg-red-500/10">
+            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-12 rounded-xl text-red-500 font-black text-[10px] uppercase gap-3">
               <LogOut size={16} /> خروج آمن
             </Button>
           </div>
         </Sidebar>
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 h-full relative bg-background">
-          <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-xl sticky top-0 z-[60] shrink-0">
+        <div className="flex-1 flex flex-col min-w-0 h-full relative bg-background overflow-hidden">
+          <header className="h-20 md:h-24 border-b flex items-center justify-between px-6 md:px-12 bg-background/95 backdrop-blur-xl sticky top-0 z-[60] shrink-0">
              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-5">
                    <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20">
@@ -157,15 +151,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                    </div>
                 </div>
              </div>
-             
              <div className="flex items-center gap-3">
                 <Badge className="bg-green-500/10 text-green-600 border-none text-[8px] md:text-xs font-black px-4 py-1.5 rounded-full hidden sm:block">Identity Confirmed</Badge>
                 <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_12px_#22c55e]" />
              </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
-            <div className="p-4 md:p-14 pb-48 lg:pb-14">
+          <main className="flex-1 overflow-y-auto scroll-smooth relative pointer-events-auto">
+            <div className="p-4 md:p-14 pb-48 lg:pb-14 min-h-full">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
@@ -181,16 +174,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </main>
 
-          {/* Mobile Bottom Navigation - High Priority Z-Index */}
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-3xl border-t z-[160] flex items-center justify-around px-4 shadow-[0_-15px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
+          {/* Mobile Bottom Navigation */}
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-3xl border-t z-[160] flex items-center justify-around px-4 shadow-2xl pointer-events-auto">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link 
                   key={item.href} 
                   href={item.href} 
-                  className={`flex flex-col items-center justify-center gap-2 transition-all flex-1 h-full relative z-[170] pointer-events-auto ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
+                  className={`flex flex-col items-center justify-center gap-2 transition-all flex-1 h-full pointer-events-auto ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
                 >
-                   <div className={`p-3 rounded-2xl transition-all duration-500 ${pathname === item.href ? 'bg-primary/15 shadow-[0_0_15px_rgba(212,175,55,0.2)]' : ''}`}>
-                      <item.icon size={24} className={pathname === item.href ? 'drop-shadow-[0_0_10px_var(--primary)]' : 'opacity-70'} />
+                   <div className={`p-3 rounded-2xl transition-all duration-500 ${pathname === item.href ? 'bg-primary/15 shadow-xl' : ''}`}>
+                      <item.icon size={24} className={pathname === item.href ? 'drop-shadow-lg' : 'opacity-70'} />
                    </div>
                    <span className={`text-[9px] font-black uppercase tracking-widest text-center truncate w-full px-1 ${pathname === item.href ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
                 </Link>
@@ -198,7 +191,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              
              <Sheet dir="rtl">
                 <SheetTrigger asChild>
-                   <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-muted-foreground opacity-70 pointer-events-auto relative z-[170]">
+                   <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-muted-foreground opacity-70 pointer-events-auto">
                       <div className="p-3 rounded-2xl hover:bg-muted/50 transition-colors">
                         <Menu size={24} />
                       </div>
@@ -207,15 +200,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </SheetTrigger>
                 <SheetContent side="bottom" className="rounded-t-[3.5rem] p-0 border-none bg-background shadow-2xl h-[85vh] z-[200]">
                    <SheetHeader className="p-10 border-b text-center bg-muted/5">
-                      <div className="flex justify-between items-center mb-6">
-                         <SheetTitle className="handwritten-logo text-4xl text-right block">XMOOD ADMIN</SheetTitle>
-                         <SheetClose asChild>
-                            <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl text-red-500 bg-red-500/5 hover:bg-red-500/10"><X size={28}/></Button>
-                         </SheetClose>
-                      </div>
-                      <Badge className="bg-primary/10 text-primary border-none px-8 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.2em]">
+                      <SheetTitle className="handwritten-logo text-4xl text-right block">XMOOD ADMIN</SheetTitle>
+                      <Badge className="mt-4 bg-primary/10 text-primary border-none px-8 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.2em]">
                          {profile?.label || profile?.role} ACCESS
                       </Badge>
+                      <SheetClose asChild>
+                         <Button variant="ghost" size="icon" className="absolute left-8 top-10 h-12 w-12 rounded-2xl text-red-500 bg-red-500/5"><X size={28}/></Button>
+                      </SheetClose>
                    </SheetHeader>
                    <div className="p-8 h-full pb-48 overflow-y-auto">
                       <div className="grid grid-cols-2 gap-4">
@@ -223,7 +214,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <SheetClose asChild key={item.href}>
                                <Link 
                                  href={item.href} 
-                                 className={`flex flex-col items-center gap-4 p-6 rounded-3xl transition-all border ${pathname === item.href ? 'bg-primary text-white border-primary shadow-2xl' : 'bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted'}`}
+                                 className={`flex flex-col items-center gap-4 p-6 rounded-3xl transition-all border ${pathname === item.href ? 'bg-primary text-white border-primary shadow-2xl' : 'bg-muted/30 border-border/50 text-muted-foreground'}`}
                                >
                                   <item.icon size={26} className={pathname === item.href ? 'text-white' : 'text-primary'} />
                                   <span className="font-black text-[10px] uppercase text-center">{item.label}</span>
@@ -232,10 +223,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                          ))}
                       </div>
                       <div className="mt-12 space-y-4">
-                         <Button asChild variant="outline" className="w-full h-16 rounded-[1.5rem] font-black text-xs uppercase gap-4 border-border/60 hover:bg-card">
+                         <Button asChild variant="outline" className="w-full h-16 rounded-[1.5rem] font-black text-xs uppercase gap-4">
                            <Link href="/"><ArrowLeft size={18} /> العودة للمتجر</Link>
                          </Button>
-                         <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-16 rounded-[1.5rem] text-red-500 font-black text-xs uppercase gap-4 hover:bg-red-500/5">
+                         <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-16 rounded-[1.5rem] text-red-500 font-black text-xs uppercase gap-4">
                            <LogOut size={18} /> خروج آمن
                          </Button>
                       </div>

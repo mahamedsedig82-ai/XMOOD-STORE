@@ -18,9 +18,9 @@ import {
   browserLocalPersistence,
   setPersistence
 } from "firebase/auth";
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { Loader2, Mail, ShieldCheck, Key, RefreshCw, UserCircle, Phone, Sparkles, LogIn } from "lucide-react";
+import { Loader2, Mail, ShieldCheck, RefreshCw, UserCircle, LogIn, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -60,7 +60,6 @@ export default function SecureLoginPage() {
     provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
-      // التأكد من استمرارية الجلسة
       await setPersistence(auth, browserLocalPersistence);
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
@@ -87,7 +86,7 @@ export default function SecureLoginPage() {
       } else {
         await updateDoc(userDocRef, { 
           lastSeen: new Date().toISOString(),
-          photoURL: user.photoURL || userDoc.data().photoURL
+          photoURL: user.photoURL || userDoc.data()?.photoURL
         });
       }
       
@@ -95,7 +94,23 @@ export default function SecureLoginPage() {
       router.replace("/");
     } catch (error: any) {
       console.error("Google Auth Error:", error);
-      toast({ variant: "destructive", title: "فشل الدخول", description: "حدث خطأ أثناء الاتصال بجوجل. يرجى المحاولة مرة أخرى." });
+      toast({ variant: "destructive", title: "فشل الدخول", description: "حدث خطأ أثناء الاتصال بجوجل." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!auth || !resetEmail.trim()) {
+      toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إدخال البريد الإلكتروني." });
+      return;
+    }
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, resetEmail.trim());
+      toast({ title: "تم إرسال الرابط", description: "تفقد بريدك الإلكتروني لإعادة تعيين كلمة المرور." });
+    } catch (error) {
+      toast({ variant: "destructive", title: "خطأ", description: "لم نتمكن من إرسال رابط الاستعادة." });
     } finally {
       setLoading(false);
     }
@@ -168,7 +183,7 @@ export default function SecureLoginPage() {
           <p className="text-zinc-400 mb-10 text-lg leading-relaxed">
             لقد أرسلنا رابط تحقق إلى بريدك الإلكتروني. <br/>
             <span className="text-white font-bold block mt-2">{auth?.currentUser?.email}</span>
-            <span className="text-sm opacity-50 mt-4 block">يرجى الضغط على الرابط لتتمكن من استخدام ميزات المتجر والمحفظة.</span>
+            <span className="text-sm opacity-50 mt-4 block">يرجى الضغط على الرابط لتتمكن من استخدام ميزات المتجر.</span>
           </p>
           <div className="space-y-4">
             <Button onClick={() => window.location.reload()} className="w-full h-16 rounded-2xl bg-white text-black font-black text-xl hover:scale-105 transition-all">
@@ -177,9 +192,6 @@ export default function SecureLoginPage() {
             <Button onClick={() => auth?.currentUser && sendEmailVerification(auth.currentUser)} variant="outline" className="w-full h-14 rounded-2xl border-white/10 text-zinc-400 gap-3">
               <RefreshCw size={20} /> إعادة إرسال رابط التفعيل
             </Button>
-            <Button onClick={() => { signOut(auth!); setStep('auth'); }} variant="ghost" className="text-red-500 font-bold text-xs uppercase">
-              استخدام بريد إلكتروني آخر
-            </Button>
           </div>
         </Card>
       </main>
@@ -187,35 +199,30 @@ export default function SecureLoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white selection:bg-primary/30" dir="rtl">
+    <main className="min-h-screen bg-[#050505] text-white" dir="rtl">
       <Navbar />
       <div className="container mx-auto px-6 py-24 flex justify-center items-center min-h-screen pt-32">
-        
         <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          
-          {/* Left Side: Brand Story */}
           <div className="hidden lg:block space-y-10">
              <div className="space-y-4">
                 <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Sovereign Access Protocol</Badge>
                 <h1 className="text-7xl font-headline font-black leading-tight tracking-tighter">بوابة <span className="gold-text">النخبة</span> الرقمية</h1>
-                <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-md">نظام دخول مشفر وآمن يمنحك الوصول الكامل لخدمات شحن الألعاب، المحفظة السيادية، ومعرض الإبداع الرقمي.</p>
+                <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-md">نظام دخول مشفر وآمن يمنحك الوصول الكامل لكافة الخدمات والمحفظة السيادية.</p>
              </div>
-             
              <div className="grid grid-cols-2 gap-6">
                 {[
                   { label: "حماية مشفرة", icon: ShieldCheck },
                   { label: "تنفيذ فوري", icon: Sparkles },
                 ].map((item, i) => (
-                  <div key={i} className="p-6 rounded-3xl bg-white/5 border border-white/5 flex items-center gap-4 group hover:border-primary/20 transition-all">
-                     <item.icon size={24} className="text-primary group-hover:scale-110 transition-transform" />
+                  <div key={i} className="p-6 rounded-3xl bg-white/5 border border-white/5 flex items-center gap-4">
+                     <item.icon size={24} className="text-primary" />
                      <span className="font-bold text-sm">{item.label}</span>
                   </div>
                 ))}
              </div>
           </div>
 
-          {/* Right Side: Auth Card */}
-          <Card className="luxury-card border-none overflow-hidden bg-zinc-950/80 backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/5">
+          <Card className="luxury-card border-none overflow-hidden bg-zinc-950/80 backdrop-blur-3xl shadow-2xl border border-white/5">
             <div className="p-10 text-center border-b border-white/5 bg-white/5">
               <UserCircle size={50} className="text-primary mx-auto mb-4" />
               <h2 className="text-2xl font-black uppercase tracking-tight">تسجيل الدخول الموحد</h2>
@@ -225,19 +232,19 @@ export default function SecureLoginPage() {
             <CardContent className="p-8 md:p-12">
               <Tabs defaultValue="login" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-10 bg-white/5 rounded-2xl p-1.5 h-14">
-                  <TabsTrigger value="login" className="rounded-xl font-bold text-xs uppercase data-[state=active]:bg-primary data-[state=active]:text-black transition-all">الدخول</TabsTrigger>
-                  <TabsTrigger value="signup" className="rounded-xl font-bold text-xs uppercase data-[state=active]:bg-primary data-[state=active]:text-black transition-all">التسجيل</TabsTrigger>
+                  <TabsTrigger value="login" className="rounded-xl font-bold text-xs uppercase data-[state=active]:bg-primary data-[state=active]:text-black">الدخول</TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-xl font-bold text-xs uppercase data-[state=active]:bg-primary data-[state=active]:text-black">التسجيل</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="login" className="space-y-6 animate-fade-in">
                   <form onSubmit={handleLogin} className="space-y-5">
                     <div className="space-y-2">
                        <label className="text-[10px] font-black text-zinc-500 uppercase pr-2">البريد الإلكتروني</label>
-                       <Input type="email" placeholder="example@xmood.com" className="h-14 bg-zinc-900/50 border-white/5 rounded-xl px-6 font-bold focus:border-primary/50 transition-all" value={email} onChange={e => setEmail(e.target.value)} required />
+                       <Input type="email" placeholder="example@xmood.com" className="h-14 bg-zinc-900/50 border-white/5 rounded-xl px-6 font-bold" value={email} onChange={e => setEmail(e.target.value)} required />
                     </div>
                     <div className="space-y-2">
                        <label className="text-[10px] font-black text-zinc-500 uppercase pr-2">كلمة المرور</label>
-                       <Input type="password" placeholder="••••••••" className="h-14 bg-zinc-900/50 border-white/5 rounded-xl px-6 font-bold focus:border-primary/50 transition-all" value={password} onChange={e => setPassword(e.target.value)} required />
+                       <Input type="password" placeholder="••••••••" className="h-14 bg-zinc-900/50 border-white/5 rounded-xl px-6 font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
                     </div>
                     
                     <div className="text-left">
@@ -260,7 +267,7 @@ export default function SecureLoginPage() {
                       </Dialog>
                     </div>
 
-                    <Button type="submit" className="w-full royal-button h-16 text-lg shadow-xl shadow-primary/10" disabled={loading}>
+                    <Button type="submit" className="w-full royal-button h-16 text-lg" disabled={loading}>
                       {loading ? <Loader2 className="animate-spin" /> : <><LogIn size={20} className="ml-2" /> دخول آمن</>}
                     </Button>
 
@@ -269,7 +276,7 @@ export default function SecureLoginPage() {
                        <div className="relative flex justify-center text-[8px] uppercase font-black"><span className="bg-[#0c0c0c] px-6 text-zinc-600 tracking-[0.4em]">Sovereign Identity</span></div>
                     </div>
 
-                    <Button type="button" onClick={handleGoogleLogin} variant="outline" className="w-full h-16 rounded-xl border-white/5 bg-white/5 hover:bg-white/10 font-black text-[10px] gap-4 tracking-widest transition-all" disabled={loading}>
+                    <Button type="button" onClick={handleGoogleLogin} variant="outline" className="w-full h-16 rounded-xl border-white/5 bg-white/5 hover:bg-white/10 font-black text-[10px] gap-4 tracking-widest" disabled={loading}>
                       <svg className="w-5 h-5" viewBox="0 0 24 24">
                          <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.18 1-.78 1.85-1.63 2.42v2.84h2.64c1.66-1.53 2.63-3.79 2.63-6.27z" />
                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-2.64-2.84c-.73.49-1.66.78-2.64.78-2.85 0-5.27-1.92-6.13-4.51H3.18v2.92C5 20.15 8.24 23 12 23z" />
@@ -301,7 +308,7 @@ export default function SecureLoginPage() {
                        <label className="text-[10px] font-black text-zinc-500 uppercase pr-2">كلمة المرور القوية</label>
                        <Input type="password" placeholder="••••••••" className="h-14 bg-zinc-900/50 border-white/5 rounded-xl px-6 font-bold" value={password} onChange={e => setPassword(e.target.value)} required />
                     </div>
-                    <Button type="submit" className="w-full royal-button h-16 text-lg mt-4 shadow-xl" disabled={loading}>
+                    <Button type="submit" className="w-full royal-button h-16 text-lg mt-4" disabled={loading}>
                        {loading ? <Loader2 className="animate-spin" /> : "إنشاء الهوية الرقمية"}
                     </Button>
                   </form>
