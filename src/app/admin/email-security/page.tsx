@@ -168,7 +168,7 @@ export default function EmailSecurityDashboard() {
             <div className="space-y-6">
                <h4 className="font-black text-lg border-r-4 border-primary pr-4">الخطوة 1: داخل Firebase Console</h4>
                <p className="text-sm text-muted-foreground leading-relaxed">
-                  اذهب إلى <b>Authentication</b> -> <b>Settings</b> -> <b>User actions</b>.
+                  اذهب إلى <b>Authentication</b> &rarr; <b>Settings</b> &rarr; <b>User actions</b>.
                   قم بإضافة "Custom Email Domain" وضع نطاقك (مثل xmood.com). سيعطيك نفس السجلات الموضحة أعلاه.
                </p>
             </div>
