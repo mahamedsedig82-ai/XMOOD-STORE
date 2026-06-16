@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -41,12 +42,8 @@ export default function SecureLoginPage() {
   useEffect(() => {
     if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        if (user.emailVerified) {
-          router.replace("/");
-        } else {
-          setStep('verify_pending');
-        }
+      if (user && user.emailVerified) {
+        router.replace("/");
       }
     });
     return () => unsubscribe();
@@ -59,7 +56,6 @@ export default function SecureLoginPage() {
     provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
-      // تفعيل استمرارية المتصفح لضمان عدم ضياع الجلسة
       await setPersistence(auth, browserLocalPersistence);
       const result = await signInWithPopup(auth, provider);
       const user = result.user;

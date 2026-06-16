@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel } from "@/components/ui/sidebar";
@@ -97,7 +98,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
-        {/* Desktop Sidebar */}
         <Sidebar className="border-l border-border bg-card hidden lg:flex" side="right">
           <SidebarHeader className="p-10 border-b text-center">
             <span className="handwritten-logo block mb-3 text-3xl">XMOOD ADMIN</span>
@@ -157,8 +157,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto scroll-smooth relative pointer-events-auto">
-            <div className="p-4 md:p-14 pb-48 lg:pb-14 min-h-full">
+          <main className="flex-1 overflow-y-auto scroll-smooth relative">
+            <div className="p-6 md:p-14 pb-48 lg:pb-14">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
@@ -166,7 +166,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="max-w-7xl mx-auto"
+                  className="max-w-7xl mx-auto space-y-10"
                 >
                   {children}
                 </motion.div>
@@ -174,13 +174,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </main>
 
-          {/* Mobile Bottom Navigation */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-24 bg-card/95 backdrop-blur-3xl border-t z-[150] flex items-center justify-around px-4 shadow-2xl pointer-events-auto">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link 
                   key={item.href} 
                   href={item.href} 
-                  className={`flex flex-col items-center justify-center gap-2 transition-all flex-1 h-full pointer-events-auto ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
+                  className={`flex flex-col items-center justify-center gap-2 transition-all flex-1 h-full ${pathname === item.href ? 'text-primary' : 'text-muted-foreground'}`}
                 >
                    <div className={`p-3 rounded-2xl transition-all duration-500 ${pathname === item.href ? 'bg-primary/15 shadow-xl' : ''}`}>
                       <item.icon size={24} className={pathname === item.href ? 'drop-shadow-lg' : 'opacity-70'} />
@@ -191,7 +190,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              
              <Sheet dir="rtl">
                 <SheetTrigger asChild>
-                   <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-muted-foreground opacity-70 pointer-events-auto">
+                   <button className="flex flex-col items-center justify-center gap-2 flex-1 h-full text-muted-foreground opacity-70">
                       <div className="p-3 rounded-2xl hover:bg-muted/50 transition-colors">
                         <Menu size={24} />
                       </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -119,7 +120,7 @@ export default function AdminUsersManagement() {
                            <span className="font-bold text-lg text-white group-hover:gold-text transition-colors truncate">{u.displayName}</span>
                            <Dialog>
                               <DialogTrigger asChild>
-                                 <Button size="icon" variant="ghost" className="h-6 w-6 text-zinc-500 hover:text-primary shrink-0"><Eye size={14}/></Button>
+                                 <button className="h-6 w-6 text-zinc-500 hover:text-primary shrink-0"><Eye size={14}/></button>
                               </DialogTrigger>
                               <DialogContent className="bg-zinc-950 border-primary/20 rounded-[2.5rem] p-10 text-white max-w-lg shadow-2xl">
                                  <DialogHeader>
@@ -197,7 +198,7 @@ export default function AdminUsersManagement() {
                       defaultValue={u.role} 
                       onValueChange={(val) => handleUpdateRole(u.id, val)}
                     >
-                      <SelectTrigger className="w-44 h-12 bg-zinc-900 border-none mx-auto font-black text-[10px] uppercase rounded-xl">
+                      <SelectTrigger className="w-44 h-12 bg-zinc-900 border-none mx-auto font-black text-[10px] uppercase rounded-xl text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-zinc-950 border-white/10 text-white" dir="rtl">
