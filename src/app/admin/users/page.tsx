@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -55,7 +56,6 @@ export default function AdminUsersIntelligence() {
 
   return (
     <div className="space-y-10 animate-fade-in" dir="rtl">
-      {/* Sovereign Header & Stats */}
       <header className="space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
@@ -79,7 +79,7 @@ export default function AdminUsersIntelligence() {
         </div>
 
         <div className="relative group max-w-3xl">
-           <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={22} />
+           <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground" size={22} />
            <Input 
              placeholder="ابحث بالاسم، الهاتف، أو البريد الإلكتروني..." 
              className="pr-14 h-16 bg-card border-none rounded-2xl text-lg font-black shadow-2xl focus:ring-2 focus:ring-primary/20"
@@ -89,7 +89,6 @@ export default function AdminUsersIntelligence() {
         </div>
       </header>
 
-      {/* Main Users Ledger */}
       <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl shadow-2xl overflow-hidden">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -99,7 +98,7 @@ export default function AdminUsersIntelligence() {
                   <TableHead className="text-right py-8 pr-12 font-black uppercase text-[10px] tracking-widest text-muted-foreground">الهوية السيادية</TableHead>
                   <TableHead className="text-right font-black uppercase text-[10px] tracking-widest text-muted-foreground">بيانات الاتصال</TableHead>
                   <TableHead className="text-right font-black uppercase text-[10px] tracking-widest text-muted-foreground">الرصيد المتاح</TableHead>
-                  <TableHead className="text-right font-black uppercase text-[10px] tracking-widest text-muted-foreground">الرتبة والأمن</TableHead>
+                  <TableHead className="text-right font-black uppercase text-[10px] tracking-widest text-muted-foreground">الأمن</TableHead>
                   <TableHead className="text-center font-black uppercase text-[10px] tracking-widest text-muted-foreground">التحكم المركزي</TableHead>
                 </TableRow>
               </TableHeader>
@@ -107,17 +106,17 @@ export default function AdminUsersIntelligence() {
                 {loading ? (
                   <TableRow><TableCell colSpan={5} className="text-center py-40"><Loader2 className="animate-spin mx-auto text-primary" size={60} /></TableCell></TableRow>
                 ) : filtered?.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="text-center py-40 text-muted-foreground font-bold uppercase tracking-widest opacity-40 italic">لا توجد سجلات</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center py-40 text-muted-foreground font-bold uppercase tracking-widest opacity-40">لا توجد سجلات</TableCell></TableRow>
                 ) : filtered?.map((u) => (
                   <TableRow key={u.id} className="hover:bg-primary/5 border-b border-border/30 group transition-all duration-300">
                     <TableCell className="py-8 pr-12" data-label="الهوية">
                       <div className="flex items-center gap-6">
                         <div className="relative shrink-0">
-                           <Avatar className="w-14 h-14 md:w-16 md:h-16 rounded-[1.25rem] border-2 border-primary/10 shadow-xl overflow-hidden group-hover:border-primary/40 transition-all">
+                           <Avatar className="w-14 h-14 md:w-16 md:h-16 rounded-2xl border-2 border-primary/10 shadow-xl overflow-hidden">
                               <AvatarImage src={u.photoURL} className="object-cover" />
                               <AvatarFallback className="bg-zinc-100 font-black text-primary">XM</AvatarFallback>
                            </Avatar>
-                           <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-4 border-background ${u.communityStatus === 'banned' ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]'}`} />
+                           <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-4 border-background ${u.communityStatus === 'banned' ? 'bg-red-500' : 'bg-green-500'}`} />
                         </div>
                         <div className="flex flex-col truncate">
                            <span className="font-black text-base md:text-lg group-hover:text-primary transition-colors leading-none mb-1.5 truncate">{u.displayName}</span>
