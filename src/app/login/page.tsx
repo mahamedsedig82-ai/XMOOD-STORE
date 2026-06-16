@@ -112,7 +112,9 @@ export default function SecureLoginPage() {
       console.log("[AUTH-DEBUG] Triggering redirection...");
       router.push("/");
     } catch (error: any) {
-      console.error("[AUTH-DEBUG] SIGN-IN ERROR:", error.code, error.message);
+      console.error("[AUTH-DEBUG] SIGN-IN ERROR OBJECT:", error);
+      console.error("[AUTH-DEBUG] Error Code:", error.code);
+      console.error("[AUTH-DEBUG] Error Message:", error.message);
       
       if (error.code === 'auth/popup-closed-by-user') {
         toast({ 
