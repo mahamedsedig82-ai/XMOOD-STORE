@@ -2,8 +2,7 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LayoutDashboard, Package, Users, Wallet, 
-  Settings, Palette, LogOut, ArrowLeft, Zap, Terminal, ClipboardList, ShieldAlert, Layers, Menu, BarChart3, Database, ShieldCheck, Briefcase
+  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, Layers, ClipboardList, Users, Wallet, ShieldAlert, Palette
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -56,7 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!isClient || loading || (user && !profile)) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-black gap-8" dir="rtl">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-8" dir="rtl">
         <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
         <h2 className="text-xl font-black gold-text uppercase tracking-widest animate-pulse">تأمين الوصول السيادي</h2>
       </div>
@@ -122,7 +121,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-4 md:px-16 py-12 pb-32">
+          <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-4 md:px-16 py-12 pb-32 bg-background">
             <div className="max-w-7xl mx-auto">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -150,7 +149,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <SheetTrigger asChild>
                    <button className="flex flex-col items-center gap-1.5 flex-1 text-muted-foreground opacity-60 hover:opacity-100"><Menu size={22} /><span className="text-[8px] font-black uppercase">المزيد</span></button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="rounded-t-[3rem] h-[85vh] p-0 border-none shadow-2xl overflow-hidden flex flex-col">
+                <SheetContent side="bottom" className="rounded-t-[3rem] h-[85vh] p-0 border-none shadow-2xl overflow-hidden flex flex-col bg-background">
                    <div className="p-8 border-b bg-muted/20">
                       <SheetTitle className="text-2xl font-black gold-text">قائمة التحكم الشاملة</SheetTitle>
                    </div>
