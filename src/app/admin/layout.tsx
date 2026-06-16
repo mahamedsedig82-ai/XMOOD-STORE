@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
@@ -105,7 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </Sidebar>
 
-        {/* Main Content Area - Robust Scrolling Fix */}
+        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background">
           <header className="h-24 border-b flex items-center justify-between px-6 md:px-10 bg-background/90 backdrop-blur-xl z-[60] shrink-0">
              <div className="flex items-center gap-4 md:gap-6">
