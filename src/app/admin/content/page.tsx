@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -189,7 +188,7 @@ export default function AdminContentManager() {
               <div className="p-6 bg-primary/5 rounded-2xl border border-primary/10 flex gap-4">
                  <Info size={24} className="text-primary shrink-0" />
                  <p className="text-xs font-bold leading-relaxed">
-                   <b>مهم:</b> بما أنك تستخدم النطاق الافتراضي، قم بنسخ "اسم المرسل" و "التذييل" أعلاه وضعهما يدوياً في <b>Firebase Console -> Authentication -> Templates</b> لتحسين وصول الرسائل.
+                   <b>مهم:</b> بما أنك تستخدم النطاق الافتراضي، قم بنسخ "اسم المرسل" و "التذييل" أعلاه وضعهما يدوياً في <b>Firebase Console &rarr; Authentication &rarr; Templates</b> لتحسين وصول الرسائل.
                  </p>
               </div>
            </Card>
