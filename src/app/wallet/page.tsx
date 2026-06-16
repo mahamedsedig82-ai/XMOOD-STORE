@@ -23,7 +23,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useUser, useCollection, useFirestore, useMemoFirebase, useDoc } from "@/firebase";
 import { formatUSD, formatSDG } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
-import { query, collection, orderBy, doc, updateDoc, addDoc, where, limit } from "firebase/firestore";
+import { query, collection, orderBy, doc, updateDoc, limit } from "firebase/firestore";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +40,10 @@ export default function ProfessionalWalletPage() {
   const db = useFirestore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const settingsRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return doc(db, "settings", "global");
+  }, [db]);
   const { data: config } = useDoc(settingsRef);
 
   const [isEditing, setIsEditing] = useState(false);

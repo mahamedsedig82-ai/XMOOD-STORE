@@ -8,11 +8,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2, Phone, ShieldAlert, ShieldCheck, UserCheck, Wallet, Mail } from "lucide-react";
+import { Search, Loader2, Phone, ShieldAlert, UserCheck, Wallet, Mail } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AdminUsersIntelligence() {
   const db = useFirestore();
@@ -25,25 +27,45 @@ export default function AdminUsersIntelligence() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
-  const handleUpdateRole = async (userId: string, newRole: string) => {
+  const handleUpdateRole = (userId: string, newRole: string) => {
+    if (!db) return;
     setIsUpdating(userId);
-    try {
-      const labels: Record<string, string> = {
-        owner: 'المالك العام', admin: 'المدير التنفيذي', gm: 'مدير العمليات', store_manager: 'مشرف المستودع',
-        design_manager: 'مشرف التصاميم', designer: 'مصمم معتمد', accountant: 'المحاسب المالي',
-        support: 'الدعم الفني', middleman: 'وسيط معتمد', agent: 'وكيل شحن', user: 'عضو موثق'
-      };
-      await updateDoc(doc(db, "users", userId), { role: newRole, label: labels[newRole] || 'عضو موثق' });
-      toast({ title: "تم التحديث السيادي للرتبة" });
-    } finally {
-      setIsUpdating(null);
-    }
+    const labels: Record<string, string> = {
+      owner: 'المالك العام', admin: 'المدير التنفيذي', gm: 'مدير العمليات', store_manager: 'مشرف المستودع',
+      design_manager: 'مشرف التصاميم', designer: 'مصمم معتمد', accountant: 'المحاسب المالي',
+      support: 'الدعم الفني', middleman: 'وسيط معتمد', agent: 'وكيل شحن', user: 'عضو موثق'
+    };
+    const userRef = doc(db, "users", userId);
+    const data = { role: newRole, label: labels[newRole] || 'عضو موثق' };
+    
+    updateDoc(userRef, data)
+      .then(() => {
+        toast({ title: "تم التحديث السيادي للرتبة" });
+      })
+      .catch(async () => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'update',
+          requestResourceData: data
+        }));
+      })
+      .finally(() => setIsUpdating(null));
   };
 
-  const handleStatusChange = async (userId: string, currentStatus: string) => {
+  const handleStatusChange = (userId: string, currentStatus: string) => {
+    if (!db) return;
     const nextStatus = currentStatus === 'banned' ? 'active' : 'banned';
-    await updateDoc(doc(db, "users", userId), { communityStatus: nextStatus });
-    toast({ title: `تم ${nextStatus === 'banned' ? 'حظر' : 'تنشيط'} العضو بنجاح` });
+    const userRef = doc(db, "users", userId);
+    updateDoc(userRef, { communityStatus: nextStatus })
+      .then(() => {
+        toast({ title: `تم ${nextStatus === 'banned' ? 'حظر' : 'تنشيط'} العضو بنجاح` });
+      })
+      .catch(async () => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'update'
+        }));
+      });
   };
 
   const filtered = users?.filter(u => 

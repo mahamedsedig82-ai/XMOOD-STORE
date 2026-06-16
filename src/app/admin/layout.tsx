@@ -2,7 +2,7 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, Layers, ClipboardList, Users, Wallet, ShieldAlert, Palette, MailCheck
+  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Palette, MailCheck
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";

@@ -116,6 +116,7 @@
 .smooth-scroll {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+  overflow-y: auto;
 }
 
 /* Fix for Admin Sidebar and Overlaps */
@@ -125,4 +126,9 @@
 
 main {
   @apply pt-20 md:pt-24;
+}
+
+/* Fix for heavy UI and hanging */
+.will-change-scroll {
+  will-change: scroll-position;
 }

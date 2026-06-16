@@ -8,21 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  Save, Loader2, Globe, Layout, MessageSquare, Zap, Megaphone, 
+  Save, Loader2, Layout, MessageSquare, Zap, Megaphone, 
   Palette, Share2, Info, Image as ImageIcon, Shield, Wallet, 
-  ArrowRightLeft, Settings, Type, Smartphone, Eye, Sparkles, Mail
+  Settings, Type, Smartphone, Eye, Sparkles, Mail, Globe
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AdminContentManager() {
   const db = useFirestore();
-  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const settingsRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return doc(db, "settings", "global");
+  }, [db]);
   const { data: config, loading } = useDoc(settingsRef);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -70,7 +72,7 @@ export default function AdminContentManager() {
   }, [config]);
 
   const handleSave = () => {
-    if (!db) return;
+    if (!db || !settingsRef) return;
     setIsSaving(true);
     const data = { ...form, updatedAt: serverTimestamp() };
     
