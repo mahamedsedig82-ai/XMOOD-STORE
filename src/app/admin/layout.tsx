@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
@@ -67,7 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-[#f8f8f8] dark:bg-[#020202] overflow-hidden" dir="rtl">
+      <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
         {/* Sidebar Desktop */}
         <Sidebar className="border-l border-border bg-card hidden lg:flex shrink-0 shadow-2xl" side="right">
           <SidebarHeader className="p-10 border-b text-center">
@@ -104,9 +105,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </Sidebar>
 
-        {/* Main Content Area - FIXED SCROLLING */}
-        <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-background">
-          <header className="h-24 border-b flex items-center justify-between px-6 md:px-10 bg-background/90 backdrop-blur-xl absolute top-0 left-0 right-0 z-[60] shrink-0">
+        {/* Main Content Area - Robust Scrolling Fix */}
+        <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background">
+          <header className="h-24 border-b flex items-center justify-between px-6 md:px-10 bg-background/90 backdrop-blur-xl z-[60] shrink-0">
              <div className="flex items-center gap-4 md:gap-6">
                 <div className="w-10 h-10 md:w-14 md:h-14 bg-primary/10 rounded-xl md:rounded-2xl flex items-center justify-center text-primary border border-primary/20">
                    <Terminal size={24} />
@@ -122,8 +123,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto scroll-smooth relative custom-scrollbar h-full pt-32 pb-40">
-            <div className="px-4 md:px-16 max-w-7xl mx-auto">
+          <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar px-4 md:px-16 py-12 pb-32">
+            <div className="max-w-7xl mx-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
@@ -138,7 +139,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </main>
 
-          {/* Mobile Navigation Bar - Elegant Layout */}
+          {/* Mobile Navigation Bar */}
           <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-background/95 backdrop-blur-xl border-t z-[100] flex items-center justify-around px-4 shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
              {visibleSections.slice(0, 4).map((item) => (
                 <Link key={item.href} href={item.href} className={`flex flex-col items-center gap-1.5 flex-1 transition-all ${pathname === item.href ? 'text-primary scale-110' : 'text-muted-foreground opacity-60'}`}>

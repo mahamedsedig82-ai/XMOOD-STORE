@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -85,7 +86,7 @@ export default function AdminSecurityCenter() {
                  </TableHeader>
                  <TableBody>
                     {loading ? (
-                      <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                      <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
                     ) : logs?.length === 0 ? (
                       <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold italic">لا توجد سجلات أمنية مسجلة حالياً</TableCell></TableRow>
                     ) : logs?.map((log: any) => (

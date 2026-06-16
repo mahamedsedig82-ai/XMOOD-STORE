@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -13,7 +14,6 @@ import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AdminUsersIntelligence() {
@@ -150,7 +150,7 @@ export default function AdminUsersIntelligence() {
                              </SelectContent>
                           </Select>
                           <Button size="icon" variant="ghost" className={`h-10 w-10 md:h-11 md:w-11 rounded-xl shadow-sm border ${u.communityStatus === 'banned' ? 'text-green-500 hover:bg-green-50 border-green-100' : 'text-red-500 hover:bg-red-50 border-red-100'}`} onClick={() => handleStatusChange(u.id, u.communityStatus)}>
-                             <ShieldAlert size={18} md:size={20} />
+                             <ShieldAlert size={20} />
                           </Button>
                        </div>
                     </TableCell>

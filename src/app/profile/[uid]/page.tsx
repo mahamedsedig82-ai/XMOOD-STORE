@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useParams } from "next/navigation";
@@ -44,7 +45,7 @@ export default function PublicProfilePage() {
       <Navbar />
       
       {/* Sovereign Header */}
-      <section className="relative pt-32 pb-16 md:pt-48 md:pb-20 overflow-hidden border-b bg-muted/20">
+      <section className="relative pt-32 pb-12 md:pt-48 md:pb-16 overflow-hidden border-b bg-muted/20">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <rect width="100%" height="100%" fill="url(#grid-modern)" />
@@ -99,8 +100,8 @@ export default function PublicProfilePage() {
         </div>
       </section>
 
-      {/* Navigation Hub - MOVED TO TOP */}
-      <section className="container mx-auto px-6 py-12 md:py-20 space-y-16">
+      {/* Navigation Hub - MOVED TO TOP AS REQUESTED */}
+      <section className="container mx-auto px-6 py-12 md:py-16 space-y-12">
          <div className="space-y-8">
             <div className="flex items-center gap-4 border-r-4 border-primary pr-6">
                <LayoutGrid className="text-primary" size={28} />
