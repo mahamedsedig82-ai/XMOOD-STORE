@@ -93,7 +93,9 @@ export function Navbar() {
               <SheetHeader className="p-8 border-b bg-muted/20">
                  <SheetTitle className="handwritten-logo text-4xl text-right">
                     {config?.appearance?.logoUrl ? (
-                        <img src={config.appearance.logoUrl} alt="XMOOD" className="h-10 w-auto object-contain ml-auto" />
+                        <div className="w-24 h-12 rounded-xl overflow-hidden border border-primary/10 ml-auto bg-white">
+                           <img src={config.appearance.logoUrl} alt="XMOOD" className="w-full h-full object-cover" />
+                        </div>
                     ) : (
                         config?.siteInfo?.title || "XMOOD"
                     )}
@@ -157,7 +159,9 @@ export function Navbar() {
 
         <Link href="/" className="flex items-center gap-3 group">
           {config?.appearance?.logoUrl ? (
-              <img src={config.appearance.logoUrl} alt="XMOOD Logo" className="h-8 md:h-12 w-auto object-contain transition-transform group-hover:scale-105" />
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full md:rounded-2xl overflow-hidden border-2 border-primary/20 shadow-xl bg-white transition-transform group-hover:scale-105">
+                 <img src={config.appearance.logoUrl} alt="XMOOD Logo" className="w-full h-full object-cover" />
+              </div>
           ) : (
               <div className="flex flex-col items-start leading-none text-right">
                  <span className="handwritten-logo text-xl md:text-3xl font-black transition-all group-hover:scale-105">{config?.siteInfo?.title || "XMOOD STORE"}</span>

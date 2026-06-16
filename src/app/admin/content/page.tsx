@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Save, Loader2, Globe, Layout, MessageSquare, Zap, Megaphone, 
   Palette, Share2, Info, Image as ImageIcon, Shield, Wallet, 
-  ArrowRightLeft, Settings, Type, Smartphone
+  ArrowRightLeft, Settings, Type, Smartphone, Eye, Sparkles
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,7 +30,6 @@ export default function AdminContentManager() {
     pageContent: { heroTitle: "", heroDescription: "", footerAbout: "" },
     contact: { whatsapp: "", email: "", telegram: "", facebook: "", instagram: "", youtube: "", tiktok: "", workHours: "" },
     ads: { headerBanner: "", promoText: "", isActive: false, buttonText: "اطلب الآن" },
-    // New Dynamic Text Sections
     loginPage: {
       title: "تأمين الهوية الرقمية",
       subtitle: "انضم لنخبة متداولي الخدمات الرقمية عبر نظام دخول مشفر يضمن حماية بياناتك.",
@@ -99,7 +98,7 @@ export default function AdminContentManager() {
       <Tabs defaultValue="visual" className="w-full">
         <TabsList className="bg-muted/30 p-2 rounded-[2.5rem] h-auto border mb-12 flex flex-wrap gap-2 px-4 justify-center">
           <TabsTrigger value="visual" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
-            <Palette size={16} className="text-primary" /> الهوية
+            <Palette size={16} className="text-primary" /> الهوية واللوقو
           </TabsTrigger>
           <TabsTrigger value="login" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Shield size={16} className="text-primary" /> نصوص الدخول
@@ -113,25 +112,57 @@ export default function AdminContentManager() {
           <TabsTrigger value="social" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Share2 size={16} className="text-primary" /> التواصل
           </TabsTrigger>
-          <TabsTrigger value="site" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
-            <Globe size={16} className="text-primary" /> الرئيسية
+          <TabsTrigger value="ads" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
+            <Megaphone size={16} className="text-primary" /> الإعلانات
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="visual">
            <Card className="luxury-card p-8 md:p-12 space-y-10 border-none">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                 <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو الموقع (URL)</Label>
-                    <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} className="h-16 bg-muted/40 border-none rounded-2xl font-mono text-xs" placeholder="https://..." />
-                    <p className="text-[8px] text-muted-foreground pr-4">المقاس الموصى به: 400x120 بكسل بخلفية شفافة.</p>
-                 </div>
-                 <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لون الهوية الرئيسي</Label>
-                    <div className="flex gap-4">
-                       <Input type="color" value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-16 w-24 bg-muted/40 border-none rounded-2xl cursor-pointer p-1 shadow-inner" />
-                       <Input value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-16 flex-1 bg-muted/40 border-none rounded-2xl text-center font-mono font-black" />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                 <div className="space-y-8">
+                    <div className="space-y-4">
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو الموقع (URL)</Label>
+                       <Input 
+                         value={form.appearance.logoUrl} 
+                         onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} 
+                         className="h-16 bg-muted/40 border-none rounded-2xl font-mono text-xs" 
+                         placeholder="https://..." 
+                       />
+                       <p className="text-[8px] text-muted-foreground pr-4">سيتم قص اللوقو تلقائياً وجعل حوافه دائرية انسيابية.</p>
                     </div>
+                    
+                    <div className="space-y-4">
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لون الهوية الرئيسي</Label>
+                       <div className="flex gap-4">
+                          <Input type="color" value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-16 w-24 bg-muted/40 border-none rounded-2xl cursor-pointer p-1 shadow-inner" />
+                          <Input value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-16 flex-1 bg-muted/40 border-none rounded-2xl text-center font-mono font-black" />
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="bg-muted/20 rounded-[3rem] p-10 flex flex-col items-center justify-center border-2 border-dashed border-primary/20 space-y-6">
+                    <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest">
+                       <Eye size={14} /> معاينة اللوقو الذكية
+                    </div>
+                    <div className="relative group">
+                       <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full scale-150 opacity-50 group-hover:opacity-100 transition-opacity" />
+                       <div className="relative w-48 h-48 md:w-64 md:h-24 bg-white dark:bg-zinc-950 rounded-[2rem] border-4 border-white dark:border-zinc-800 shadow-2xl overflow-hidden flex items-center justify-center">
+                          {form.appearance.logoUrl ? (
+                            <img 
+                              src={form.appearance.logoUrl} 
+                              alt="Preview" 
+                              className="w-full h-full object-cover transition-transform group-hover:scale-110" 
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center opacity-20">
+                               <ImageIcon size={40} />
+                               <span className="text-[10px] font-black mt-2">NO LOGO</span>
+                            </div>
+                          )}
+                       </div>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">Smart Cropping: Object-Cover Active</p>
                  </div>
               </div>
            </Card>
@@ -232,16 +263,51 @@ export default function AdminContentManager() {
            </Card>
         </TabsContent>
 
-        <TabsContent value="site">
+        <TabsContent value="ads">
            <Card className="luxury-card p-8 md:p-12 space-y-10 border-none">
-              <div className="grid grid-cols-1 gap-10">
-                 <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">عنوان الصفحة الرئيسية الضخم</Label>
-                    <Input value={form.pageContent.heroTitle} onChange={e => setForm({...form, pageContent: {...form.pageContent, heroTitle: e.target.value}})} className="h-20 bg-muted/40 border-none rounded-3xl font-black text-3xl gold-text px-8" />
+              <div className="flex items-center justify-between p-6 bg-primary/5 rounded-[2rem] border border-primary/20">
+                 <div className="space-y-1">
+                    <h3 className="font-black text-lg">تفعيل البانر الإعلاني</h3>
+                    <p className="text-xs text-muted-foreground">يظهر في واجهة الموقع الرئيسية فور التفعيل.</p>
                  </div>
+                 <Switch 
+                   checked={form.ads.isActive} 
+                   onCheckedChange={(val) => setForm({...form, ads: {...form.ads, isActive: val}})}
+                 />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                 <div className="space-y-6">
+                    <div className="space-y-3">
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">رابط صورة البانر (21:9)</Label>
+                       <Input value={form.ads.headerBanner} onChange={e => setForm({...form, ads: {...form.ads, headerBanner: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-mono text-xs" />
+                    </div>
+                    <div className="space-y-3">
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">النص الترويجي الضخم</Label>
+                       <Input value={form.ads.promoText} onChange={e => setForm({...form, ads: {...form.ads, promoText: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-black" />
+                    </div>
+                 </div>
+
                  <div className="space-y-4">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">الوصف التعريفي الجاذب</Label>
-                    <Textarea value={form.pageContent.heroDescription} onChange={e => setForm({...form, pageContent: {...form.pageContent, heroDescription: e.target.value}})} className="bg-muted/40 border-none rounded-[2rem] min-h-[150px] p-8 text-xl font-medium leading-relaxed" />
+                    <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest pr-4">
+                       <Eye size={14} /> معاينة الإعلان المباشرة
+                    </div>
+                    <div className="relative h-48 rounded-[2.5rem] overflow-hidden bg-muted border-2 border-dashed border-primary/20">
+                       {form.ads.headerBanner ? (
+                         <>
+                            <img src={form.ads.headerBanner} className="w-full h-full object-cover" alt="" />
+                            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-6 text-center">
+                               <p className="text-white font-black text-lg line-clamp-2">{form.ads.promoText || "نص ترويجي هنا"}</p>
+                               <Badge className="mt-4 bg-primary text-black font-black uppercase text-[8px]">AD PREVIEW</Badge>
+                            </div>
+                         </>
+                       ) : (
+                         <div className="h-full flex flex-col items-center justify-center opacity-20">
+                            <Megaphone size={40} />
+                            <span className="text-[10px] font-black mt-2 tracking-widest">UPLOAD BANNER</span>
+                         </div>
+                       )}
+                    </div>
                  </div>
               </div>
            </Card>
