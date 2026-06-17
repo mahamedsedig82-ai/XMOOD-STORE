@@ -18,13 +18,11 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     const verify = async () => {
-      // الحصول على كود العملية من الرابط (لتحقق البريد القياسي)
       const urlParams = new URLSearchParams(window.location.search);
       const oobCode = urlParams.get('oobCode');
       const mode = urlParams.get('mode');
 
       try {
-        // 1. التعامل مع التحقق القياسي (Email Verification)
         if (oobCode && mode === 'verifyEmail' && auth) {
            await applyActionCode(auth, oobCode);
            if (auth.currentUser) {
@@ -33,20 +31,19 @@ export default function VerifyEmailPage() {
            }
            setStatus('success');
            toast({ title: "تم توثيق البريد بنجاح" });
-           setTimeout(() => router.push("/wallet"), 1500);
+           // التوجيه التلقائي الفوري للمحفظة
+           setTimeout(() => router.replace("/wallet"), 1200);
            return;
         }
 
-        // 2. التعامل مع الرابط السحري (Magic Link)
         const userFromMagic = await completeMagicLinkSignIn();
         if (userFromMagic) {
           setStatus('success');
           toast({ title: "تم الدخول بنجاح" });
-          setTimeout(() => router.push("/wallet"), 1500);
+          setTimeout(() => router.replace("/wallet"), 1200);
           return;
         }
 
-        // 3. التحقق إذا كان المستخدم مسجلاً بالفعل وتم تفعيل بريده
         if (auth) {
           onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
@@ -54,15 +51,14 @@ export default function VerifyEmailPage() {
               if (firebaseUser.emailVerified) {
                 await syncUserProfile(firebaseUser);
                 setStatus('success');
-                setTimeout(() => router.push("/wallet"), 1500);
+                setTimeout(() => router.replace("/wallet"), 1200);
               }
             }
           });
         }
       } catch (e: any) {
-        console.error("Verification Error:", e);
         setStatus('error');
-        toast({ variant: "destructive", title: "خطأ في التوثيق", description: e.message });
+        toast({ variant: "destructive", title: "خطأ في التوثيق", description: "الرابط قديم أو غير صالح." });
       }
     };
     verify();
@@ -81,7 +77,7 @@ export default function VerifyEmailPage() {
             </div>
             <div className="space-y-3">
               <h2 className="text-3xl md:text-4xl font-black gold-text uppercase">جاري التوثيق السيادي</h2>
-              <p className="text-muted-foreground font-medium text-sm md:text-base">نحن نتحقق من هويتك الرقمية الآن لتأمين وصولك للمحفظة...</p>
+              <p className="text-muted-foreground font-medium text-sm md:text-base">يتم الآن تأمين وصولك المباشر للمحفظة الرقمية...</p>
             </div>
           </div>
         )}
@@ -92,13 +88,8 @@ export default function VerifyEmailPage() {
                <ShieldCheck className="w-14 h-14" />
             </div>
             <div className="space-y-3">
-              <h2 className="text-4xl md:text-5xl font-black gold-text">تم التوثيق بنجاح!</h2>
-              <p className="text-muted-foreground font-medium">مرحباً بك في مجتمع XMOOD النُخبوي. يتم توجيهك للمحفظة السيادية الآن...</p>
-            </div>
-            <div className="pt-6">
-               <Button asChild className="royal-button w-full h-16 text-lg shadow-2xl">
-                  <a href="/wallet"><Wallet className="ml-3" size={20} /> فتح المحفظة فوراً</a>
-               </Button>
+              <h2 className="text-4xl md:text-5xl font-black gold-text">تم التوثيق!</h2>
+              <p className="text-muted-foreground font-medium">جاري توجيهك لبيئة التداول الخاصة بك خلال لحظات...</p>
             </div>
           </div>
         )}
@@ -110,7 +101,7 @@ export default function VerifyEmailPage() {
             </div>
             <div className="space-y-3">
               <h2 className="text-3xl md:text-4xl font-black text-red-500">فشل في التوثيق</h2>
-              <p className="text-muted-foreground font-medium">عذراً، هذا الرابط قديم، تم استخدامه، أو انتهت صلاحيته الأمنية.</p>
+              <p className="text-muted-foreground font-medium">عذراً، الرابط غير صالح أو انتهت صلاحيته الأمنية.</p>
             </div>
             <div className="pt-8 flex flex-col gap-4">
                <Button asChild className="royal-button w-full h-16 text-lg">
@@ -126,4 +117,3 @@ export default function VerifyEmailPage() {
     </div>
   );
 }
-    

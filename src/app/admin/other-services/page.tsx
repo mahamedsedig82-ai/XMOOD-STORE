@@ -16,7 +16,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatSDG, formatUSD } from "@/lib/currency";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function AdminOtherServices() {
   const { profile } = useUser();
@@ -127,7 +126,7 @@ export default function AdminOtherServices() {
     setIsProcessing(true);
     deleteDoc(serviceRef)
       .then(() => {
-        toast({ title: "تم حذف الخدمة من السوق بنجاح" });
+        toast({ title: "تم حذف الخدمة بنجاح" });
       })
       .catch(async () => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: serviceRef.path, operation: 'delete' }));
@@ -201,7 +200,6 @@ export default function AdminOtherServices() {
         </Dialog>
       </header>
 
-      {/* التحول لنظام البطاقات لحل مشكلة الحذف والنصوص العملاقة */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {loading ? (
           <div className="col-span-full py-40 text-center"><Loader2 className="animate-spin mx-auto text-primary" size={60} /></div>
@@ -232,8 +230,8 @@ export default function AdminOtherServices() {
                 </div>
              </CardContent>
              
-             {/* شريط العمليات: زر الحذف خارج نطاق الصورة والنص تماماً */}
-             <div className="p-4 bg-muted/20 border-t flex gap-3">
+             {/* زر الحذف والتعديل في شريط مستقل تماماً بالأسفل */}
+             <div className="p-4 bg-muted/20 border-t flex gap-3 mt-auto">
                 <Button 
                   onClick={() => startEdit(s)}
                   variant="outline" 
@@ -253,14 +251,6 @@ export default function AdminOtherServices() {
           </Card>
         ))}
       </div>
-
-      <div className="p-8 bg-primary/5 border border-primary/10 rounded-[2.5rem] flex items-center gap-6 animate-fade-up">
-         <AlertCircle className="text-primary shrink-0" size={32} />
-         <p className="text-sm text-muted-foreground leading-relaxed font-medium">
-            <b>تنبيه أمني:</b> تم تفعيل نظام "البطاقات المزدوجة" لضمان وصولك لزر الحذف دائماً مهما كان طول اسم الخدمة. زر الحذف الأحمر الآن يقع في أسفل كل بطاقة بشكل مستقل تماماً.
-         </p>
-      </div>
     </div>
   );
 }
-    

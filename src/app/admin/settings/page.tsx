@@ -22,54 +22,13 @@ export default function AdminSettingsUniversalControl() {
   const { data: config, loading } = useDoc(settingsRef);
   const [isSaving, setIsSaving] = useState(false);
   
-  const BRAND_IMAGE = "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png";
-
   const [form, setForm] = useState({
-    appearance: {
-      primaryColor: "#d4af37",
-      logoUrl: BRAND_IMAGE,
-      faviconUrl: BRAND_IMAGE,
-    },
-    siteInfo: {
-      title: "XMOOD STORE",
-      subtitle: "مركز الخدمات الرقمية المعتمدة",
-      description: "منصة متخصصة في الخدمات الرقمية والألعاب.",
-      copyright: "© 2025 XMOOD STORE. ALL RIGHTS RESERVED.",
-      usdRate: "5400"
-    },
-    navLabels: {
-      home: "الرئيسية",
-      store: "المتجر",
-      services: "سوق الخدمات",
-      gallery: "معرض الإبداع",
-      agents: "الوكلاء"
-    },
-    loginPage: {
-      title: "تأمين الهوية الرقمية",
-      subtitle: "انضم لنخبة متداولي الخدمات الرقمية عبر نظام دخول مشفر يضمن حماية بياناتك.",
-      cardTitle: "بوابة الوصول المعتمدة",
-      cardSubtitle: "Identity & Trust Management"
-    },
-    walletPage: {
-      title: "المحفظة السيادية",
-      uidTitle: "بروتوكول الإيداع",
-      uidDesc: "استخدم معرفك (UID) الموحد للشحن عبر الوكلاء المعتمدين.",
-      ledgerTitle: "سجل التدفقات المالية"
-    },
-    gallerySettings: {
-      title: "معرض",
-      subtitle: "استلهم من أرقى التصاميم والهويات البصرية التي نفذتها أنامل خبراء الإبداع.",
-      badge: "بورتفوليو نخبة المصممين والمبدعين",
-      buttonText: "طلب تصميم مشابه"
-    },
-    contact: {
-      email: "support@xmood.com",
-      whatsapp: "",
-      telegram: "",
-      facebook: "",
-      instagram: "",
-      youtube: ""
-    }
+    appearance: { primaryColor: "#d4af37", logoUrl: "", faviconUrl: "" },
+    siteInfo: { title: "XMOOD STORE", subtitle: "مركز الخدمات الرقمية المعتمدة", usdRate: "5400" },
+    navLabels: { home: "الرئيسية", store: "المتجر", services: "سوق الخدمات", gallery: "معرض الإبداع", agents: "الوكلاء" },
+    loginPage: { title: "تأمين الهوية الرقمية", subtitle: "انضم لنخبة متداولي الخدمات الرقمية عبر نظام دخول مشفر يضمن حماية بياناتك.", cardTitle: "بوابة الوصول المعتمدة", cardSubtitle: "Identity & Trust Management" },
+    walletPage: { title: "المحفظة السيادية", uidTitle: "بروتوكول الإيداع", uidDesc: "استخدم معرفك (UID) الموحد للشحن عبر الوكلاء المعتمدين.", ledgerTitle: "سجل التدفقات المالية" },
+    gallerySettings: { title: "معرض الإبداع", subtitle: "استلهم من أرقى التصاميم والهويات البصرية التي نفذتها أنامل خبراء الإبداع.", badge: "بورتفوليو نخبة المصممين والمبدعين", buttonText: "طلب تصميم مشابه" }
   });
 
   useEffect(() => {
@@ -78,33 +37,26 @@ export default function AdminSettingsUniversalControl() {
         ...prev,
         ...config,
         appearance: { ...prev.appearance, ...(config.appearance || {}) },
-        siteInfo: { ...prev.siteInfo, ...(config.siteInfo || {}) },
         navLabels: { ...prev.navLabels, ...(config.navLabels || {}) },
         loginPage: { ...prev.loginPage, ...(config.loginPage || {}) },
         walletPage: { ...prev.walletPage, ...(config.walletPage || {}) },
-        gallerySettings: { ...prev.gallerySettings, ...(config.gallerySettings || {}) },
-        contact: { ...prev.contact, ...(config.contact || {}) }
+        gallerySettings: { ...prev.gallerySettings, ...(config.gallerySettings || {}) }
       }));
     }
   }, [config]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!db) return;
     setIsSaving(true);
-    setDoc(settingsRef, {
-      ...form,
-      updatedAt: serverTimestamp(),
-    }, { merge: true }).then(() => {
-      toast({ title: "تم تثبيت الإعدادات الشاملة" });
-    }).finally(() => setIsSaving(false));
+    try {
+      await setDoc(settingsRef, { ...form, updatedAt: serverTimestamp() }, { merge: true });
+      toast({ title: "تم تثبيت الإعدادات الشاملة بنجاح" });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center p-40 gap-4">
-      <Loader2 className="w-12 h-12 text-primary animate-spin" />
-      <p className="text-xs font-bold uppercase tracking-widest gold-text">جاري تحميل مركز التحكم الشامل...</p>
-    </div>
-  );
+  if (loading) return <div className="flex flex-col items-center justify-center p-40 gap-4"><Loader2 className="w-12 h-12 text-primary animate-spin" /><p className="text-xs font-bold uppercase tracking-widest gold-text">جاري التحميل...</p></div>;
 
   return (
     <div className="space-y-12 animate-fade-in pb-20" dir="rtl">
@@ -114,89 +66,68 @@ export default function AdminSettingsUniversalControl() {
           <p className="text-muted-foreground mt-3 font-bold uppercase tracking-widest text-[10px]">Universal Content & Strings Controller</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg">
-          {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ كافة التعديلات</>}
+          {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ التعديلات</>}
         </Button>
       </header>
 
       <Tabs defaultValue="nav" className="w-full">
         <TabsList className="bg-muted/50 p-2 rounded-[2rem] h-auto border mb-12 flex flex-wrap gap-2 justify-center">
-          <TabsTrigger value="nav" className="rounded-2xl font-bold text-[9px] uppercase tracking-widest py-4 gap-2">
-            <LayoutDashboard size={14} /> نصوص القوائم
-          </TabsTrigger>
-          <TabsTrigger value="auth" className="rounded-2xl font-bold text-[9px] uppercase tracking-widest py-4 gap-2">
-            <KeyRound size={14} /> صفحة الدخول
-          </TabsTrigger>
-          <TabsTrigger value="wallet" className="rounded-2xl font-bold text-[9px] uppercase tracking-widest py-4 gap-2">
-            <Wallet size={14} /> نصوص المحفظة
-          </TabsTrigger>
-          <TabsTrigger value="gallery" className="rounded-2xl font-bold text-[9px] uppercase tracking-widest py-4 gap-2">
-            <PaletteIcon size={14} /> نصوص المعرض
-          </TabsTrigger>
-          <TabsTrigger value="visual" className="rounded-2xl font-bold text-[9px] uppercase tracking-widest py-4 gap-2">
-            <Palette size={14} /> الهوية البصرية
-          </TabsTrigger>
+          <TabsTrigger value="nav" className="rounded-2xl font-bold text-[9px] uppercase py-4 px-6 gap-2">نصوص القوائم</TabsTrigger>
+          <TabsTrigger value="auth" className="rounded-2xl font-bold text-[9px] uppercase py-4 px-6 gap-2">بوابة الدخول</TabsTrigger>
+          <TabsTrigger value="wallet" className="rounded-2xl font-bold text-[9px] uppercase py-4 px-6 gap-2">المحفظة</TabsTrigger>
+          <TabsTrigger value="gallery" className="rounded-2xl font-bold text-[9px] uppercase py-4 px-6 gap-2">المعرض</TabsTrigger>
+          <TabsTrigger value="visual" className="rounded-2xl font-bold text-[9px] uppercase py-4 px-6 gap-2">الهوية</TabsTrigger>
         </TabsList>
 
         <TabsContent value="nav">
-           <Card className="luxury-card p-8 md:p-12 space-y-10 border-none bg-primary/5">
+           <Card className="luxury-card p-10 space-y-10 bg-primary/5">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">الرئيسية</Label><Input value={form.navLabels.home} onChange={e => setForm({...form, navLabels: {...form.navLabels, home: e.target.value}})} className="bg-background" /></div>
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">المتجر</Label><Input value={form.navLabels.store} onChange={e => setForm({...form, navLabels: {...form.navLabels, store: e.target.value}})} className="bg-background" /></div>
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">الخدمات</Label><Input value={form.navLabels.services} onChange={e => setForm({...form, navLabels: {...form.navLabels, services: e.target.value}})} className="bg-background" /></div>
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">المعرض</Label><Input value={form.navLabels.gallery} onChange={e => setForm({...form, navLabels: {...form.navLabels, gallery: e.target.value}})} className="bg-background" /></div>
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">الوكلاء</Label><Input value={form.navLabels.agents} onChange={e => setForm({...form, navLabels: {...form.navLabels, agents: e.target.value}})} className="bg-background" /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">الرئيسية</Label><Input value={form.navLabels.home} onChange={e => setForm({...form, navLabels: {...form.navLabels, home: e.target.value}})} /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">المتجر</Label><Input value={form.navLabels.store} onChange={e => setForm({...form, navLabels: {...form.navLabels, store: e.target.value}})} /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">سوق الخدمات</Label><Input value={form.navLabels.services} onChange={e => setForm({...form, navLabels: {...form.navLabels, services: e.target.value}})} /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">المعرض</Label><Input value={form.navLabels.gallery} onChange={e => setForm({...form, navLabels: {...form.navLabels, gallery: e.target.value}})} /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">الوكلاء</Label><Input value={form.navLabels.agents} onChange={e => setForm({...form, navLabels: {...form.navLabels, agents: e.target.value}})} /></div>
               </div>
            </Card>
         </TabsContent>
 
         <TabsContent value="auth">
-           <Card className="luxury-card p-8 md:p-12 space-y-10 border-none bg-primary/5">
+           <Card className="luxury-card p-10 space-y-6 bg-primary/5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">العنوان الرئيسي</Label><Input value={form.loginPage.title} onChange={e => setForm({...form, loginPage: {...form.loginPage, title: e.target.value}})} className="bg-background" /></div>
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">عنوان بطاقة الدخول</Label><Input value={form.loginPage.cardTitle} onChange={e => setForm({...form, loginPage: {...form.loginPage, cardTitle: e.target.value}})} className="bg-background" /></div>
-                 <div className="col-span-full space-y-2"><Label className="text-[10px] font-black uppercase text-primary">الوصف التفصيلي</Label><Textarea value={form.loginPage.subtitle} onChange={e => setForm({...form, loginPage: {...form.loginPage, subtitle: e.target.value}})} className="bg-background min-h-[100px]" /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">العنوان الرئيسي</Label><Input value={form.loginPage.title} onChange={e => setForm({...form, loginPage: {...form.loginPage, title: e.target.value}})} /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">عنوان البطاقة</Label><Input value={form.loginPage.cardTitle} onChange={e => setForm({...form, loginPage: {...form.loginPage, cardTitle: e.target.value}})} /></div>
+                 <div className="col-span-full space-y-2"><Label className="text-[10px] font-black uppercase text-primary">الوصف</Label><Textarea value={form.loginPage.subtitle} onChange={e => setForm({...form, loginPage: {...form.loginPage, subtitle: e.target.value}})} /></div>
               </div>
            </Card>
         </TabsContent>
 
         <TabsContent value="wallet">
-           <Card className="luxury-card p-8 md:p-12 space-y-10 border-none bg-primary/5">
+           <Card className="luxury-card p-10 space-y-6 bg-primary/5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">عنوان المحفظة</Label><Input value={form.walletPage.title} onChange={e => setForm({...form, walletPage: {...form.walletPage, title: e.target.value}})} className="bg-background" /></div>
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">عنوان قسم الـ UID</Label><Input value={form.walletPage.uidTitle} onChange={e => setForm({...form, walletPage: {...form.walletPage, uidTitle: e.target.value}})} className="bg-background" /></div>
-                 <div className="col-span-full space-y-2"><Label className="text-[10px] font-black uppercase text-primary">شرح نظام الإيداع</Label><Textarea value={form.walletPage.uidDesc} onChange={e => setForm({...form, walletPage: {...form.walletPage, uidDesc: e.target.value}})} className="bg-background min-h-[100px]" /></div>
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">عنوان سجل التدفقات</Label><Input value={form.walletPage.ledgerTitle} onChange={e => setForm({...form, walletPage: {...form.walletPage, ledgerTitle: e.target.value}})} className="bg-background" /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">عنوان المحفظة</Label><Input value={form.walletPage.title} onChange={e => setForm({...form, walletPage: {...form.walletPage, title: e.target.value}})} /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">عنوان الـ UID</Label><Input value={form.walletPage.uidTitle} onChange={e => setForm({...form, walletPage: {...form.walletPage, uidTitle: e.target.value}})} /></div>
+                 <div className="col-span-full space-y-2"><Label className="text-[10px] font-black uppercase text-primary">شرح نظام الإيداع</Label><Textarea value={form.walletPage.uidDesc} onChange={e => setForm({...form, walletPage: {...form.walletPage, uidDesc: e.target.value}})} /></div>
               </div>
            </Card>
         </TabsContent>
 
         <TabsContent value="gallery">
-           <Card className="luxury-card p-8 md:p-12 space-y-10 border-none bg-primary/5">
+           <Card className="luxury-card p-10 space-y-6 bg-primary/5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">العنوان الرئيسي</Label><Input value={form.gallerySettings.title} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, title: e.target.value}})} className="bg-background" /></div>
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">شارة المعرض (Badge)</Label><Input value={form.gallerySettings.badge} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, badge: e.target.value}})} className="bg-background" /></div>
-                 <div className="col-span-full space-y-2"><Label className="text-[10px] font-black uppercase text-primary">الوصف التعريفي</Label><Textarea value={form.gallerySettings.subtitle} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, subtitle: e.target.value}})} className="bg-background min-h-[100px]" /></div>
-                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">نص زر الطلب</Label><Input value={form.gallerySettings.buttonText} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, buttonText: e.target.value}})} className="bg-background" /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">عنوان المعرض</Label><Input value={form.gallerySettings.title} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, title: e.target.value}})} /></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-primary">نص الزر</Label><Input value={form.gallerySettings.buttonText} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, buttonText: e.target.value}})} /></div>
+                 <div className="col-span-full space-y-2"><Label className="text-[10px] font-black uppercase text-primary">الوصف</Label><Textarea value={form.gallerySettings.subtitle} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, subtitle: e.target.value}})} /></div>
               </div>
            </Card>
         </TabsContent>
 
         <TabsContent value="visual">
-          <Card className="luxury-card p-8 md:p-12 space-y-10 border-none bg-primary/5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div className="space-y-4">
-                <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">رابط الشعار الرسمي</Label>
-                <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} className="h-14 bg-background border-none rounded-xl" />
+           <Card className="luxury-card p-10 space-y-8 bg-primary/5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                 <div className="space-y-4"><Label className="text-[10px] font-black uppercase">رابط الشعار</Label><Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} /></div>
+                 <div className="space-y-4"><Label className="text-[10px] font-black uppercase">لون الهوية</Label><div className="flex gap-4"><Input type="color" value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="w-24 h-14" /><Input value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-14 font-mono font-bold" /></div></div>
               </div>
-              <div className="space-y-4">
-                <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لون الهوية الرئيسي</Label>
-                <div className="flex gap-4">
-                  <Input type="color" value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-14 w-24 bg-background border-none rounded-xl cursor-pointer" />
-                  <Input value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-14 flex-1 bg-background border-none rounded-xl font-mono font-bold" />
-                </div>
-              </div>
-            </div>
-          </Card>
+           </Card>
         </TabsContent>
       </Tabs>
     </div>

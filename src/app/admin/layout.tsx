@@ -3,7 +3,7 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Palette, MailCheck, History, Truck, Loader2, Settings, Image as ImageIcon, Zap
+  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Settings, Image as ImageIcon, Zap, Loader2
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -25,7 +25,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsMounted(true);
   }, []);
 
-  // تأمين كافة الخانات الحيوية في القائمة الجانبية وتوسيع الرؤية للمدراء
   const allSections = useMemo(() => [
     { label: "نظرة عامة", icon: BarChart3, href: "/admin", roles: ['owner', 'admin', 'gm'] },
     { label: "المخزون والمنتجات", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },

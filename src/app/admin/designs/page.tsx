@@ -31,50 +31,23 @@ export default function DesignerPortfolioAdmin() {
 
   const { data: galleryItems, loading } = useCollection(galleryQuery);
 
-  const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
-          let width = img.width;
-          let height = img.height;
-          if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
-          else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx?.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL("image/jpeg", 0.6));
-        };
-      };
-      reader.onerror = reject;
-    });
-  };
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setIsProcessing(true);
-      try {
-        const b64 = await compressImage(file);
-        setNewDesign({ ...newDesign, imageUrl: b64 });
-        toast({ title: "تم معالجة الصورة بنجاح" });
-      } catch (err) {
-        toast({ variant: "destructive", title: "فشل معالجة الصورة" });
-      } finally {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        setNewDesign({ ...newDesign, imageUrl: event.target?.result as string });
         setIsProcessing(false);
-      }
+        toast({ title: "تم معالجة الصورة بنجاح" });
+      };
     }
   };
 
   const handleAddToGallery = async () => {
     if (!newDesign.title || !newDesign.imageUrl || !db || !user) {
-      toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إدخال العنوان ورابط الصورة." });
+      toast({ variant: "destructive", title: "بيانات ناقصة" });
       return;
     }
     setIsProcessing(true);
@@ -88,36 +61,18 @@ export default function DesignerPortfolioAdmin() {
       });
       setIsGalleryOpen(false);
       setNewDesign({ title: "", description: "", imageUrl: "", category: "Logo" });
-      toast({ title: "تمت الإضافة", description: "التصميم الآن متاح في المعرض العام للعملاء." });
-    } catch (e) {
-      toast({ variant: "destructive", title: "خطأ في النشر" });
+      toast({ title: "تم النشر في المعرض" });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleDeleteItem = async (id: string, designerId: string) => {
-    if (profile?.role !== 'owner' && profile?.role !== 'admin' && designerId !== user?.uid) {
-      toast({ variant: "destructive", title: "غير مصرح", description: "يمكنك حذف أعمالك الخاصة فقط." });
-      return;
-    }
+  const handleDeleteItem = async (id: string) => {
     if (!confirm("هل تريد حذف هذا التصميم نهائياً من المعرض؟")) return;
+    setIsProcessing(true);
     try {
       await deleteDoc(doc(db, "gallery", id));
       toast({ title: "تم الحذف بنجاح" });
-    } catch (e) {
-      toast({ variant: "destructive", title: "خطأ في الحذف" });
-    }
-  };
-
-  const handleUpdatePhone = async () => {
-    if (!user || !db) return;
-    setIsProcessing(true);
-    try {
-      await updateDoc(doc(db, "users", user.uid), { phoneNumber: designerPhone });
-      toast({ title: "تم تحديث الرقم", description: "سيتم توجيه طلبات التواصل لهذا الرقم." });
-    } catch (e) {
-      toast({ variant: "destructive", title: "خطأ" });
     } finally {
       setIsProcessing(false);
     }
@@ -141,114 +96,51 @@ export default function DesignerPortfolioAdmin() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-6 mt-8">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3">عنوان العمل</label>
-                <Input value={newDesign.title} onChange={e => setNewDesign({...newDesign, title: e.target.value})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
-              </div>
+              <div className="space-y-2"><label className="text-[10px] font-bold text-primary uppercase pr-3">عنوان العمل</label><Input value={newDesign.title} onChange={e => setNewDesign({...newDesign, title: e.target.value})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" /></div>
               <div className="space-y-4">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3">صورة العمل الفني</label>
-                <Tabs defaultValue="upload" className="w-full">
-                   <TabsList className="bg-zinc-900 p-1 rounded-xl mb-4">
-                      <TabsTrigger value="upload" className="flex-1 gap-2"><Upload size={14} /> رفع من الهاتف</TabsTrigger>
-                      <TabsTrigger value="url" className="flex-1 gap-2"><LinkIcon size={14} /> رابط مباشر</TabsTrigger>
-                   </TabsList>
-                   <TabsContent value="upload">
-                      <div 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="h-14 bg-zinc-900 border-2 border-dashed border-primary/20 rounded-xl flex items-center justify-center cursor-pointer hover:bg-primary/5 transition-all"
-                      >
-                         <span className="text-[10px] font-bold text-primary uppercase flex items-center gap-2">
-                            <Upload size={14} /> اختر من معرض الصور
-                         </span>
-                         <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
-                      </div>
-                   </TabsContent>
-                   <TabsContent value="url">
-                      <Input value={newDesign.imageUrl} onChange={e => setNewDesign({...newDesign, imageUrl: e.target.value})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-mono text-xs" placeholder="https://..." />
-                   </TabsContent>
-                </Tabs>
-                {newDesign.imageUrl && (
-                   <div className="mt-4 rounded-xl overflow-hidden aspect-video border border-primary/20">
-                      <img src={newDesign.imageUrl} className="w-full h-full object-cover" alt="Preview" />
-                   </div>
-                )}
+                <label className="text-[10px] font-bold text-primary uppercase pr-3">صورة العمل</label>
+                <div onClick={() => fileInputRef.current?.click()} className="h-24 bg-zinc-900 border-2 border-dashed border-primary/20 rounded-xl flex items-center justify-center cursor-pointer hover:bg-primary/5 transition-all">
+                  {newDesign.imageUrl ? <img src={newDesign.imageUrl} className="h-full w-full object-cover rounded-xl" alt="" /> : <Upload className="text-primary" />}
+                  <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3">الفئة (شعار، بنر، موشن)</label>
-                <Input value={newDesign.category} onChange={e => setNewDesign({...newDesign, category: e.target.value})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3">وصف العمل وتفاصيل التنفيذ</label>
-                <Textarea value={newDesign.description} onChange={e => setNewDesign({...newDesign, description: e.target.value})} className="bg-zinc-900 border-none rounded-2xl min-h-[120px] p-4" />
-              </div>
+              <div className="space-y-2"><label className="text-[10px] font-bold text-primary uppercase pr-3">الفئة</label><Input value={newDesign.category} onChange={e => setNewDesign({...newDesign, category: e.target.value})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" /></div>
+              <div className="space-y-2"><label className="text-[10px] font-bold text-primary uppercase pr-3">الوصف</label><Textarea value={newDesign.description} onChange={e => setNewDesign({...newDesign, description: e.target.value})} className="bg-zinc-900 border-none rounded-2xl min-h-[100px] p-4" /></div>
             </div>
-            <DialogFooter className="mt-10">
-              <Button onClick={handleAddToGallery} disabled={isProcessing} className="royal-button w-full h-16 text-lg">
-                {isProcessing ? <Loader2 className="animate-spin" /> : "نشر العمل في المعرض العام"}
-              </Button>
-            </DialogFooter>
+            <DialogFooter className="mt-10"><Button onClick={handleAddToGallery} disabled={isProcessing} className="royal-button w-full h-16">{isProcessing ? <Loader2 className="animate-spin" /> : "نشر العمل في المعرض"}</Button></DialogFooter>
           </DialogContent>
         </Dialog>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <Card className="lg:col-span-1 luxury-card border-none p-10 bg-primary/5">
-           <h3 className="text-xl font-bold gold-text mb-8 flex items-center gap-3"><Smartphone size={20} /> تواصل العملاء</h3>
-           <p className="text-xs text-zinc-500 mb-8 leading-relaxed font-medium">الرقم المكتوب هنا هو الذي سيظهر للعملاء عند الضغط على "طلب تصميم مشابه" في المعرض العام.</p>
-           <div className="space-y-6">
-              <div className="space-y-2">
-                 <label className="text-[9px] font-black text-primary uppercase pr-2">رقم واتساب المصمم (دولي)</label>
-                 <Input value={designerPhone} onChange={e => setDesignerPhone(e.target.value)} placeholder="+966..." className="h-14 bg-black border-primary/20 rounded-xl px-6 text-center font-black tracking-widest text-primary" />
-              </div>
-              <Button onClick={handleUpdatePhone} disabled={isProcessing} className="w-full h-14 rounded-xl border border-primary/40 bg-primary/10 text-primary font-bold uppercase text-[10px] tracking-widest gap-2">
-                {isProcessing ? <Loader2 className="animate-spin" /> : <><Save size={16} /> تثبيت بيانات التواصل</>}
-              </Button>
-           </div>
-        </Card>
-
-        <Card className="lg:col-span-2 luxury-card border-none bg-zinc-950/60 overflow-hidden">
-           <CardHeader className="p-10 border-b border-white/5 bg-white/5 flex flex-row items-center justify-between">
-              <CardTitle className="text-xl font-bold flex items-center gap-4"><Palette className="text-primary" /> قائمة أعمالي المنشورة</CardTitle>
-              <Badge variant="outline" className="border-white/10 text-zinc-500 text-[8px] font-black uppercase">{galleryItems?.filter(i => i.designerId === user?.uid || profile?.role === 'owner' || profile?.role === 'admin').length || 0} WORK(S)</Badge>
-           </CardHeader>
-           
-           {/* تحويل العرض لنظام البطاقات لضمان خروج زر الحذف من الصورة */}
-           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[650px] overflow-y-auto custom-scrollbar">
-              {galleryItems?.filter(i => i.designerId === user?.uid || profile?.role === 'owner' || profile?.role === 'admin').map((item: any) => (
-                <Card key={item.id} className="luxury-card border-none bg-zinc-900/60 overflow-hidden group flex flex-col hover:border-primary/20 transition-all">
-                   <div className="relative aspect-video overflow-hidden">
-                      <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
-                      <Badge className="absolute top-3 right-3 bg-primary text-black font-black text-[7px] uppercase px-3 py-1 rounded-full shadow-lg">{item.category}</Badge>
-                   </div>
-                   <CardContent className="p-5 flex-1 space-y-2">
-                      <h4 className="font-black text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">{item.title}</h4>
-                      <p className="text-[9px] text-zinc-500 font-bold uppercase flex items-center gap-2">
-                         <Palette size={10} className="text-primary" /> {item.designerName}
-                      </p>
-                      <p className="text-[10px] text-zinc-400 line-clamp-2 mt-2 leading-relaxed">{item.description}</p>
-                   </CardContent>
-                   
-                   {/* زر الحذف خارج الصورة والنص تماماً في منطقة مستقلة */}
-                   <div className="p-4 bg-black/40 border-t border-white/5 flex gap-2">
-                      <Button 
-                        onClick={() => handleDeleteItem(item.id, item.designerId)} 
-                        disabled={isProcessing}
-                        variant="destructive" 
-                        className="w-full h-11 rounded-xl gap-3 font-black text-[10px] uppercase tracking-widest shadow-lg hover:shadow-red-500/20"
-                      >
-                         {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <><Trash2 size={16} /> حذف العمل الفني</>}
-                      </Button>
-                   </div>
-                </Card>
-              ))}
-              {galleryItems?.length === 0 && (
-                <div className="col-span-full py-40 text-center opacity-20">
-                   <Palette size={80} className="mx-auto mb-6" />
-                   <p className="font-bold uppercase tracking-widest">لا توجد أعمال في المعرض حالياً</p>
-                </div>
-              )}
-           </div>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {loading ? (
+          <div className="col-span-full py-40 text-center"><Loader2 className="animate-spin mx-auto text-primary" size={60} /></div>
+        ) : galleryItems?.length === 0 ? (
+          <div className="col-span-full py-40 text-center luxury-card border-dashed opacity-30"><Palette size={80} className="mx-auto mb-6" /><p className="font-bold uppercase tracking-widest">لا توجد أعمال في المعرض حالياً</p></div>
+        ) : galleryItems?.map((item: any) => (
+          <Card key={item.id} className="luxury-card border-none bg-zinc-900/60 overflow-hidden flex flex-col group hover:border-primary/20 transition-all">
+             <div className="relative aspect-video overflow-hidden">
+                <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                <Badge className="absolute top-3 right-3 bg-primary text-black font-black text-[7px] uppercase px-3 py-1 rounded-full shadow-lg">{item.category}</Badge>
+             </div>
+             <CardContent className="p-5 flex-1 space-y-2">
+                <h4 className="font-black text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">{item.title}</h4>
+                <p className="text-[10px] text-zinc-400 line-clamp-2 leading-relaxed">{item.description}</p>
+             </CardContent>
+             
+             {/* زر الحذف في شريط مستقل تماماً بالأسفل لضمان الوصول إليه دائماً */}
+             <div className="p-4 bg-black/40 border-t border-white/5 mt-auto">
+                <Button 
+                  onClick={() => handleDeleteItem(item.id)} 
+                  disabled={isProcessing}
+                  variant="destructive" 
+                  className="w-full h-11 rounded-xl gap-3 font-black text-[10px] uppercase tracking-widest shadow-lg hover:shadow-red-500/20"
+                >
+                   {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <><Trash2 size={16} /> حذف العمل الفني</>}
+                </Button>
+             </div>
+          </Card>
+        ))}
       </div>
     </div>
   );
