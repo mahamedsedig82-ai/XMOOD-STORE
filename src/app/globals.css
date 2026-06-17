@@ -64,10 +64,6 @@
   @apply rounded-[1.5rem] md:rounded-[2rem] border bg-card text-card-foreground shadow-sm transition-all duration-500 hover:shadow-xl hover:border-primary/30 overflow-hidden relative;
 }
 
-.luxury-image {
-  @apply rounded-[1.25rem] md:rounded-[2.5rem] border-2 border-primary/10 shadow-lg object-cover overflow-hidden transition-all duration-500 hover:shadow-primary/20 hover:border-primary/30;
-}
-
 .gold-text {
   @apply bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 bg-clip-text text-transparent font-black;
 }
@@ -83,13 +79,9 @@
   @apply bg-primary text-primary-foreground font-black rounded-[1.25rem] md:rounded-[2rem] px-6 py-3 md:px-8 md:py-6 shadow-xl hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-sm uppercase tracking-[0.15em] flex items-center justify-center gap-2 md:gap-4 border-none disabled:opacity-50 disabled:grayscale cursor-pointer;
 }
 
-.glass-morphism {
-  @apply bg-background/60 backdrop-blur-xl border border-white/10 dark:border-white/5;
-}
-
-/* Custom Styled Inputs - Prominent Borders */
+/* Custom Styled Inputs - Highly Prominent Borders */
 input, textarea, select {
-  @apply border-2 border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all !important;
+  @apply border-2 border-primary/30 bg-background px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-bold text-foreground outline-none !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -123,21 +115,3 @@ input, textarea, select {
 
 .animate-fade-up { animation: fadeUp 0.5s ease-out forwards; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-.smooth-scroll {
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  overflow-y: auto;
-}
-
-[data-sidebar="sidebar"] {
-  @apply z-[70];
-}
-
-main {
-  @apply pt-24 md:pt-28;
-}
-
-.will-change-scroll {
-  will-change: scroll-position;
-}
