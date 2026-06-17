@@ -16,7 +16,6 @@ import {
   Camera, 
   CheckCircle,
   Mail,
-  Edit2,
   Upload,
   Eye
 } from "lucide-react";
@@ -80,7 +79,7 @@ export default function ProfessionalWalletPage() {
           let width = img.width;
           let height = img.height;
           if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
-          else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+          else { if (height > 1200) { width *= 1200 / height; height = 1200; } }
           canvas.width = width; canvas.height = height;
           const ctx = canvas.getContext("2d");
           ctx?.drawImage(img, 0, 0, width, height);
