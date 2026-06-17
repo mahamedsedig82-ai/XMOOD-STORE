@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -23,27 +22,31 @@ export default function VerifyEmailPage() {
       const mode = urlParams.get('mode');
 
       try {
+        // 1. التعامل مع رابط توثيق البريد القياسي
         if (oobCode && mode === 'verifyEmail' && auth) {
            await applyActionCode(auth, oobCode);
+           // إعادة تحميل المستخدم للتأكد من تحديث حالة emailVerified
            if (auth.currentUser) {
               await auth.currentUser.reload();
               await syncUserProfile(auth.currentUser);
            }
            setStatus('success');
-           toast({ title: "تم توثيق البريد بنجاح" });
-           // التوجيه التلقائي الفوري للمحفظة
-           setTimeout(() => router.replace("/wallet"), 1200);
+           toast({ title: "تم توثيق الهوية بنجاح" });
+           // توجيه تلقائي فوري للمحفظة
+           setTimeout(() => router.replace("/wallet"), 1500);
            return;
         }
 
+        // 2. التعامل مع الرابط السحري (Magic Link)
         const userFromMagic = await completeMagicLinkSignIn();
         if (userFromMagic) {
           setStatus('success');
           toast({ title: "تم الدخول بنجاح" });
-          setTimeout(() => router.replace("/wallet"), 1200);
+          setTimeout(() => router.replace("/wallet"), 1500);
           return;
         }
 
+        // 3. مستمع لحالة المصادقة للتوجيه في حال تم التوثيق بالفعل
         if (auth) {
           onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
@@ -51,14 +54,15 @@ export default function VerifyEmailPage() {
               if (firebaseUser.emailVerified) {
                 await syncUserProfile(firebaseUser);
                 setStatus('success');
-                setTimeout(() => router.replace("/wallet"), 1200);
+                setTimeout(() => router.replace("/wallet"), 1500);
               }
             }
           });
         }
       } catch (e: any) {
+        console.error("Verification Error:", e);
         setStatus('error');
-        toast({ variant: "destructive", title: "خطأ في التوثيق", description: "الرابط قديم أو غير صالح." });
+        toast({ variant: "destructive", title: "رابط غير صالح", description: "عذراً، الرابط قديم أو تم استخدامه مسبقاً." });
       }
     };
     verify();
@@ -76,8 +80,8 @@ export default function VerifyEmailPage() {
                <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary w-8 h-8" />
             </div>
             <div className="space-y-3">
-              <h2 className="text-3xl md:text-4xl font-black gold-text uppercase">جاري التوثيق السيادي</h2>
-              <p className="text-muted-foreground font-medium text-sm md:text-base">يتم الآن تأمين وصولك المباشر للمحفظة الرقمية...</p>
+              <h2 className="text-3xl md:text-4xl font-black gold-text uppercase tracking-tighter">جاري التوثيق السيادي</h2>
+              <p className="text-muted-foreground font-medium text-sm md:text-base leading-relaxed">يتم الآن تأمين وصولك المباشر للمحفظة الرقمية وفحص بروتوكولات الأمان...</p>
             </div>
           </div>
         )}
@@ -89,25 +93,25 @@ export default function VerifyEmailPage() {
             </div>
             <div className="space-y-3">
               <h2 className="text-4xl md:text-5xl font-black gold-text">تم التوثيق!</h2>
-              <p className="text-muted-foreground font-medium">جاري توجيهك لبيئة التداول الخاصة بك خلال لحظات...</p>
+              <p className="text-muted-foreground font-bold">مرحباً بك مجدداً. جاري توجيهك لبيئة التداول الخاصة بك خلال لحظات...</p>
             </div>
           </div>
         )}
 
         {status === 'error' && (
           <div className="space-y-10 animate-fade-in relative z-10">
-            <div className="w-24 h-24 bg-red-500/10 text-red-500 rounded-3xl flex items-center justify-center mx-auto border-2 border-red-500/20 shadow-xl shadow-green-500/10">
+            <div className="w-24 h-24 bg-red-500/10 text-red-500 rounded-3xl flex items-center justify-center mx-auto border-2 border-red-500/20 shadow-xl shadow-red-500/10">
                <XCircle className="w-14 h-14" />
             </div>
             <div className="space-y-3">
               <h2 className="text-3xl md:text-4xl font-black text-red-500">فشل في التوثيق</h2>
-              <p className="text-muted-foreground font-medium">عذراً، الرابط غير صالح أو انتهت صلاحيته الأمنية.</p>
+              <p className="text-muted-foreground font-medium">عذراً، الرابط غير صالح أو انتهت صلاحيته الأمنية. يرجى طلب رابط جديد.</p>
             </div>
             <div className="pt-8 flex flex-col gap-4">
-               <Button asChild className="royal-button w-full h-16 text-lg">
+               <Button asChild className="royal-button w-full h-16 text-lg shadow-xl shadow-primary/20">
                   <a href="/login">العودة لصفحة الدخول</a>
                </Button>
-               <Button asChild variant="ghost" className="w-full h-14 font-black uppercase text-[10px] tracking-[0.3em] opacity-60">
+               <Button asChild variant="ghost" className="w-full h-14 font-black uppercase text-[10px] tracking-[0.3em] opacity-60 hover:opacity-100">
                   <a href="/"><Home className="ml-2" size={16} /> العودة للمنصة الرئيسية</a>
                </Button>
             </div>
