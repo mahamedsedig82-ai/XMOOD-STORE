@@ -17,7 +17,8 @@ import {
   CheckCircle,
   Mail,
   Edit2,
-  Upload
+  Upload,
+  Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -129,9 +130,10 @@ export default function ProfessionalWalletPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, label: string = "المعرف") => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
-    toast({ title: "تم النسخ بنجاح" });
+    toast({ title: "تم النسخ بنجاح", description: `تم حفظ ${label} في الحافظة.` });
   };
 
   if (userLoading) return (
@@ -205,7 +207,7 @@ export default function ProfessionalWalletPage() {
                     {config?.walletPage?.uidDesc || "زود محفظتك بالرصيد عبر أحد وكلائنا المعتمدين."}
                  </p>
               </div>
-              <div className="bg-zinc-100 dark:bg-zinc-800/50 px-4 md:px-6 py-4 md:py-5 rounded-2xl border border-dashed border-primary/30 flex items-center justify-between gap-4 cursor-pointer hover:bg-primary/5 transition-all group" onClick={() => copyToClipboard(user?.uid || "")}>
+              <div className="bg-zinc-100 dark:bg-zinc-800/50 px-4 md:px-6 py-4 md:py-5 rounded-2xl border border-dashed border-primary/30 flex items-center justify-between gap-4 cursor-pointer hover:bg-primary/5 transition-all group" onClick={() => copyToClipboard(user?.uid || "", "المعرف السيادي")}>
                  <div className="flex flex-col text-right overflow-hidden">
                     <span className="text-[7px] md:text-[8px] text-primary font-black uppercase mb-1 tracking-widest">SOVEREIGN UID</span>
                     <span className="font-mono font-black text-xs md:text-lg text-foreground truncate">{user?.uid}</span>
@@ -247,22 +249,47 @@ export default function ProfessionalWalletPage() {
                     <TableHead className="text-right py-5 pr-8 font-black uppercase text-[10px]">العملية والتفاصيل</TableHead>
                     <TableHead className="text-right font-black uppercase text-[10px]">التصنيف</TableHead>
                     <TableHead className="text-right font-black uppercase text-[10px]">القيمة المالية</TableHead>
-                    <TableHead className="text-right font-black uppercase text-[10px] pr-8">التوقيت المركزي</TableHead>
+                    <TableHead className="text-center font-black uppercase text-[10px]">القسيمة</TableHead>
+                    <TableHead className="text-right font-black uppercase text-[10px] pr-8">التوقيت</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {transLoading ? (
-                    <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
                   ) : transactions?.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center py-40 text-zinc-400 font-black uppercase tracking-[0.3em] opacity-40">لا توجد سجلات مالية مسجلة</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center py-40 text-zinc-400 font-black uppercase tracking-[0.3em] opacity-40">لا توجد سجلات مالية مسجلة</TableCell></TableRow>
                   ) : transactions?.map((t: any) => (
-                    <TableRow key={t.id} className="hover:bg-primary/5 transition-all border-b border-border/30">
-                      <TableCell className="py-5 pr-8 font-bold text-xs md:text-sm" data-label="العملية">{t.description}</TableCell>
+                    <TableRow key={t.id} className="hover:bg-primary/5 transition-all border-b border-border/30 group">
+                      <TableCell className="py-5 pr-8" data-label="العملية">
+                        <div className="flex flex-col">
+                           <span className="font-bold text-xs md:text-sm">{t.description}</span>
+                           {t.orderId && (
+                             <span 
+                               onClick={() => copyToClipboard(t.orderId, "رقم الطلب")}
+                               className="text-[8px] font-mono text-primary uppercase tracking-tighter mt-1 cursor-pointer hover:underline flex items-center gap-1"
+                             >
+                               REF: {t.orderId} <Copy size={8} />
+                             </span>
+                           )}
+                        </div>
+                      </TableCell>
                       <TableCell data-label="التصنيف"><Badge variant="secondary" className="text-[7px] md:text-[8px] font-black uppercase px-3 py-0.5 rounded-full">{t.type}</Badge></TableCell>
                       <TableCell data-label="المبلغ" className={`font-black text-lg md:text-xl tracking-tighter ${t.type === 'deposit' || t.type === 'transfer_receive' ? 'text-green-500' : 'text-red-500'}`}>
                         {t.type === 'deposit' || t.type === 'transfer_receive' ? `+${formatUSD(t.amount)}` : `-${formatUSD(t.amount)}`}
                       </TableCell>
-                      <TableCell data-label="التوقيت" className="text-zinc-500 text-[9px] md:text-[10px] font-black uppercase pr-8">{new Date(t.createdAt).toLocaleString('ar-EG')}</TableCell>
+                      <TableCell className="text-center" data-label="القسيمة">
+                         {t.orderId ? (
+                           <Button asChild variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 text-primary">
+                              <Link href={`/orders/${t.orderId}`}><Eye size={18} /></Link>
+                           </Button>
+                         ) : (
+                           <span className="text-[10px] text-zinc-400 italic">---</span>
+                         )}
+                      </TableCell>
+                      <TableCell data-label="التوقيت" className="text-zinc-500 text-[9px] md:text-[10px] font-black uppercase pr-8">
+                         <span className="block">{new Date(t.createdAt).toLocaleDateString('ar-EG')}</span>
+                         <span className="block opacity-50">{new Date(t.createdAt).toLocaleTimeString('ar-EG')}</span>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -313,3 +340,4 @@ export default function ProfessionalWalletPage() {
     </main>
   );
 }
+
