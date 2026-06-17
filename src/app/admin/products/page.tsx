@@ -164,7 +164,7 @@ export default function AdminProducts() {
                        <div 
                          onClick={() => fileInputRef.current?.click()}
                          className="h-14 bg-zinc-900 border-2 border-dashed border-primary/20 rounded-xl flex items-center justify-center cursor-pointer hover:bg-primary/5 transition-all"
-                       >
+                    >
                           <span className="text-[10px] font-bold text-primary uppercase flex items-center gap-2">
                              <Upload size={14} /> اختر صورة من المعرض
                           </span>
@@ -176,7 +176,7 @@ export default function AdminProducts() {
                     </TabsContent>
                  </Tabs>
                  {form.imageUrl && (
-                    <div className="mt-4 rounded-xl overflow-hidden aspect-video border border-primary/20">
+                    <div className="mt-4 overflow-hidden luxury-image aspect-video border-primary/20">
                        <img src={form.imageUrl} className="w-full h-full object-cover" alt="Preview" />
                     </div>
                  )}
@@ -204,7 +204,15 @@ export default function AdminProducts() {
               ) : filtered.map((p) => (
                 <TableRow key={p.id} className="hover:bg-primary/5 border-b border-white/5 transition-all group">
                   <TableCell className="py-6 pr-10" data-label="الباقة">
-                    <div className="flex items-center gap-4"><img src={p.imageUrl || "https://picsum.photos/seed/p/200/200"} className="w-12 h-12 rounded-xl object-cover shadow-lg border border-white/5" alt="" /><div className="flex flex-col"><span className="font-bold text-white text-sm group-hover:gold-text transition-colors">{p.name}</span><span className="text-[8px] text-primary/60 font-black uppercase">{p.category}</span></div></div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 overflow-hidden rounded-[1rem] shadow-lg border border-white/5 shrink-0">
+                        <img src={p.imageUrl || "https://picsum.photos/seed/p/200/200"} className="w-full h-full object-cover" alt="" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-white text-sm group-hover:gold-text transition-colors">{p.name}</span>
+                        <span className="text-[8px] text-primary/60 font-black uppercase">{p.category}</span>
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell data-label="القيمة" className="font-black text-primary text-lg tracking-tighter">${p.price}</TableCell>
                   <TableCell data-label="المخزون"><Badge variant="outline" className={`border-zinc-800 text-[10px] ${p.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>{p.stock}</Badge></TableCell>

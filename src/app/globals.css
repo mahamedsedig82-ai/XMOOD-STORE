@@ -64,6 +64,11 @@
   @apply rounded-[2rem] border bg-card text-card-foreground shadow-sm transition-all duration-500 hover:shadow-2xl hover:border-primary/30 overflow-hidden relative;
 }
 
+/* صنف جديد للصور الفخمة */
+.luxury-image {
+  @apply rounded-[1.5rem] md:rounded-[2.5rem] border-2 border-primary/10 shadow-lg object-cover overflow-hidden transition-all duration-500 hover:shadow-primary/20 hover:border-primary/30;
+}
+
 .gold-text {
   @apply bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 bg-clip-text text-transparent font-black;
 }

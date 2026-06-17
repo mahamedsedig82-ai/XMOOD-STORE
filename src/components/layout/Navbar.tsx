@@ -106,7 +106,7 @@ export function Navbar() {
               <div className="flex-1 p-6 space-y-8 overflow-y-auto custom-scrollbar">
                 {user && profile && (
                   <div className="p-5 bg-primary/5 rounded-[1.5rem] border border-primary/10 flex items-center gap-4">
-                    <Avatar className="w-14 h-14 border-2 border-primary/20 rounded-2xl shadow-lg">
+                    <Avatar className="w-14 h-14 border-2 border-primary/20 rounded-[1.2rem] shadow-lg">
                       <AvatarImage src={profile.photoURL} className="object-cover" />
                       <AvatarFallback className="bg-zinc-100 font-bold text-primary">XM</AvatarFallback>
                     </Avatar>
@@ -159,7 +159,7 @@ export function Navbar() {
 
         <Link href="/" className="flex items-center gap-3 group">
           {config?.appearance?.logoUrl ? (
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full md:rounded-2xl overflow-hidden border-2 border-primary/20 shadow-xl bg-white transition-transform group-hover:scale-105">
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1rem] md:rounded-[1.5rem] overflow-hidden border-2 border-primary/20 shadow-xl bg-white transition-transform group-hover:scale-105">
                  <img src={config.appearance.logoUrl} alt="XMOOD Logo" className="w-full h-full object-cover" />
               </div>
           ) : (
@@ -207,7 +207,7 @@ export function Navbar() {
           ) : (
             <DropdownMenu dir="rtl">
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl overflow-hidden border-2 border-primary/20 hover:border-primary transition-all shadow-xl">
+                <Button variant="ghost" className="p-0 h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-[1.2rem] overflow-hidden border-2 border-primary/20 hover:border-primary transition-all shadow-xl">
                   <Avatar className="h-full w-full rounded-none">
                     <AvatarImage src={profile?.photoURL} className="object-cover" />
                     <AvatarFallback className="bg-slate-100 dark:bg-zinc-900 text-primary font-bold text-sm md:text-xl">{profile?.displayName?.charAt(0)}</AvatarFallback>

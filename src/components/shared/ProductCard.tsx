@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -113,28 +112,30 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <>
       <Card className={`luxury-card flex flex-col group h-full ${isOutOfStock ? 'opacity-70 grayscale' : ''}`}>
-        <CardHeader className="p-0 relative aspect-video bg-muted overflow-hidden">
-          <Image 
-            src={product.imageUrl || "https://picsum.photos/seed/product/600/400"} 
-            alt={product.name}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <CardHeader className="p-4 relative aspect-video bg-muted overflow-hidden">
+          <div className="relative w-full h-full overflow-hidden rounded-[1.5rem]">
+            <Image 
+              src={product.imageUrl || "https://picsum.photos/seed/product/600/400"} 
+              alt={product.name}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              unoptimized
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
           
-          <Badge className={`absolute top-3 right-3 font-black text-[8px] px-3 py-1 rounded-full border-none shadow-2xl uppercase tracking-widest ${isOutOfStock ? 'bg-zinc-600 text-white' : 'bg-primary text-black'}`}>
+          <Badge className={`absolute top-6 right-6 font-black text-[8px] px-3 py-1 rounded-full border-none shadow-2xl uppercase tracking-widest ${isOutOfStock ? 'bg-zinc-600 text-white' : 'bg-primary text-black'}`}>
             {isOutOfStock ? 'نفد المخزون' : 'باقة معتمدة'}
           </Badge>
 
           {isAdmin && (
-            <Button asChild variant="secondary" className="absolute top-3 left-3 h-8 w-8 rounded-lg p-0 glass-morphism z-20">
+            <Button asChild variant="secondary" className="absolute top-6 left-6 h-8 w-8 rounded-lg p-0 glass-morphism z-20">
               <Link href={`/admin/products`}><Edit size={14} className="text-primary" /></Link>
             </Button>
           )}
         </CardHeader>
         
-        <CardContent className="p-5 flex-1 flex flex-col">
+        <CardContent className="p-6 flex-1 flex flex-col">
           <div className="mb-4">
             <span className="text-[8px] uppercase font-black text-muted-foreground tracking-[0.2em] block mb-1">{product.category}</span>
             <CardTitle className="text-lg md:text-xl font-bold group-hover:gold-text transition-colors leading-tight line-clamp-2">
@@ -158,17 +159,17 @@ export function ProductCard({ product }: ProductCardProps) {
               <span className="font-black text-xl text-primary tracking-tighter">{formatUSD(product.price)}</span>
               <span className="text-[8px] text-muted-foreground font-black uppercase">{formatSDG(product.price, currentRate)}</span>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
-               <Zap size={16} className={!isOutOfStock ? "animate-pulse" : ""} />
+            <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all shadow-inner">
+               <Zap size={18} className={!isOutOfStock ? "animate-pulse" : ""} />
             </div>
           </div>
         </CardContent>
 
-        <CardFooter className="p-5 pt-0">
+        <CardFooter className="p-6 pt-0">
           <Button 
             onClick={handlePurchase}
             disabled={isOutOfStock || isProcessing}
-            className={`w-full h-12 rounded-xl transition-all shadow-xl text-[10px] font-bold uppercase tracking-widest ${
+            className={`w-full h-14 rounded-2xl transition-all shadow-xl text-[10px] font-bold uppercase tracking-widest ${
               isOutOfStock 
               ? 'bg-muted text-muted-foreground cursor-not-allowed border-none' 
               : 'royal-button'
@@ -186,9 +187,9 @@ export function ProductCard({ product }: ProductCardProps) {
       </Card>
 
       <Dialog open={!!voucher} onOpenChange={() => setVoucher(null)}>
-        <DialogContent className="max-w-md bg-card border-none rounded-[2rem] p-10 shadow-2xl">
+        <DialogContent className="max-w-md bg-card border-none rounded-[2.5rem] p-10 shadow-2xl">
           <DialogHeader className="text-center">
-            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-primary/20">
+            <div className="w-16 h-16 bg-primary/10 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 border border-primary/20">
               <CheckCircle size={32} className="text-primary" />
             </div>
             <DialogTitle className="text-2xl font-black mb-1">تم تأكيد الطلب</DialogTitle>
@@ -196,12 +197,12 @@ export function ProductCard({ product }: ProductCardProps) {
           </DialogHeader>
 
           <div className="mt-8 space-y-6">
-            <div className="bg-muted/50 p-6 rounded-2xl border-2 border-dashed border-primary/30 text-center">
+            <div className="bg-muted/50 p-6 rounded-[1.5rem] border-2 border-dashed border-primary/30 text-center">
               <div className="text-2xl font-black tracking-[0.2em] select-all uppercase gold-text">
                 {voucher?.code}
               </div>
             </div>
-            <Button onClick={() => setVoucher(null)} className="royal-button w-full h-14 text-sm uppercase">العودة للمتجر</Button>
+            <Button onClick={() => setVoucher(null)} className="royal-button w-full h-16 text-sm uppercase">العودة للمتجر</Button>
           </div>
         </DialogContent>
       </Dialog>

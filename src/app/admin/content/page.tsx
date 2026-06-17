@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -237,7 +236,8 @@ export default function AdminContentManager() {
                     </div>
                     <div className="relative group">
                        <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full scale-150 opacity-50" />
-                       <div className="relative w-48 h-48 md:w-64 md:h-24 bg-white dark:bg-zinc-950 rounded-[2rem] border-4 border-white dark:border-zinc-800 shadow-2xl overflow-hidden flex items-center justify-center">
+                       {/* تم تطبيق luxury-image هنا لضمان جمال اللوقو */}
+                       <div className="relative w-48 h-48 md:w-64 md:h-24 bg-white dark:bg-zinc-950 luxury-image overflow-hidden flex items-center justify-center">
                           {form.appearance.logoUrl ? (
                             <img src={form.appearance.logoUrl} alt="Preview" className="w-full h-full object-cover" />
                           ) : (
@@ -248,6 +248,7 @@ export default function AdminContentManager() {
                           )}
                        </div>
                     </div>
+                    <p className="text-[8px] text-muted-foreground font-bold uppercase">يتم قص الصورة آلياً لتناسب أبعاد الهوية</p>
                  </div>
               </div>
            </Card>
@@ -277,10 +278,10 @@ export default function AdminContentManager() {
                        <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو التذييل (Footer Logo)</Label>
                        <div 
                          onClick={() => footerLogoRef.current?.click()}
-                         className="h-24 bg-muted/40 border-2 border-dashed border-primary/20 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-primary/5 transition-all"
+                         className="h-24 bg-muted/40 border-2 border-dashed border-primary/20 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-primary/5 transition-all overflow-hidden"
                        >
                           {form.footer.logoUrl ? (
-                             <img src={form.footer.logoUrl} className="h-16 object-contain" alt="" />
+                             <img src={form.footer.logoUrl} className="h-full w-full object-contain luxury-image border-none" alt="" />
                           ) : (
                              <span className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-2">
                                 <Upload size={14} /> رفع لوقو طرفي
