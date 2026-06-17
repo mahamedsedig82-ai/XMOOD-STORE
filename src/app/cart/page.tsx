@@ -70,25 +70,25 @@ export default function CartPage() {
                     exit={{ opacity: 0, scale: 0.95, x: -20 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl p-5 md:p-10 flex flex-col sm:flex-row items-center gap-6 md:gap-12 group hover:shadow-primary/5">
-                       <div className="w-24 h-20 md:w-40 md:h-32 rounded-2xl md:rounded-[2rem] overflow-hidden shrink-0 shadow-2xl border-2 border-primary/10 group-hover:scale-105 transition-transform duration-700">
+                    <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl p-5 md:p-10 flex flex-col sm:flex-row items-center gap-6 md:gap-12 group">
+                       <div className="w-full sm:w-40 h-48 sm:h-32 rounded-2xl md:rounded-[2rem] overflow-hidden shrink-0 shadow-2xl border-2 border-primary/10 group-hover:scale-105 transition-transform duration-700">
                           <img src={item.imageUrl || "https://picsum.photos/seed/cart/400/300"} className="w-full h-full object-cover" alt="" />
                        </div>
                        <div className="flex-1 text-center sm:text-right space-y-2">
-                          <Badge className="bg-primary/10 text-primary border-none text-[7px] md:text-[8px] font-black uppercase px-3 py-1 rounded-full">{item.category}</Badge>
+                          <Badge className="bg-primary/10 text-primary border-none text-[8px] font-black uppercase px-3 py-1 rounded-full">{item.category}</Badge>
                           <h3 className="text-lg md:text-3xl font-black leading-tight group-hover:gold-text transition-colors">{item.name}</h3>
                           <div className="flex items-center justify-center sm:justify-start gap-2 md:gap-3 mt-2 md:mt-4">
                              <span className="text-xl md:text-3xl font-black text-primary tracking-tighter">{formatUSD(item.price)}</span>
                              <span className="text-[8px] md:text-[10px] text-muted-foreground font-bold uppercase">قيمة الوحدة</span>
                           </div>
                        </div>
-                       <div className="flex items-center gap-4 md:gap-6 bg-muted/40 p-2 rounded-2xl md:rounded-3xl border border-border/40 shadow-inner">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 md:h-12 md:w-12 rounded-xl hover:bg-primary/10 text-primary" onClick={() => updateQuantity(item.id, -1)}><Minus size={16} /></Button>
-                          <span className="w-6 md:w-8 text-center font-black text-lg md:text-3xl">{item.quantity}</span>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 md:h-12 md:w-12 rounded-xl hover:bg-primary/10 text-primary" onClick={() => updateQuantity(item.id, 1)}><Plus size={16} /></Button>
+                       <div className="flex items-center gap-6 md:gap-8 bg-muted/40 p-3 rounded-2xl md:rounded-3xl border border-border/40 shadow-inner">
+                          <Button variant="ghost" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-xl hover:bg-primary/10 text-primary" onClick={() => updateQuantity(item.id, -1)}><Minus size={18} /></Button>
+                          <span className="w-8 text-center font-black text-xl md:text-3xl">{item.quantity}</span>
+                          <Button variant="ghost" size="icon" className="h-10 w-10 md:h-12 md:w-12 rounded-xl hover:bg-primary/10 text-primary" onClick={() => updateQuantity(item.id, 1)}><Plus size={18} /></Button>
                        </div>
-                       <Button variant="ghost" size="icon" className="h-10 w-10 md:h-16 md:w-16 rounded-xl md:rounded-[1.5rem] text-red-500 hover:bg-red-500/10 border-2 border-transparent transition-all" onClick={() => removeItem(item.id)}>
-                          <Trash2 size={20} />
+                       <Button variant="ghost" size="icon" className="h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-[1.5rem] text-red-500 hover:bg-red-500/10 border-2 border-transparent transition-all" onClick={() => removeItem(item.id)}>
+                          <Trash2 size={24} />
                        </Button>
                     </Card>
                   </motion.div>

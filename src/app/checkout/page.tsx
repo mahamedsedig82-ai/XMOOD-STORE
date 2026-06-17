@@ -65,7 +65,6 @@ export default function CheckoutPage() {
     if (!user || !profile || !db) return;
     if (!selectedShipping) return toast({ variant: "destructive", title: "يرجى اختيار وسيلة تسليم" });
     if (!hasEnoughBalance) return toast({ variant: "destructive", title: "الرصيد غير كافٍ لإتمام العملية" });
-    if (!deliveryEmail || !deliveryEmail.includes("@")) return toast({ variant: "destructive", title: "بريد غير صالح" });
 
     setIsProcessing(true);
     const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -74,38 +73,42 @@ export default function CheckoutPage() {
       await runTransaction(db, async (transaction) => {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists()) throw "خطأ في ملف المستخدم";
+        if (!userSnap.exists()) throw "خطأ في ملف العميل السيادي";
 
         const currentBalance = userSnap.data().walletBalance || 0;
-        if (currentBalance < finalTotal) throw "الرصيد غير كافٍ";
+        if (currentBalance < finalTotal) throw "الرصيد المتاح غير كافٍ للعملية";
 
-        const deliveredCodes: string[] = [];
+        const allDeliveredCodes: string[] = [];
         let finalStatus: 'completed' | 'pending_stock' = 'completed';
         let finalDeliveryStatus: 'delivered' | 'preparing' = 'delivered';
 
+        // معالجة كافة المنتجات في السلة (دعم المشتريات المتعددة)
         for (const item of items) {
           const productRef = doc(db, "products", item.id);
           const productSnap = await transaction.get(productRef);
-          if (!productSnap.exists()) throw `المنتج ${item.name} غير متوفر`;
+          if (!productSnap.exists()) throw `المنتج [${item.name}] غير متاح حالياً`;
           
           const pData = productSnap.data();
           const codes = (pData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
           
-          if (codes.length < item.quantity && pData.category !== 'خدمات يدوية') {
+          if (codes.length < item.quantity) {
+             // إذا لم تتوفر الأكواد، يتم تحويل الطلب لحالة الانتظار
              finalStatus = 'pending_stock';
              finalDeliveryStatus = 'preparing';
-             transaction.update(productRef, { stock: Math.max(0, (pData.stock || 0) - item.quantity) });
-          } else if (codes.length >= item.quantity) {
-             const codesForThisItem = codes.slice(0, item.quantity);
-             deliveredCodes.push(...codesForThisItem);
-             const remainingCodes = codes.slice(item.quantity).join('\n');
+             transaction.update(productRef, { 
+               stock: Math.max(0, (pData.stock || 0) - item.quantity),
+               updatedAt: serverTimestamp() 
+             });
+          } else {
+             // سحب الأكواد المطلوبة وتحديث المخزون
+             const extracted = codes.slice(0, item.quantity);
+             allDeliveredCodes.push(...extracted);
+             const remaining = codes.slice(item.quantity).join('\n');
              transaction.update(productRef, {
-               shippingCodes: remainingCodes,
+               shippingCodes: remaining,
                stock: Math.max(0, (pData.stock || 0) - item.quantity),
                updatedAt: serverTimestamp()
              });
-          } else {
-             transaction.update(productRef, { stock: Math.max(0, (pData.stock || 0) - item.quantity) });
           }
         }
 
@@ -129,7 +132,7 @@ export default function CheckoutPage() {
           notes,
           status: finalStatus,
           deliveryStatus: finalDeliveryStatus,
-          shippingCodeSent: deliveredCodes.join(' | '),
+          shippingCodeSent: allDeliveredCodes.join(' | '),
           balanceBefore: currentBalance,
           balanceAfter: balanceAfter,
           createdAt: new Date().toISOString()
@@ -139,7 +142,7 @@ export default function CheckoutPage() {
           userId: user.uid,
           amount: finalTotal,
           type: 'purchase',
-          description: items.length > 1 ? `استحواذ متعدد (${items.length})` : `استحواذ: ${items[0].name}`,
+          description: items.length > 1 ? `استحواذ متعدد [${items.length} أصول]` : `استحواذ: ${items[0].name}`,
           orderId,
           balanceBefore: currentBalance,
           balanceAfter,
@@ -152,9 +155,9 @@ export default function CheckoutPage() {
 
       clearCart();
       setSuccessOrderId(orderId);
-      toast({ title: config?.cartLabels?.successMsg || "تم بنجاح!" });
+      toast({ title: config?.cartLabels?.successMsg || "تم الاستحواذ بنجاح!" });
     } catch (e: any) {
-      toast({ variant: "destructive", title: "فشل العملية", description: String(e) });
+      toast({ variant: "destructive", title: "فشل البروتوكول المالي", description: String(e) });
     } finally {
       setIsProcessing(false);
     }
@@ -168,10 +171,10 @@ export default function CheckoutPage() {
           </div>
           <h2 className="text-2xl md:text-5xl font-black gold-text mb-4 md:mb-6">{config?.cartLabels?.successMsg || "تم التسليم بنجاح!"}</h2>
           <p className="text-muted-foreground text-sm md:text-lg font-medium mb-10 leading-relaxed">
-            رقم الطلب: <span className="font-mono text-primary font-black">{successOrderId}</span>
+            رقم المرجع السيادي: <span className="font-mono text-primary font-black">{successOrderId}</span>
           </p>
-          <Button asChild className="royal-button w-full h-14 md:h-18 text-base md:text-xl shadow-primary/20">
-             <a href={`/orders/${successOrderId}`}>عرض الكود والقسيمة <ArrowLeft className="mr-2" /></a>
+          <Button asChild className="royal-button w-full h-14 md:h-18 text-base md:text-xl">
+             <a href={`/orders/${successOrderId}`}>فتح القسيمة الرقمية <ArrowLeft className="mr-2" /></a>
           </Button>
        </Card>
     </main>
@@ -189,11 +192,11 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-16">
            <div className="lg:col-span-2 space-y-10 md:space-y-16">
               <section className="space-y-6 md:space-y-8">
-                 <div className="flex items-center gap-3 md:gap-4 mb-2">
+                 <div className="flex items-center gap-3 md:gap-4">
                     <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-inner">
                        <Truck size={20} />
                     </div>
-                    <h3 className="text-xl md:text-3xl font-black">مسار التسليم</h3>
+                    <h3 className="text-xl md:text-3xl font-black">مسار التسليم المعتمد</h3>
                  </div>
                  
                  {shippingLoading ? (
@@ -204,19 +207,19 @@ export default function CheckoutPage() {
                         <div 
                           key={m.id} 
                           onClick={() => setSelectedShipping(m)}
-                          className={`p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] border-2 cursor-pointer transition-all duration-500 relative group overflow-hidden ${selectedShipping?.id === m.id ? 'border-primary bg-primary/5 shadow-xl' : 'border-border/40 bg-card/40 hover:border-primary/30'}`}
+                          className={`p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] border-2 cursor-pointer transition-all duration-500 relative group overflow-hidden ${selectedShipping?.id === m.id ? 'border-primary bg-primary/5 shadow-xl scale-[1.02]' : 'border-border/40 bg-card/40 hover:border-primary/30'}`}
                         >
                            <div className="flex justify-between items-start mb-4 md:mb-6">
                               <div className="w-10 h-10 md:w-14 md:h-14 bg-white dark:bg-zinc-800 rounded-xl md:rounded-2xl flex items-center justify-center border shadow-lg group-hover:scale-110 transition-transform">
                                  {m.imageUrl ? <img src={m.imageUrl} className="w-full h-full object-cover rounded-xl" alt="" /> : <Truck size={20} />}
                               </div>
-                              {m.badge && <Badge className="bg-primary text-black font-black text-[6px] md:text-[7px] px-3 py-1 rounded-full uppercase tracking-widest">{m.badge}</Badge>}
+                              {m.badge && <Badge className="bg-primary text-black font-black text-[7px] px-3 py-1 rounded-full uppercase tracking-widest">{m.badge}</Badge>}
                            </div>
                            <h4 className="font-black text-lg md:text-2xl mb-1">{m.name}</h4>
-                           <p className="text-[10px] md:text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2">{m.description}</p>
+                           <p className="text-[10px] md:text-sm text-muted-foreground font-medium leading-relaxed">{m.description}</p>
                            <div className="mt-4 flex justify-between items-end pt-4 border-t border-border/50">
                               <div className="flex flex-col">
-                                 <span className="text-[7px] md:text-[8px] font-black text-muted-foreground uppercase">رسوم إضافية</span>
+                                 <span className="text-[7px] font-black text-muted-foreground uppercase">رسوم إضافية</span>
                                  <span className="font-black text-primary text-base md:text-xl">+{formatUSD(m.extraFee)}</span>
                               </div>
                               <span className="text-[8px] md:text-[10px] font-black text-foreground uppercase bg-muted/50 px-3 py-1 rounded-full flex items-center gap-1.5">
@@ -230,30 +233,30 @@ export default function CheckoutPage() {
               </section>
 
               <section className="space-y-6 md:space-y-8">
-                 <div className="flex items-center gap-3 md:gap-4 mb-2">
+                 <div className="flex items-center gap-3 md:gap-4">
                     <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-inner">
                        <Mail size={20} />
                     </div>
-                    <h3 className="text-xl md:text-3xl font-black">بيانات الاستقبال</h3>
+                    <h3 className="text-xl md:text-3xl font-black">بروتوكول الاستقبال</h3>
                  </div>
                  <Card className="luxury-card p-6 md:p-12 border-none bg-card/60 backdrop-blur-xl space-y-8">
                     <div className="space-y-3">
-                       <Label className="text-[9px] md:text-xs font-black text-primary uppercase pr-3 tracking-widest">البريد الإلكتروني المعتمد للتسليم</Label>
+                       <Label className="text-[9px] md:text-xs font-black text-primary uppercase pr-3 tracking-widest">بريد التسليم الرقمي</Label>
                        <Input 
                          value={deliveryEmail} 
                          onChange={e => setDeliveryEmail(e.target.value)} 
-                         className="h-14 md:h-20 rounded-xl md:rounded-[1.5rem] bg-white dark:bg-zinc-950 border-2 border-primary/20 px-6 md:px-8 font-black text-lg md:text-2xl shadow-inner focus:ring-2 focus:ring-primary/40 text-foreground" 
+                         className="h-14 md:h-20 rounded-xl md:rounded-[1.5rem] bg-white dark:bg-zinc-950 border-2 border-primary/20 px-6 md:px-8 font-black text-lg md:text-2xl shadow-inner text-foreground focus:ring-2 focus:ring-primary/40" 
                          placeholder="name@example.com"
                        />
-                       <p className="text-[9px] text-muted-foreground font-medium pr-3">سيصلك الكود وتفاصيل العملية لهذا البريد.</p>
+                       <p className="text-[9px] text-muted-foreground font-medium pr-3">سيتم إرسال كود التفعيل وتفاصيل المستودع لهذا البريد فوراً.</p>
                     </div>
                     <div className="space-y-3">
-                       <Label className="text-[9px] md:text-xs font-black text-primary uppercase pr-3 tracking-widest">ملاحظات (اختياري)</Label>
+                       <Label className="text-[9px] md:text-xs font-black text-primary uppercase pr-3 tracking-widest">توجيهات إضافية (اختياري)</Label>
                        <Textarea 
                          value={notes} 
                          onChange={e => setNotes(e.target.value)} 
                          className="rounded-xl md:rounded-[2rem] bg-white dark:bg-zinc-950 border-2 border-primary/20 p-5 md:p-8 font-bold text-sm md:text-lg min-h-[120px] shadow-inner text-foreground focus:ring-2 focus:ring-primary/40" 
-                         placeholder="اكتب أي ملاحظات للخدمة هنا..." 
+                         placeholder="أدخل أي ملاحظات خاصة بتنفيذ الطلب..." 
                        />
                     </div>
                  </Card>
@@ -289,7 +292,7 @@ export default function CheckoutPage() {
                              <Wallet size={20} />
                           </div>
                           <div className="flex flex-col">
-                             <span className="text-[8px] md:text-[10px] text-zinc-500 font-black uppercase tracking-widest">رصيدك الحالي</span>
+                             <span className="text-[8px] md:text-[10px] text-zinc-500 font-black uppercase tracking-widest">رصيدك المتاح</span>
                              <span className={`font-black text-xl md:text-3xl tracking-tighter transition-colors ${hasEnoughBalance ? 'text-primary' : 'text-red-500'}`}>
                                 {formatUSD(walletBalance)}
                              </span>
@@ -300,7 +303,7 @@ export default function CheckoutPage() {
                     {!hasEnoughBalance && !userLoading && (
                        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 mt-4">
                           <AlertCircle size={18} className="text-red-500 shrink-0" />
-                          <p className="text-[9px] font-black text-red-500 uppercase leading-relaxed">رصيدك لا يكفي. يرجى الشحن أولاً.</p>
+                          <p className="text-[9px] font-black text-red-500 uppercase leading-relaxed">الرصيد السيادي غير كافٍ. يرجى الشحن للمتابعة.</p>
                        </div>
                     )}
 
@@ -316,7 +319,7 @@ export default function CheckoutPage() {
                       )}
                     </Button>
                     
-                    <p className="text-[7px] text-center text-muted-foreground uppercase font-black tracking-[0.3em] mt-6 opacity-60">XMOOD Cloud Engine Protocol</p>
+                    <p className="text-[7px] text-center text-muted-foreground uppercase font-black tracking-[0.3em] mt-6 opacity-60">Sovereign Cloud Engine Protocol</p>
                  </div>
               </Card>
            </aside>
