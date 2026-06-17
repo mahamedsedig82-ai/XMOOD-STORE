@@ -1,37 +1,64 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { useDoc, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { doc, updateDoc, increment, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Navbar } from "@/components/layout/Navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Calendar, Award, Zap, ShieldCheck, TrendingUp, Heart, MessageSquare, ShoppingBag, Briefcase, Palette, Users } from "lucide-react";
+import { Loader2, Calendar, Award, Zap, ShieldCheck, TrendingUp, Star, MessageSquare, ShoppingBag, Briefcase, Palette, Users, Heart } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const router = useRouter();
   const uid = params.uid as string;
   const db = useFirestore();
+  const { user: currentUser } = useUser();
+  const [ratingLoading, setRatingLoading] = useState(false);
 
   const userRef = useMemoFirebase(() => doc(db, "users", uid), [db, uid]);
   const { data: profile, loading: profileLoading } = useDoc(userRef);
 
-  if (profileLoading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <Loader2 className="animate-spin text-primary" size={60} />
-    </div>
-  );
+  const handleRate = async (stars: number) => {
+    if (!currentUser) return toast({ variant: "destructive", title: "تنبيه", description: "يرجى تسجيل الدخول للتقييم." });
+    if (currentUser.uid === uid) return toast({ variant: "destructive", title: "خطأ", description: "لا يمكنك تقييم نفسك." });
+    if (!db) return;
 
-  if (!profile) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <h1 className="text-4xl font-headline font-bold gold-text">المستخدم غير موجود</h1>
-    </div>
-  );
+    setRatingLoading(true);
+    try {
+      const newRatingCount = (profile?.ratingCount || 0) + 1;
+      const currentRating = profile?.rating || 5;
+      const newRating = ((currentRating * (profile?.ratingCount || 0)) + stars) / newRatingCount;
+
+      await updateDoc(userRef, {
+        rating: Number(newRating.toFixed(1)),
+        ratingCount: newRatingCount
+      });
+
+      await addDoc(collection(db, "agent_ratings"), {
+        agentId: uid,
+        userId: currentUser.uid,
+        userName: currentUser.displayName || "عميل",
+        stars,
+        createdAt: serverTimestamp()
+      });
+
+      toast({ title: "تم التقييم بنجاح", description: "شكراً لمشاركتك تجربتك مع المجتمع." });
+    } catch (e) {
+      toast({ variant: "destructive", title: "خطأ في التقييم" });
+    } finally {
+      setRatingLoading(false);
+    }
+  };
+
+  if (profileLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={60} /></div>;
+  if (!profile) return <div className="min-h-screen bg-background flex items-center justify-center"><h1 className="text-4xl font-headline font-bold gold-text">المستخدم غير موجود</h1></div>;
 
   const sections = [
     { label: "المتجر الرئيسي", icon: ShoppingBag, href: "/store", desc: "شحن ألعاب وباقات رقمية" },
@@ -44,7 +71,6 @@ export default function PublicProfilePage() {
     <main className="min-h-screen bg-background text-foreground selection:bg-primary/30" dir="rtl">
       <Navbar />
       
-      {/* Sovereign Header */}
       <section className="relative pt-40 pb-16 md:pt-60 md:pb-32 overflow-hidden border-b bg-muted/20">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -72,6 +98,17 @@ export default function PublicProfilePage() {
                    <h1 className="text-4xl md:text-8xl font-headline font-black gold-text leading-tight">{profile.displayName}</h1>
                    <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">{profile.label || "عضو سيادي"}</Badge>
                 </div>
+                
+                {/* Visual Rating */}
+                <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
+                   <div className="flex gap-1 text-primary">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={20} className={i < Math.round(profile.rating || 5) ? 'fill-current' : 'opacity-20'} />
+                      ))}
+                   </div>
+                   <span className="text-lg font-black">{profile.rating || 5.0} <span className="text-muted-foreground font-medium text-sm">({profile.ratingCount || 0} تقييم)</span></span>
+                </div>
+
                 <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto lg:mx-0">{profile.bio || "عضو سيادي موثق في مجتمع XMOOD الرقمي."}</p>
              </div>
 
@@ -103,22 +140,13 @@ export default function PublicProfilePage() {
         </div>
       </section>
 
-      {/* Activity Content */}
       <section className="container mx-auto px-6 py-20 pb-40">
          <Tabs defaultValue="sections" className="space-y-12">
-            <div className="flex items-center justify-between border-b pb-8">
-               <TabsList className="bg-card p-2 rounded-[2rem] h-20 border inline-flex gap-4 px-6 shadow-2xl overflow-x-auto max-w-full">
-                  <TabsTrigger value="sections" className="rounded-[1.5rem] px-8 md:px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">
-                     <ShoppingBag size={18} className="ml-3" /> الأقسام
-                  </TabsTrigger>
-                  <TabsTrigger value="activity" className="rounded-[1.5rem] px-8 md:px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">
-                     <Zap size={18} className="ml-3" /> النشاط الأخير
-                  </TabsTrigger>
-                  <TabsTrigger value="achievements" className="rounded-[1.5rem] px-8 md:px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">
-                     <Award size={18} className="ml-3" /> الأوسمة
-                  </TabsTrigger>
-               </TabsList>
-            </div>
+            <TabsList className="bg-card p-2 rounded-[2rem] h-20 border inline-flex gap-4 px-6 shadow-2xl overflow-x-auto max-w-full">
+               <TabsTrigger value="sections" className="rounded-[1.5rem] px-8 md:px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">الخدمات</TabsTrigger>
+               <TabsTrigger value="rate" className="rounded-[1.5rem] px-8 md:px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">التقييم</TabsTrigger>
+               <TabsTrigger value="activity" className="rounded-[1.5rem] px-8 md:px-12 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-black transition-all">النشاط</TabsTrigger>
+            </TabsList>
 
             <TabsContent value="sections">
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -134,6 +162,29 @@ export default function PublicProfilePage() {
                     </Link>
                   ))}
                </div>
+            </TabsContent>
+
+            <TabsContent value="rate">
+               <Card className="luxury-card p-10 md:p-16 border-none shadow-2xl bg-card/40">
+                  <div className="max-w-2xl mx-auto text-center space-y-10">
+                     <h3 className="text-3xl font-black">تقييم تجربة التعامل</h3>
+                     <p className="text-muted-foreground">ساهم في بناء مجتمع XMOOD عبر تقييمك لمصداقية واحترافية هذا العضو.</p>
+                     
+                     <div className="flex justify-center gap-4">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button 
+                            key={star} 
+                            disabled={ratingLoading}
+                            onClick={() => handleRate(star)}
+                            className="group transition-all hover:scale-125 disabled:opacity-50"
+                          >
+                             <Star size={48} className="text-muted group-hover:text-primary group-hover:fill-primary transition-colors" />
+                          </button>
+                        ))}
+                     </div>
+                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">اضغط على النجوم للتقييم الفوري</p>
+                  </div>
+               </Card>
             </TabsContent>
 
             <TabsContent value="activity">
@@ -156,13 +207,6 @@ export default function PublicProfilePage() {
                      ))}
                   </div>
                </Card>
-            </TabsContent>
-            
-            <TabsContent value="achievements">
-               <div className="py-40 text-center opacity-30 flex flex-col items-center">
-                  <Award size={120} className="text-muted-foreground mb-10" />
-                  <p className="text-2xl font-black uppercase tracking-widest">تمنح الأوسمة بناءً على عدد الصفقات الناجحة</p>
-               </div>
             </TabsContent>
          </Tabs>
       </section>

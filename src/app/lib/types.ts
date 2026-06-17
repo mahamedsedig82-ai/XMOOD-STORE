@@ -23,6 +23,8 @@ export interface UserProfile {
   completedDeals?: number;
   residence?: string;
   age?: number;
+  rating?: number;
+  ratingCount?: number;
   middlemanInfo?: {
     services: string[];
     isAvailable: boolean;

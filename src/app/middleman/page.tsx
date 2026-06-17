@@ -3,11 +3,10 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldCheck, UserCheck, Lock, MessageCircle, Zap, Star, TrendingUp, MapPin, Smartphone, ArrowRight, Award, Loader2 } from "lucide-react";
+import { ShieldCheck, UserCheck, Smartphone, TrendingUp, MapPin, Award, Loader2, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
+import { useCollection, useFirestore, useMemoFirebase, useDoc } from "@/firebase";
+import { collection, query, where, doc } from "firebase/firestore";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
@@ -15,6 +14,9 @@ import { useMemo } from "react";
 export default function AgentsDirectoryPage() {
   const db = useFirestore();
   
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const { data: config } = useDoc(settingsRef);
+
   const agentsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, "users"), where("role", "in", ["middleman", "agent", "owner"]));
@@ -37,7 +39,6 @@ export default function AgentsDirectoryPage() {
     <main className="min-h-screen bg-background" dir="rtl">
       <Navbar />
       
-      {/* Hero Section */}
       <section className="relative py-48 overflow-hidden bg-muted/30">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -47,11 +48,13 @@ export default function AgentsDirectoryPage() {
 
         <div className="container mx-auto px-6 relative z-10 text-center">
           <Badge className="mb-8 py-2 px-10 bg-primary/10 text-primary border-primary/20 rounded-full font-black uppercase text-[10px] tracking-widest">
-            دليل الوكلاء والوسطاء المعتمدين
+            {config?.agentSettings?.badge || "دليل الوكلاء والوسطاء المعتمدين"}
           </Badge>
-          <h1 className="text-6xl md:text-8xl font-headline font-black mb-8 leading-tight text-foreground">التعامل بـ <span className="gold-text">موثوقية تامة</span></h1>
+          <h1 className="text-6xl md:text-8xl font-headline font-black mb-8 leading-tight text-foreground">
+            {config?.agentSettings?.title || "التعامل بـ"} <span className="gold-text">موثوقية تامة</span>
+          </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-medium">
-            شبكة من الخبراء المعتمدين لتنفيذ عمليات الشحن والوساطة المالية بأعلى معايير الأمان والسرعة.
+            {config?.agentSettings?.subtitle || "شبكة من الخبراء المعتمدين لتنفيذ عمليات الشحن والوساطة المالية بأعلى معايير الأمان والسرعة."}
           </p>
         </div>
       </section>
@@ -60,13 +63,11 @@ export default function AgentsDirectoryPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           
           <div className="lg:col-span-2 space-y-20">
-            {/* Agents Grid */}
             <div className="space-y-12">
                <div className="flex items-center justify-between border-b pb-8">
                   <h2 className="text-4xl font-black flex items-center gap-5">
                      <ShieldCheck className="text-primary w-10 h-10" /> قائمة الوكلاء الموثوقين
                   </h2>
-                  <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest px-6 py-2 rounded-full border-primary/20 text-primary">Active Verified Status</Badge>
                </div>
                
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -97,6 +98,16 @@ export default function AgentsDirectoryPage() {
                                 <span className="text-xs font-bold">{m.residence || "مركز الخدمات الموحد"}</span>
                              </div>
                           </div>
+                       </div>
+
+                       {/* Rating Display */}
+                       <div className="flex items-center gap-2 mb-8 bg-muted/30 p-4 rounded-2xl border border-border/50">
+                          <div className="flex gap-1 text-primary">
+                             {[...Array(5)].map((_, i) => (
+                               <Star key={i} size={14} className={i < Math.round(m.rating || 5) ? 'fill-current' : 'opacity-20'} />
+                             ))}
+                          </div>
+                          <span className="text-xs font-black">({m.ratingCount || 0} تقييم)</span>
                        </div>
 
                        <div className="flex flex-wrap gap-2 mb-10">
@@ -134,20 +145,6 @@ export default function AgentsDirectoryPage() {
                   ))}
                </div>
             </div>
-
-            <Card className="luxury-card p-16 bg-foreground text-background border-none">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-12">
-                <div className="text-right space-y-6">
-                  <h2 className="text-4xl font-black leading-tight">انضم لنخبة الوكلاء</h2>
-                  <p className="text-muted opacity-80 max-w-lg leading-relaxed text-lg font-medium">
-                    هل تملك الخبرة والمصداقية في تقديم الخدمات الرقمية؟ تقدم بطلب "اعتماد وكيل" لتصبح جزءاً من شبكتنا الاحترافية.
-                  </p>
-                </div>
-                <Button asChild className="royal-button bg-background text-foreground hover:bg-muted h-20 px-16 text-xl">
-                  <Link href="/wallet">تقديم طلب الانضمام <ArrowRight className="mr-4" /></Link>
-                </Button>
-              </div>
-            </Card>
           </div>
 
           <div className="space-y-12">
@@ -169,15 +166,9 @@ export default function AgentsDirectoryPage() {
                     </div>
                   </div>
                 ))}
-                <div className="pt-10 border-t">
-                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest text-center">
-                    رسوم تشغيلية ثابتة: 5% لضمان أمان الصفقات.
-                  </p>
-                </div>
               </CardContent>
             </Card>
           </div>
-
         </div>
       </div>
     </main>

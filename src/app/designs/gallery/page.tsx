@@ -1,18 +1,21 @@
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
+import { useCollection, useFirestore, useMemoFirebase, useDoc } from "@/firebase";
+import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Palette, Smartphone, Sparkles, MessageSquare, Loader2, Camera, Award } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { MessageSquare, Loader2, Camera, Award, Sparkles, ExternalLink, Palette } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 export default function DesignGalleryPage() {
   const db = useFirestore();
-  const [designerPhone, setDesignerPhone] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const { data: config } = useDoc(settingsRef);
 
   const galleryQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -21,20 +24,10 @@ export default function DesignGalleryPage() {
 
   const { data: designs, loading } = useCollection(galleryQuery);
 
-  useEffect(() => {
-    const fetchDesignerInfo = async () => {
-      if (!db) return;
-      const q = query(collection(db, "users"), where("role", "==", "designer"), limit(1));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        setDesignerPhone(snap.docs[0].data().phoneNumber || "");
-      }
-    };
-    fetchDesignerInfo();
-  }, [db]);
-
-  const contactText = "مرحباً، لقد شاهدت أعمالك في معرض التصاميم وأريد طلب خدمة احترافية مشابهة.";
-  const whatsappLink = `https://wa.me/${designerPhone?.replace(/\+/g, '').replace(/\s/g, '')}?text=${encodeURIComponent(contactText)}`;
+  const handleRequest = (designerPhone: string, title: string) => {
+    const text = encodeURIComponent(`مرحباً، لقد شاهدت عملك الفني "${title}" في معرض XMOOD وأريد طلب تصميم احترافي مشابه.`);
+    window.open(`https://wa.me/${designerPhone?.replace(/\+/g, '').replace(/\s/g, '')}?text=${text}`, '_blank');
+  };
 
   return (
     <main className="min-h-screen bg-background" dir="rtl">
@@ -50,11 +43,13 @@ export default function DesignGalleryPage() {
 
         <div className="container mx-auto px-6 relative z-10 text-center">
            <Badge className="mb-10 py-2.5 px-10 bg-primary/10 text-primary border-primary/20 rounded-full font-black uppercase text-[10px] tracking-widest shadow-sm">
-              بورتفوليو نخبة المصممين والمبدعين
+              {config?.gallerySettings?.badge || "بورتفوليو نخبة المصممين والمبدعين"}
            </Badge>
-           <h1 className="text-6xl md:text-9xl font-headline font-black mb-10 text-foreground leading-tight tracking-tighter">معرض <span className="gold-text">الإبداع الرقمي</span></h1>
+           <h1 className="text-6xl md:text-9xl font-headline font-black mb-10 text-foreground leading-tight tracking-tighter">
+              {config?.gallerySettings?.title || "معرض"} <span className="gold-text">الإبداع الرقمي</span>
+           </h1>
            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto font-medium leading-relaxed">
-             استلهم من أرقى التصاميم والهويات البصرية التي نفذتها أنامل خبراء الإبداع في منصتنا الموثوقة.
+             {config?.gallerySettings?.subtitle || "استلهم من أرقى التصاميم والهويات البصرية التي نفذتها أنامل خبراء الإبداع في منصتنا الموثوقة."}
            </p>
         </div>
       </section>
@@ -78,24 +73,28 @@ export default function DesignGalleryPage() {
                   key={item.id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
                 >
-                  <Card className="luxury-card group h-full flex flex-col">
-                    <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                  <Card className="luxury-card group h-full flex flex-col border-none bg-card/60 backdrop-blur-xl shadow-2xl">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-muted cursor-pointer" onClick={() => setSelectedImage(item.imageUrl)}>
                        <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt={item.title} />
-                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                          <Sparkles size={40} className="text-primary animate-pulse" />
+                       </div>
                        <Badge className="absolute top-5 right-5 bg-primary text-black font-black text-[9px] uppercase px-5 py-1.5 rounded-full shadow-2xl tracking-widest">{item.category}</Badge>
                     </div>
                     <CardContent className="p-10 space-y-6 flex-1 flex flex-col">
                        <h3 className="text-3xl font-black leading-tight group-hover:gold-text transition-colors">{item.title}</h3>
                        <p className="text-base text-muted-foreground leading-relaxed font-medium line-clamp-3">{item.description}</p>
                        
-                       <div className="mt-auto pt-8 border-t">
-                          <Button asChild className="royal-button w-full h-16">
-                             <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                                <MessageSquare size={20} className="ml-2" /> طلب تصميم احترافي
-                             </a>
+                       <div className="mt-auto pt-8 border-t flex flex-col gap-4">
+                          <Button onClick={() => handleRequest(item.designerPhone, item.title)} className="royal-button w-full h-16 text-xs">
+                             <MessageSquare size={20} className="ml-2" /> {config?.gallerySettings?.buttonText || "طلب تصميم مشابه"}
                           </Button>
+                          <Link href={`/profile/${item.designerId}`} className="text-[10px] font-black text-primary uppercase text-center hover:underline flex items-center justify-center gap-2">
+                             <Award size={14} /> ملف المصرف المبدع <ExternalLink size={10} />
+                          </Link>
                        </div>
                     </CardContent>
                   </Card>
@@ -105,15 +104,26 @@ export default function DesignGalleryPage() {
          )}
       </section>
 
-      {/* Floating Action */}
+      {/* Lightbox Preview */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-3xl flex items-center justify-center p-4 md:p-20"
+            onClick={() => setSelectedImage(null)}
+          >
+             <img src={selectedImage} className="max-w-full max-h-full object-contain rounded-3xl shadow-[0_0_100px_rgba(212,175,55,0.2)]" alt="Preview" />
+             <Button className="absolute top-10 right-10 rounded-full h-14 w-14 bg-white/10 hover:bg-white/20 border-white/20 text-white font-black">X</Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="fixed bottom-10 left-10 z-[100] hidden md:block">
-         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button asChild className="accent-button h-20 px-12 shadow-2xl">
-               <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                  <Award size={24} className="ml-3" /> استشارة إبداعية مجانية
-               </a>
-            </Button>
-         </motion.div>
+         <Button asChild className="accent-button h-20 px-12 shadow-2xl rounded-[2rem] bg-primary text-black font-black uppercase text-xs">
+            <Link href="/designs/request">
+               <Palette size={24} className="ml-3" /> ابدأ مشروعك الآن
+            </Link>
+         </Button>
       </div>
     </main>
   );
