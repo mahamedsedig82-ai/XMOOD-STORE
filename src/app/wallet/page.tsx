@@ -17,7 +17,9 @@ import {
   CheckCircle,
   Mail,
   Upload,
-  Eye
+  Eye,
+  ShieldAlert,
+  Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -33,6 +35,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { sendAccountVerification } from "@/lib/auth";
 
 export default function ProfessionalWalletPage() {
   const { profile, user, loading: userLoading, isVerified } = useUser();
@@ -60,11 +63,24 @@ export default function ProfessionalWalletPage() {
   }, [profile]);
 
   const transactionsQuery = useMemoFirebase(() => {
-    if (!user || !db) return null;
+    if (!user || !db || !isVerified) return null;
     return query(collection(db, "users", user.uid, "transactions"), orderBy("createdAt", "desc"), limit(50));
-  }, [user, db]);
+  }, [user, db, isVerified]);
 
   const { data: transactions, loading: transLoading } = useCollection(transactionsQuery);
+
+  const handleResendVerification = async () => {
+    if (!user) return;
+    setIsUpdating(true);
+    try {
+      await sendAccountVerification(user);
+      toast({ title: "تم إعادة إرسال الرابط", description: "تفقد بريدك الإلكتروني الآن." });
+    } catch (e) {
+      toast({ variant: "destructive", title: "فشل الإرسال" });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -132,6 +148,37 @@ export default function ProfessionalWalletPage() {
       <Loader2 className="w-10 h-10 text-primary animate-spin" />
     </div>
   );
+
+  if (!isVerified && user) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
+        <Navbar />
+        <Card className="max-w-xl w-full p-10 md:p-16 text-center luxury-card border-none bg-card shadow-2xl relative overflow-hidden">
+           <div className="absolute top-0 right-0 w-48 h-48 bg-red-500/5 blur-3xl -mr-24 -mt-24" />
+           <div className="relative z-10 space-y-10">
+              <div className="w-24 h-24 bg-red-500/10 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto border-2 border-red-500/20 shadow-xl">
+                 <ShieldAlert className="w-12 h-12" />
+              </div>
+              <div className="space-y-4">
+                 <h2 className="text-3xl md:text-5xl font-black text-foreground leading-tight">الوصول مقيد سيادياً</h2>
+                 <p className="text-muted-foreground font-medium text-lg">يجب عليك توثيق بريدك الإلكتروني أولاً لتتمكن من استخدام المحفظة وإتمام العمليات.</p>
+                 <div className="p-6 bg-red-500/5 rounded-2xl border border-red-500/10 text-sm font-bold text-red-600/70">
+                    تفقد بريدك: <span className="underline">{user.email}</span> واضغط على رابط التفعيل.
+                 </div>
+              </div>
+              <div className="pt-6 space-y-4">
+                 <Button onClick={handleResendVerification} disabled={isUpdating} className="royal-button w-full h-16 text-lg">
+                    {isUpdating ? <Loader2 className="animate-spin" /> : <><Send size={20} className="ml-3" /> إعادة إرسال رابط التحقق</>}
+                 </Button>
+                 <Button asChild variant="ghost" className="w-full h-14 font-black uppercase text-[10px] tracking-widest opacity-60">
+                    <Link href="/">العودة للرئيسية</Link>
+                 </Button>
+              </div>
+           </div>
+        </Card>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-20" dir="rtl">

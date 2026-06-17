@@ -96,7 +96,10 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
  */
 export const sendAccountVerification = async (user: User) => {
   try {
-    await sendEmailVerification(user);
+    await sendEmailVerification(user, {
+      url: `${window.location.origin}/verify-email`,
+      handleCodeInApp: true,
+    });
     logSecurityEvent('login_success', "تم إرسال رابط توثيق البريد", user.email || "");
   } catch (error) {
     console.error("Verification Email Error:", error);

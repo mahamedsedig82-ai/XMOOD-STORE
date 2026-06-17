@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { loginEmail, registerEmail, sendMagicLink, resetPassword, syncUserProfile, isSuspiciousInput, logSecurityEvent, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { 
-  Loader2, Mail, Lock, ShieldCheck, Fingerprint, Shield, Sparkles, Send
+  Loader2, Mail, Lock, ShieldCheck, Fingerprint, Shield, Sparkles, Send, CheckCircle2
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,7 @@ export default function SecurityLoginPage() {
   const [captchaInput, setCaptchaInput] = useState("");
   const [captchaChallenge, setCaptchaChallenge] = useState({ a: 0, b: 0 });
   const [loading, setLoading] = useState(false);
+  const [isWaitingVerification, setIsWaitingVerification] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -87,12 +88,19 @@ export default function SecurityLoginPage() {
           securityAnswer
         });
         await sendAccountVerification(res.user);
-        toast({ title: "تم إنشاء العضوية", description: "تفقد بريدك الإلكتروني لتوثيق الحساب." });
+        setIsWaitingVerification(true);
+        toast({ title: "تم إرسال رابط التحقق", description: "يرجى مراجعة بريدك الإلكتروني لتفعيل الحساب." });
       } else {
-        await loginEmail(cleanEmail, password);
+        const res = await loginEmail(cleanEmail, password);
+        if (!res.user.emailVerified) {
+          setIsWaitingVerification(true);
+          toast({ variant: "destructive", title: "الحساب غير موثق", description: "يرجى التحقق من بريدك الإلكتروني أولاً." });
+          setLoading(false);
+          return;
+        }
         toast({ title: "تم تأكيد الدخول", description: "جاري تحميل واجهتك السيادية..." });
+        router.replace("/wallet");
       }
-      router.replace("/wallet");
     } catch (error: any) {
       toast({ 
         variant: "destructive", 
@@ -100,7 +108,7 @@ export default function SecurityLoginPage() {
         description: error.code === 'auth/invalid-email' ? "تنسيق البريد الإلكتروني غير صحيح." : "يرجى التحقق من صحة البيانات أو وجود حساب مسبق." 
       });
     } finally {
-      setLoading(false);
+      if (!isWaitingVerification) setLoading(false);
     }
   };
 
@@ -112,6 +120,7 @@ export default function SecurityLoginPage() {
     setLoading(true);
     try {
       await sendMagicLink(cleanEmail);
+      setIsWaitingVerification(true);
       toast({ title: "تم إرسال المفتاح السحري", description: "تفقد صندوق الوارد (أو مجلد السبام) لتأمين الدخول." });
     } catch (error) {
       toast({ variant: "destructive", title: "فشل الإرسال", description: "تأكد من صحة البريد أو حاول لاحقاً." });
@@ -120,16 +129,39 @@ export default function SecurityLoginPage() {
     }
   };
 
-  const handleResetPassword = async () => {
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail) return toast({ variant: "destructive", title: "تنبيه أمني", description: "يرجى كتابة البريد الإلكتروني لاستعادة الوصول." });
-    try {
-      await resetPassword(cleanEmail);
-      toast({ title: "بروتوكول استعادة الوصول", description: "تم إرسال تعليمات إعادة ضبط كلمة المرور لبريدك." });
-    } catch (error) {
-      toast({ variant: "destructive", title: "خطأ" });
-    }
-  };
+  if (isWaitingVerification) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
+        <Navbar />
+        <Card className="max-w-lg w-full p-10 md:p-16 text-center luxury-card border-none bg-card shadow-2xl relative overflow-hidden">
+           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -mr-16 -mt-16" />
+           <div className="relative z-10 space-y-8">
+              <div className="w-24 h-24 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto border-2 border-primary/20 animate-pulse">
+                 <Mail className="w-12 h-12 text-primary" />
+              </div>
+              <div className="space-y-4">
+                 <h2 className="text-3xl md:text-5xl font-black gold-text leading-tight">بانتظار توثيق الهوية</h2>
+                 <p className="text-muted-foreground font-medium text-lg leading-relaxed">
+                    لقد أرسلنا رابط التحقق السيادي إلى: <br />
+                    <span className="text-primary font-bold">{email}</span>
+                 </p>
+                 <div className="p-6 bg-muted/30 rounded-2xl border text-sm font-bold text-muted-foreground leading-relaxed">
+                    افحص صندوق الوارد (أو مجلد الـ Spam) واضغط على الرابط لتتمكن من الدخول للمتجر.
+                 </div>
+              </div>
+              <div className="flex flex-col gap-4">
+                 <Button onClick={() => window.location.reload()} className="royal-button w-full h-16 text-lg">
+                    لقد قمت بالتحقق، سجل الدخول الآن
+                 </Button>
+                 <Button onClick={() => setIsWaitingVerification(false)} variant="ghost" className="h-14 font-black uppercase text-[10px] tracking-widest opacity-60">
+                    العودة لصفحة الدخول
+                 </Button>
+              </div>
+           </div>
+        </Card>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background pt-32 pb-20 overflow-x-hidden" dir="rtl">
@@ -214,7 +246,7 @@ export default function SecurityLoginPage() {
                       </div>
 
                       <div className="flex flex-col md:flex-row gap-3 pt-4 border-t">
-                         <Button onClick={handleResetPassword} variant="ghost" className="flex-1 h-12 rounded-xl text-muted-foreground font-black text-[9px] uppercase tracking-widest">استعادة الوصول</Button>
+                         <Button onClick={() => resetPassword(email).then(() => toast({ title: "تم الإرسال" }))} variant="ghost" className="flex-1 h-12 rounded-xl text-muted-foreground font-black text-[9px] uppercase tracking-widest">استعادة الوصول</Button>
                       </div>
                    </TabsContent>
 
@@ -260,7 +292,7 @@ export default function SecurityLoginPage() {
                       
                       <div className="p-6 bg-primary/5 rounded-[2rem] border border-primary/20 space-y-4">
                          <div className="flex items-center justify-between">
-                            <Label className="text-[10px] font-black text-primary uppercase">تحقق CAPTCHA الذكي</Label>
+                            <Label className="text-xs font-black text-primary uppercase">تحقق CAPTCHA الذكي</Label>
                             <Badge variant="outline" className="text-sm font-black bg-white dark:bg-zinc-800 px-4 py-1.5 rounded-lg border-primary/30">
                                {captchaChallenge.a} + {captchaChallenge.b} = ؟
                             </Badge>
