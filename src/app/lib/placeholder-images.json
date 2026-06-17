@@ -3,32 +3,32 @@
   "placeholderImages": [
     {
       "id": "hero-luxury",
-      "description": "Luxury digital abstract background",
-      "imageUrl": "https://picsum.photos/seed/exigo1/1200/600",
-      "imageHint": "luxury abstract gold"
+      "description": "XMOOD Official Royal Brand Image",
+      "imageUrl": "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png",
+      "imageHint": "luxury brand gold"
     },
     {
       "id": "game-charge",
       "description": "Gaming currency icon",
-      "imageUrl": "https://picsum.photos/seed/game1/400/300",
+      "imageUrl": "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png",
       "imageHint": "gaming coins"
     },
     {
       "id": "game-account",
       "description": "High-level gaming account",
-      "imageUrl": "https://picsum.photos/seed/acc1/400/300",
+      "imageUrl": "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png",
       "imageHint": "video game character"
     },
     {
       "id": "design-service",
       "description": "Professional graphic design",
-      "imageUrl": "https://picsum.photos/seed/design1/400/300",
+      "imageUrl": "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png",
       "imageHint": "graphic design luxury"
     },
     {
       "id": "middleman-trust",
       "description": "Secure transaction handshake",
-      "imageUrl": "https://picsum.photos/seed/trust1/400/300",
+      "imageUrl": "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png",
       "imageHint": "secure handshake gold"
     }
   ]

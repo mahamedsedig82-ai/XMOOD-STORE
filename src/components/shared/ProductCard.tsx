@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -39,13 +40,16 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   const highlights = product.highlights ? product.highlights.split('\n').filter((h: string) => h.trim() !== "") : [];
+  
+  // الصورة الرسمية الجديدة لـ XMOOD كافتراضية
+  const officialPlaceholder = "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png";
 
   return (
     <Card className={`luxury-card flex flex-col group h-full ${isOutOfStock ? 'opacity-70 grayscale' : ''}`}>
       <CardHeader className="p-4 relative aspect-video bg-muted overflow-hidden">
         <div className="relative w-full h-full overflow-hidden rounded-[1.5rem]">
           <Image 
-            src={product.imageUrl || "https://picsum.photos/seed/product/600/400"} 
+            src={product.imageUrl || officialPlaceholder} 
             alt={product.name}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-110"

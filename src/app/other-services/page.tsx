@@ -25,6 +25,8 @@ export default function OtherServicesPublic() {
 
   const { data: allServices, loading } = useCollection(servicesQuery);
 
+  const officialPlaceholder = "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png";
+
   // تجميع الخدمات حسب النوع (التصنيف)
   const groupedServices = useMemo(() => {
     if (!allServices) return {};
@@ -69,7 +71,7 @@ export default function OtherServicesPublic() {
           </div>
         ) : (
           <div className="space-y-24">
-            {Object.entries(groupedServices).map(([category, items]: [string, any], groupIdx) => (
+            {Object.entries(groupedServices).map(([category, items]: [string, any]) => (
               <section key={category} className="animate-fade-up">
                  <div className="flex items-center gap-4 mb-12 border-r-4 border-primary pr-6">
                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
@@ -91,7 +93,7 @@ export default function OtherServicesPublic() {
                         <Card className="luxury-card h-full flex flex-col hover:border-primary/30 transition-all duration-500 group">
                           <div className="relative aspect-video bg-muted overflow-hidden">
                             <img 
-                              src={s.imageUrl || `https://picsum.photos/seed/${s.id}/800/450`} 
+                              src={s.imageUrl || officialPlaceholder} 
                               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                               alt={s.name} 
                             />
