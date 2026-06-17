@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -54,12 +55,14 @@ export default function CheckoutPage() {
   const walletBalance = profile?.walletBalance || 0;
   const hasEnoughBalance = walletBalance >= finalTotal;
 
-  const canPay = items.length > 0 && selectedShipping && hasEnoughBalance && !isProcessing && !userLoading;
+  // التحقق من الجاهزية للدفع
+  const canPay = items.length > 0 && selectedShipping && hasEnoughBalance && !isProcessing && !userLoading && deliveryEmail.includes("@");
 
   const handleCompleteOrder = async () => {
     if (!user || !profile || !db) return;
     if (!selectedShipping) return toast({ variant: "destructive", title: "يرجى اختيار وسيلة تسليم" });
     if (!hasEnoughBalance) return toast({ variant: "destructive", title: "الرصيد غير كافٍ" });
+    if (!deliveryEmail || !deliveryEmail.includes("@")) return toast({ variant: "destructive", title: "بريد غير صالح", description: "يرجى إدخال بريد إلكتروني صحيح للتسليم." });
 
     setIsProcessing(true);
     const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -68,23 +71,28 @@ export default function CheckoutPage() {
       await runTransaction(db, async (transaction) => {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists()) throw "Profile Error";
+        if (!userSnap.exists()) throw "خطأ في ملف المستخدم";
 
         const currentBalance = userSnap.data().walletBalance || 0;
-        if (currentBalance < finalTotal) throw "Insufficient Balance";
+        if (currentBalance < finalTotal) throw "الرصيد غير كافٍ لإتمام العملية";
 
-        // Check first item stock and treasury rules
+        // التحقق من أول منتج (لتبسيط الأتمتة)
         const mainItem = items[0];
         const productRef = doc(db, "products", mainItem.id);
         const productSnap = await transaction.get(productRef);
         
-        if (!productSnap.exists()) throw "Product Not Found";
+        if (!productSnap.exists()) throw "المنتج غير موجود في المستودع";
         const pData = productSnap.data();
         
-        if (pData.status === 'paused') throw "Product Paused";
-        if (pData.stock <= 0) throw "Out of Stock";
-
+        if (pData.status === 'paused') throw "الخدمة متوقفة مؤقتاً بطلب من الإدارة";
+        
+        // التحقق الإلزامي من كود الشحن للمنتجات الرقمية الفورية
         const codes = (pData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
+        
+        if (codes.length <= 0 && pData.category !== 'خدمات يدوية') {
+           throw "عذراً، نفد مخزون أكواد هذا المنتج حالياً. يرجى مراجعة الإدارة.";
+        }
+
         let deliveredCode = "";
         let finalStatus: any = 'completed';
         let finalDeliveryStatus: any = 'delivered';
@@ -133,7 +141,7 @@ export default function CheckoutPage() {
           userId: user.uid,
           amount: finalTotal,
           type: 'purchase',
-          description: `شراء آلي: ${mainItem.name}`,
+          description: `استحواذ آلي: ${mainItem.name}`,
           orderId,
           balanceBefore: currentBalance,
           balanceAfter,
@@ -148,7 +156,7 @@ export default function CheckoutPage() {
       setSuccessOrderId(orderId);
       toast({ title: config?.cartLabels?.successMsg || "تم التسليم بنجاح!" });
     } catch (e: any) {
-      toast({ variant: "destructive", title: "فشل المعالجة", description: String(e) });
+      toast({ variant: "destructive", title: "فشل البروتوكول المالي", description: String(e) });
     } finally {
       setIsProcessing(false);
     }
@@ -232,7 +240,7 @@ export default function CheckoutPage() {
                  </div>
                  <Card className="luxury-card p-8 md:p-12 border-none bg-card/60 backdrop-blur-xl space-y-10">
                     <div className="space-y-4">
-                       <Label className="text-[10px] md:text-xs font-black text-primary uppercase pr-4 tracking-widest">البريد الإلكتروني المعتمد للتسليم</Label>
+                       <Label className="text-[10px] md:text-xs font-black text-primary uppercase pr-4 tracking-widest">البريد الإلكتروني المعتمد للتسليم (إجباري)</Label>
                        <Input 
                          value={deliveryEmail} 
                          onChange={e => setDeliveryEmail(e.target.value)} 

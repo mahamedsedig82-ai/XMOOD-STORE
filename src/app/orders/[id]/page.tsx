@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useParams } from "next/navigation";
@@ -7,9 +8,10 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Printer, CheckCircle2, Clock, ShieldCheck, Tag, Truck, Zap, Loader2, DollarSign, User } from "lucide-react";
+import { Printer, CheckCircle2, Clock, ShieldCheck, Tag, Truck, Zap, Loader2, DollarSign, User, Copy } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { motion } from "framer-motion";
+import { toast } from "@/hooks/use-toast";
 
 export default function OrderInvoicePage() {
   const { id } = useParams();
@@ -23,6 +25,12 @@ export default function OrderInvoicePage() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    toast({ title: "تم النسخ", description: `تم نسخ ${label} إلى الحافظة.` });
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="animate-spin text-primary" size={60} /></div>;
@@ -49,7 +57,11 @@ export default function OrderInvoicePage() {
                     <span className="handwritten-logo text-5xl">XMOOD STORE</span>
                     <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em]">Official Sovereign Invoice</p>
                     <div className="pt-4 space-y-2">
-                       <p className="text-xs font-bold flex items-center gap-3"><Tag size={14} className="text-primary" /> مرجع العملية: <span className="font-mono text-primary select-all">{order.id}</span></p>
+                       <p className="text-xs font-bold flex items-center gap-3 cursor-pointer group" onClick={() => copyToClipboard(order.id, "رقم العملية")}>
+                          <Tag size={14} className="text-primary" /> 
+                          مرجع العملية: <span className="font-mono text-primary group-hover:underline">{order.id}</span>
+                          <Copy size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                       </p>
                        <p className="text-xs font-bold flex items-center gap-3"><Clock size={14} className="text-primary" /> التاريخ: {new Date(order.createdAt).toLocaleString('ar-EG')}</p>
                     </div>
                  </div>
@@ -66,7 +78,7 @@ export default function OrderInvoicePage() {
                     <h4 className="text-[10px] font-black text-primary uppercase tracking-widest mb-6 flex items-center gap-2"><User size={14} /> بيانات المستحوذ</h4>
                     <p className="text-xl font-black">{order.userName}</p>
                     <p className="text-sm text-muted-foreground mt-2">{order.userEmail}</p>
-                    <p className="text-[9px] font-mono text-zinc-500 mt-2">ID: {order.userId}</p>
+                    <p className="text-[9px] font-mono text-zinc-500 mt-2 cursor-pointer hover:text-primary" onClick={() => copyToClipboard(order.userId, "معرف العميل")}>ID: {order.userId}</p>
                  </div>
                  <div className="p-8 bg-muted/20 rounded-[2rem] border border-border/50">
                     <h4 className="text-[10px] font-black text-primary uppercase tracking-widest mb-6 flex items-center gap-2"><Truck size={14} /> لوجستيات التسليم</h4>
@@ -102,11 +114,21 @@ export default function OrderInvoicePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16 relative z-10">
                  <div className="space-y-8">
-                    {order.shippingCodeSent && (
-                      <div className="p-8 bg-primary/5 border-2 border-dashed border-primary/40 rounded-[2.5rem] shadow-inner text-center">
-                         <p className="text-[10px] font-black text-primary uppercase mb-4 tracking-[0.2em]">كود التفعيل السيادي</p>
+                    {order.shippingCodeSent ? (
+                      <div 
+                        className="p-8 bg-primary/5 border-2 border-dashed border-primary/40 rounded-[2.5rem] shadow-inner text-center cursor-pointer group hover:bg-primary/10 transition-all"
+                        onClick={() => copyToClipboard(order.shippingCodeSent, "كود التفعيل")}
+                      >
+                         <p className="text-[10px] font-black text-primary uppercase mb-4 tracking-[0.2em] flex items-center justify-center gap-2">
+                           كود التفعيل السيادي <Copy size={12} className="opacity-40 group-hover:opacity-100" />
+                         </p>
                          <p className="text-4xl md:text-5xl font-black tracking-[0.3em] gold-text select-all">{order.shippingCodeSent}</p>
-                         <p className="text-[7px] font-bold text-muted-foreground uppercase mt-6 tracking-widest">Secret Delivery Asset</p>
+                         <p className="text-[7px] font-bold text-muted-foreground uppercase mt-6 tracking-widest">انقر لنسخ الكود فوراً</p>
+                      </div>
+                    ) : (
+                      <div className="p-8 bg-amber-500/5 border-2 border-dashed border-amber-500/20 rounded-[2.5rem] text-center">
+                         <p className="text-amber-500 font-black text-sm uppercase">بانتظار تزويد الكود من المخزون</p>
+                         <p className="text-[9px] text-muted-foreground mt-2 uppercase">Stock replenishing in progress...</p>
                       </div>
                     )}
                     {order.notes && (

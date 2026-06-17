@@ -12,7 +12,7 @@ import {
   Search, Filter, Calendar, DollarSign, Zap, 
   FileText, Truck, Mail, Tag, ArrowRightLeft, 
   ChevronRight, MoreVertical, XCircle, AlertCircle,
-  Eye, RefreshCw, Smartphone, Trash2
+  Eye, RefreshCw, Smartphone, Trash2, Copy
 } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,6 +37,11 @@ export default function AdminOperationsControlCenter() {
   }, [db]);
 
   const { data: orders, loading } = useCollection(ordersQuery);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: "تم النسخ بنجاح" });
+  };
 
   const stats = useMemo(() => {
     if (!orders) return { revenue: 0, completed: 0, processing: 0, total: 0, cancelled: 0 };
@@ -190,7 +195,12 @@ export default function AdminOperationsControlCenter() {
                              </div>
                              <div>
                                 <p className="font-bold text-sm truncate max-w-[150px]">{order.userName}</p>
-                                <p className="text-[8px] font-mono text-primary uppercase tracking-tighter">REF: {order.id}</p>
+                                <p 
+                                  className="text-[8px] font-mono text-primary uppercase tracking-tighter cursor-pointer hover:underline flex items-center gap-1"
+                                  onClick={() => copyToClipboard(order.id)}
+                                >
+                                  REF: {order.id} <Copy size={8} />
+                                </p>
                              </div>
                           </div>
                        </TableCell>
@@ -239,7 +249,7 @@ export default function AdminOperationsControlCenter() {
                        <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-1.5 rounded-full font-black text-[9px] uppercase tracking-[0.3em]">Official Sovereign Record</Badge>
                        <h2 className="text-3xl md:text-5xl font-headline font-black gold-text leading-tight">بيانات العملية الآلية</h2>
                        <div className="flex items-center gap-4 text-xs font-mono opacity-50">
-                          <span className="flex items-center gap-2"><Tag size={12}/> REF: {selectedOrder.id}</span>
+                          <span className="flex items-center gap-2 cursor-pointer hover:text-white" onClick={() => copyToClipboard(selectedOrder.id)}><Tag size={12}/> REF: {selectedOrder.id} <Copy size={10}/></span>
                           <span className="flex items-center gap-2"><Clock size={12}/> {new Date(selectedOrder.createdAt).toLocaleString('ar-EG')}</span>
                        </div>
                     </div>
@@ -288,8 +298,13 @@ export default function AdminOperationsControlCenter() {
 
                           <div className="space-y-6">
                              <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-3"><Zap size={14}/> كود التسليم المستخرج</h4>
-                             <div className="p-8 bg-zinc-900 border-2 border-dashed border-primary/40 rounded-[2.5rem] text-center">
-                                <p className="text-[8px] text-muted-foreground uppercase font-black mb-4">Auto-Extracted Secret Key</p>
+                             <div 
+                                className="p-8 bg-zinc-900 border-2 border-dashed border-primary/40 rounded-[2.5rem] text-center cursor-pointer hover:bg-zinc-800 transition-all group"
+                                onClick={() => copyToClipboard(selectedOrder.shippingCodeSent || "")}
+                              >
+                                <p className="text-[8px] text-muted-foreground uppercase font-black mb-4 flex items-center justify-center gap-2">
+                                  Auto-Extracted Secret Key <Copy size={10} className="opacity-0 group-hover:opacity-100" />
+                                </p>
                                 <p className="text-3xl font-black tracking-[0.2em] text-primary uppercase select-all">{selectedOrder.shippingCodeSent || "OUT_OF_STOCK"}</p>
                              </div>
                           </div>
