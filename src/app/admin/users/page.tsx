@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, doc, updateDoc, query, orderBy, limit } from "firebase/firestore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -68,11 +69,15 @@ export default function AdminUsersIntelligence() {
       });
   };
 
-  const filtered = users?.filter(u => 
-    u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.phoneNumber?.includes(searchTerm)
-  );
+  const filtered = useMemo(() => {
+    if (!users) return [];
+    const search = searchTerm.toLowerCase();
+    return users.filter(u => 
+      u.displayName?.toLowerCase().includes(search) || 
+      u.email?.toLowerCase().includes(search) ||
+      u.phoneNumber?.includes(searchTerm)
+    );
+  }, [users, searchTerm]);
 
   return (
     <div className="space-y-10 animate-fade-in" dir="rtl">

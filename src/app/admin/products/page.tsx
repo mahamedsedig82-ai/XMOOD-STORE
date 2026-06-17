@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
@@ -129,7 +130,10 @@ export default function AdminProducts() {
     setIsOpen(true);
   };
 
-  const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filtered = useMemo(() => {
+    const search = searchTerm.toLowerCase();
+    return products.filter(p => p.name.toLowerCase().includes(search));
+  }, [products, searchTerm]);
 
   return (
     <div className="space-y-8 animate-fade-in" dir="rtl">
@@ -143,7 +147,11 @@ export default function AdminProducts() {
             <Button className="h-14 px-8 royal-button text-[10px] uppercase"><Plus className="ml-2" size={16} /> إضافة باقة جديدة</Button>
           </DialogTrigger>
           <DialogContent className="max-w-3xl bg-zinc-950 border-primary/20 rounded-[2.5rem] p-10 text-white shadow-2xl overflow-y-auto max-h-[90vh]">
-            <DialogHeader><DialogTitle className="text-2xl font-bold flex items-center gap-4 gold-text uppercase"><Box size={24} className="text-primary" /> {editingId ? 'تعديل بيانات الباقة' : 'إنشاء باقة إلكترونية'}</DialogTitle></DialogHeader>
+            <DialogHeader>
+               <DialogTitle className="text-2xl font-bold flex items-center gap-4 gold-text uppercase">
+                  <Box size={24} className="text-primary" /> {editingId ? 'تعديل بيانات الباقة' : 'إنشاء باقة إلكترونية'}
+               </DialogTitle>
+            </DialogHeader>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
               <div className="space-y-2"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">اسم الباقة</label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="h-12 rounded-xl bg-zinc-900 border-none px-6 font-bold" /></div>
               <div className="space-y-2"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">التصنيف الرئيسي</label><Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="h-12 rounded-xl bg-zinc-900 border-none px-6 font-bold" /></div>

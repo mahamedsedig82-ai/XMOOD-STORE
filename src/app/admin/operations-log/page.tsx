@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -41,9 +42,10 @@ export default function AdminOperationsControlCenter() {
     if (!orders) return { revenue: 0, completed: 0, processing: 0, total: 0, cancelled: 0 };
     return orders.reduce((acc: any, order: any) => {
       acc.total += 1;
+      const orderAmount = order.totalAmount || order.amount || 0;
       if (order.status === 'completed') {
         acc.completed += 1;
-        acc.revenue += (order.totalAmount || order.amount || 0);
+        acc.revenue += orderAmount;
       } else if (order.status === 'pending_stock') {
         acc.processing += 1;
       } else if (order.status === 'cancelled') {
@@ -56,10 +58,11 @@ export default function AdminOperationsControlCenter() {
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     return orders.filter((o: any) => {
+      const search = searchTerm.toLowerCase();
       const matchesSearch = 
-        o.id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        o.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        o.userEmail?.toLowerCase().includes(searchTerm.toLowerCase());
+        o.id?.toLowerCase().includes(search) || 
+        o.userName?.toLowerCase().includes(search) ||
+        o.userEmail?.toLowerCase().includes(search);
       
       const matchesStatus = statusFilter === "all" || o.status === statusFilter;
       
@@ -70,7 +73,8 @@ export default function AdminOperationsControlCenter() {
         if (timeFilter === "today") {
           matchesTime = orderDate.toDateString() === now.toDateString();
         } else if (timeFilter === "week") {
-          const weekAgo = new Date(now.setDate(now.getDate() - 7));
+          const weekAgo = new Date();
+          weekAgo.setDate(now.getDate() - 7);
           matchesTime = orderDate >= weekAgo;
         } else if (timeFilter === "month") {
           matchesTime = orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear();
@@ -225,12 +229,15 @@ export default function AdminOperationsControlCenter() {
 
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
          <DialogContent className="max-w-4xl bg-zinc-950 border-primary/20 rounded-[2.5rem] p-0 overflow-hidden shadow-2xl text-white">
+            <DialogHeader className="sr-only">
+               <DialogTitle>بيانات العملية الآلية التفصيلية</DialogTitle>
+            </DialogHeader>
             {selectedOrder && (
               <div className="flex flex-col h-full max-h-[90vh]">
                  <div className="p-8 md:p-12 bg-gradient-to-br from-zinc-900 to-black border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                     <div className="space-y-4">
                        <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-1.5 rounded-full font-black text-[9px] uppercase tracking-[0.3em]">Official Sovereign Record</Badge>
-                       <h2 className="text-3xl md:text-5xl font-headline font-black gold-text">بيانات العملية الآلية</h2>
+                       <h2 className="text-3xl md:text-5xl font-headline font-black gold-text leading-tight">بيانات العملية الآلية</h2>
                        <div className="flex items-center gap-4 text-xs font-mono opacity-50">
                           <span className="flex items-center gap-2"><Tag size={12}/> REF: {selectedOrder.id}</span>
                           <span className="flex items-center gap-2"><Clock size={12}/> {new Date(selectedOrder.createdAt).toLocaleString('ar-EG')}</span>
