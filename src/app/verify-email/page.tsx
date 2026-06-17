@@ -33,7 +33,7 @@ export default function VerifyEmailPage() {
               setStatus('success');
               toast({ title: "تم توثيق الهوية السيادية" });
               // توجيه فوري للمحفظة بعد النجاح
-              setTimeout(() => router.replace("/wallet"), 1000);
+              setTimeout(() => router.replace("/wallet"), 500);
               return;
            }
         }
@@ -42,7 +42,7 @@ export default function VerifyEmailPage() {
         const userFromMagic = await completeMagicLinkSignIn();
         if (userFromMagic) {
           setStatus('success');
-          setTimeout(() => router.replace("/wallet"), 1000);
+          setTimeout(() => router.replace("/wallet"), 500);
           return;
         }
 

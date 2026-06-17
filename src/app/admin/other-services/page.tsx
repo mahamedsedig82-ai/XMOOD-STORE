@@ -101,6 +101,7 @@ export default function AdminOtherServices() {
                  <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">اسم الخدمة</label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div>
                  <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">السعر (USD)</label><Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} /></div>
               </div>
+              <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">رابط الصورة</label><Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} /></div>
               <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">وصف الخدمة</label><Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="وصف الخدمة..." /></div>
             </div>
             <DialogFooter className="mt-10"><Button onClick={handleSubmit} disabled={isProcessing} className="royal-button w-full h-16">{isProcessing ? <Loader2 className="animate-spin" /> : "حفظ الخدمة السيادية"}</Button></DialogFooter>
@@ -131,7 +132,7 @@ export default function AdminOtherServices() {
                 </div>
              </CardContent>
              
-             {/* ISOLATED ADMIN BAR - ALWAYS AT THE BOTTOM, OUTSIDE CONTENT */}
+             {/* ISOLATED ADMIN BAR - FIXED AT BOTTOM OUTSIDE CONTENT */}
              <div className="p-5 bg-muted/30 border-t flex gap-4 mt-auto">
                 <Button onClick={() => startEdit(s)} variant="outline" className="flex-1 h-12 rounded-xl font-black text-[10px] uppercase gap-2 border-primary/20 text-primary hover:bg-primary/5 shadow-sm"><Edit2 size={16} /> تعديل</Button>
                 <Button onClick={() => handleDelete(s.id)} disabled={isProcessing} variant="destructive" className="w-12 h-12 rounded-xl p-0 shadow-xl shadow-red-500/10">

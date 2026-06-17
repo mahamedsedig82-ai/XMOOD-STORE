@@ -2,7 +2,7 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Settings, Image as ImageIcon, Zap, Loader2, Palette, Globe, History
+  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Settings, Image as ImageIcon, Zap, Loader2, Palette, Globe, History, GitBranch, Layers
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -31,10 +31,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "سوق الخدمات", icon: Briefcase, href: "/admin/other-services", roles: ['owner', 'admin', 'gm', 'agent'] },
     { label: "إدارة المعرض", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'gm', 'designer'] },
     { label: "إدارة الوكلاء", icon: ShieldCheck, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
+    { label: "إدارة الفروع", icon: GitBranch, href: "/admin/branches", roles: ['owner', 'admin', 'gm'] },
+    { label: "الهيكل التنظيمي", icon: Layers, href: "/admin/categories", roles: ['owner', 'admin', 'gm'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
     { label: "المالية والبنك", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'gm', 'accountant'] },
     { label: "الإعدادات الشاملة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin', 'gm'] },
     { label: "مركز الأمان", icon: ShieldAlert, href: "/admin/security", roles: ['owner', 'admin', 'gm'] },
+    { label: "المساعد الإداري AI", icon: Zap, href: "/admin/ai", roles: ['owner', 'admin', 'gm'] },
   ], []);
 
   const visibleSections = useMemo(() => {
