@@ -11,7 +11,7 @@ import {
   Save, Loader2, Layout, MessageSquare, Zap, Megaphone, 
   Palette, Share2, Info, Image as ImageIcon, Shield, Wallet, 
   Settings, Type, Smartphone, Eye, Sparkles, Mail, Globe, Upload, Link as LinkIcon, 
-  LayoutGrid, Power, AlignRight
+  LayoutGrid, Power, AlignRight, ShoppingCart
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -36,7 +36,6 @@ export default function AdminContentManager() {
   const [form, setForm] = useState({
     appearance: { primaryColor: "#d4af37", logoUrl: "", faviconUrl: "" },
     siteInfo: { title: "XMOOD STORE", subtitle: "", description: "", copyright: "" },
-    pageContent: { heroTitle: "", heroDescription: "", footerAbout: "" },
     contact: { whatsapp: "", email: "", telegram: "", facebook: "", instagram: "", youtube: "", tiktok: "", workHours: "" },
     emailBranding: { senderName: "XMOOD SECURITY", senderEmail: "", footerText: "© 2025 XMOOD STORE. All Rights Reserved." },
     ads: { headerBanner: "", promoText: "", isActive: false, buttonText: "اطلب الآن" },
@@ -61,6 +60,13 @@ export default function AdminContentManager() {
       uidDesc: "زود محفظتك بالرصيد عبر أحد وكلائنا المعتمدين؛ قدم معرفك الرقمي (UID) الموحد أدناه لضمان وصول الحوالة في الوقت الفعلي.",
       ledgerTitle: "سجل التدفقات والعمليات"
     },
+    cartLabels: {
+      cartTitle: "سلة المقتنيات",
+      checkoutTitle: "تأكيد الاستحواذ الآلي",
+      emptyCartMsg: "السلة السيادية فارغة حالياً",
+      successMsg: "تم التسليم بنجاح!",
+      summaryTitle: "ملخص الاستحواذ"
+    },
     navLabels: {
       home: "الرئيسية",
       store: "المتجر",
@@ -80,6 +86,7 @@ export default function AdminContentManager() {
         contact: { ...prev.contact, ...(config.contact || {}) },
         loginPage: { ...prev.loginPage, ...(config.loginPage || {}) },
         walletPage: { ...prev.walletPage, ...(config.walletPage || {}) },
+        cartLabels: { ...prev.cartLabels, ...(config.cartLabels || {}) },
         navLabels: { ...prev.navLabels, ...(config.navLabels || {}) },
         footer: { ...prev.footer, ...(config.footer || {}) }
       }));
@@ -172,10 +179,10 @@ export default function AdminContentManager() {
             <Palette size={16} className="text-primary" /> الهوية واللوقو
           </TabsTrigger>
           <TabsTrigger value="footer" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
-            <AlignRight size={16} className="text-primary" /> التذييل والطرفيات
+            <AlignRight size={16} className="text-primary" /> التذييل
           </TabsTrigger>
-          <TabsTrigger value="emails" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
-            <Mail size={16} className="text-primary" /> هوية المراسلات
+          <TabsTrigger value="cart" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
+            <ShoppingCart size={16} className="text-primary" /> نصوص السلة
           </TabsTrigger>
           <TabsTrigger value="login" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Shield size={16} className="text-primary" /> نصوص الدخول
@@ -197,7 +204,7 @@ export default function AdminContentManager() {
                        <Tabs defaultValue="url" className="w-full">
                          <TabsList className="bg-muted p-1 rounded-xl mb-4">
                             <TabsTrigger value="url" className="flex-1 gap-2"><LinkIcon size={12} /> رابط</TabsTrigger>
-                            <TabsTrigger value="upload" className="flex-1 gap-2"><Upload size={12} /> رفع من الهاتف</TabsTrigger>
+                            <TabsTrigger value="upload" className="flex-1 gap-2"><Upload size={12} /> رفع من المعرض</TabsTrigger>
                          </TabsList>
                          <TabsContent value="url">
                             <Input 
@@ -236,7 +243,6 @@ export default function AdminContentManager() {
                     </div>
                     <div className="relative group">
                        <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full scale-150 opacity-50" />
-                       {/* تم تطبيق luxury-image هنا لضمان جمال اللوقو */}
                        <div className="relative w-48 h-48 md:w-64 md:h-24 bg-white dark:bg-zinc-950 luxury-image overflow-hidden flex items-center justify-center">
                           {form.appearance.logoUrl ? (
                             <img src={form.appearance.logoUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -248,7 +254,6 @@ export default function AdminContentManager() {
                           )}
                        </div>
                     </div>
-                    <p className="text-[8px] text-muted-foreground font-bold uppercase">يتم قص الصورة آلياً لتناسب أبعاد الهوية</p>
                  </div>
               </div>
            </Card>
@@ -312,27 +317,25 @@ export default function AdminContentManager() {
            </Card>
         </TabsContent>
 
-        <TabsContent value="emails">
+        <TabsContent value="cart">
            <Card className="luxury-card p-8 md:p-12 space-y-10 border-none">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">اسم المرسل (From Name)</Label>
-                    <Input value={form.emailBranding.senderName} onChange={e => setForm({...form, emailBranding: {...form.emailBranding, senderName: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" placeholder="XMOOD SECURITY" />
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">عنوان صفحة السلة</Label>
+                    <Input value={form.cartLabels.cartTitle} onChange={e => setForm({...form, cartLabels: {...form.cartLabels, cartTitle: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" />
                  </div>
                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">بريد الإرسال (للعرض فقط)</Label>
-                    <Input value={form.emailBranding.senderEmail} readOnly className="h-14 bg-muted/20 border-none rounded-2xl font-mono text-xs opacity-60" placeholder="noreply@xmood-36c92.firebaseapp.com" />
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">عنوان صفحة الدفع</Label>
+                    <Input value={form.cartLabels.checkoutTitle} onChange={e => setForm({...form, cartLabels: {...form.cartLabels, checkoutTitle: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" />
                  </div>
-                 <div className="col-span-full space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">تذييل الرسالة (Footer)</Label>
-                    <Textarea value={form.emailBranding.footerText} onChange={e => setForm({...form, emailBranding: {...form.emailBranding, footerText: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[100px] p-4" />
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">رسالة السلة الفارغة</Label>
+                    <Input value={form.cartLabels.emptyCartMsg} onChange={e => setForm({...form, cartLabels: {...form.cartLabels, emptyCartMsg: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" />
                  </div>
-              </div>
-              <div className="p-6 bg-primary/5 rounded-2xl border border-primary/10 flex gap-4">
-                 <Info size={24} className="text-primary shrink-0" />
-                 <p className="text-xs font-bold leading-relaxed">
-                   <b>مهم:</b> بما أنك تستخدم النطاق الافتراضي، قم بنسخ "اسم المرسل" و "التذييل" أعلاه وضعهما يدوياً في <b>Firebase Console &rarr; Authentication &rarr; Templates</b> لتحسين وصول الرسائل.
-                 </p>
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">رسالة النجاح النهائي</Label>
+                    <Input value={form.cartLabels.successMsg} onChange={e => setForm({...form, cartLabels: {...form.cartLabels, successMsg: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" />
+                 </div>
               </div>
            </Card>
         </TabsContent>
@@ -341,11 +344,11 @@ export default function AdminContentManager() {
            <Card className="luxury-card p-8 md:p-12 space-y-10 border-none">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">عنوان الصفحة الكبير</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">عنوان صفحة الدخول</Label>
                     <Input value={form.loginPage.title} onChange={e => setForm({...form, loginPage: {...form.loginPage, title: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" />
                  </div>
                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">وصف الهوية الرقمية</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">الوصف الفرعي</Label>
                     <Input value={form.loginPage.subtitle} onChange={e => setForm({...form, loginPage: {...form.loginPage, subtitle: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-medium" />
                  </div>
               </div>
@@ -360,7 +363,7 @@ export default function AdminContentManager() {
                     <Input value={form.walletPage.title} onChange={e => setForm({...form, walletPage: {...form.walletPage, title: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-black" />
                  </div>
                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">عنوان قسم الإيداع (UID)</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">عنوان قسم الإيداع</Label>
                     <Input value={form.walletPage.uidTitle} onChange={e => setForm({...form, walletPage: {...form.walletPage, uidTitle: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" />
                  </div>
                  <div className="col-span-full space-y-3">
