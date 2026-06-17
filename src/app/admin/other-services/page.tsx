@@ -8,8 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Edit2, Zap, Loader2, Save, Image as ImageIcon, Smartphone, Upload, Link as LinkIcon, DollarSign, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Edit2, Zap, Loader2, Save, Image as ImageIcon, Smartphone, Upload, Link as LinkIcon, DollarSign, AlertCircle, UserCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -128,7 +127,7 @@ export default function AdminOtherServices() {
     setIsProcessing(true);
     deleteDoc(serviceRef)
       .then(() => {
-        toast({ title: "تم حذف الخدمة من السوق" });
+        toast({ title: "تم حذف الخدمة من السوق بنجاح" });
       })
       .catch(async () => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: serviceRef.path, operation: 'delete' }));
@@ -202,58 +201,66 @@ export default function AdminOtherServices() {
         </Dialog>
       </header>
 
-      <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl shadow-xl overflow-hidden">
-        <ScrollArea className="max-h-[800px] overflow-x-auto responsive-table">
-          <Table className="w-full table-fixed">
-            <TableHeader className="bg-muted/30 sticky top-0 z-20">
-              <TableRow>
-                <TableHead className="text-right py-6 pr-8 font-black text-[10px] uppercase w-[45%]">الخدمة والناشر</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase w-[15%]">القيمة</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase w-[20%]">الواتساب</TableHead>
-                <TableHead className="text-center font-black text-[10px] uppercase w-[20%]">العمليات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
-              ) : services?.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-black uppercase tracking-widest opacity-30">لا توجد خدمات مسجلة</TableCell></TableRow>
-              ) : services?.map((s: any) => (
-                <TableRow key={s.id} className="hover:bg-primary/5 transition-all border-b border-border/30 group">
-                  <TableCell className="py-6 pr-8 overflow-hidden" data-label="الخدمة">
-                    <div className="flex items-center gap-4 w-full">
-                      <img src={s.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} className="w-12 h-12 rounded-xl object-cover border shadow-sm shrink-0" alt="" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-black text-sm truncate block group-hover:text-primary transition-colors" title={s.name}>{s.name}</p>
-                        <p className="text-[9px] text-muted-foreground uppercase font-black tracking-tighter opacity-60">بواسطة: {s.agentName || "وكيل معتمد"}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell data-label="السعر" className="font-black text-lg text-primary tracking-tighter">{formatUSD(s.price)}</TableCell>
-                  <TableCell data-label="واتساب" className="font-mono text-[10px] text-muted-foreground font-bold truncate">{s.whatsapp}</TableCell>
-                  <TableCell className="text-center" data-label="التحكم">
-                    <div className="flex justify-center gap-3 shrink-0">
-                      <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-primary hover:bg-primary/10 border border-primary/10" onClick={() => startEdit(s)}>
-                        <Edit2 size={16} />
-                      </Button>
-                      <Button size="icon" variant="ghost" disabled={isProcessing} className="h-10 w-10 rounded-xl text-red-500 hover:bg-red-50 border border-red-100" onClick={() => handleDelete(s.id)}>
-                        {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={16} />}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
-      </Card>
+      {/* التحول لنظام البطاقات لحل مشكلة الحذف والنصوص العملاقة */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {loading ? (
+          <div className="col-span-full py-40 text-center"><Loader2 className="animate-spin mx-auto text-primary" size={60} /></div>
+        ) : services?.length === 0 ? (
+          <div className="col-span-full py-40 text-center luxury-card border-dashed opacity-30">
+            <Zap size={100} className="mx-auto mb-6 text-muted-foreground" />
+            <p className="font-black text-xl uppercase tracking-widest">المستودع فارغ حالياً</p>
+          </div>
+        ) : services?.map((s: any) => (
+          <Card key={s.id} className="luxury-card border-none bg-card/60 backdrop-blur-xl shadow-xl flex flex-col group overflow-hidden h-full">
+             <div className="relative aspect-video overflow-hidden">
+                <img 
+                  src={s.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                  alt="" 
+                />
+                <Badge className="absolute top-4 right-4 bg-primary text-black font-black text-[8px] uppercase">{s.type}</Badge>
+             </div>
+             <CardContent className="p-6 flex-1 flex flex-col space-y-4">
+                <div className="space-y-1">
+                   <h3 className="font-black text-lg line-clamp-1 group-hover:text-primary transition-colors" title={s.name}>{s.name}</h3>
+                   <p className="text-[10px] text-muted-foreground flex items-center gap-2"><UserCheck size={12} className="text-primary" /> {s.agentName || "وكيل معتمد"}</p>
+                </div>
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed h-10">{s.description}</p>
+                <div className="flex justify-between items-center pt-4 border-t border-border/50 mt-auto">
+                   <span className="font-black text-2xl text-primary tracking-tighter">{formatUSD(s.price)}</span>
+                   <span className="font-mono text-[9px] opacity-40">{s.whatsapp}</span>
+                </div>
+             </CardContent>
+             
+             {/* شريط العمليات: زر الحذف خارج نطاق الصورة والنص تماماً */}
+             <div className="p-4 bg-muted/20 border-t flex gap-3">
+                <Button 
+                  onClick={() => startEdit(s)}
+                  variant="outline" 
+                  className="flex-1 h-12 rounded-xl font-black text-[10px] uppercase gap-2 border-primary/20 text-primary hover:bg-primary/5"
+                >
+                   <Edit2 size={14} /> تعديل
+                </Button>
+                <Button 
+                  onClick={() => handleDelete(s.id)}
+                  disabled={isProcessing}
+                  variant="destructive" 
+                  className="w-12 h-12 rounded-xl p-0 shadow-lg hover:shadow-red-500/20"
+                >
+                   {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={18} />}
+                </Button>
+             </div>
+          </Card>
+        ))}
+      </div>
 
-      <div className="p-8 bg-blue-500/5 border border-blue-500/10 rounded-[2.5rem] flex items-center gap-6 animate-fade-up">
-         <AlertCircle className="text-blue-500 shrink-0" size={32} />
-         <p className="text-sm text-blue-200/60 leading-relaxed font-medium">
-            <b>نصيحة إدارية:</b> تم تفعيل نظام "النص المحصور" لضمان ثبات أزرار الحذف مهما كان طول اسم الخدمة. يمكنك حذف أي خدمة مستعصية الآن بضغطة واحدة.
+      <div className="p-8 bg-primary/5 border border-primary/10 rounded-[2.5rem] flex items-center gap-6 animate-fade-up">
+         <AlertCircle className="text-primary shrink-0" size={32} />
+         <p className="text-sm text-muted-foreground leading-relaxed font-medium">
+            <b>تنبيه أمني:</b> تم تفعيل نظام "البطاقات المزدوجة" لضمان وصولك لزر الحذف دائماً مهما كان طول اسم الخدمة. زر الحذف الأحمر الآن يقع في أسفل كل بطاقة بشكل مستقل تماماً.
          </p>
       </div>
     </div>
   );
 }
+    

@@ -8,7 +8,8 @@ import { Loader2, ShieldCheck, XCircle, Home, Wallet, Sparkles } from "lucide-re
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, applyActionCode } from "firebase/auth";
+import { toast } from "@/hooks/use-toast";
 
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
@@ -17,16 +18,35 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     const verify = async () => {
+      // الحصول على كود العملية من الرابط (لتحقق البريد القياسي)
+      const urlParams = new URLSearchParams(window.location.search);
+      const oobCode = urlParams.get('oobCode');
+      const mode = urlParams.get('mode');
+
       try {
-        // First try magic link
+        // 1. التعامل مع التحقق القياسي (Email Verification)
+        if (oobCode && mode === 'verifyEmail' && auth) {
+           await applyActionCode(auth, oobCode);
+           if (auth.currentUser) {
+              await auth.currentUser.reload();
+              await syncUserProfile(auth.currentUser);
+           }
+           setStatus('success');
+           toast({ title: "تم توثيق البريد بنجاح" });
+           setTimeout(() => router.push("/wallet"), 1500);
+           return;
+        }
+
+        // 2. التعامل مع الرابط السحري (Magic Link)
         const userFromMagic = await completeMagicLinkSignIn();
         if (userFromMagic) {
           setStatus('success');
-          setTimeout(() => router.push("/wallet"), 2000);
+          toast({ title: "تم الدخول بنجاح" });
+          setTimeout(() => router.push("/wallet"), 1500);
           return;
         }
 
-        // Handle standard email verification if user is already logged in
+        // 3. التحقق إذا كان المستخدم مسجلاً بالفعل وتم تفعيل بريده
         if (auth) {
           onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
@@ -34,14 +54,15 @@ export default function VerifyEmailPage() {
               if (firebaseUser.emailVerified) {
                 await syncUserProfile(firebaseUser);
                 setStatus('success');
-                setTimeout(() => router.push("/wallet"), 2000);
+                setTimeout(() => router.push("/wallet"), 1500);
               }
             }
           });
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error("Verification Error:", e);
         setStatus('error');
+        toast({ variant: "destructive", title: "خطأ في التوثيق", description: e.message });
       }
     };
     verify();
@@ -59,8 +80,8 @@ export default function VerifyEmailPage() {
                <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary w-8 h-8" />
             </div>
             <div className="space-y-3">
-              <h2 className="text-3xl md:text-4xl font-black gold-text">جاري التحقق السيادي</h2>
-              <p className="text-muted-foreground font-medium text-sm md:text-base">نحن نوثق هويتك الرقمية ونؤمن اتصالك الآن، يرجى الانتظار...</p>
+              <h2 className="text-3xl md:text-4xl font-black gold-text uppercase">جاري التوثيق السيادي</h2>
+              <p className="text-muted-foreground font-medium text-sm md:text-base">نحن نتحقق من هويتك الرقمية الآن لتأمين وصولك للمحفظة...</p>
             </div>
           </div>
         )}
@@ -105,3 +126,4 @@ export default function VerifyEmailPage() {
     </div>
   );
 }
+    
