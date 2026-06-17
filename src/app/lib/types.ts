@@ -64,8 +64,8 @@ export interface Order {
   shippingMethodName: string;
   deliveryEmail?: string;
   notes?: string;
-  status: 'pending' | 'processing' | 'completed' | 'cancelled';
-  deliveryStatus: 'preparing' | 'shipped' | 'delivered';
+  status: 'completed' | 'failed' | 'pending_stock' | 'cancelled' | 'refunded';
+  deliveryStatus: 'delivered' | 'preparing' | 'failed';
   shippingCodeSent?: string;
   createdAt: string;
   updatedAt?: string;
