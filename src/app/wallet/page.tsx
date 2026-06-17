@@ -82,59 +82,18 @@ export default function ProfessionalWalletPage() {
     }
   };
 
-  const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const MAX_WIDTH = 800;
-          let width = img.width;
-          let height = img.height;
-          if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
-          else { if (height > 1200) { width *= 1200 / height; height = 1200; } }
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx?.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL("image/jpeg", 0.7));
-        };
-      };
-      reader.onerror = reject;
-    });
-  };
-
   const handleUpdateProfile = () => {
     if (!user || !db) return;
     setIsUpdating(true);
-    const userRef = doc(db, "users", user.uid);
-    updateDoc(userRef, {
+    updateDoc(doc(db, "users", user.uid), {
       displayName: newDisplayName,
       phoneNumber: newPhone,
       photoURL: newPhotoURL,
       updatedAt: new Date().toISOString()
     }).then(() => {
       setIsEditing(false);
-      toast({ title: "تم التحديث السيادي بنجاح" });
+      toast({ title: "تم تحديث البيانات بنجاح" });
     }).finally(() => setIsUpdating(false));
-  };
-
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setIsUpdating(true);
-      try {
-        const b64 = await compressImage(file);
-        setNewPhotoURL(b64);
-        toast({ title: "تم تجهيز الهوية البصرية" });
-      } catch (err) {
-        toast({ variant: "destructive", title: "فشل المعالجة" });
-      } finally {
-        setIsUpdating(false);
-      }
-    }
   };
 
   const copyToClipboard = (text: string, label: string = "المعرف") => {
@@ -334,10 +293,17 @@ export default function ProfessionalWalletPage() {
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
          <DialogContent className="max-w-md bg-card border-none rounded-[2rem] p-6 md:p-10 shadow-2xl">
             <DialogHeader>
-               <DialogTitle className="text-xl md:text-3xl font-black flex items-center gap-3 gold-text"><Settings className="text-primary" /> تحديث البيانات السيادية</DialogTitle>
+               <DialogTitle className="text-xl md:text-3xl font-black flex items-center gap-3 gold-text"><Settings className="text-primary" /> تحديث البيانات</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 mt-6">
-               <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+               <input type="file" ref={fileInputRef} onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setNewPhotoURL(ev.target?.result as string);
+                    reader.readAsDataURL(file);
+                  }
+               }} accept="image/*" className="hidden" />
                <div className="flex flex-col items-center gap-4">
                   <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                      <Avatar className="w-20 h-20 md:w-24 md:h-24 border-4 border-primary/20 shadow-xl rounded-2xl overflow-hidden transition-all group-hover:border-primary">
@@ -348,11 +314,11 @@ export default function ProfessionalWalletPage() {
                         {isUpdating ? <Loader2 className="animate-spin text-white" /> : <Upload size={18} className="text-white" />}
                      </div>
                   </div>
-                  <p className="text-[8px] font-black uppercase text-muted-foreground">اضغط لتغيير الصورة الرمزية</p>
+                  <p className="text-[8px] font-black uppercase text-muted-foreground">تغيير الصورة الرمزية</p>
                </div>
                <div className="space-y-4">
                   <div className="space-y-2">
-                     <Label className="text-[9px] font-black uppercase text-primary pr-2 tracking-widest">اسم العرض (السيادي)</Label>
+                     <Label className="text-[9px] font-black uppercase text-primary pr-2 tracking-widest">اسم العرض</Label>
                      <Input value={newDisplayName} onChange={e => setNewDisplayName(e.target.value)} className="h-12 bg-muted/50 border-none rounded-xl font-black px-4" />
                   </div>
                   <div className="space-y-2">
@@ -363,7 +329,7 @@ export default function ProfessionalWalletPage() {
             </div>
             <DialogFooter className="mt-8">
                <Button onClick={handleUpdateProfile} disabled={isUpdating} className="royal-button w-full h-14 text-base shadow-primary/20">
-                  {isUpdating ? <Loader2 className="animate-spin" /> : "حفظ وتثبيت التعديلات"}
+                  {isUpdating ? <Loader2 className="animate-spin" /> : "حفظ التعديلات"}
                </Button>
             </DialogFooter>
          </DialogContent>

@@ -19,27 +19,22 @@ export default function VerifyEmailPage() {
     const verify = async () => {
       try {
         // First try magic link
-        const user = await completeMagicLinkSignIn();
-        if (user) {
+        const userFromMagic = await completeMagicLinkSignIn();
+        if (userFromMagic) {
           setStatus('success');
-          setTimeout(() => router.push("/wallet"), 3000);
+          setTimeout(() => router.push("/wallet"), 2000);
           return;
         }
 
-        // If not magic link, check if user is already logged in and verified
+        // Handle standard email verification if user is already logged in
         if (auth) {
           onAuthStateChanged(auth, async (firebaseUser) => {
-            if (firebaseUser?.emailVerified) {
-              await syncUserProfile(firebaseUser);
-              setStatus('success');
-              setTimeout(() => router.push("/wallet"), 3000);
-            } else if (firebaseUser && !firebaseUser.emailVerified) {
-              // Reload user to check verification status if they just clicked the link
+            if (firebaseUser) {
               await firebaseUser.reload();
               if (firebaseUser.emailVerified) {
                 await syncUserProfile(firebaseUser);
                 setStatus('success');
-                setTimeout(() => router.push("/wallet"), 3000);
+                setTimeout(() => router.push("/wallet"), 2000);
               }
             }
           });
