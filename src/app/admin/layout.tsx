@@ -2,7 +2,7 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Palette, MailCheck, History, Truck
+  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Palette, MailCheck, History, Truck, Loader2
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "نظرة عامة", icon: BarChart3, href: "/admin", roles: ['owner', 'admin', 'gm'] },
     { label: "المخزون والمنتجات", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support'] },
-    { label: "سجل المبيعات", icon: History, href: "/admin/operations-log", roles: ['owner', 'admin', 'gm'] },
+    { label: "سجل العمليات", icon: History, href: "/admin/operations-log", roles: ['owner', 'admin', 'gm'] },
     { label: "إدارة الشحن", icon: Truck, href: "/admin/shipping", roles: ['owner', 'admin', 'gm'] },
     { label: "سوق الخدمات", icon: Briefcase, href: "/admin/other-services", roles: ['owner', 'admin', 'agent'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
@@ -68,7 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {profile?.label || "ADMIN ACCESS"}
             </Badge>
           </SidebarHeader>
-          <SidebarContent className="p-6 overflow-y-auto smooth-scroll custom-scrollbar">
+          <SidebarContent className="p-6 overflow-y-auto smooth-scroll custom-scrollbar text-right">
              <SidebarMenu className="gap-3">
                {visibleSections.map((item) => (
                  <SidebarMenuItem key={item.href}>
@@ -114,7 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </header>
 
           <main className="flex-1 overflow-y-auto smooth-scroll custom-scrollbar px-4 md:px-16 py-12 pb-32 bg-background">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto text-right">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
