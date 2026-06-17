@@ -120,7 +120,7 @@ export default function DesignerPortfolioAdmin() {
                 <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                 <Badge className="absolute top-4 right-4 bg-primary text-black font-black uppercase text-[8px] px-4 py-1 rounded-full shadow-2xl">{item.category}</Badge>
              </div>
-             <CardContent className="p-8 flex-1">
+             <CardContent className="p-8 flex-1 flex flex-col">
                 <h4 className="font-black text-2xl line-clamp-1 mb-2 group-hover:gold-text transition-colors">{item.title}</h4>
                 <p className="text-sm text-muted-foreground line-clamp-2 h-10 leading-relaxed font-medium">{item.description}</p>
              </CardContent>

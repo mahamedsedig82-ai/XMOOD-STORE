@@ -118,20 +118,20 @@ export default function AdminOtherServices() {
           </div>
         ) : services?.map((s: any) => (
           <Card key={s.id} className="luxury-card border-none flex flex-col group h-full shadow-lg">
-             <div className="relative aspect-video overflow-hidden">
+             <div className="relative aspect-video overflow-hidden bg-muted">
                 <img src={s.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                 <Badge className="absolute top-4 right-4 bg-primary text-black font-black uppercase text-[8px] px-4 py-1 rounded-full">{s.type}</Badge>
              </div>
-             <CardContent className="p-8 flex-1">
+             <CardContent className="p-8 flex-1 flex flex-col">
                 <h3 className="font-black text-2xl mb-4 line-clamp-1 group-hover:gold-text transition-colors">{s.name}</h3>
                 <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed mb-6 h-14 overflow-hidden">{s.description}</p>
-                <div className="flex justify-between items-center pt-6 border-t">
+                <div className="mt-auto pt-6 border-t flex justify-between items-center">
                    <span className="font-black text-2xl text-primary">{formatUSD(s.price)}</span>
                    <span className="text-[8px] font-black text-zinc-500 uppercase">{s.agentName}</span>
                 </div>
              </CardContent>
              
-             {/* ISOLATED ADMIN BAR - ALWAYS VISIBLE OUTSIDE CONTENT */}
+             {/* ISOLATED ADMIN BAR - ALWAYS AT THE BOTTOM, OUTSIDE CONTENT */}
              <div className="p-5 bg-muted/30 border-t flex gap-4 mt-auto">
                 <Button onClick={() => startEdit(s)} variant="outline" className="flex-1 h-12 rounded-xl font-black text-[10px] uppercase gap-2 border-primary/20 text-primary hover:bg-primary/5 shadow-sm"><Edit2 size={16} /> تعديل</Button>
                 <Button onClick={() => handleDelete(s.id)} disabled={isProcessing} variant="destructive" className="w-12 h-12 rounded-xl p-0 shadow-xl shadow-red-500/10">

@@ -30,24 +30,24 @@ export default function VerifyEmailPage() {
            if (auth.currentUser) {
               await auth.currentUser.reload();
               await syncUserProfile(auth.currentUser);
+              setStatus('success');
+              toast({ title: "تم توثيق الهوية السيادية" });
+              // توجيه فوري للمحفظة بعد النجاح
+              setTimeout(() => router.replace("/wallet"), 1000);
+              return;
            }
-           setStatus('success');
-           toast({ title: "تم توثيق الهوية السيادية" });
-           // توجيه فوري للمحفظة بعد النجاح
-           router.replace("/wallet");
-           return;
         }
 
         // 2. التعامل مع الرابط السحري (Magic Link)
         const userFromMagic = await completeMagicLinkSignIn();
         if (userFromMagic) {
           setStatus('success');
-          router.replace("/wallet");
+          setTimeout(() => router.replace("/wallet"), 1000);
           return;
         }
 
-        // 3. مراقبة حالة المصادقة (للحالات التي يتم فيها التوثيق في تبويب آخر)
-        onAuthStateChanged(auth, async (firebaseUser) => {
+        // 3. مراقبة حالة المصادقة لضمان التوجيه التلقائي
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await firebaseUser.reload();
             if (firebaseUser.emailVerified) {
@@ -57,6 +57,8 @@ export default function VerifyEmailPage() {
             }
           }
         });
+        
+        return () => unsubscribe();
 
       } catch (e: any) {
         console.error("Verification Error:", e);
