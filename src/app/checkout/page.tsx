@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft } from "lucide-react";
+import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft, AlertCircle } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -37,8 +37,8 @@ export default function CheckoutPage() {
   const { data: config } = useDoc(settingsRef);
 
   useEffect(() => {
-    if (user?.email) setDeliveryEmail(user.email);
-  }, [user]);
+    if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
+  }, [user, deliveryEmail]);
 
   const shippingQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -47,7 +47,8 @@ export default function CheckoutPage() {
   const { data: shippingMethods, loading: shippingLoading } = useCollection(shippingQuery);
 
   const finalTotal = total + (selectedShipping?.extraFee || 0);
-  const hasEnoughBalance = (profile?.walletBalance || 0) >= finalTotal;
+  const walletBalance = profile?.walletBalance || 0;
+  const hasEnoughBalance = walletBalance >= finalTotal;
 
   const handleCompleteOrder = async () => {
     if (!user || !profile || !db) {
@@ -212,7 +213,7 @@ export default function CheckoutPage() {
                               <div className="w-14 h-14 bg-background rounded-2xl flex items-center justify-center border shadow-xl group-hover:scale-110 transition-transform">
                                  {m.imageUrl ? <img src={m.imageUrl} className="w-full h-full object-cover rounded-2xl" alt="" /> : <Truck size={24} />}
                               </div>
-                              {m.badge && <Badge className="bg-primary text-black font-black text-[8px] px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">{m.badge}</Badge>}
+                              {m.badge && <Badge className="bg-primary text-black font-black text-[7px] px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">{m.badge}</Badge>}
                            </div>
                            <h4 className="font-black text-xl md:text-2xl mb-2 relative z-10">{m.name}</h4>
                            <p className="text-xs md:text-sm text-muted-foreground font-medium leading-relaxed mb-6 line-clamp-2 relative z-10">{m.description}</p>
@@ -255,7 +256,7 @@ export default function CheckoutPage() {
                        <Textarea 
                          value={notes} 
                          onChange={e => setNotes(e.target.value)} 
-                         className="rounded-[2rem] bg-background border-2 border-border/50 p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner focus:ring-2 focus:ring-primary/20" 
+                         className="rounded-[2rem] bg-background border-2 border-border/50 p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner focus:ring-2 focus:ring-primary/20 text-foreground" 
                          placeholder="اكتب هنا أي تفاصيل تريد إيضاحها للنظام..." 
                        />
                     </div>
@@ -272,11 +273,11 @@ export default function CheckoutPage() {
                  <div className="space-y-8">
                     <div className="flex justify-between text-muted-foreground font-black text-xs md:text-base uppercase tracking-wider">
                        <span>قيمة الأصول</span>
-                       <span className="text-foreground">{formatUSD(total)}</span>
+                       <span>{formatUSD(total)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground font-black text-xs md:text-base uppercase tracking-wider">
                        <span>لوجستيات الشحن</span>
-                       <span className="text-foreground">{formatUSD(selectedShipping?.extraFee || 0)}</span>
+                       <span>{formatUSD(selectedShipping?.extraFee || 0)}</span>
                     </div>
                     <div className="h-px bg-primary/10 my-4" />
                     <div className="flex justify-between items-end">
@@ -295,23 +296,23 @@ export default function CheckoutPage() {
                           <div className="flex flex-col">
                              <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">رصيدك المتوفر حالياً</span>
                              <span className={`font-black text-2xl md:text-3xl tracking-tighter transition-colors ${hasEnoughBalance ? 'text-primary' : 'text-red-500'}`}>
-                                {formatUSD(profile?.walletBalance || 0)}
+                                {formatUSD(walletBalance)}
                              </span>
                           </div>
                        </div>
                     </div>
 
-                    {!hasEnoughBalance && (
-                       <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 animate-fade-in">
-                          <ShieldCheck size={18} className="text-red-500 shrink-0" />
-                          <p className="text-[10px] font-black text-red-500 uppercase">عذراً، رصيدك غير كافٍ. يرجى الشحن عبر وكيل معتمد.</p>
+                    {!hasEnoughBalance && !userLoading && (
+                       <div className="p-5 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 animate-fade-in mt-6">
+                          <AlertCircle size={20} className="text-red-500 shrink-0" />
+                          <p className="text-[10px] font-black text-red-500 uppercase leading-relaxed">عذراً، رصيدك غير كافٍ لإتمام هذه العملية. يرجى الشحن عبر أحد وكلائنا.</p>
                        </div>
                     )}
 
                     <Button 
                       onClick={handleCompleteOrder} 
                       disabled={isProcessing || !selectedShipping || !hasEnoughBalance || userLoading}
-                      className="royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-8 group"
+                      className="royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-10 group disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed"
                     >
                       {isProcessing ? (
                         <Loader2 className="animate-spin" size={32} />
