@@ -5,6 +5,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import { Toaster } from '@/components/ui/toaster';
 import { GuidanceBot } from '@/components/shared/GuidanceBot';
 import { PageLoader } from '@/components/shared/PageLoader';
+import { SystemHealthMonitor } from '@/components/shared/SystemHealthMonitor';
 
 export const metadata: Metadata = {
   title: 'XMOOD STORE | منصة الخدمات الإلكترونية المعتمدة',
@@ -33,6 +34,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background text-foreground selection:bg-primary/30 overflow-x-hidden">
         <FirebaseClientProvider>
+          <SystemHealthMonitor />
           <PageLoader />
           <div className="relative flex min-h-screen flex-col">
             {children}

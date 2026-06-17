@@ -11,8 +11,25 @@ import {
   User,
   sendPasswordResetEmail
 } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc, addDoc, collection } from "firebase/firestore";
 import { auth, db } from "./firebase";
+
+/**
+ * تسجيل الأحداث الأمنية لضمان "التتبع" في لوحة الإدارة.
+ */
+export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'access_denied', description: string, userEmail?: string) {
+  try {
+    addDoc(collection(db, "security_logs"), {
+      type,
+      description,
+      userEmail: userEmail || "UNKNOWN",
+      status: type === 'login_success' ? 'success' : 'alert',
+      timestamp: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error("Failed to log security event");
+  }
+}
 
 /**
  * Sovereign Identity Sync: Ensures user profile exists in Firestore with full security data.
@@ -44,40 +61,39 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         securityAnswer: additionalData.securityAnswer || "",
         updatedAt: serverTimestamp(),
       };
-      await setDoc(userRef, initialProfile);
+      setDoc(userRef, initialProfile);
+      logSecurityEvent('login_success', "إنشاء عضوية جديدة ومزامنة الملف", user.email || "");
     } else {
       const updatePayload = { 
         lastSeen: new Date().toISOString(),
         updatedAt: serverTimestamp(),
         ...additionalData
       };
-      await updateDoc(userRef, updatePayload);
+      updateDoc(userRef, updatePayload);
+      logSecurityEvent('login_success', "تحديث جلسة دخول نشطة", user.email || "");
     }
   } catch (error) {
     console.error("Profile Sync Error:", error);
-    throw error;
   }
 }
 
 /**
  * Improved Magic Link Delivery: Optimized for default subdomains.
- * We use the current origin to ensure the link matches the domain it's sent from.
  */
 export const sendMagicLink = async (email: string) => {
   const cleanEmail = email.trim().toLowerCase();
   
-  // لضمان الوصول للـ Inbox عند استخدام نطاق افتراضي، يجب أن يكون الرابط بسيطاً ومباشراً
   const actionCodeSettings = {
     url: `${window.location.origin}/verify-email`,
     handleCodeInApp: true,
   };
   
   try {
-    // تسجيل البريد في التخزين المحلي لتسهيل عملية التحقق عند العودة
     await sendSignInLinkToEmail(auth, cleanEmail, actionCodeSettings);
     window.localStorage.setItem('emailForSignIn', cleanEmail);
+    logSecurityEvent('login_success', "طلب إرسال رابط سحري للدخول", cleanEmail);
   } catch (error) {
-    console.error("[AUTH] Magic Link Error:", error);
+    logSecurityEvent('auth_fail', "فشل إرسال رابط سحري", cleanEmail);
     throw error;
   }
 };
@@ -91,7 +107,7 @@ export const completeMagicLinkSignIn = async () => {
     if (email) {
       const result = await signInWithEmailLink(auth, email, window.location.href);
       window.localStorage.removeItem('emailForSignIn');
-      await syncUserProfile(result.user);
+      syncUserProfile(result.user);
       return result.user;
     }
   }
@@ -101,4 +117,7 @@ export const completeMagicLinkSignIn = async () => {
 export const loginEmail = (e: string, p: string) => signInWithEmailAndPassword(auth, e.trim().toLowerCase(), p);
 export const registerEmail = (e: string, p: string) => createUserWithEmailAndPassword(auth, e.trim().toLowerCase(), p);
 export const resetPassword = (e: string) => sendPasswordResetEmail(auth, e.trim().toLowerCase());
-export const logout = () => signOut(auth);
+export const logout = () => {
+  logSecurityEvent('login_success', "خروج آمن من النظام", auth.currentUser?.email || "");
+  return signOut(auth);
+};

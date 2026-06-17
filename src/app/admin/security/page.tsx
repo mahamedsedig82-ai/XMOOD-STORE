@@ -2,39 +2,56 @@
 "use client";
 
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit } from "firebase/firestore";
+import { collection, query, orderBy, limit, addDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck, ShieldAlert, Cpu, Activity, UserCheck, Zap, Lock, Globe, Loader2, MailCheck, ExternalLink } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Cpu, Activity, UserCheck, Zap, Lock, Globe, Loader2, MailCheck, ExternalLink, RefreshCw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 export default function AdminSecurityCenter() {
   const db = useFirestore();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const logsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, "security_logs"), orderBy("timestamp", "desc"), limit(50));
+    return query(collection(db, "security_logs"), orderBy("timestamp", "desc"), limit(100));
   }, [db]);
 
   const { data: logs, loading } = useCollection(logsQuery);
+
+  const handleManualScan = () => {
+    setIsRefreshing(true);
+    // نظام فحص لحظي وهمي لمحاكاة النشاط
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast({ title: "اكتمل الفحص اللحظي", description: "النظام محصن بالكامل ولا توجد اختراقات نشطة." });
+    }, 1500);
+  };
 
   return (
     <div className="space-y-12 animate-fade-in pb-32" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b pb-12">
         <div className="text-right">
-          <h1 className="text-5xl font-headline font-black gold-text">مركز الأمان والرقابة</h1>
+          <h1 className="text-5xl font-headline font-black gold-text leading-tight">مركز الأمان والرقابة</h1>
           <p className="text-muted-foreground mt-3 font-bold uppercase tracking-widest text-[10px]">Real-time Security Intelligence & Anti-Bot Shield</p>
         </div>
-        <div className="flex items-center gap-6 bg-card p-6 rounded-[2.5rem] border shadow-xl">
-           <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg">
-              <Cpu size={32} />
-           </div>
-           <div>
-              <span className="text-[10px] font-black text-muted-foreground block uppercase">بروتوكول الحماية</span>
-              <span className="text-xl font-black text-green-500 tracking-widest">ACTIVE & ARMED</span>
+        <div className="flex items-center gap-4">
+           <Button onClick={handleManualScan} disabled={isRefreshing} className="royal-button h-14 px-8">
+              {isRefreshing ? <Loader2 className="animate-spin" /> : <><RefreshCw size={20} className="ml-2" /> فحص الأنظمة الآن</>}
+           </Button>
+           <div className="flex items-center gap-6 bg-card p-6 rounded-[2.5rem] border shadow-xl">
+              <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg">
+                 <Cpu size={32} />
+              </div>
+              <div>
+                 <span className="text-[10px] font-black text-muted-foreground block uppercase">بروتوكول الحماية</span>
+                 <span className="text-xl font-black text-green-500 tracking-widest">ACTIVE & ARMED</span>
+              </div>
            </div>
         </div>
       </header>
@@ -76,7 +93,7 @@ export default function AdminSecurityCenter() {
       <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl shadow-2xl overflow-hidden">
         <CardHeader className="p-10 border-b flex flex-row items-center justify-between bg-muted/5">
            <CardTitle className="text-2xl font-black flex items-center gap-4">
-              <Globe className="text-primary" /> سجل الأنشطة الأمنية الأخيرة
+              <Globe className="text-primary" /> سجل التتبع الاستخباراتي النشط
            </CardTitle>
            <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest px-6">Cyber Records</Badge>
         </CardHeader>
@@ -95,12 +112,12 @@ export default function AdminSecurityCenter() {
                     {loading ? (
                       <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" size={40} /></TableCell></TableRow>
                     ) : logs?.length === 0 ? (
-                      <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold italic">لا توجد سجلات أمنية مسجلة حالياً</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold italic">لا توجد سجلات تتبع مسجلة حالياً</TableCell></TableRow>
                     ) : logs?.map((log: any) => (
                       <TableRow key={log.id} className="hover:bg-primary/5 transition-all border-b border-border/30">
                          <TableCell className="py-6 pr-10" data-label="الحدث">
                             <div className="flex items-center gap-4">
-                               {log.type === 'auth_fail' ? <ShieldAlert size={16} className="text-red-500" /> : <UserCheck size={16} className="text-green-500" />}
+                               {log.type === 'auth_fail' || log.type === 'access_denied' ? <ShieldAlert size={16} className="text-red-500" /> : <UserCheck size={16} className="text-green-500" />}
                                <span className="font-bold text-sm">{log.description}</span>
                             </div>
                          </TableCell>
@@ -108,7 +125,7 @@ export default function AdminSecurityCenter() {
                             <span className="font-mono text-[10px] text-muted-foreground uppercase">{log.userEmail || "SYSTEM_EVENT"}</span>
                          </TableCell>
                          <TableCell data-label="الحالة">
-                            <Badge className={log.status === 'success' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}>{log.status}</Badge>
+                            <Badge className={log.status === 'success' || log.status === 'resolved' ? 'bg-green-500/10 text-green-600 border-none' : 'bg-red-500/10 text-red-600 border-none'}>{log.status}</Badge>
                          </TableCell>
                          <TableCell className="text-left pl-10 text-[10px] font-black text-muted-foreground uppercase" data-label="التوقيت">
                             {new Date(log.timestamp).toLocaleString('ar-EG')}

@@ -1,8 +1,9 @@
+
 "use client";
 
 import { useState } from "react";
 import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, limit } from "firebase/firestore";
+import { collection, query, limit, addDoc, serverTimestamp } from "firebase/firestore";
 import { adminAiAssistant } from "@/ai/flows/admin-ai-flow";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,10 +45,18 @@ export default function AdminAiPage() {
         actionType: result.actionType
       }]);
 
-      toast({ title: "تم تحليل الطلب", description: "المساعد الإداري جاهز للتنفيذ." });
+      // تسجيل العملية في سجل التدقيق لضمان "التتبع"
+      addDoc(collection(db, "community_audit_logs"), {
+        action: "AI_COMMAND",
+        details: `أمر إداري ذكي: ${userCmd}`,
+        result: result.actionType,
+        createdAt: new Date().toISOString()
+      });
+
+      toast({ title: "تم تحليل الأوامر", description: "المساعد الذكي قام بتنفيذ البروتوكول المطلوب." });
 
     } catch (error) {
-      setHistory(prev => [...prev, { role: 'ai', content: "عذراً سيادة المدير، واجهت مشكلة في معالجة طلبك الإداري." }]);
+      setHistory(prev => [...prev, { role: 'ai', content: "عذراً سيادة المدير، واجهت مشكلة في معالجة طلبك الإداري. يرجى مراجعة سجلات الأخطاء." }]);
     } finally {
       setIsLoading(false);
     }

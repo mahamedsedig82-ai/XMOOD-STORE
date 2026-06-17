@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -32,8 +33,6 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function ProfessionalWalletPage() {
   const { profile, user, loading: userLoading, isVerified } = useUser();
@@ -67,7 +66,7 @@ export default function ProfessionalWalletPage() {
 
   const { data: transactions, loading: transLoading } = useCollection(transactionsQuery);
 
-  const compressAndConvertToBase64 = (file: File): Promise<string> => {
+  const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -88,7 +87,7 @@ export default function ProfessionalWalletPage() {
           resolve(canvas.toDataURL("image/jpeg", 0.7));
         };
       };
-      reader.onerror = (error) => reject(error);
+      reader.onerror = reject;
     });
   };
 
@@ -106,14 +105,7 @@ export default function ProfessionalWalletPage() {
     updateDoc(userRef, data)
       .then(() => {
         setIsEditing(false);
-        toast({ title: "تم التحديث", description: "تم تثبيت تغييرات هويتك السيادية." });
-      })
-      .catch(async () => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: userRef.path,
-          operation: 'update',
-          requestResourceData: data
-        }));
+        toast({ title: "تم التحديث بنجاح" });
       })
       .finally(() => setIsUpdating(false));
   };
@@ -123,9 +115,9 @@ export default function ProfessionalWalletPage() {
     if (file) {
       setIsUpdating(true);
       try {
-        const b64 = await compressAndConvertToBase64(file);
+        const b64 = await compressImage(file);
         setNewPhotoURL(b64);
-        toast({ title: "معالجة الصورة", description: "تم ضغط وتحضير صورتك الجديدة بنجاح." });
+        toast({ title: "تم تجهيز الصورة" });
       } finally {
         setIsUpdating(false);
       }
