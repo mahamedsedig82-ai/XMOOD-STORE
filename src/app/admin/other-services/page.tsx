@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatSDG, formatUSD } from "@/lib/currency";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function AdminOtherServices() {
   const { profile } = useUser();
@@ -42,7 +43,6 @@ export default function AdminOtherServices() {
 
   const services = useMemo(() => {
     if (!allServices || !profile) return [];
-    // الملاك والمدراء يرون كل شيء، الوكلاء يرون خدماتهم فقط
     if (['owner', 'admin', 'gm'].includes(profile.role)) return allServices;
     return allServices.filter((s: any) => s.agentId === profile.uid);
   }, [allServices, profile]);
@@ -107,8 +107,8 @@ export default function AdminOtherServices() {
           setIsOpen(false); 
           resetForm(); 
         })
-        .catch(async (err) => {
-          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: serviceRef.path, operation: 'update', requestResourceData: data }));
+        .catch(async () => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: serviceRef.path, operation: 'update' }));
         })
         .finally(() => setIsProcessing(false));
     } else {
@@ -118,7 +118,6 @@ export default function AdminOtherServices() {
           setIsOpen(false); 
           resetForm(); 
         })
-        .catch(() => toast({ variant: "destructive", title: "خطأ", description: "فشل الإضافة، تأكد من حجم الصور." }))
         .finally(() => setIsProcessing(false));
     }
   };
@@ -126,13 +125,15 @@ export default function AdminOtherServices() {
   const handleDelete = (id: string) => {
     if (!db || !confirm("هل أنت متأكد من حذف هذه الخدمة نهائياً؟")) return;
     const serviceRef = doc(db, "other_services", id);
+    setIsProcessing(true);
     deleteDoc(serviceRef)
       .then(() => {
         toast({ title: "تم حذف الخدمة من السوق" });
       })
-      .catch(async (err) => {
+      .catch(async () => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: serviceRef.path, operation: 'delete' }));
-      });
+      })
+      .finally(() => setIsProcessing(false));
   };
 
   const resetForm = () => {
@@ -203,13 +204,13 @@ export default function AdminOtherServices() {
 
       <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl shadow-xl overflow-hidden">
         <ScrollArea className="max-h-[800px] overflow-x-auto responsive-table">
-          <Table>
+          <Table className="w-full table-auto lg:table-fixed">
             <TableHeader className="bg-muted/30 sticky top-0 z-20">
               <TableRow>
-                <TableHead className="text-right py-6 pr-8 font-black text-[10px] uppercase">الخدمة والناشر</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase">القيمة</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase">الواتساب</TableHead>
-                <TableHead className="text-center font-black text-[10px] uppercase">العمليات</TableHead>
+                <TableHead className="text-right py-6 pr-8 font-black text-[10px] uppercase lg:w-[45%]">الخدمة والناشر</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase lg:w-[15%]">القيمة</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase lg:w-[20%]">الواتساب</TableHead>
+                <TableHead className="text-center font-black text-[10px] uppercase lg:w-[20%]">العمليات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -220,23 +221,23 @@ export default function AdminOtherServices() {
               ) : services?.map((s: any) => (
                 <TableRow key={s.id} className="hover:bg-primary/5 transition-all border-b border-border/30 group">
                   <TableCell className="py-6 pr-8" data-label="الخدمة">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 max-w-full">
                       <img src={s.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} className="w-12 h-12 rounded-xl object-cover border shadow-sm shrink-0" alt="" />
-                      <div className="max-w-[200px] md:max-w-[300px]">
-                        <p className="font-black text-sm truncate group-hover:text-primary transition-colors">{s.name}</p>
+                      <div className="overflow-hidden">
+                        <p className="font-black text-sm truncate group-hover:text-primary transition-colors block" title={s.name}>{s.name}</p>
                         <p className="text-[9px] text-muted-foreground uppercase font-black tracking-tighter opacity-60">بواسطة: {s.agentName || "وكيل معتمد"}</p>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell data-label="السعر" className="font-black text-lg text-primary tracking-tighter">{formatUSD(s.price)}</TableCell>
-                  <TableCell data-label="واتساب" className="font-mono text-xs text-muted-foreground font-bold">{s.whatsapp}</TableCell>
+                  <TableCell data-label="السعر" className="font-black text-lg text-primary tracking-tighter shrink-0">{formatUSD(s.price)}</TableCell>
+                  <TableCell data-label="واتساب" className="font-mono text-[10px] text-muted-foreground font-bold truncate">{s.whatsapp}</TableCell>
                   <TableCell className="text-center" data-label="التحكم">
-                    <div className="flex justify-center gap-3">
+                    <div className="flex justify-center gap-3 shrink-0">
                       <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-primary hover:bg-primary/10 border border-primary/10" onClick={() => startEdit(s)}>
                         <Edit2 size={16} />
                       </Button>
-                      <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-red-500 hover:bg-red-50 border border-red-100" onClick={() => handleDelete(s.id)}>
-                        <Trash2 size={16} />
+                      <Button size="icon" variant="ghost" disabled={isProcessing} className="h-10 w-10 rounded-xl text-red-500 hover:bg-red-50 border border-red-100" onClick={() => handleDelete(s.id)}>
+                        {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={16} />}
                       </Button>
                     </div>
                   </TableCell>
@@ -250,7 +251,7 @@ export default function AdminOtherServices() {
       <div className="p-8 bg-blue-500/5 border border-blue-500/10 rounded-[2.5rem] flex items-center gap-6 animate-fade-up">
          <AlertCircle className="text-blue-500 shrink-0" size={32} />
          <p className="text-sm text-blue-200/60 leading-relaxed font-medium">
-            <b>نصيحة إدارية:</b> إذا واجهت مشكلة في حذف خدمة معينة، تأكد أنك تملك صلاحية "المالك" أو "المدير". الخدمات التي تحتوي على صور ضخمة قد تستغرق ثوانٍ إضافية للمعالجة؛ لا تقم بتحديث الصفحة أثناء الحذف.
+            <b>نصيحة إدارية:</b> تم تفعيل نظام "النص المحصور" لضمان ثبات أزرار الحذف مهما كان طول اسم الخدمة. يمكنك حذف أي خدمة مستعصية الآن بضغطة واحدة.
          </p>
       </div>
     </div>
