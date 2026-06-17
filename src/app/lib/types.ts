@@ -67,6 +67,25 @@ export interface Order {
   status: 'completed' | 'failed' | 'pending_stock' | 'cancelled' | 'refunded';
   deliveryStatus: 'delivered' | 'preparing' | 'failed';
   shippingCodeSent?: string;
+  balanceBefore?: number;
+  balanceAfter?: number;
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  stock: number;
+  minStock: number;
+  imageUrl: string;
+  description: string;
+  highlights: string;
+  shippingCodes: string;
+  status: 'active' | 'out_of_stock' | 'low_stock' | 'paused';
+  isVisible: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

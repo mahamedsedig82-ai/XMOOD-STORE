@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -12,15 +11,12 @@ import {
   Save, Loader2, Layout, MessageSquare, Zap, Megaphone, 
   Palette, Share2, Info, Image as ImageIcon, Shield, Wallet, 
   Settings, Type, Smartphone, Eye, Sparkles, Mail, Globe, Upload, Link as LinkIcon, 
-  LayoutGrid, Power, AlignRight, ShoppingCart
+  LayoutGrid, Power, AlignRight, ShoppingCart, FileText
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AdminContentManager() {
   const db = useFirestore();
@@ -38,7 +34,6 @@ export default function AdminContentManager() {
     appearance: { primaryColor: "#d4af37", logoUrl: "", faviconUrl: "" },
     siteInfo: { title: "XMOOD STORE", subtitle: "", description: "", copyright: "" },
     contact: { whatsapp: "", email: "", telegram: "", facebook: "", instagram: "", youtube: "", tiktok: "", workHours: "" },
-    emailBranding: { senderName: "XMOOD SECURITY", senderEmail: "", footerText: "© 2025 XMOOD STORE. All Rights Reserved." },
     ads: { headerBanner: "", promoText: "", isActive: false, buttonText: "اطلب الآن" },
     footer: {
       isActive: true,
@@ -68,12 +63,10 @@ export default function AdminContentManager() {
       successMsg: "تم التسليم بنجاح!",
       summaryTitle: "ملخص الاستحواذ"
     },
-    navLabels: {
-      home: "الرئيسية",
-      store: "المتجر",
-      services: "سوق الخدمات",
-      gallery: "معرض الإبداع",
-      agents: "الوكلاء"
+    legal: {
+      terms: "الشروط والأحكام الخاصة بالمنصة...",
+      privacy: "سياسة الخصوصية وحماية البيانات...",
+      faq: "الأسئلة الشائعة حول الخدمات..."
     }
   });
 
@@ -83,13 +76,12 @@ export default function AdminContentManager() {
         ...prev, 
         ...config,
         appearance: { ...prev.appearance, ...(config.appearance || {}) },
-        emailBranding: { ...prev.emailBranding, ...(config.emailBranding || {}) },
         contact: { ...prev.contact, ...(config.contact || {}) },
         loginPage: { ...prev.loginPage, ...(config.loginPage || {}) },
         walletPage: { ...prev.walletPage, ...(config.walletPage || {}) },
         cartLabels: { ...prev.cartLabels, ...(config.cartLabels || {}) },
-        navLabels: { ...prev.navLabels, ...(config.navLabels || {}) },
-        footer: { ...prev.footer, ...(config.footer || {}) }
+        footer: { ...prev.footer, ...(config.footer || {}) },
+        legal: { ...prev.legal, ...(config.legal || {}) }
       }));
     }
   }, [config]);
@@ -136,23 +128,17 @@ export default function AdminContentManager() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!db || !settingsRef) return;
     setIsSaving(true);
-    const data = { ...form, updatedAt: serverTimestamp() };
-    
-    setDoc(settingsRef, data, { merge: true })
-      .then(() => {
-        toast({ title: "تم تثبيت المحتوى والنصوص السيادية بنجاح" });
-      })
-      .catch(async () => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: settingsRef.path,
-          operation: 'write',
-          requestResourceData: data
-        }));
-      })
-      .finally(() => setIsSaving(false));
+    try {
+      await setDoc(settingsRef, { ...form, updatedAt: serverTimestamp() }, { merge: true });
+      toast({ title: "تم تثبيت المحتوى والنصوص السيادية بنجاح" });
+    } catch (e) {
+      toast({ variant: "destructive", title: "فشل الحفظ" });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (loading) return (
@@ -185,14 +171,11 @@ export default function AdminContentManager() {
           <TabsTrigger value="cart" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <ShoppingCart size={16} className="text-primary" /> نصوص السلة
           </TabsTrigger>
-          <TabsTrigger value="login" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
-            <Shield size={16} className="text-primary" /> نصوص الدخول
+          <TabsTrigger value="legal" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
+            <FileText size={16} className="text-primary" /> السياسات والقوانين
           </TabsTrigger>
           <TabsTrigger value="wallet" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Wallet size={16} className="text-primary" /> نصوص المحفظة
-          </TabsTrigger>
-          <TabsTrigger value="social" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
-            <Share2 size={16} className="text-primary" /> التواصل
           </TabsTrigger>
         </TabsList>
 
@@ -243,7 +226,6 @@ export default function AdminContentManager() {
                        <Eye size={14} /> معاينة اللوقو الذكية
                     </div>
                     <div className="relative group">
-                       <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full scale-150 opacity-50" />
                        <div className="relative w-48 h-48 md:w-64 md:h-24 bg-white dark:bg-zinc-950 luxury-image overflow-hidden flex items-center justify-center border-none shadow-none">
                           {form.appearance.logoUrl ? (
                             <img src={form.appearance.logoUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -341,16 +323,20 @@ export default function AdminContentManager() {
            </Card>
         </TabsContent>
 
-        <TabsContent value="login">
+        <TabsContent value="legal">
            <Card className="luxury-card p-8 md:p-12 space-y-10 border-none">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-8">
                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">عنوان صفحة الدخول</Label>
-                    <Input value={form.loginPage.title} onChange={e => setForm({...form, loginPage: {...form.loginPage, title: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" />
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">الشروط والأحكام (Terms & Conditions)</Label>
+                    <Textarea value={form.legal.terms} onChange={e => setForm({...form, legal: {...form.legal, terms: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[150px] p-6 text-sm font-medium" />
                  </div>
                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">الوصف الفرعي</Label>
-                    <Input value={form.loginPage.subtitle} onChange={e => setForm({...form, loginPage: {...form.loginPage, subtitle: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-medium" />
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">سياسة الخصوصية (Privacy Policy)</Label>
+                    <Textarea value={form.legal.privacy} onChange={e => setForm({...form, legal: {...form.legal, privacy: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[150px] p-6 text-sm font-medium" />
+                 </div>
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">الأسئلة الشائعة (FAQ)</Label>
+                    <Textarea value={form.legal.faq} onChange={e => setForm({...form, legal: {...form.legal, faq: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[150px] p-6 text-sm font-medium" />
                  </div>
               </div>
            </Card>
@@ -371,32 +357,6 @@ export default function AdminContentManager() {
                     <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">وصف بروتوكول الإيداع</Label>
                     <Textarea value={form.walletPage.uidDesc} onChange={e => setForm({...form, walletPage: {...form.walletPage, uidDesc: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[100px] p-4" />
                  </div>
-              </div>
-           </Card>
-        </TabsContent>
-
-        <TabsContent value="social">
-           <Card className="luxury-card p-8 md:p-12 space-y-10 border-none">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                 {[
-                   { label: "واتساب الدعم", key: "whatsapp", icon: Smartphone },
-                   { label: "تيليجرام", key: "telegram", icon: Zap },
-                   { label: "فيسبوك", key: "facebook", icon: Share2 },
-                   { label: "إنستغرام", key: "instagram", icon: Layout },
-                   { label: "يوتيوب", key: "youtube", icon: Megaphone },
-                   { label: "البريد الرسمي", key: "email", icon: Globe },
-                 ].map((item) => (
-                   <div key={item.key} className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3 flex items-center gap-2">
-                        <item.icon size={12} className="text-primary" /> {item.label}
-                      </Label>
-                      <Input 
-                        value={(form.contact as any)[item.key]} 
-                        onChange={e => setForm({...form, contact: {...form.contact, [item.key]: e.target.value}})} 
-                        className="h-14 bg-muted/40 border-none rounded-2xl px-6 font-bold text-sm" 
-                      />
-                   </div>
-                 ))}
               </div>
            </Card>
         </TabsContent>
