@@ -67,7 +67,7 @@ export default function VerifyEmailPage() {
 
         {status === 'error' && (
           <div className="space-y-10 animate-fade-in relative z-10">
-            <div className="w-24 h-24 bg-red-500/10 text-red-500 rounded-3xl flex items-center justify-center mx-auto border-2 border-red-500/20 shadow-xl shadow-red-500/10">
+            <div className="w-24 h-24 bg-red-500/10 text-red-500 rounded-3xl flex items-center justify-center mx-auto border-2 border-red-500/20 shadow-xl shadow-green-500/10">
                <XCircle className="w-14 h-14" />
             </div>
             <div className="space-y-3">
