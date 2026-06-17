@@ -28,12 +28,14 @@ export default function VerifyEmailPage() {
         // 1. التعامل مع رابط توثيق البريد التقليدي
         if (oobCode && mode === 'verifyEmail') {
            await applyActionCode(auth, oobCode);
+           // بعد التطبيق، نحتاج لإعادة تحميل المستخدم
            if (auth.currentUser) {
               await auth.currentUser.reload();
               await syncUserProfile(auth.currentUser);
               setStatus('success');
               toast({ title: "تم توثيق الهوية السيادية" });
-              router.replace("/wallet");
+              // توجيه تلقائي لحظي
+              setTimeout(() => router.replace("/wallet"), 1500);
               return;
            }
         }
@@ -42,11 +44,12 @@ export default function VerifyEmailPage() {
         const userFromMagic = await completeMagicLinkSignIn();
         if (userFromMagic) {
           setStatus('success');
-          router.replace("/wallet");
+          toast({ title: "تم الدخول بنجاح" });
+          setTimeout(() => router.replace("/wallet"), 1000);
           return;
         }
 
-        // 3. مراقبة حالة المصادقة لضمان التوجيه التلقائي اللحظي
+        // 3. مراقبة حالة المصادقة لضمان التوجيه التلقائي اللحظي في حالات التعليق
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await firebaseUser.reload();
@@ -58,11 +61,20 @@ export default function VerifyEmailPage() {
           }
         });
         
-        return () => unsubscribe();
+        // إذا لم يوجد كود أو وضع توثيق، ننتظر قليلاً ثم نظهر خطأ إذا لم يحدث شيء
+        const timeout = setTimeout(() => {
+           if (status === 'verifying' && !oobCode) setStatus('error');
+        }, 5000);
+
+        return () => {
+          unsubscribe();
+          clearTimeout(timeout);
+        };
 
       } catch (e: any) {
         console.error("Verification Error:", e);
         setStatus('error');
+        toast({ variant: "destructive", title: "فشل التوثيق", description: "الرابط قديم أو غير صالح." });
       }
     };
     verify();

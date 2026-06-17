@@ -42,7 +42,7 @@ export default function CheckoutPage() {
     if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
   }, [user, deliveryEmail]);
 
-  // التحقق اللحظي من المخزون قبل السماح بالدفع
+  // التحقق اللحظي والقاسي من المخزون قبل السماح بالدفع
   useEffect(() => {
     const checkStock = async () => {
       if (!db || items.length === 0) {
@@ -52,18 +52,24 @@ export default function CheckoutPage() {
       setStockCheckLoading(true);
       const unavailable: string[] = [];
       
-      for (const item of items) {
-        const pSnap = await getDoc(doc(db, "products", item.id));
-        if (pSnap.exists()) {
-          const data = pSnap.data();
-          const codes = (data.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
-          if (codes.length < item.quantity) {
-            unavailable.push(item.name);
+      try {
+        for (const item of items) {
+          const pSnap = await getDoc(doc(db, "products", item.id));
+          if (pSnap.exists()) {
+            const data = pSnap.data();
+            const codes = (data.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
+            // إذا كان عدد الأكواد أقل من الكمية المطلوبة أو المخزون المكتوب 0
+            if (codes.length < item.quantity || (data.stock || 0) < item.quantity) {
+              unavailable.push(item.name);
+            }
           }
         }
+      } catch (e) {
+        console.error("Stock check failed:", e);
+      } finally {
+        setOutOfStockItems(unavailable);
+        setStockCheckLoading(false);
       }
-      setOutOfStockItems(unavailable);
-      setStockCheckLoading(false);
     };
     checkStock();
   }, [db, items]);
@@ -113,7 +119,6 @@ export default function CheckoutPage() {
         if (currentBalance < finalTotal) throw "Insufficient balance";
 
         const allDeliveredCodes: string[] = [];
-        let finalStatus: 'completed' | 'pending_stock' = 'completed';
 
         for (const item of items) {
           const productRef = doc(db, "products", item.id);
@@ -149,10 +154,11 @@ export default function CheckoutPage() {
           totalAmount: finalTotal,
           shippingMethodName: selectedShipping.name,
           deliveryEmail,
-          status: finalStatus,
+          status: 'completed',
           shippingCodeSent: allDeliveredCodes.join(' | '),
           balanceBefore: currentBalance,
           balanceAfter: balanceAfter,
+          deliveryStatus: 'delivered',
           createdAt: new Date().toISOString()
         });
 
@@ -243,11 +249,11 @@ export default function CheckoutPage() {
                  <Card className="luxury-card p-6 md:p-12 border-none bg-card/60 backdrop-blur-xl space-y-8">
                     <div className="space-y-3">
                        <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">بريد التسليم الرقمي (إلزامي)</Label>
-                       <Input value={deliveryEmail} onChange={e => setDeliveryEmail(e.target.value)} className="h-16 rounded-2xl bg-white dark:bg-zinc-950 border-2 border-primary px-6 font-bold text-lg focus:border-primary transition-all shadow-xl" placeholder="name@example.com" />
+                       <Input value={deliveryEmail} onChange={e => setDeliveryEmail(e.target.value)} className="h-16 rounded-2xl" placeholder="name@example.com" />
                     </div>
                     <div className="space-y-3">
                        <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">ملاحظات إضافية للمنفذ</Label>
-                       <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="rounded-3xl bg-white dark:bg-zinc-950 border-2 border-primary p-6 font-bold min-h-[120px] focus:border-primary transition-all shadow-xl" placeholder="أي تعليمات خاصة لضمان نجاح التسليم؟" />
+                       <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="rounded-3xl min-h-[120px]" placeholder="أي تعليمات خاصة لضمان نجاح التسليم؟" />
                     </div>
                  </Card>
               </section>
