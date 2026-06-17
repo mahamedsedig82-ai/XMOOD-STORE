@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef } from "react";
@@ -96,16 +97,16 @@ export default function DesignerPortfolioAdmin() {
   };
 
   const handleDeleteItem = async (id: string, designerId: string) => {
-    if (profile?.role !== 'owner' && designerId !== user?.uid) {
+    if (profile?.role !== 'owner' && profile?.role !== 'admin' && designerId !== user?.uid) {
       toast({ variant: "destructive", title: "غير مصرح", description: "يمكنك حذف أعمالك الخاصة فقط." });
       return;
     }
-    if (!confirm("هل تريد حذف هذا التصميم من المعرض؟")) return;
+    if (!confirm("هل تريد حذف هذا التصميم نهائياً من المعرض؟")) return;
     try {
       await deleteDoc(doc(db, "gallery", id));
-      toast({ title: "تم الحذف" });
+      toast({ title: "تم الحذف بنجاح" });
     } catch (e) {
-      toast({ variant: "destructive", title: "خطأ" });
+      toast({ variant: "destructive", title: "خطأ في الحذف" });
     }
   };
 
@@ -114,7 +115,7 @@ export default function DesignerPortfolioAdmin() {
     setIsProcessing(true);
     try {
       await updateDoc(doc(db, "users", user.uid), { phoneNumber: designerPhone });
-      toast({ title: "تم تحديث الرقم", description: "سيتم توجيه طلبات التواصل من العملاء لهذا الرقم." });
+      toast({ title: "تم تحديث الرقم", description: "سيتم توجيه طلبات التواصل لهذا الرقم." });
     } catch (e) {
       toast({ variant: "destructive", title: "خطأ" });
     } finally {
@@ -127,7 +128,7 @@ export default function DesignerPortfolioAdmin() {
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h1 className="text-4xl md:text-5xl font-headline font-bold gold-text">إدارة معرض أعمالي</h1>
-          <p className="text-zinc-500 mt-2 font-bold uppercase tracking-widest text-[10px]">Professional Portfolio & Task Management</p>
+          <p className="text-zinc-500 mt-2 font-bold uppercase tracking-widest text-[10px]">Professional Portfolio & Gallery Control</p>
         </div>
         <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
           <DialogTrigger asChild>
@@ -208,22 +209,37 @@ export default function DesignerPortfolioAdmin() {
         <Card className="lg:col-span-2 luxury-card border-none bg-zinc-950/60 overflow-hidden">
            <CardHeader className="p-10 border-b border-white/5 bg-white/5 flex flex-row items-center justify-between">
               <CardTitle className="text-xl font-bold flex items-center gap-4"><Palette className="text-primary" /> قائمة أعمالي المنشورة</CardTitle>
-              <Badge variant="outline" className="border-white/10 text-zinc-500 text-[8px] font-black">{galleryItems?.filter(i => i.designerId === user?.uid || profile?.role === 'owner').length || 0} WORK(S)</Badge>
+              <Badge variant="outline" className="border-white/10 text-zinc-500 text-[8px] font-black uppercase">{galleryItems?.filter(i => i.designerId === user?.uid || profile?.role === 'owner' || profile?.role === 'admin').length || 0} WORK(S)</Badge>
            </CardHeader>
-           <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[600px] overflow-y-auto custom-scrollbar">
-              {galleryItems?.filter(i => i.designerId === user?.uid || profile?.role === 'owner').map((item: any) => (
-                <div key={item.id} className="group relative rounded-2xl overflow-hidden aspect-video bg-zinc-900 border border-white/5">
-                   <img src={item.imageUrl} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" alt="" />
-                   <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 text-center">
-                      <h4 className="font-bold text-primary mb-2">{item.title}</h4>
-                      <p className="text-[10px] text-zinc-400 mb-6">{item.category}</p>
-                      <div className="flex gap-2">
-                         <Button onClick={() => handleDeleteItem(item.id, item.designerId)} variant="ghost" size="icon" className="h-10 w-10 text-red-500 hover:bg-red-500/10 rounded-full">
-                           <Trash2 size={18} />
-                         </Button>
-                      </div>
+           
+           {/* تحويل العرض لنظام البطاقات لضمان خروج زر الحذف من الصورة */}
+           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[650px] overflow-y-auto custom-scrollbar">
+              {galleryItems?.filter(i => i.designerId === user?.uid || profile?.role === 'owner' || profile?.role === 'admin').map((item: any) => (
+                <Card key={item.id} className="luxury-card border-none bg-zinc-900/60 overflow-hidden group flex flex-col hover:border-primary/20 transition-all">
+                   <div className="relative aspect-video overflow-hidden">
+                      <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                      <Badge className="absolute top-3 right-3 bg-primary text-black font-black text-[7px] uppercase px-3 py-1 rounded-full shadow-lg">{item.category}</Badge>
                    </div>
-                </div>
+                   <CardContent className="p-5 flex-1 space-y-2">
+                      <h4 className="font-black text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">{item.title}</h4>
+                      <p className="text-[9px] text-zinc-500 font-bold uppercase flex items-center gap-2">
+                         <Palette size={10} className="text-primary" /> {item.designerName}
+                      </p>
+                      <p className="text-[10px] text-zinc-400 line-clamp-2 mt-2 leading-relaxed">{item.description}</p>
+                   </CardContent>
+                   
+                   {/* زر الحذف خارج الصورة والنص تماماً في منطقة مستقلة */}
+                   <div className="p-4 bg-black/40 border-t border-white/5 flex gap-2">
+                      <Button 
+                        onClick={() => handleDeleteItem(item.id, item.designerId)} 
+                        disabled={isProcessing}
+                        variant="destructive" 
+                        className="w-full h-11 rounded-xl gap-3 font-black text-[10px] uppercase tracking-widest shadow-lg hover:shadow-red-500/20"
+                      >
+                         {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <><Trash2 size={16} /> حذف العمل الفني</>}
+                      </Button>
+                   </div>
+                </Card>
               ))}
               {galleryItems?.length === 0 && (
                 <div className="col-span-full py-40 text-center opacity-20">
