@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
@@ -7,6 +6,7 @@ import { GuidanceBot } from '@/components/shared/GuidanceBot';
 import { PageLoader } from '@/components/shared/PageLoader';
 import { SystemHealthMonitor } from '@/components/shared/SystemHealthMonitor';
 import { Footer } from '@/components/layout/Footer';
+import { CartProvider } from '@/context/CartContext';
 
 export const metadata: Metadata = {
   title: 'XMOOD STORE | منصة الخدمات الإلكترونية المعتمدة',
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'XMOOD STORE',
     description: 'منصة الخدمات الإلكترونية المعتمدة والأكثر موثوقية',
-    images: ['https://picsum.photos/seed/xmood-og/1200/630'],
+    images: ['https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png'],
   },
   icons: {
     icon: '/favicon.ico',
@@ -35,14 +35,16 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background text-foreground selection:bg-primary/30 overflow-x-hidden">
         <FirebaseClientProvider>
-          <SystemHealthMonitor />
-          <PageLoader />
-          <div className="relative flex min-h-screen flex-col">
-            {children}
-            <Footer />
-          </div>
-          <GuidanceBot />
-          <Toaster />
+          <CartProvider>
+            <SystemHealthMonitor />
+            <PageLoader />
+            <div className="relative flex min-h-screen flex-col">
+              {children}
+              <Footer />
+            </div>
+            <GuidanceBot />
+            <Toaster />
+          </CartProvider>
         </FirebaseClientProvider>
       </body>
     </html>

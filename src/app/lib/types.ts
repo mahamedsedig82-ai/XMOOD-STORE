@@ -5,7 +5,7 @@ export interface UserProfile {
   displayName: string;
   fullName?: string;
   email: string;
-  phoneNumber: string; // Mandatory
+  phoneNumber: string;
   walletBalance: number;
   role: UserRole;
   isTrusted?: boolean;
@@ -22,7 +22,7 @@ export interface UserProfile {
   bio?: string;
   completedDeals?: number;
   residence?: string;
-  age?: number; // Made optional
+  age?: number;
   middlemanInfo?: {
     services: string[];
     isAvailable: boolean;
@@ -30,12 +30,43 @@ export interface UserProfile {
   }
 }
 
-export interface CommunityComment {
+export interface ShippingMethod {
   id: string;
-  postId: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
+  extraFee: number;
+  deliveryTime: string;
+  badge?: string;
+  icon?: string;
+  color?: string;
+  isActive: boolean;
+}
+
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl?: string;
+  category?: string;
+}
+
+export interface Order {
+  id: string;
   userId: string;
+  userEmail: string;
   userName: string;
-  userPhoto?: string;
-  content: string;
+  items: CartItem[];
+  totalAmount: number;
+  subtotal: number;
+  shippingFee: number;
+  shippingMethodName: string;
+  deliveryEmail?: string;
+  notes?: string;
+  status: 'pending' | 'processing' | 'completed' | 'cancelled';
+  deliveryStatus: 'preparing' | 'shipped' | 'delivered';
+  shippingCodeSent?: string;
   createdAt: string;
+  updatedAt?: string;
 }

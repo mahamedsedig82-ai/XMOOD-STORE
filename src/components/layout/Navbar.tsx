@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Briefcase, ChevronRight
+  Wallet, LayoutDashboard, LogOut, Briefcase, ChevronRight, ShoppingCart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { signOut } from "firebase/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatUSD } from "@/lib/currency";
 import { doc } from "firebase/firestore";
+import { useCart } from "@/context/CartContext";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -30,6 +31,7 @@ export function Navbar() {
   const db = useFirestore();
   const pathname = usePathname();
   const router = useRouter();
+  const { itemCount } = useCart();
   
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
@@ -100,58 +102,27 @@ export function Navbar() {
                         config?.siteInfo?.title || "XMOOD"
                     )}
                  </SheetTitle>
-                 <p className="text-[8px] text-muted-foreground uppercase tracking-[0.4em] font-black text-right mt-2">Sovereign Access Hub</p>
               </SheetHeader>
               
               <div className="flex-1 p-6 space-y-8 overflow-y-auto custom-scrollbar">
-                {user && profile && (
-                  <div className="p-5 bg-primary/5 rounded-[1.5rem] border border-primary/10 flex items-center gap-4">
-                    <Avatar className="w-14 h-14 border-2 border-primary/20 rounded-[1.2rem] shadow-lg">
-                      <AvatarImage src={profile.photoURL} className="object-cover" />
-                      <AvatarFallback className="bg-zinc-100 font-bold text-primary">XM</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col text-right truncate">
-                      <span className="font-black text-lg gold-text truncate">{profile.displayName}</span>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge className="bg-primary/20 text-primary border-none text-[7px] px-2 py-0.5 font-black uppercase">{profile.label || "عضو"}</Badge>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest pr-2 mb-2">تفرعات المتجر السيادية</p>
-                  <div className="grid grid-cols-1 gap-3">
-                    {navLinks.map((link) => (
-                      <SheetClose asChild key={link.href}>
-                        <Link 
-                          href={link.href} 
-                          className={`flex items-center justify-between p-4 rounded-2xl transition-all border group ${pathname === link.href ? 'bg-primary text-black border-primary shadow-xl' : 'bg-card hover:bg-muted border-border/50'}`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${pathname === link.href ? 'bg-black/10' : 'bg-primary/10 text-primary'}`}>
-                               <link.icon size={20} />
-                            </div>
-                            <span className="text-xs font-black uppercase tracking-wider">{link.label}</span>
+                <div className="grid grid-cols-1 gap-3">
+                  {navLinks.map((link) => (
+                    <SheetClose asChild key={link.href}>
+                      <Link 
+                        href={link.href} 
+                        className={`flex items-center justify-between p-4 rounded-2xl transition-all border group ${pathname === link.href ? 'bg-primary text-black border-primary shadow-xl' : 'bg-card hover:bg-muted border-border/50'}`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${pathname === link.href ? 'bg-black/10' : 'bg-primary/10 text-primary'}`}>
+                             <link.icon size={20} />
                           </div>
-                          <ChevronRight size={14} className={pathname === link.href ? 'opacity-100' : 'opacity-20'} />
-                        </Link>
-                      </SheetClose>
-                    ))}
-                  </div>
+                          <span className="text-xs font-black uppercase tracking-wider">{link.label}</span>
+                        </div>
+                        <ChevronRight size={14} className={pathname === link.href ? 'opacity-100' : 'opacity-20'} />
+                      </Link>
+                    </SheetClose>
+                  ))}
                 </div>
-              </div>
-
-              <div className="p-8 border-t bg-muted/20">
-                {user ? (
-                   <Button variant="ghost" onClick={handleSignOut} className="w-full h-14 rounded-2xl text-red-500 font-black text-[10px] uppercase tracking-widest gap-3 bg-red-50/50 border border-red-100/50">
-                     <LogOut size={18} /> تسجيل خروج آمن
-                   </Button>
-                ) : (
-                  <Button asChild className="royal-button w-full h-14 text-[10px] uppercase tracking-widest shadow-xl">
-                    <Link href="/login">دخول الأعضاء</Link>
-                  </Button>
-                )}
               </div>
             </SheetContent>
           </Sheet>
@@ -159,18 +130,15 @@ export function Navbar() {
 
         <Link href="/" className="flex items-center gap-3 group">
           {config?.appearance?.logoUrl ? (
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1rem] md:rounded-[1.5rem] overflow-hidden border-2 border-primary/20 shadow-xl bg-white transition-transform group-hover:scale-105">
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1rem] md:rounded-[1.5rem] overflow-hidden border-2 border-primary/20 shadow-xl bg-white">
                  <img src={config.appearance.logoUrl} alt="XMOOD Logo" className="w-full h-full object-cover" />
               </div>
           ) : (
-              <div className="flex flex-col items-start leading-none text-right">
-                 <span className="handwritten-logo text-xl md:text-3xl font-black transition-all group-hover:scale-105">{config?.siteInfo?.title || "XMOOD STORE"}</span>
-                 <span className="text-[6px] md:text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">Elite Digital Services</span>
-              </div>
+              <span className="handwritten-logo text-xl md:text-3xl font-black">{config?.siteInfo?.title || "XMOOD STORE"}</span>
           )}
         </Link>
 
-        <div className="hidden lg:flex items-center gap-10">
+        <div className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
             <Link 
               key={link.href} 
@@ -184,19 +152,23 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 md:gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleTheme} 
-            className="rounded-xl h-10 w-10 md:h-12 md:w-12 border bg-muted/20 hover:bg-primary/10 hover:text-primary transition-all"
-          >
+          <Link href="/cart" className="relative group p-2.5 bg-muted/20 border rounded-xl hover:bg-primary/10 transition-all">
+             <ShoppingCart size={18} className="text-foreground group-hover:text-primary transition-colors" />
+             {itemCount > 0 && (
+               <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-lg border-2 border-background">
+                  {itemCount}
+               </span>
+             )}
+          </Link>
+
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-xl h-10 w-10 md:h-12 md:w-12 border bg-muted/20">
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </Button>
 
           {user && profile && (
-            <div className="hidden sm:flex items-center gap-3 bg-primary/5 px-5 py-2.5 rounded-xl border border-primary/20 shadow-sm group cursor-pointer active:scale-95 transition-all" onClick={() => router.push('/wallet')}>
+            <div className="hidden sm:flex items-center gap-3 bg-primary/5 px-5 py-2.5 rounded-xl border border-primary/20 group cursor-pointer" onClick={() => router.push('/wallet')}>
               <span className="text-xs font-black text-primary tracking-tighter">{formatUSD(profile.walletBalance || 0)}</span>
-              <Wallet size={16} className="text-primary group-hover:rotate-12 transition-transform" />
+              <Wallet size={16} className="text-primary" />
             </div>
           )}
 
@@ -207,40 +179,39 @@ export function Navbar() {
           ) : (
             <DropdownMenu dir="rtl">
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-[1.2rem] overflow-hidden border-2 border-primary/20 hover:border-primary transition-all shadow-xl">
+                <Button variant="ghost" className="p-0 h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-[1.2rem] overflow-hidden border-2 border-primary/20">
                   <Avatar className="h-full w-full rounded-none">
                     <AvatarImage src={profile?.photoURL} className="object-cover" />
-                    <AvatarFallback className="bg-slate-100 dark:bg-zinc-900 text-primary font-bold text-sm md:text-xl">{profile?.displayName?.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="bg-slate-100 font-bold text-primary">{profile?.displayName?.charAt(0)}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-72 md:w-80 mt-4 rounded-[2rem] p-5 md:p-6 shadow-2xl border bg-card/98 backdrop-blur-3xl" align="start">
+              <DropdownMenuContent className="w-72 mt-4 rounded-[2rem] p-5 shadow-2xl border bg-card/98 backdrop-blur-3xl" align="start">
                 <DropdownMenuLabel className="p-2 mb-4 text-right">
-                  <Badge className="bg-primary text-primary-foreground border-none text-[8px] font-black uppercase mb-4 px-4 py-1 rounded-full">{profile?.role}</Badge>
-                  <p className="font-black text-xl md:text-2xl truncate leading-none mb-1 gold-text">{profile?.displayName}</p>
+                  <p className="font-black text-xl gold-text truncate leading-none mb-1">{profile?.displayName}</p>
                   <p className="text-[9px] text-muted-foreground truncate opacity-60">{profile?.email}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="opacity-50" />
                 <div className="space-y-2 mt-4">
-                  <DropdownMenuItem asChild className="rounded-xl h-12 md:h-14 cursor-pointer hover:bg-primary/5 transition-colors">
-                    <Link href="/wallet" className="flex items-center w-full gap-3 md:gap-4 justify-end font-black px-3">
+                  <DropdownMenuItem asChild className="rounded-xl h-12 cursor-pointer hover:bg-primary/5 transition-colors">
+                    <Link href="/wallet" className="flex items-center w-full gap-3 justify-end font-black px-3">
                       <span className="text-[9px] uppercase tracking-widest">المحفظة</span>
-                      <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/10 rounded-lg md:rounded-xl flex items-center justify-center text-primary"><Wallet size={16} /></div>
+                      <Wallet size={16} className="text-primary" />
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
-                    <DropdownMenuItem asChild className="rounded-xl h-12 md:h-14 cursor-pointer hover:bg-primary/5 transition-colors">
-                      <Link href="/admin" className="flex items-center w-full gap-3 md:gap-4 justify-end font-black text-primary px-3">
+                    <DropdownMenuItem asChild className="rounded-xl h-12 cursor-pointer hover:bg-primary/5 transition-colors">
+                      <Link href="/admin" className="flex items-center w-full gap-3 justify-end font-black text-primary px-3">
                         <span className="text-[9px] uppercase tracking-widest">الإدارة</span>
-                        <div className="w-8 h-8 md:w-10 md:h-10 bg-primary/10 rounded-lg md:rounded-xl flex items-center justify-center text-primary"><LayoutDashboard size={16} /></div>
+                        <LayoutDashboard size={16} />
                       </Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator className="my-3 opacity-50" />
                   <DropdownMenuItem onClick={handleSignOut} className="rounded-xl h-12 cursor-pointer text-red-500 font-black hover:bg-red-50 transition-colors px-3">
-                    <div className="flex items-center w-full gap-3 md:gap-4 justify-end">
+                    <div className="flex items-center w-full gap-3 justify-end">
                       <span className="text-[9px] uppercase tracking-widest">خروج</span>
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-red-500"><LogOut size={16} /></div>
+                      <LogOut size={16} />
                     </div>
                   </DropdownMenuItem>
                 </div>
