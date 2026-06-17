@@ -41,7 +41,6 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const highlights = product.highlights ? product.highlights.split('\n').filter((h: string) => h.trim() !== "") : [];
   
-  // الصورة الرسمية الجديدة لـ XMOOD كافتراضية
   const officialPlaceholder = "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png";
 
   return (

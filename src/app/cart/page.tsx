@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -43,7 +44,7 @@ export default function CartPage() {
               <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-inner">
                  <ShoppingCart size={20} />
               </div>
-              <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase text-[8px] md:text-[10px] tracking-widest px-4 md:px-6 py-1.5 rounded-full">Sovereign Asset Collection</Badge>
+              <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase text-[10px] tracking-widest px-6 py-1.5 rounded-full">Sovereign Asset Collection</Badge>
            </div>
            <h1 className="text-4xl md:text-8xl font-headline font-black gold-text leading-tight">{labels.cartTitle}</h1>
            <p className="text-muted-foreground font-bold uppercase tracking-widest text-[8px] md:text-sm mt-2 md:mt-3 italic opacity-60">Professional Digital Asset Management Center</p>
@@ -72,7 +73,7 @@ export default function CartPage() {
                   >
                     <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl p-5 md:p-10 flex flex-col sm:flex-row items-center gap-6 md:gap-12 group">
                        <div className="w-full sm:w-40 h-48 sm:h-32 rounded-2xl md:rounded-[2rem] overflow-hidden shrink-0 shadow-2xl border-2 border-primary/10 group-hover:scale-105 transition-transform duration-700">
-                          <img src={item.imageUrl || "https://picsum.photos/seed/cart/400/300"} className="w-full h-full object-cover" alt="" />
+                          <img src={item.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} className="w-full h-full object-cover" alt="" />
                        </div>
                        <div className="flex-1 text-center sm:text-right space-y-2">
                           <Badge className="bg-primary/10 text-primary border-none text-[8px] font-black uppercase px-3 py-1 rounded-full">{item.category}</Badge>

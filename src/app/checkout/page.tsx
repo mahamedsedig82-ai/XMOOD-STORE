@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -59,7 +60,8 @@ export default function CheckoutPage() {
                  hasEnoughBalance && 
                  !isProcessing && 
                  !userLoading && 
-                 deliveryEmail.includes("@");
+                 deliveryEmail.includes("@") &&
+                 deliveryEmail.includes(".");
 
   const handleCompleteOrder = async () => {
     if (!user || !profile || !db) return;
@@ -82,7 +84,6 @@ export default function CheckoutPage() {
         let finalStatus: 'completed' | 'pending_stock' = 'completed';
         let finalDeliveryStatus: 'delivered' | 'preparing' = 'delivered';
 
-        // معالجة كافة المنتجات في السلة (دعم المشتريات المتعددة)
         for (const item of items) {
           const productRef = doc(db, "products", item.id);
           const productSnap = await transaction.get(productRef);
@@ -92,7 +93,6 @@ export default function CheckoutPage() {
           const codes = (pData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
           
           if (codes.length < item.quantity) {
-             // إذا لم تتوفر الأكواد، يتم تحويل الطلب لحالة الانتظار
              finalStatus = 'pending_stock';
              finalDeliveryStatus = 'preparing';
              transaction.update(productRef, { 
@@ -100,7 +100,6 @@ export default function CheckoutPage() {
                updatedAt: serverTimestamp() 
              });
           } else {
-             // سحب الأكواد المطلوبة وتحديث المخزون
              const extracted = codes.slice(0, item.quantity);
              allDeliveredCodes.push(...extracted);
              const remaining = codes.slice(item.quantity).join('\n');
