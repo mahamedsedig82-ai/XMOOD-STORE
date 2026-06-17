@@ -8,17 +8,50 @@ import { SystemHealthMonitor } from '@/components/shared/SystemHealthMonitor';
 import { Footer } from '@/components/layout/Footer';
 import { CartProvider } from '@/context/CartContext';
 
+// الرابط الرسمي للهوية السيادية لمتجر XMOOD
+const BRAND_IMAGE = 'https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png';
+
 export const metadata: Metadata = {
   title: 'XMOOD STORE | منصة الخدمات الإلكترونية المعتمدة',
-  description: 'منصة متخصصة في الخدمات الرقمية والألعاب، توفر شحن الألعاب، الحسابات، البطاقات الرقمية، والخدمات التقنية المعتمدة بأعلى معايير الأمان والسرعة.',
+  description: 'المرجع الأول والأكثر موثوقية لشحن الألعاب، الحسابات الرقمية، والحلول الإبداعية الاحترافية بأعلى معايير الأمان والسرعة السيادية.',
+  keywords: ['XMOOD', 'شحن ألعاب', 'بطاقات رقمية', 'خدمات تصميم', 'وساطة مالية', 'متجر ألعاب'],
+  authors: [{ name: 'XMOOD SOVEREIGN TEAM' }],
+  metadataBase: new URL('https://xmood-36c92.firebaseapp.com'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: 'XMOOD STORE',
-    description: 'منصة الخدمات الإلكترونية المعتمدة والأكثر موثوقية',
-    images: ['https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png'],
+    type: 'website',
+    locale: 'ar_EG',
+    url: 'https://xmood-36c92.firebaseapp.com',
+    siteName: 'XMOOD STORE',
+    title: 'XMOOD STORE | تجربة رقمية نُخبوية وموثوقة',
+    description: 'استكشف أرقى باقات شحن الألعاب والخدمات التقنية المعتمدة سيادياً. أمان مطلق وتسليم فوري.',
+    images: [
+      {
+        url: BRAND_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: 'XMOOD STORE Official Brand Identity',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'XMOOD STORE | منصة الخدمات الإلكترونية المعتمدة',
+    description: 'أمان مطلق وتسليم فوري لكافة الخدمات الرقمية والألعاب.',
+    images: [BRAND_IMAGE],
+    creator: '@XMOOD_STORE',
   },
   icons: {
-    icon: '/favicon.ico',
-  }
+    icon: [
+      { url: '/favicon.ico' },
+      { url: BRAND_IMAGE, sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: BRAND_IMAGE, sizes: '180x180', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({

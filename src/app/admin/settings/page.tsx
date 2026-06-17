@@ -24,25 +24,27 @@ export default function AdminSettingsUniversalControl() {
   const { data: config, loading } = useDoc(settingsRef);
   const [isSaving, setIsSaving] = useState(false);
   
+  const BRAND_IMAGE = "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png";
+
   const [form, setForm] = useState({
     appearance: {
       primaryColor: "#d4af37",
       backgroundColor: "#ffffff",
-      logoUrl: "",
-      faviconUrl: "",
-      previewImageUrl: ""
+      logoUrl: BRAND_IMAGE,
+      faviconUrl: BRAND_IMAGE,
+      previewImageUrl: BRAND_IMAGE
     },
     siteInfo: {
       title: "XMOOD STORE",
       subtitle: "مركز الخدمات الرقمية المعتمدة",
-      description: "منصة متخصصة في الخدمات الرقمية والألعاب...",
+      description: "منصة متخصصة في الخدمات الرقمية والألعاب، توفر شحن الألعاب، الحسابات، البطاقات الرقمية، والخدمات التقنية المعتمدة بأعلى معايير الأمان والسرعة.",
       copyright: "© 2025 XMOOD STORE. ALL RIGHTS RESERVED.",
       usdRate: "5400"
     },
     pageContent: {
       heroTitle: "خدمات رقمية احترافية وموثوقة",
       heroDescription: "نقدم لك أفضل باقات شحن الألعاب والخدمات التقنية بأعلى معايير الأمان والسرعة.",
-      footerAbout: "المنصة الرائدة لتقديم الحلول والخدمات الرقمية المتكاملة."
+      footerAbout: "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية المتكاملة."
     },
     contact: {
       email: "support@xmood.com",
@@ -57,8 +59,8 @@ export default function AdminSettingsUniversalControl() {
     },
     bot: {
       name: "X-ANALYST",
-      avatarUrl: "",
-      logoUrl: "",
+      avatarUrl: BRAND_IMAGE,
+      logoUrl: BRAND_IMAGE,
       greeting: "مرحباً بك! أنا المحلل الذكي لمتجر XMOOD. كيف يمكنني مساعدتك اليوم؟",
       personality: "professional",
       primaryColor: "#d4af37",
@@ -104,7 +106,7 @@ export default function AdminSettingsUniversalControl() {
     <div className="space-y-12 animate-fade-in" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b pb-10">
         <div className="text-right">
-          <h1 className="text-5xl font-headline font-bold gold-text">مركز التحكم بالهوية</h1>
+          <h1 className="text-5xl font-headline font-black gold-text">مركز التحكم بالهوية</h1>
           <p className="text-muted-foreground mt-3 font-bold uppercase tracking-widest text-[10px]">Site Identity & Brand Master Console</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg">
