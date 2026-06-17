@@ -16,6 +16,7 @@ import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();

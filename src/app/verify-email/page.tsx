@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -32,8 +33,7 @@ export default function VerifyEmailPage() {
               await syncUserProfile(auth.currentUser);
               setStatus('success');
               toast({ title: "تم توثيق الهوية السيادية" });
-              // توجيه فوري للمحفظة بعد النجاح
-              setTimeout(() => router.replace("/wallet"), 500);
+              router.replace("/wallet");
               return;
            }
         }
@@ -42,11 +42,11 @@ export default function VerifyEmailPage() {
         const userFromMagic = await completeMagicLinkSignIn();
         if (userFromMagic) {
           setStatus('success');
-          setTimeout(() => router.replace("/wallet"), 500);
+          router.replace("/wallet");
           return;
         }
 
-        // 3. مراقبة حالة المصادقة لضمان التوجيه التلقائي
+        // 3. مراقبة حالة المصادقة لضمان التوجيه التلقائي اللحظي
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await firebaseUser.reload();
@@ -106,8 +106,8 @@ export default function VerifyEmailPage() {
             <h2 className="text-3xl font-black text-red-500">فشل في توثيق الرابط</h2>
             <p className="text-muted-foreground text-sm font-medium">ربما انتهت صلاحية الرابط أو تم استخدامه مسبقاً.</p>
             <div className="pt-8 flex flex-col gap-4">
-               <Button asChild className="royal-button w-full h-16"><a href="/login">العودة لصفحة الدخول</a></Button>
-               <Button asChild variant="ghost" className="w-full h-14"><a href="/"><Home className="ml-2" size={16} /> الرئيسية</a></Button>
+               <Button asChild className="royal-button w-full h-16"><Link href="/login">العودة لصفحة الدخول</Link></Button>
+               <Button asChild variant="ghost" className="w-full h-14"><Link href="/"><Home className="ml-2" size={16} /> الرئيسية</Link></Button>
             </div>
           </div>
         )}
