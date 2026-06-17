@@ -2,25 +2,47 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { completeMagicLinkSignIn } from "@/lib/auth";
+import { completeMagicLinkSignIn, syncUserProfile } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Loader2, ShieldCheck, XCircle, Home, Wallet, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const router = useRouter();
+  const auth = useAuth();
 
   useEffect(() => {
     const verify = async () => {
       try {
+        // First try magic link
         const user = await completeMagicLinkSignIn();
         if (user) {
           setStatus('success');
           setTimeout(() => router.push("/wallet"), 3000);
-        } else {
-          setStatus('error');
+          return;
+        }
+
+        // If not magic link, check if user is already logged in and verified
+        if (auth) {
+          onAuthStateChanged(auth, async (firebaseUser) => {
+            if (firebaseUser?.emailVerified) {
+              await syncUserProfile(firebaseUser);
+              setStatus('success');
+              setTimeout(() => router.push("/wallet"), 3000);
+            } else if (firebaseUser && !firebaseUser.emailVerified) {
+              // Reload user to check verification status if they just clicked the link
+              await firebaseUser.reload();
+              if (firebaseUser.emailVerified) {
+                await syncUserProfile(firebaseUser);
+                setStatus('success');
+                setTimeout(() => router.push("/wallet"), 3000);
+              }
+            }
+          });
         }
       } catch (e) {
         console.error("Verification Error:", e);
@@ -28,7 +50,7 @@ export default function VerifyEmailPage() {
       }
     };
     verify();
-  }, [router]);
+  }, [router, auth]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">

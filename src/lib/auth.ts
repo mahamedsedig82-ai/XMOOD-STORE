@@ -84,7 +84,6 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         isVerified: user.emailVerified || false,
         ...additionalData
       });
-      logSecurityEvent('login_success', "تحديث جلسة دخول نشطة", user.email || "");
     }
   } catch (error) {
     console.error("Profile Sync Error:", error);

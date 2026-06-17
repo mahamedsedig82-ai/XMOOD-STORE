@@ -224,14 +224,14 @@ export default function SecurityLoginPage() {
                             <Label className="text-[9px] font-black text-primary uppercase pr-4 tracking-widest">البريد الإلكتروني المعتمد</Label>
                             <div className="relative">
                                <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                               <Input placeholder="name@example.com" className="h-14 bg-background border-none rounded-xl pr-12 font-bold" value={email} onChange={e => setEmail(e.target.value)} />
+                               <Input placeholder="name@example.com" className="h-14 bg-white dark:bg-zinc-950 border-none rounded-xl pr-12 font-bold" value={email} onChange={e => setEmail(e.target.value)} />
                             </div>
                          </div>
                          <div className="space-y-2">
                             <Label className="text-[9px] font-black text-primary uppercase pr-4 tracking-widest">كلمة المرور المشفرة</Label>
                             <div className="relative">
                                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                               <Input type="password" placeholder="••••••••" className="h-14 bg-background border-none rounded-xl pr-12 font-bold" value={password} onChange={e => setPassword(e.target.value)} />
+                               <Input type="password" placeholder="••••••••" className="h-14 bg-white dark:bg-zinc-950 border-none rounded-xl pr-12 font-bold" value={password} onChange={e => setPassword(e.target.value)} />
                             </div>
                          </div>
                       </div>
@@ -254,15 +254,15 @@ export default function SecurityLoginPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                          <div className="space-y-2">
                             <Label className="text-[9px] font-black text-primary uppercase pr-3 tracking-widest">الاسم الكامل</Label>
-                            <Input placeholder="الاسم الرباعي" className="h-12 bg-background border-none rounded-xl px-4 font-bold" value={fullName} onChange={e => setFullName(e.target.value)} />
+                            <Input placeholder="الاسم الرباعي" className="h-12 bg-white dark:bg-zinc-950 border-none rounded-xl px-4 font-bold" value={fullName} onChange={e => setFullName(e.target.value)} />
                          </div>
                          <div className="space-y-2">
                             <Label className="text-[9px] font-black text-primary uppercase pr-3 tracking-widest">الهاتف الدولي</Label>
-                            <Input placeholder="+966" className="h-12 bg-background border-none rounded-xl px-4 font-bold text-left" value={phone} onChange={e => setPhone(e.target.value)} />
+                            <Input placeholder="+966" className="h-12 bg-white dark:bg-zinc-950 border-none rounded-xl px-4 font-bold text-left" value={phone} onChange={e => setPhone(e.target.value)} />
                          </div>
                          <div className="space-y-2 md:col-span-2">
                             <Label className="text-[9px] font-black text-primary uppercase pr-3 tracking-widest">البريد الإلكتروني</Label>
-                            <Input type="email" placeholder="example@mail.com" className="h-12 bg-background border-none rounded-xl px-4 font-bold" value={email} onChange={e => setEmail(e.target.value)} />
+                            <Input type="email" placeholder="example@mail.com" className="h-12 bg-white dark:bg-zinc-950 border-none rounded-xl px-4 font-bold" value={email} onChange={e => setEmail(e.target.value)} />
                          </div>
                          
                          <div className="md:col-span-2 p-5 bg-muted/30 rounded-2xl border space-y-4">
@@ -271,7 +271,7 @@ export default function SecurityLoginPage() {
                             </Label>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                <Select onValueChange={setSecurityQuestion}>
-                                  <SelectTrigger className="h-12 bg-background border-none rounded-xl font-bold">
+                                  <SelectTrigger className="h-12 bg-white dark:bg-zinc-950 border-none rounded-xl font-bold">
                                      <SelectValue placeholder="اختر سؤالاً..." />
                                   </SelectTrigger>
                                   <SelectContent dir="rtl">
@@ -280,13 +280,13 @@ export default function SecurityLoginPage() {
                                      <SelectItem value="q3">ما هو اسم معلمك المفضل؟</SelectItem>
                                   </SelectContent>
                                </Select>
-                               <Input placeholder="الإجابة السرية..." className="h-12 bg-background border-none rounded-xl px-4 font-bold" value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} />
+                               <Input placeholder="الإجابة السرية..." className="h-12 bg-white dark:bg-zinc-950 border-none rounded-xl px-4 font-bold" value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} />
                             </div>
                          </div>
 
                          <div className="space-y-2 md:col-span-2">
                             <Label className="text-[9px] font-black text-primary uppercase pr-3 tracking-widest">كلمة المرور الجديدة</Label>
-                            <Input type="password" placeholder="أدخل رمزاً قوياً" className="h-12 bg-background border-none rounded-xl px-4 font-bold" value={password} onChange={e => setPassword(e.target.value)} />
+                            <Input type="password" placeholder="أدخل رمزاً قوياً" className="h-12 bg-white dark:bg-zinc-950 border-none rounded-xl px-4 font-bold" value={password} onChange={e => setPassword(e.target.value)} />
                          </div>
                       </div>
                       
@@ -299,7 +299,7 @@ export default function SecurityLoginPage() {
                          </div>
                          <Input 
                             placeholder="أدخل الناتج..." 
-                            className="h-14 bg-background border-none rounded-xl px-6 font-black text-center text-xl text-primary" 
+                            className="h-14 bg-white dark:bg-zinc-950 border-none rounded-xl px-6 font-black text-center text-xl text-primary" 
                             value={captchaInput}
                             onChange={e => setCaptchaInput(e.target.value)}
                          />
