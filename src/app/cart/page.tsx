@@ -132,17 +132,6 @@ export default function CartPage() {
                      </div>
                   </div>
                </Card>
-
-               <Card className="luxury-card p-8 md:p-10 bg-zinc-950 text-white border-none flex items-center gap-6 shadow-2xl relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700" />
-                  <div className="w-14 h-14 md:w-16 md:h-16 bg-white/10 rounded-2xl flex items-center justify-center text-primary shrink-0 shadow-inner border border-white/5 relative z-10">
-                     <Wallet size={28} />
-                  </div>
-                  <div className="relative z-10">
-                    <p className="text-[10px] md:text-xs font-black uppercase text-zinc-500 tracking-widest mb-1">نظام الدفع المحفظي</p>
-                    <p className="text-xs md:text-sm font-medium leading-relaxed opacity-80">سيتم تصفية المبلغ سيادياً من رصيدك المتاح فور التأكيد.</p>
-                  </div>
-               </Card>
             </div>
           </div>
         )}

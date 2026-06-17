@@ -58,6 +58,9 @@ export default function CheckoutPage() {
   const walletBalance = profile?.walletBalance || 0;
   const hasEnoughBalance = walletBalance >= finalTotal;
 
+  // The button should be enabled if we have items, a shipping method, enough balance, and not already processing
+  const canPay = items.length > 0 && selectedShipping && hasEnoughBalance && !isProcessing && !userLoading;
+
   const handleCompleteOrder = async () => {
     if (!user || !profile || !db) {
        toast({ variant: "destructive", title: "خطأ في الجلسة", description: "يرجى إعادة تسجيل الدخول." });
@@ -70,10 +73,6 @@ export default function CheckoutPage() {
     if (!hasEnoughBalance) {
        toast({ variant: "destructive", title: "عذراً", description: "رصيدك الحالي غير كافٍ لإتمام الاستحواذ." });
        return;
-    }
-    if (items.length === 0) {
-      toast({ variant: "destructive", title: "السلة فارغة" });
-      return;
     }
 
     setIsProcessing(true);
@@ -88,7 +87,7 @@ export default function CheckoutPage() {
         const balanceBefore = userSnap.data().walletBalance || 0;
         if (balanceBefore < finalTotal) throw "Insufficient Balance";
 
-        // Automated stock extraction for the first item (primary focus for Instant Delivery)
+        // Logic for first item delivery (Main Product)
         const mainItem = items[0];
         const productRef = doc(db, "products", mainItem.id);
         const productSnap = await transaction.get(productRef);
@@ -110,7 +109,6 @@ export default function CheckoutPage() {
               updatedAt: serverTimestamp()
             });
           } else {
-            // Case where no codes available
             finalStatus = 'pending_stock';
             finalDeliveryStatus = 'preparing';
             if ((productData.stock || 0) > 0) {
@@ -145,7 +143,9 @@ export default function CheckoutPage() {
           createdAt: new Date().toISOString()
         });
 
-        transaction.set(doc(collection(db, "users", user.uid, "transactions")), {
+        // Log transaction for user
+        const userTransRef = doc(collection(db, "users", user.uid, "transactions"));
+        transaction.set(userTransRef, {
           type: 'purchase',
           amount: finalTotal,
           description: `شراء آلي: ${mainItem.name}`,
@@ -155,7 +155,9 @@ export default function CheckoutPage() {
           createdAt: new Date().toISOString()
         });
 
-        transaction.set(doc(collection(db, "transactions")), {
+        // Log global transaction
+        const globalTransRef = doc(collection(db, "transactions"));
+        transaction.set(globalTransRef, {
           userId: user.uid,
           amount: finalTotal,
           type: 'purchase',
@@ -259,7 +261,7 @@ export default function CheckoutPage() {
                        <Input 
                          value={deliveryEmail} 
                          onChange={e => setDeliveryEmail(e.target.value)} 
-                         className="h-16 md:h-20 rounded-[1.5rem] bg-white dark:bg-zinc-900 border-2 border-border px-8 font-black text-lg md:text-2xl text-foreground shadow-inner" 
+                         className="h-16 md:h-20 rounded-[1.5rem] bg-white dark:bg-zinc-900 border-2 border-border px-8 font-black text-lg md:text-2xl text-foreground shadow-inner focus:ring-2 focus:ring-primary/20" 
                          placeholder="name@example.com"
                        />
                        <p className="text-[10px] text-muted-foreground font-medium pr-4">سيقوم النظام بإرسال كود التفعيل لهذا البريد احتياطياً.</p>
@@ -269,7 +271,7 @@ export default function CheckoutPage() {
                        <Textarea 
                          value={notes} 
                          onChange={e => setNotes(e.target.value)} 
-                         className="rounded-[2rem] bg-white dark:bg-zinc-900 border-2 border-border p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner text-foreground" 
+                         className="rounded-[2rem] bg-white dark:bg-zinc-900 border-2 border-border p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner text-foreground focus:ring-2 focus:ring-primary/20" 
                          placeholder="اكتب هنا أي تفاصيل تريد إيضاحها للنظام..." 
                        />
                     </div>
@@ -324,8 +326,8 @@ export default function CheckoutPage() {
 
                     <Button 
                       onClick={handleCompleteOrder} 
-                      disabled={isProcessing || !selectedShipping || !hasEnoughBalance || userLoading || items.length === 0}
-                      className={`royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-10 group transition-all ${(!selectedShipping || !hasEnoughBalance) ? 'opacity-50 grayscale cursor-not-allowed' : 'opacity-100'}`}
+                      disabled={!canPay}
+                      className={`royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-10 group transition-all ${!canPay ? 'opacity-50 grayscale cursor-not-allowed' : 'opacity-100'}`}
                     >
                       {isProcessing ? (
                         <Loader2 className="animate-spin" size={32} />

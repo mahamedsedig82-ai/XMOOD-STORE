@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -133,7 +134,7 @@ export default function AdminOperationsControlCenter() {
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
             <Input 
               placeholder="ابحث برقم الطلب، الاسم، أو البريد..." 
-              className="pr-12 h-14 bg-background border-none rounded-2xl font-bold"
+              className="pr-12 h-14 bg-background border-none rounded-2xl font-bold focus:ring-2 focus:ring-primary/20"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
