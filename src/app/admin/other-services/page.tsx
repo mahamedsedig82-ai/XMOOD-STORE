@@ -204,13 +204,13 @@ export default function AdminOtherServices() {
 
       <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl shadow-xl overflow-hidden">
         <ScrollArea className="max-h-[800px] overflow-x-auto responsive-table">
-          <Table className="w-full table-auto lg:table-fixed">
+          <Table className="w-full table-fixed">
             <TableHeader className="bg-muted/30 sticky top-0 z-20">
               <TableRow>
-                <TableHead className="text-right py-6 pr-8 font-black text-[10px] uppercase lg:w-[45%]">الخدمة والناشر</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase lg:w-[15%]">القيمة</TableHead>
-                <TableHead className="text-right font-black text-[10px] uppercase lg:w-[20%]">الواتساب</TableHead>
-                <TableHead className="text-center font-black text-[10px] uppercase lg:w-[20%]">العمليات</TableHead>
+                <TableHead className="text-right py-6 pr-8 font-black text-[10px] uppercase w-[45%]">الخدمة والناشر</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase w-[15%]">القيمة</TableHead>
+                <TableHead className="text-right font-black text-[10px] uppercase w-[20%]">الواتساب</TableHead>
+                <TableHead className="text-center font-black text-[10px] uppercase w-[20%]">العمليات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -220,16 +220,16 @@ export default function AdminOtherServices() {
                 <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-black uppercase tracking-widest opacity-30">لا توجد خدمات مسجلة</TableCell></TableRow>
               ) : services?.map((s: any) => (
                 <TableRow key={s.id} className="hover:bg-primary/5 transition-all border-b border-border/30 group">
-                  <TableCell className="py-6 pr-8" data-label="الخدمة">
-                    <div className="flex items-center gap-4 max-w-full">
+                  <TableCell className="py-6 pr-8 overflow-hidden" data-label="الخدمة">
+                    <div className="flex items-center gap-4 w-full">
                       <img src={s.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} className="w-12 h-12 rounded-xl object-cover border shadow-sm shrink-0" alt="" />
-                      <div className="overflow-hidden">
-                        <p className="font-black text-sm truncate group-hover:text-primary transition-colors block" title={s.name}>{s.name}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-black text-sm truncate block group-hover:text-primary transition-colors" title={s.name}>{s.name}</p>
                         <p className="text-[9px] text-muted-foreground uppercase font-black tracking-tighter opacity-60">بواسطة: {s.agentName || "وكيل معتمد"}</p>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell data-label="السعر" className="font-black text-lg text-primary tracking-tighter shrink-0">{formatUSD(s.price)}</TableCell>
+                  <TableCell data-label="السعر" className="font-black text-lg text-primary tracking-tighter">{formatUSD(s.price)}</TableCell>
                   <TableCell data-label="واتساب" className="font-mono text-[10px] text-muted-foreground font-bold truncate">{s.whatsapp}</TableCell>
                   <TableCell className="text-center" data-label="التحكم">
                     <div className="flex justify-center gap-3 shrink-0">
