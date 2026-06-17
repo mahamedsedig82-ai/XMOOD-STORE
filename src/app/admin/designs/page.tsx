@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, ImageIcon, Loader2, Upload } from "lucide-react";
+import { Plus, Trash2, ImageIcon, Loader2, Upload, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 
@@ -54,18 +54,18 @@ export default function DesignerPortfolioAdmin() {
       });
       setIsGalleryOpen(false);
       setNewDesign({ title: "", description: "", imageUrl: "", category: "Logo" });
-      toast({ title: "تم النشر في المعرض" });
+      toast({ title: "تم النشر في المعرض السيادي" });
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleDeleteItem = async (id: string) => {
-    if (!confirm("حذف هذا العمل الفني؟")) return;
+    if (!confirm("حذف هذا العمل الفني نهائياً؟")) return;
     setIsProcessing(true);
     try {
       await deleteDoc(doc(db, "gallery", id));
-      toast({ title: "تم الحذف" });
+      toast({ title: "تم الحذف بنجاح" });
     } finally {
       setIsProcessing(false);
     }
@@ -74,7 +74,10 @@ export default function DesignerPortfolioAdmin() {
   return (
     <div className="space-y-12 animate-fade-in pb-32" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card/60 p-8 rounded-[2.5rem] border shadow-sm">
-        <h1 className="text-4xl font-headline font-black gold-text">إدارة معرض أعمالي</h1>
+        <div>
+           <h1 className="text-4xl font-headline font-black gold-text">إدارة معرض أعمالي</h1>
+           <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1">Creative Portfolio Management</p>
+        </div>
         <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
           <DialogTrigger asChild>
             <Button className="royal-button h-16 px-12 text-lg shadow-xl"><Plus size={24} className="ml-3" /> نشر عمل فني جديد</Button>
@@ -86,11 +89,17 @@ export default function DesignerPortfolioAdmin() {
                  <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-4">العنوان</label><Input value={newDesign.title} onChange={e => setNewDesign({...newDesign, title: e.target.value})} /></div>
                  <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-4">الفئة</label><Input value={newDesign.category} onChange={e => setNewDesign({...newDesign, category: e.target.value})} /></div>
               </div>
-              <div onClick={() => fileInputRef.current?.click()} className="h-32 bg-muted/40 border-2 border-dashed border-primary/20 rounded-2xl flex items-center justify-center cursor-pointer overflow-hidden">
-                {newDesign.imageUrl ? <img src={newDesign.imageUrl} className="h-full w-full object-cover" alt="" /> : <Upload className="text-primary" />}
-                <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
+              <div className="space-y-2">
+                 <label className="text-[10px] font-black text-primary uppercase pr-4">صورة العمل الفني</label>
+                 <div onClick={() => fileInputRef.current?.click()} className="h-40 bg-muted/40 border-2 border-dashed border-primary/20 rounded-2xl flex items-center justify-center cursor-pointer overflow-hidden group hover:bg-primary/5 transition-all">
+                    {newDesign.imageUrl ? <img src={newDesign.imageUrl} className="h-full w-full object-cover" alt="" /> : <Upload className="text-primary group-hover:scale-110 transition-transform" />}
+                    <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
+                 </div>
               </div>
-              <Textarea value={newDesign.description} onChange={e => setNewDesign({...newDesign, description: e.target.value})} placeholder="وصف العمل الفني..." />
+              <div className="space-y-2">
+                 <label className="text-[10px] font-black text-primary uppercase pr-4">وصف العمل</label>
+                 <Textarea value={newDesign.description} onChange={e => setNewDesign({...newDesign, description: e.target.value})} placeholder="وصف العمل الفني..." />
+              </div>
             </div>
             <DialogFooter className="mt-10"><Button onClick={handleAddToGallery} disabled={isProcessing} className="royal-button w-full h-18 text-xl">{isProcessing ? <Loader2 className="animate-spin" /> : "نشر العمل الآن"}</Button></DialogFooter>
           </DialogContent>
@@ -100,8 +109,13 @@ export default function DesignerPortfolioAdmin() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {loading ? (
           <div className="col-span-full py-40 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={60} /></div>
+        ) : galleryItems?.length === 0 ? (
+          <div className="col-span-full py-40 text-center luxury-card border-dashed opacity-30">
+             <ShieldCheck size={100} className="mx-auto mb-6" />
+             <p className="text-xl font-black uppercase tracking-widest">المعرض فارغ حالياً</p>
+          </div>
         ) : galleryItems?.map((item: any) => (
-          <Card key={item.id} className="luxury-card border-none flex flex-col group h-full">
+          <Card key={item.id} className="luxury-card border-none flex flex-col group h-full shadow-lg">
              <div className="relative aspect-video overflow-hidden bg-muted">
                 <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                 <Badge className="absolute top-4 right-4 bg-primary text-black font-black uppercase text-[8px] px-4 py-1 rounded-full shadow-2xl">{item.category}</Badge>
@@ -111,7 +125,7 @@ export default function DesignerPortfolioAdmin() {
                 <p className="text-sm text-muted-foreground line-clamp-2 h-10 leading-relaxed font-medium">{item.description}</p>
              </CardContent>
              
-             {/* ISOLATED ADMIN BAR - FIXED AT BOTTOM OUTSIDE TEXT */}
+             {/* ISOLATED ADMIN BAR - FIXED AT BOTTOM OUTSIDE TEXT & IMAGE */}
              <div className="p-5 bg-muted/30 border-t mt-auto">
                 <Button 
                   onClick={() => handleDeleteItem(item.id)} 

@@ -17,45 +17,49 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     const verify = async () => {
+      if (!auth) return;
+
       const urlParams = new URLSearchParams(window.location.search);
       const oobCode = urlParams.get('oobCode');
       const mode = urlParams.get('mode');
 
       try {
-        if (oobCode && mode === 'verifyEmail' && auth) {
+        // 1. التعامل مع رابط توثيق البريد التقليدي
+        if (oobCode && mode === 'verifyEmail') {
            await applyActionCode(auth, oobCode);
            if (auth.currentUser) {
               await auth.currentUser.reload();
               await syncUserProfile(auth.currentUser);
            }
            setStatus('success');
-           toast({ title: "تم توثيق الهوية" });
-           setTimeout(() => router.replace("/wallet"), 1000);
+           toast({ title: "تم توثيق الهوية السيادية" });
+           setTimeout(() => router.replace("/wallet"), 1500);
            return;
         }
 
+        // 2. التعامل مع الرابط السحري (Magic Link)
         const userFromMagic = await completeMagicLinkSignIn();
         if (userFromMagic) {
           setStatus('success');
-          setTimeout(() => router.replace("/wallet"), 1000);
+          setTimeout(() => router.replace("/wallet"), 1500);
           return;
         }
 
-        if (auth) {
-          onAuthStateChanged(auth, async (firebaseUser) => {
-            if (firebaseUser) {
-              await firebaseUser.reload();
-              if (firebaseUser.emailVerified) {
-                await syncUserProfile(firebaseUser);
-                setStatus('success');
-                setTimeout(() => router.replace("/wallet"), 1000);
-              }
+        // 3. مراقبة حالة المصادقة (للحالات التي يتم فيها التوثيق في تبويب آخر)
+        onAuthStateChanged(auth, async (firebaseUser) => {
+          if (firebaseUser) {
+            await firebaseUser.reload();
+            if (firebaseUser.emailVerified) {
+              await syncUserProfile(firebaseUser);
+              setStatus('success');
+              setTimeout(() => router.replace("/wallet"), 1500);
             }
-          });
-        }
+          }
+        });
+
       } catch (e: any) {
+        console.error("Verification Error:", e);
         setStatus('error');
-        toast({ variant: "destructive", title: "رابط غير صالح" });
       }
     };
     verify();
@@ -85,8 +89,8 @@ export default function VerifyEmailPage() {
                <ShieldCheck className="w-14 h-14" />
             </div>
             <div className="space-y-3">
-              <h2 className="text-4xl font-black gold-text">تم التوثيق!</h2>
-              <p className="text-muted-foreground font-bold">مرحباً بك. جاري توجيهك للمحفظة...</p>
+              <h2 className="text-4xl font-black gold-text">تم التوثيق بنجاح!</h2>
+              <p className="text-muted-foreground font-bold">مرحباً بك في عالم XMOOD. جاري توجيهك لمحفظتك...</p>
             </div>
           </div>
         )}
@@ -96,7 +100,8 @@ export default function VerifyEmailPage() {
             <div className="w-24 h-24 bg-red-500/10 text-red-500 rounded-3xl flex items-center justify-center mx-auto border-2 border-red-500/20 shadow-xl">
                <XCircle className="w-14 h-14" />
             </div>
-            <h2 className="text-3xl font-black text-red-500">فشل في التوثيق</h2>
+            <h2 className="text-3xl font-black text-red-500">فشل في توثيق الرابط</h2>
+            <p className="text-muted-foreground text-sm font-medium">ربما انتهت صلاحية الرابط أو تم استخدامه مسبقاً.</p>
             <div className="pt-8 flex flex-col gap-4">
                <Button asChild className="royal-button w-full h-16"><a href="/login">العودة لصفحة الدخول</a></Button>
                <Button asChild variant="ghost" className="w-full h-14"><a href="/"><Home className="ml-2" size={16} /> الرئيسية</a></Button>

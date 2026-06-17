@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Edit2, Zap, Loader2, Upload, DollarSign, UserCheck } from "lucide-react";
+import { Plus, Trash2, Edit2, Zap, Loader2, Upload, DollarSign, UserCheck, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -22,9 +22,6 @@ export default function AdminOtherServices() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-
-  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
-  const { data: config } = useDoc(settingsRef);
 
   const [form, setForm] = useState({
     name: "", agentName: profile?.displayName || "", whatsapp: profile?.phoneNumber || "", imageUrl: "", type: "تقني", description: "", price: "", isAvailable: true
@@ -70,7 +67,7 @@ export default function AdminOtherServices() {
     if (!db || !confirm("حذف هذه الخدمة نهائياً؟")) return;
     setIsProcessing(true);
     deleteDoc(doc(db, "other_services", id))
-      .then(() => toast({ title: "تم الحذف" }))
+      .then(() => toast({ title: "تم الحذف بنجاح" }))
       .catch(async () => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: `other_services/${id}`, operation: 'delete' })))
       .finally(() => setIsProcessing(false));
   };
@@ -88,8 +85,11 @@ export default function AdminOtherServices() {
 
   return (
     <div className="space-y-12 animate-fade-in pb-32" dir="rtl">
-      <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card/60 p-8 rounded-[2.5rem] border">
-        <h1 className="text-4xl font-headline font-black gold-text">إدارة سوق الخدمات</h1>
+      <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card/60 p-8 rounded-[2.5rem] border shadow-sm">
+        <div>
+           <h1 className="text-4xl font-headline font-black gold-text">إدارة سوق الخدمات</h1>
+           <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1">Professional Solutions Management</p>
+        </div>
         <Dialog open={isOpen} onOpenChange={(v) => { setIsOpen(v); if(!v) resetForm(); }}>
           <DialogTrigger asChild>
             <Button className="royal-button h-16 px-12 text-lg"><Plus size={24} className="ml-3" /> إضافة خدمة جديدة</Button>
@@ -101,7 +101,7 @@ export default function AdminOtherServices() {
                  <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">اسم الخدمة</label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div>
                  <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">السعر (USD)</label><Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} /></div>
               </div>
-              <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="وصف الخدمة..." />
+              <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">وصف الخدمة</label><Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="وصف الخدمة..." /></div>
             </div>
             <DialogFooter className="mt-10"><Button onClick={handleSubmit} disabled={isProcessing} className="royal-button w-full h-16">{isProcessing ? <Loader2 className="animate-spin" /> : "حفظ الخدمة السيادية"}</Button></DialogFooter>
           </DialogContent>
@@ -111,15 +111,20 @@ export default function AdminOtherServices() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {loading ? (
           <div className="col-span-full py-40 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={60} /></div>
+        ) : services?.length === 0 ? (
+          <div className="col-span-full py-40 text-center luxury-card border-dashed opacity-30">
+             <ShieldCheck size={100} className="mx-auto mb-6" />
+             <p className="text-xl font-black uppercase tracking-widest">لا توجد خدمات مسجلة</p>
+          </div>
         ) : services?.map((s: any) => (
-          <Card key={s.id} className="luxury-card border-none flex flex-col group h-full">
+          <Card key={s.id} className="luxury-card border-none flex flex-col group h-full shadow-lg">
              <div className="relative aspect-video overflow-hidden">
                 <img src={s.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                 <Badge className="absolute top-4 right-4 bg-primary text-black font-black uppercase text-[8px] px-4 py-1 rounded-full">{s.type}</Badge>
              </div>
              <CardContent className="p-8 flex-1">
                 <h3 className="font-black text-2xl mb-4 line-clamp-1 group-hover:gold-text transition-colors">{s.name}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed mb-6 h-10">{s.description}</p>
+                <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed mb-6 h-14 overflow-hidden">{s.description}</p>
                 <div className="flex justify-between items-center pt-6 border-t">
                    <span className="font-black text-2xl text-primary">{formatUSD(s.price)}</span>
                    <span className="text-[8px] font-black text-zinc-500 uppercase">{s.agentName}</span>
@@ -128,7 +133,7 @@ export default function AdminOtherServices() {
              
              {/* ISOLATED ADMIN BAR - ALWAYS VISIBLE OUTSIDE CONTENT */}
              <div className="p-5 bg-muted/30 border-t flex gap-4 mt-auto">
-                <Button onClick={() => startEdit(s)} variant="outline" className="flex-1 h-12 rounded-xl font-black text-[10px] uppercase gap-2 border-primary/20 text-primary hover:bg-primary/5"><Edit2 size={16} /> تعديل</Button>
+                <Button onClick={() => startEdit(s)} variant="outline" className="flex-1 h-12 rounded-xl font-black text-[10px] uppercase gap-2 border-primary/20 text-primary hover:bg-primary/5 shadow-sm"><Edit2 size={16} /> تعديل</Button>
                 <Button onClick={() => handleDelete(s.id)} disabled={isProcessing} variant="destructive" className="w-12 h-12 rounded-xl p-0 shadow-xl shadow-red-500/10">
                    {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={20} />}
                 </Button>

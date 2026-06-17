@@ -1,9 +1,8 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Settings, Image as ImageIcon, Zap, Loader2
+  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Settings, Image as ImageIcon, Zap, Loader2, Palette
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -87,7 +86,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </SidebarMenu>
           </SidebarContent>
           <div className="p-8 border-t bg-muted/20 space-y-4">
-            <Button asChild variant="outline" className="w-full h-12 rounded-xl text-[10px] font-black uppercase gap-4">
+            <Button asChild variant="outline" className="w-full h-12 rounded-xl text-[10px] font-black uppercase gap-4 border-primary/20">
               <Link href="/"><ArrowLeft size={16} /> العودة للمتجر</Link>
             </Button>
             <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-12 rounded-xl text-red-500 font-black text-[10px] uppercase gap-4">
@@ -108,7 +107,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
              </div>
              <div className="flex items-center gap-3 md:gap-6">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[9px] font-black px-5 py-2 rounded-full tracking-widest uppercase">System Secured</Badge>
+                <Badge className="bg-green-500/10 text-green-600 border-none text-[9px] font-black px-5 py-2 rounded-full tracking-widest uppercase shadow-sm">System Secured</Badge>
                 <div className="w-3 h-3 md:w-4 md:h-4 bg-green-500 rounded-full animate-pulse shadow-[0_0_15px_#22c55e]" />
              </div>
           </header>
