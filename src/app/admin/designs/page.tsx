@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,13 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Palette, Image as ImageIcon, Loader2, Save, Smartphone, MessageSquare } from "lucide-react";
+import { Plus, Trash2, Palette, Image as ImageIcon, Loader2, Save, Smartphone, MessageSquare, Upload, Link as LinkIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function DesignerPortfolioAdmin() {
   const { profile, user } = useUser();
   const db = useFirestore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   
@@ -28,6 +29,47 @@ export default function DesignerPortfolioAdmin() {
   }, [db]);
 
   const { data: galleryItems, loading } = useCollection(galleryQuery);
+
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
+          else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", 0.6));
+        };
+      };
+      reader.onerror = reject;
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsProcessing(true);
+      try {
+        const b64 = await compressImage(file);
+        setNewDesign({ ...newDesign, imageUrl: b64 });
+        toast({ title: "تم معالجة الصورة بنجاح" });
+      } catch (err) {
+        toast({ variant: "destructive", title: "فشل معالجة الصورة" });
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+  };
 
   const handleAddToGallery = async () => {
     if (!newDesign.title || !newDesign.imageUrl || !db || !user) {
@@ -102,9 +144,33 @@ export default function DesignerPortfolioAdmin() {
                 <label className="text-[10px] font-bold text-primary uppercase pr-3">عنوان العمل</label>
                 <Input value={newDesign.title} onChange={e => setNewDesign({...newDesign, title: e.target.value})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-bold" />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase pr-3">رابط الصورة (16:9)</label>
-                <Input value={newDesign.imageUrl} onChange={e => setNewDesign({...newDesign, imageUrl: e.target.value})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-mono text-xs" placeholder="https://..." />
+              <div className="space-y-4">
+                <label className="text-[10px] font-bold text-primary uppercase pr-3">صورة العمل الفني</label>
+                <Tabs defaultValue="upload" className="w-full">
+                   <TabsList className="bg-zinc-900 p-1 rounded-xl mb-4">
+                      <TabsTrigger value="upload" className="flex-1 gap-2"><Upload size={14} /> رفع من الهاتف</TabsTrigger>
+                      <TabsTrigger value="url" className="flex-1 gap-2"><LinkIcon size={14} /> رابط مباشر</TabsTrigger>
+                   </TabsList>
+                   <TabsContent value="upload">
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="h-14 bg-zinc-900 border-2 border-dashed border-primary/20 rounded-xl flex items-center justify-center cursor-pointer hover:bg-primary/5 transition-all"
+                      >
+                         <span className="text-[10px] font-bold text-primary uppercase flex items-center gap-2">
+                            <Upload size={14} /> اختر من معرض الصور
+                         </span>
+                         <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+                      </div>
+                   </TabsContent>
+                   <TabsContent value="url">
+                      <Input value={newDesign.imageUrl} onChange={e => setNewDesign({...newDesign, imageUrl: e.target.value})} className="h-14 bg-zinc-900 border-none rounded-xl px-6 font-mono text-xs" placeholder="https://..." />
+                   </TabsContent>
+                </Tabs>
+                {newDesign.imageUrl && (
+                   <div className="mt-4 rounded-xl overflow-hidden aspect-video border border-primary/20">
+                      <img src={newDesign.imageUrl} className="w-full h-full object-cover" alt="Preview" />
+                   </div>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-primary uppercase pr-3">الفئة (شعار، بنر، موشن)</label>

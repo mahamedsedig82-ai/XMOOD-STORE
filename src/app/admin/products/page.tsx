@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { formatSDG } from "@/lib/currency";
 
 export default function AdminProducts() {
   const db = useFirestore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,12 +49,44 @@ export default function AdminProducts() {
     return () => unsubscribe();
   }, [db]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
+          else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", 0.6));
+        };
+      };
+      reader.onerror = reject;
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string });
-      reader.readAsDataURL(file);
+      setIsProcessing(true);
+      try {
+        const b64 = await compressImage(file);
+        setForm({ ...form, imageUrl: b64 });
+        toast({ title: "تم معالجة الصورة وتجهيزها للرفع" });
+      } catch (err) {
+        toast({ variant: "destructive", title: "فشل معالجة الصورة" });
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -70,7 +103,7 @@ export default function AdminProducts() {
     if (editingId) {
       updateDoc(doc(db, "products", editingId), data)
         .then(() => { toast({ title: "تم التحديث بنجاح" }); setIsOpen(false); resetForm(); })
-        .catch(() => toast({ variant: "destructive", title: "خطأ في الحفظ", description: "قد يكون حجم الصور كبيراً جداً، يرجى المحاولة بصورة أصغر." }))
+        .catch(() => toast({ variant: "destructive", title: "خطأ في الحفظ", description: "فشل الحفظ، يرجى المحاولة بصورة أصغر أو التحقق من الاتصال." }))
         .finally(() => setIsProcessing(false));
     } else {
       addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() })
@@ -121,8 +154,32 @@ export default function AdminProducts() {
               <div className="space-y-2"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">المخزون (يدوي)</label><Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="h-12 rounded-xl bg-zinc-900 border-none px-6 font-bold" /></div>
               <div className="col-span-full space-y-2"><div className="flex items-center gap-2 mb-1"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">مميزات الباقة (تميز)</label><Sparkles size={12} className="text-primary" /></div><Textarea value={form.highlights} onChange={e => setForm({...form, highlights: e.target.value})} className="min-h-[80px] rounded-xl bg-zinc-900 border-none p-4 text-xs font-bold" placeholder="أدخل ميزة في كل سطر..." /></div>
               <div className="col-span-full space-y-4">
-                 <div className="flex items-center justify-between"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">صورة الباقة</label><Badge variant="outline" className="text-[7px] border-primary/20 text-primary">أي حجم مقبول</Badge></div>
-                 <Tabs defaultValue="url" className="w-full"><TabsList className="bg-zinc-900 p-1 rounded-xl mb-4"><TabsTrigger value="url" className="flex-1 gap-2 h-10"><LinkIcon size={12}/> رابط خارجي</TabsTrigger><TabsTrigger value="upload" className="flex-1 gap-2 h-10"><Upload size={12}/> رفع ملف</TabsTrigger></TabsList><TabsContent value="url"><Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-12 bg-zinc-900 border-none rounded-xl" /></TabsContent><TabsContent value="upload"><Input type="file" accept="image/*" onChange={handleImageUpload} className="h-12 bg-zinc-900 border-none pt-3 text-xs" /></TabsContent></Tabs>
+                 <div className="flex items-center justify-between"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">صورة الباقة</label><Badge variant="outline" className="text-[7px] border-primary/20 text-primary">Upload from Device or URL</Badge></div>
+                 <Tabs defaultValue="upload" className="w-full">
+                    <TabsList className="bg-zinc-900 p-1 rounded-xl mb-4">
+                       <TabsTrigger value="upload" className="flex-1 gap-2 h-10"><Upload size={12}/> رفع من الهاتف</TabsTrigger>
+                       <TabsTrigger value="url" className="flex-1 gap-2 h-10"><LinkIcon size={12}/> رابط خارجي</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="upload">
+                       <div 
+                         onClick={() => fileInputRef.current?.click()}
+                         className="h-14 bg-zinc-900 border-2 border-dashed border-primary/20 rounded-xl flex items-center justify-center cursor-pointer hover:bg-primary/5 transition-all"
+                       >
+                          <span className="text-[10px] font-bold text-primary uppercase flex items-center gap-2">
+                             <Upload size={14} /> اختر صورة من المعرض
+                          </span>
+                          <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+                       </div>
+                    </TabsContent>
+                    <TabsContent value="url">
+                       <Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} placeholder="https://..." className="h-12 bg-zinc-900 border-none rounded-xl" />
+                    </TabsContent>
+                 </Tabs>
+                 {form.imageUrl && (
+                    <div className="mt-4 rounded-xl overflow-hidden aspect-video border border-primary/20">
+                       <img src={form.imageUrl} className="w-full h-full object-cover" alt="Preview" />
+                    </div>
+                 )}
               </div>
               <div className="col-span-full space-y-2"><div className="flex items-center gap-2 mb-1"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">أكواد التسليم الفوري</label><Info size={10} className="text-primary" /></div><Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="min-h-[100px] rounded-2xl bg-zinc-900 border-none p-4 font-mono text-xs text-primary" placeholder="CODE-XXXXX..." /></div>
             </div>

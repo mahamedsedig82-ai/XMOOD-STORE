@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Save, Loader2, Layout, MessageSquare, Zap, Megaphone, 
   Palette, Share2, Info, Image as ImageIcon, Shield, Wallet, 
-  Settings, Type, Smartphone, Eye, Sparkles, Mail, Globe
+  Settings, Type, Smartphone, Eye, Sparkles, Mail, Globe, Upload, Link as LinkIcon
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +21,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AdminContentManager() {
   const db = useFirestore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const settingsRef = useMemoFirebase(() => {
     if (!db) return null;
     return doc(db, "settings", "global");
@@ -70,6 +71,44 @@ export default function AdminContentManager() {
       }));
     }
   }, [config]);
+
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
+          else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
+        };
+      };
+      reader.onerror = reject;
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const b64 = await compressImage(file);
+        setForm({ ...form, appearance: { ...form.appearance, logoUrl: b64 } });
+        toast({ title: "تم معالجة اللوقو بنجاح" });
+      } catch (err) {
+        toast({ variant: "destructive", title: "فشل معالجة الصورة" });
+      }
+    }
+  };
 
   const handleSave = () => {
     if (!db || !settingsRef) return;
@@ -136,13 +175,32 @@ export default function AdminContentManager() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                  <div className="space-y-8">
                     <div className="space-y-4">
-                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو الموقع (URL)</Label>
-                       <Input 
-                         value={form.appearance.logoUrl} 
-                         onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} 
-                         className="h-16 bg-muted/40 border-none rounded-2xl font-mono text-xs" 
-                         placeholder="https://..." 
-                       />
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو الموقع الرسمي</Label>
+                       <Tabs defaultValue="url" className="w-full">
+                         <TabsList className="bg-muted p-1 rounded-xl mb-4">
+                            <TabsTrigger value="url" className="flex-1 gap-2"><LinkIcon size={12} /> رابط</TabsTrigger>
+                            <TabsTrigger value="upload" className="flex-1 gap-2"><Upload size={12} /> رفع من الهاتف</TabsTrigger>
+                         </TabsList>
+                         <TabsContent value="url">
+                            <Input 
+                              value={form.appearance.logoUrl} 
+                              onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} 
+                              className="h-16 bg-muted/40 border-none rounded-2xl font-mono text-xs" 
+                              placeholder="https://..." 
+                            />
+                         </TabsContent>
+                         <TabsContent value="upload">
+                            <div 
+                              onClick={() => fileInputRef.current?.click()}
+                              className="h-16 bg-muted/40 border-2 border-dashed border-primary/20 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-primary/5 transition-all"
+                            >
+                               <span className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2">
+                                  <Upload size={14} /> اختر صورة من المعرض
+                               </span>
+                               <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+                            </div>
+                         </TabsContent>
+                       </Tabs>
                        <p className="text-[8px] text-muted-foreground pr-4">سيتم قص اللوقو تلقائياً وجعل حوافه دائرية انسيابية (Smart Crop).</p>
                     </div>
                     
