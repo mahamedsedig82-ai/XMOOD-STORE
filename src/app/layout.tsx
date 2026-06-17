@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { GuidanceBot } from '@/components/shared/GuidanceBot';
 import { PageLoader } from '@/components/shared/PageLoader';
 import { SystemHealthMonitor } from '@/components/shared/SystemHealthMonitor';
+import { Footer } from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'XMOOD STORE | منصة الخدمات الإلكترونية المعتمدة',
@@ -38,6 +39,7 @@ export default function RootLayout({
           <PageLoader />
           <div className="relative flex min-h-screen flex-col">
             {children}
+            <Footer />
           </div>
           <GuidanceBot />
           <Toaster />

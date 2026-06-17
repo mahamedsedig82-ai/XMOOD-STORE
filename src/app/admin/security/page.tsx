@@ -6,7 +6,7 @@ import { collection, query, orderBy, limit, addDoc, serverTimestamp } from "fire
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShieldCheck, ShieldAlert, Cpu, Activity, UserCheck, Zap, Lock, Globe, Loader2, MailCheck, ExternalLink, RefreshCw } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Cpu, Activity, UserCheck, Zap, Lock, Globe, Loader2, MailCheck, ExternalLink, RefreshCw, EyeOff } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -26,7 +26,6 @@ export default function AdminSecurityCenter() {
 
   const handleManualScan = () => {
     setIsRefreshing(true);
-    // نظام فحص لحظي وهمي لمحاكاة النشاط
     setTimeout(() => {
       setIsRefreshing(false);
       toast({ title: "اكتمل الفحص اللحظي", description: "النظام محصن بالكامل ولا توجد اختراقات نشطة." });
@@ -71,13 +70,13 @@ export default function AdminSecurityCenter() {
            </Button>
         </Card>
 
-        <Card className="luxury-card border-none bg-muted/20 p-8 space-y-6">
-           <Lock className="text-zinc-500" size={40} />
+        <Card className="luxury-card border-none bg-red-500/5 p-8 space-y-6">
+           <EyeOff className="text-red-500" size={40} />
            <div>
-              <h3 className="text-xl font-black mb-2">تشفير البيانات السيادي</h3>
-              <p className="text-sm text-muted-foreground font-medium">كافة البيانات الحساسة مشفرة سيادياً ولا يمكن الوصول إليها إلا بصلاحية المالك.</p>
+              <h3 className="text-xl font-black mb-2">كشف محاولات التلاعب</h3>
+              <p className="text-sm text-muted-foreground font-medium">رصد الرموز الضخمة والكلمات المشبوهة في حقول الإدخال.</p>
            </div>
-           <Badge variant="outline" className="font-black">AES-256 SECURED</Badge>
+           <Badge variant="outline" className="text-red-500 border-red-500/20 font-black">TAMPER PROTECTION ON</Badge>
         </Card>
 
         <Card className="luxury-card border-none bg-blue-500/5 p-8 space-y-6">
@@ -102,8 +101,8 @@ export default function AdminSecurityCenter() {
               <Table>
                  <TableHeader className="bg-muted/30 sticky top-0 z-20">
                     <TableRow>
-                       <TableHead className="text-right py-6 pr-10 font-black uppercase text-[10px]">الحدث</TableHead>
-                       <TableHead className="text-right font-black uppercase text-[10px]">المستخدم / النطاق</TableHead>
+                       <TableHead className="text-right py-6 pr-10 font-black uppercase text-[10px]">الحدث والنوع</TableHead>
+                       <TableHead className="text-right font-black uppercase text-[10px]">المستخدم / التفاصيل</TableHead>
                        <TableHead className="text-right font-black uppercase text-[10px]">الحالة</TableHead>
                        <TableHead className="text-left pl-10 font-black uppercase text-[10px]">التوقيت المركزي</TableHead>
                     </TableRow>
@@ -114,18 +113,21 @@ export default function AdminSecurityCenter() {
                     ) : logs?.length === 0 ? (
                       <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold italic">لا توجد سجلات تتبع مسجلة حالياً</TableCell></TableRow>
                     ) : logs?.map((log: any) => (
-                      <TableRow key={log.id} className="hover:bg-primary/5 transition-all border-b border-border/30">
+                      <TableRow key={log.id} className={`hover:bg-primary/5 transition-all border-b border-border/30 ${log.type === 'tamper_attempt' ? 'bg-red-500/5' : ''}`}>
                          <TableCell className="py-6 pr-10" data-label="الحدث">
                             <div className="flex items-center gap-4">
-                               {log.type === 'auth_fail' || log.type === 'access_denied' ? <ShieldAlert size={16} className="text-red-500" /> : <UserCheck size={16} className="text-green-500" />}
-                               <span className="font-bold text-sm">{log.description}</span>
+                               {log.type === 'auth_fail' || log.type === 'tamper_attempt' ? <ShieldAlert size={16} className="text-red-500" /> : <UserCheck size={16} className="text-green-500" />}
+                               <div className="flex flex-col">
+                                  <span className="font-black text-sm">{log.description}</span>
+                                  <span className="text-[8px] font-black text-primary uppercase">{log.type}</span>
+                               </div>
                             </div>
                          </TableCell>
-                         <TableCell data-label="المستخدم">
+                         <TableCell data-label="التفاصيل">
                             <span className="font-mono text-[10px] text-muted-foreground uppercase">{log.userEmail || "SYSTEM_EVENT"}</span>
                          </TableCell>
                          <TableCell data-label="الحالة">
-                            <Badge className={log.status === 'success' || log.status === 'resolved' ? 'bg-green-500/10 text-green-600 border-none' : 'bg-red-500/10 text-red-600 border-none'}>{log.status}</Badge>
+                            <Badge className={log.status === 'success' ? 'bg-green-500/10 text-green-600 border-none' : 'bg-red-500/10 text-red-600 border-none'}>{log.status}</Badge>
                          </TableCell>
                          <TableCell className="text-left pl-10 text-[10px] font-black text-muted-foreground uppercase" data-label="التوقيت">
                             {new Date(log.timestamp).toLocaleString('ar-EG')}

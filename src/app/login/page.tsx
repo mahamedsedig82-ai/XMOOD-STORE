@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { loginEmail, registerEmail, sendMagicLink, resetPassword, syncUserProfile } from "@/lib/auth";
+import { loginEmail, registerEmail, sendMagicLink, resetPassword, syncUserProfile, isSuspiciousInput, logSecurityEvent } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { 
   Loader2, Mail, Lock, ShieldCheck, Fingerprint, Shield
@@ -47,8 +47,21 @@ export default function SecurityLoginPage() {
     setCaptchaInput("");
   };
 
+  const checkSecurity = (text: string) => {
+     const check = isSuspiciousInput(text);
+     if (check.isSuspicious) {
+        logSecurityEvent('tamper_attempt', `رصد تلاعب في حقل الإدخال: ${check.reason}`, email);
+        toast({ variant: "destructive", title: "تنبيه أمني", description: "تم رصد محاولة إدخال رموز غير صالحة. تم تسجيل الحدث." });
+        return true;
+     }
+     return false;
+  };
+
   const handleEmailAuth = async (type: 'login' | 'signup') => {
     const cleanEmail = email.trim().toLowerCase();
+    
+    if (checkSecurity(email) || checkSecurity(password)) return;
+
     if (!cleanEmail || !password) return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى ملء كافة الحقول الإلزامية." });
     
     if (type === 'signup') {
@@ -93,6 +106,8 @@ export default function SecurityLoginPage() {
   const handleMagicLink = async () => {
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail) return toast({ variant: "destructive", title: "تنبيه بريدي", description: "أدخل بريدك الإلكتروني لإرسال الرابط السحري." });
+    if (checkSecurity(email)) return;
+    
     setLoading(true);
     try {
       await sendMagicLink(cleanEmail);

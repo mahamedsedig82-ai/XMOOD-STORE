@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -10,18 +11,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Save, Loader2, Layout, MessageSquare, Zap, Megaphone, 
   Palette, Share2, Info, Image as ImageIcon, Shield, Wallet, 
-  Settings, Type, Smartphone, Eye, Sparkles, Mail, Globe, Upload, Link as LinkIcon
+  Settings, Type, Smartphone, Eye, Sparkles, Mail, Globe, Upload, Link as LinkIcon, 
+  LayoutGrid, Power, AlignRight
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AdminContentManager() {
   const db = useFirestore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const footerLogoRef = useRef<HTMLInputElement>(null);
+  
   const settingsRef = useMemoFirebase(() => {
     if (!db) return null;
     return doc(db, "settings", "global");
@@ -36,6 +41,15 @@ export default function AdminContentManager() {
     contact: { whatsapp: "", email: "", telegram: "", facebook: "", instagram: "", youtube: "", tiktok: "", workHours: "" },
     emailBranding: { senderName: "XMOOD SECURITY", senderEmail: "", footerText: "© 2025 XMOOD STORE. All Rights Reserved." },
     ads: { headerBanner: "", promoText: "", isActive: false, buttonText: "اطلب الآن" },
+    footer: {
+      isActive: true,
+      logoUrl: "",
+      aboutText: "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية المتكاملة.",
+      copyright: "© 2025 XMOOD SOVEREIGN. ALL RIGHTS RESERVED.",
+      address: "المنطقة السيادية، مركز الخدمات الرقمية الموحد",
+      showSocial: true,
+      showAddress: true
+    },
     loginPage: {
       title: "تأمين الهوية الرقمية",
       subtitle: "انضم لنخبة متداولي الخدمات الرقمية عبر نظام دخول مشفر يضمن حماية بياناتك.",
@@ -67,7 +81,8 @@ export default function AdminContentManager() {
         contact: { ...prev.contact, ...(config.contact || {}) },
         loginPage: { ...prev.loginPage, ...(config.loginPage || {}) },
         walletPage: { ...prev.walletPage, ...(config.walletPage || {}) },
-        navLabels: { ...prev.navLabels, ...(config.navLabels || {}) }
+        navLabels: { ...prev.navLabels, ...(config.navLabels || {}) },
+        footer: { ...prev.footer, ...(config.footer || {}) }
       }));
     }
   }, [config]);
@@ -97,13 +112,17 @@ export default function AdminContentManager() {
     });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'logo' | 'footerLogo') => {
     const file = e.target.files?.[0];
     if (file) {
       try {
         const b64 = await compressImage(file);
-        setForm({ ...form, appearance: { ...form.appearance, logoUrl: b64 } });
-        toast({ title: "تم معالجة اللوقو بنجاح" });
+        if (target === 'logo') {
+           setForm({ ...form, appearance: { ...form.appearance, logoUrl: b64 } });
+        } else {
+           setForm({ ...form, footer: { ...form.footer, logoUrl: b64 } });
+        }
+        toast({ title: "تم معالجة الصورة بنجاح" });
       } catch (err) {
         toast({ variant: "destructive", title: "فشل معالجة الصورة" });
       }
@@ -153,6 +172,9 @@ export default function AdminContentManager() {
           <TabsTrigger value="visual" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Palette size={16} className="text-primary" /> الهوية واللوقو
           </TabsTrigger>
+          <TabsTrigger value="footer" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
+            <AlignRight size={16} className="text-primary" /> التذييل والطرفيات
+          </TabsTrigger>
           <TabsTrigger value="emails" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Mail size={16} className="text-primary" /> هوية المراسلات
           </TabsTrigger>
@@ -161,9 +183,6 @@ export default function AdminContentManager() {
           </TabsTrigger>
           <TabsTrigger value="wallet" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Wallet size={16} className="text-primary" /> نصوص المحفظة
-          </TabsTrigger>
-          <TabsTrigger value="nav" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
-            <Layout size={16} className="text-primary" /> التفرعات
           </TabsTrigger>
           <TabsTrigger value="social" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Share2 size={16} className="text-primary" /> التواصل
@@ -197,11 +216,10 @@ export default function AdminContentManager() {
                                <span className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2">
                                   <Upload size={14} /> اختر صورة من المعرض
                                </span>
-                               <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+                               <input type="file" ref={fileInputRef} onChange={(e) => handleImageUpload(e, 'logo')} accept="image/*" className="hidden" />
                             </div>
                          </TabsContent>
                        </Tabs>
-                       <p className="text-[8px] text-muted-foreground pr-4">سيتم قص اللوقو تلقائياً وجعل حوافه دائرية انسيابية (Smart Crop).</p>
                     </div>
                     
                     <div className="space-y-4">
@@ -218,14 +236,10 @@ export default function AdminContentManager() {
                        <Eye size={14} /> معاينة اللوقو الذكية
                     </div>
                     <div className="relative group">
-                       <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full scale-150 opacity-50 group-hover:opacity-100 transition-opacity" />
+                       <div className="absolute inset-0 bg-primary/10 blur-2xl rounded-full scale-150 opacity-50" />
                        <div className="relative w-48 h-48 md:w-64 md:h-24 bg-white dark:bg-zinc-950 rounded-[2rem] border-4 border-white dark:border-zinc-800 shadow-2xl overflow-hidden flex items-center justify-center">
                           {form.appearance.logoUrl ? (
-                            <img 
-                              src={form.appearance.logoUrl} 
-                              alt="Preview" 
-                              className="w-full h-full object-cover transition-transform group-hover:scale-110" 
-                            />
+                            <img src={form.appearance.logoUrl} alt="Preview" className="w-full h-full object-cover" />
                           ) : (
                             <div className="flex flex-col items-center opacity-20">
                                <ImageIcon size={40} />
@@ -233,6 +247,64 @@ export default function AdminContentManager() {
                             </div>
                           )}
                        </div>
+                    </div>
+                 </div>
+              </div>
+           </Card>
+        </TabsContent>
+
+        <TabsContent value="footer">
+           <Card className="luxury-card p-8 md:p-12 space-y-12 border-none">
+              <div className="flex items-center justify-between p-6 bg-primary/5 rounded-3xl border border-primary/10">
+                 <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white">
+                       <Power size={24} />
+                    </div>
+                    <div>
+                       <h4 className="font-black text-lg">حالة تذييل الموقع</h4>
+                       <p className="text-xs text-muted-foreground">تعطيل أو تفعيل قسم Footer في كافة الصفحات</p>
+                    </div>
+                 </div>
+                 <Switch 
+                   checked={form.footer.isActive} 
+                   onCheckedChange={(val) => setForm({...form, footer: {...form.footer, isActive: val}})}
+                 />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                 <div className="space-y-8">
+                    <div className="space-y-4">
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو التذييل (Footer Logo)</Label>
+                       <div 
+                         onClick={() => footerLogoRef.current?.click()}
+                         className="h-24 bg-muted/40 border-2 border-dashed border-primary/20 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-primary/5 transition-all"
+                       >
+                          {form.footer.logoUrl ? (
+                             <img src={form.footer.logoUrl} className="h-16 object-contain" alt="" />
+                          ) : (
+                             <span className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-2">
+                                <Upload size={14} /> رفع لوقو طرفي
+                             </span>
+                          )}
+                          <input type="file" ref={footerLogoRef} onChange={(e) => handleImageUpload(e, 'footerLogo')} accept="image/*" className="hidden" />
+                       </div>
+                    </div>
+
+                    <div className="space-y-3">
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">حقوق النشر (Copyright)</Label>
+                       <Input value={form.footer.copyright} onChange={e => setForm({...form, footer: {...form.footer, copyright: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-bold" />
+                    </div>
+                 </div>
+
+                 <div className="space-y-8">
+                    <div className="space-y-3">
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">نص "عن المتجر" في التذييل</Label>
+                       <Textarea value={form.footer.aboutText} onChange={e => setForm({...form, footer: {...form.footer, aboutText: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[120px] p-6 text-sm font-medium" />
+                    </div>
+                    
+                    <div className="space-y-3">
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">العنوان الطرفي (Physical Address)</Label>
+                       <Input value={form.footer.address} onChange={e => setForm({...form, footer: {...form.footer, address: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl font-medium" />
                     </div>
                  </div>
               </div>
@@ -294,29 +366,6 @@ export default function AdminContentManager() {
                     <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">وصف بروتوكول الإيداع</Label>
                     <Textarea value={form.walletPage.uidDesc} onChange={e => setForm({...form, walletPage: {...form.walletPage, uidDesc: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[100px] p-4" />
                  </div>
-              </div>
-           </Card>
-        </TabsContent>
-
-        <TabsContent value="nav">
-           <Card className="luxury-card p-8 md:p-12 space-y-10 border-none">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                 {[
-                   { label: "رابط الرئيسية", key: "home" },
-                   { label: "رابط المتجر", key: "store" },
-                   { label: "رابط سوق الخدمات", key: "services" },
-                   { label: "رابط المعرض", key: "gallery" },
-                   { label: "رابط الوكلاء", key: "agents" },
-                 ].map((item) => (
-                   <div key={item.key} className="space-y-3">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground pr-3">{item.label}</Label>
-                      <Input 
-                        value={(form.navLabels as any)[item.key]} 
-                        onChange={e => setForm({...form, navLabels: {...form.navLabels, [item.key]: e.target.value}})} 
-                        className="h-14 bg-muted/40 border-none rounded-2xl px-6 font-bold" 
-                      />
-                   </div>
-                 ))}
               </div>
            </Card>
         </TabsContent>

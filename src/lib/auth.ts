@@ -15,9 +15,35 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc, addDoc, collection } f
 import { auth, db } from "./firebase";
 
 /**
+ * خوارزمية رصد التلاعب: تكتشف الرموز الضخمة والكلمات المشبوهة
+ */
+export function isSuspiciousInput(text: string): { isSuspicious: boolean; reason: string } {
+  if (!text) return { isSuspicious: false, reason: "" };
+  
+  // 1. فحص الطول المفرط (أكثر من 1000 حرف)
+  if (text.length > 1000) return { isSuspicious: true, reason: "كتلة نصية ضخمة بشكل مريب" };
+
+  // 2. فحص تكرار الرموز بكثافة (أكثر من 20 رمز متتالي)
+  const symbolPattern = /[^\w\s]{20,}/g;
+  if (symbolPattern.test(text)) return { isSuspicious: true, reason: "استخدام رموز متكررة لمحاولة الحقن" };
+
+  // 3. فحص الكلمات المفتاحية للهجمات البرمجية
+  const maliciousKeywords = [
+    "<script", "javascript:", "eval(", "onload=", "onerror=", 
+    "select * from", "drop table", "union select", "insert into"
+  ];
+  
+  const lowerText = text.toLowerCase();
+  const foundKeyword = maliciousKeywords.find(key => lowerText.includes(key));
+  if (foundKeyword) return { isSuspicious: true, reason: `محاولة حقن كود بربع الكلمة: ${foundKeyword}` };
+
+  return { isSuspicious: false, reason: "" };
+}
+
+/**
  * تسجيل الأحداث الأمنية لضمان "التتبع" في لوحة الإدارة.
  */
-export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'access_denied', description: string, userEmail?: string) {
+export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'access_denied' | 'tamper_attempt', description: string, userEmail?: string) {
   try {
     addDoc(collection(db, "security_logs"), {
       type,
