@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -19,7 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
@@ -229,8 +228,8 @@ export default function AdminOperationsControlCenter() {
 
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
          <DialogContent className="max-w-4xl bg-zinc-950 border-primary/20 rounded-[2.5rem] p-0 overflow-hidden shadow-2xl text-white">
-            <DialogHeader className="sr-only">
-               <DialogTitle>بيانات العملية الآلية التفصيلية</DialogTitle>
+            <DialogHeader className="p-8 pb-0">
+               <DialogTitle className="text-2xl font-black gold-text">تفاصيل العملية السيادية</DialogTitle>
             </DialogHeader>
             {selectedOrder && (
               <div className="flex flex-col h-full max-h-[90vh]">

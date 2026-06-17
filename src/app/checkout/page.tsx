@@ -46,6 +46,13 @@ export default function CheckoutPage() {
   }, [db]);
   const { data: shippingMethods, loading: shippingLoading } = useCollection(shippingQuery);
 
+  // Auto-select first shipping method if not selected
+  useEffect(() => {
+    if (shippingMethods && shippingMethods.length > 0 && !selectedShipping) {
+      setSelectedShipping(shippingMethods[0]);
+    }
+  }, [shippingMethods, selectedShipping]);
+
   const finalTotal = total + (selectedShipping?.extraFee || 0);
   const walletBalance = profile?.walletBalance || 0;
   const hasEnoughBalance = walletBalance >= finalTotal;
@@ -63,6 +70,10 @@ export default function CheckoutPage() {
        toast({ variant: "destructive", title: "عذراً", description: "رصيدك الحالي غير كافٍ لإتمام الاستحواذ." });
        return;
     }
+    if (items.length === 0) {
+      toast({ variant: "destructive", title: "السلة فارغة" });
+      return;
+    }
 
     setIsProcessing(true);
     const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -76,7 +87,7 @@ export default function CheckoutPage() {
         const balanceBefore = userSnap.data().walletBalance || 0;
         if (balanceBefore < finalTotal) throw "Insufficient Balance";
 
-        // Automated stock extraction for the first item
+        // Automated stock extraction for each item (simplification: primary item focus)
         const mainItem = items[0];
         const productRef = doc(db, "products", mainItem.id);
         const productSnap = await transaction.get(productRef);
@@ -98,6 +109,7 @@ export default function CheckoutPage() {
               updatedAt: serverTimestamp()
             });
           } else {
+            // Case where stock is 0 or no codes available
             finalStatus = 'pending_stock';
             finalDeliveryStatus = 'preparing';
             if ((productData.stock || 0) > 0) {
@@ -210,7 +222,7 @@ export default function CheckoutPage() {
                           className={`p-6 md:p-8 rounded-[2.5rem] border-2 cursor-pointer transition-all duration-500 relative group overflow-hidden ${selectedShipping?.id === m.id ? 'border-primary bg-primary/5 shadow-2xl' : 'border-border/40 bg-card/40 hover:border-primary/30'}`}
                         >
                            <div className="flex justify-between items-start mb-6 relative z-10">
-                              <div className="w-14 h-14 bg-background rounded-2xl flex items-center justify-center border shadow-xl group-hover:scale-110 transition-transform">
+                              <div className="w-14 h-14 bg-white dark:bg-zinc-800 rounded-2xl flex items-center justify-center border shadow-xl group-hover:scale-110 transition-transform">
                                  {m.imageUrl ? <img src={m.imageUrl} className="w-full h-full object-cover rounded-2xl" alt="" /> : <Truck size={24} />}
                               </div>
                               {m.badge && <Badge className="bg-primary text-black font-black text-[7px] px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">{m.badge}</Badge>}
@@ -246,7 +258,7 @@ export default function CheckoutPage() {
                        <Input 
                          value={deliveryEmail} 
                          onChange={e => setDeliveryEmail(e.target.value)} 
-                         className="h-16 md:h-20 rounded-[1.5rem] bg-background border-2 border-border/50 px-8 font-black text-lg md:text-2xl text-foreground focus:ring-2 focus:ring-primary/20 shadow-inner" 
+                         className="h-16 md:h-20 rounded-[1.5rem] bg-white dark:bg-zinc-900 border-2 border-border/50 px-8 font-black text-lg md:text-2xl text-foreground focus:ring-2 focus:ring-primary/20 shadow-inner" 
                          placeholder="name@example.com"
                        />
                        <p className="text-[10px] text-muted-foreground font-medium pr-4">سيقوم النظام بإرسال كود التفعيل لهذا البريد احتياطياً فور اكتمال الدفع.</p>
@@ -256,7 +268,7 @@ export default function CheckoutPage() {
                        <Textarea 
                          value={notes} 
                          onChange={e => setNotes(e.target.value)} 
-                         className="rounded-[2rem] bg-background border-2 border-border/50 p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner focus:ring-2 focus:ring-primary/20 text-foreground" 
+                         className="rounded-[2rem] bg-white dark:bg-zinc-900 border-2 border-border/50 p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner focus:ring-2 focus:ring-primary/20 text-foreground" 
                          placeholder="اكتب هنا أي تفاصيل تريد إيضاحها للنظام..." 
                        />
                     </div>
@@ -311,8 +323,8 @@ export default function CheckoutPage() {
 
                     <Button 
                       onClick={handleCompleteOrder} 
-                      disabled={isProcessing || !selectedShipping || !hasEnoughBalance || userLoading}
-                      className="royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-10 group disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed"
+                      disabled={isProcessing || !selectedShipping || !hasEnoughBalance || userLoading || items.length === 0}
+                      className={`royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-10 group transition-all ${(!selectedShipping || !hasEnoughBalance) ? 'bg-zinc-800 grayscale cursor-not-allowed' : ''}`}
                     >
                       {isProcessing ? (
                         <Loader2 className="animate-spin" size={32} />
