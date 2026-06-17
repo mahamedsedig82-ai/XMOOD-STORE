@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -87,7 +88,7 @@ export default function CheckoutPage() {
         const balanceBefore = userSnap.data().walletBalance || 0;
         if (balanceBefore < finalTotal) throw "Insufficient Balance";
 
-        // Automated stock extraction for each item (simplification: primary item focus)
+        // Automated stock extraction for the first item (primary focus for Instant Delivery)
         const mainItem = items[0];
         const productRef = doc(db, "products", mainItem.id);
         const productSnap = await transaction.get(productRef);
@@ -109,11 +110,11 @@ export default function CheckoutPage() {
               updatedAt: serverTimestamp()
             });
           } else {
-            // Case where stock is 0 or no codes available
+            // Case where no codes available
             finalStatus = 'pending_stock';
             finalDeliveryStatus = 'preparing';
             if ((productData.stock || 0) > 0) {
-              transaction.update(productRef, { stock: (productData.stock - 1) });
+              transaction.update(productRef, { stock: Math.max(0, productData.stock - 1) });
             }
           }
         }
@@ -195,7 +196,7 @@ export default function CheckoutPage() {
     <main className="min-h-screen bg-background pb-40" dir="rtl">
       <Navbar />
       <div className="container mx-auto px-4 md:px-6 py-32 max-w-7xl">
-        <header className="mb-16 md:mb-24 border-r-0 md:border-r-8 border-primary pr-0 md:pr-10 text-center md:text-right">
+        <header className="mb-16 md:mb-24 border-r-8 border-primary pr-10 text-right">
            <h1 className="text-4xl md:text-7xl font-headline font-black gold-text leading-tight">{config?.cartLabels?.checkoutTitle || "تأكيد الاستحواذ الآلي"}</h1>
            <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] md:text-sm mt-3">Automated Digital Asset Settlement Protocol</p>
         </header>
@@ -258,17 +259,17 @@ export default function CheckoutPage() {
                        <Input 
                          value={deliveryEmail} 
                          onChange={e => setDeliveryEmail(e.target.value)} 
-                         className="h-16 md:h-20 rounded-[1.5rem] bg-white dark:bg-zinc-900 border-2 border-border/50 px-8 font-black text-lg md:text-2xl text-foreground focus:ring-2 focus:ring-primary/20 shadow-inner" 
+                         className="h-16 md:h-20 rounded-[1.5rem] bg-white dark:bg-zinc-900 border-2 border-border px-8 font-black text-lg md:text-2xl text-foreground shadow-inner" 
                          placeholder="name@example.com"
                        />
-                       <p className="text-[10px] text-muted-foreground font-medium pr-4">سيقوم النظام بإرسال كود التفعيل لهذا البريد احتياطياً فور اكتمال الدفع.</p>
+                       <p className="text-[10px] text-muted-foreground font-medium pr-4">سيقوم النظام بإرسال كود التفعيل لهذا البريد احتياطياً.</p>
                     </div>
                     <div className="space-y-4">
                        <Label className="text-[10px] md:text-xs font-black text-primary uppercase pr-4 tracking-widest">ملاحظات إضافية (اختياري)</Label>
                        <Textarea 
                          value={notes} 
                          onChange={e => setNotes(e.target.value)} 
-                         className="rounded-[2rem] bg-white dark:bg-zinc-900 border-2 border-border/50 p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner focus:ring-2 focus:ring-primary/20 text-foreground" 
+                         className="rounded-[2rem] bg-white dark:bg-zinc-900 border-2 border-border p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner text-foreground" 
                          placeholder="اكتب هنا أي تفاصيل تريد إيضاحها للنظام..." 
                        />
                     </div>
@@ -317,14 +318,14 @@ export default function CheckoutPage() {
                     {!hasEnoughBalance && !userLoading && (
                        <div className="p-5 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 animate-fade-in mt-6">
                           <AlertCircle size={20} className="text-red-500 shrink-0" />
-                          <p className="text-[10px] font-black text-red-500 uppercase leading-relaxed">عذراً، رصيدك غير كافٍ لإتمام هذه العملية. يرجى الشحن عبر أحد وكلائنا.</p>
+                          <p className="text-[10px] font-black text-red-500 uppercase leading-relaxed">عذراً، رصيدك غير كافٍ. يرجى الشحن أولاً.</p>
                        </div>
                     )}
 
                     <Button 
                       onClick={handleCompleteOrder} 
                       disabled={isProcessing || !selectedShipping || !hasEnoughBalance || userLoading || items.length === 0}
-                      className={`royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-10 group transition-all ${(!selectedShipping || !hasEnoughBalance) ? 'bg-zinc-800 grayscale cursor-not-allowed' : ''}`}
+                      className={`royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-10 group transition-all ${(!selectedShipping || !hasEnoughBalance) ? 'opacity-50 grayscale cursor-not-allowed' : 'opacity-100'}`}
                     >
                       {isProcessing ? (
                         <Loader2 className="animate-spin" size={32} />
@@ -335,11 +336,6 @@ export default function CheckoutPage() {
                     
                     <div className="flex flex-col items-center gap-4 mt-8 opacity-60">
                        <p className="text-[9px] text-center text-muted-foreground uppercase font-black tracking-[0.3em]">Precision Settlement by XMOOD Cloud Engine</p>
-                       <div className="flex gap-4">
-                          <ShieldCheck size={16} className="text-primary" />
-                          <Zap size={16} className="text-primary" />
-                          <CheckCircle2 size={16} className="text-primary" />
-                       </div>
                     </div>
                  </div>
               </Card>
