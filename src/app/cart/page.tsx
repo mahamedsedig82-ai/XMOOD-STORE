@@ -4,6 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { useCart } from "@/context/CartContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Trash2, Plus, Minus, ArrowRight, Wallet, Zap, ShieldCheck, Loader2, ShoppingCart } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import Link from "next/link";
@@ -14,7 +15,10 @@ import { doc } from "firebase/firestore";
 export default function CartPage() {
   const { items, removeItem, updateQuantity, total, itemCount } = useCart();
   const db = useFirestore();
-  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const settingsRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return doc(db, "settings", "global");
+  }, [db]);
   const { data: config, loading: configLoading } = useDoc(settingsRef);
 
   const labels = config?.cartLabels || {

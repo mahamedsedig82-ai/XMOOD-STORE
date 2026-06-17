@@ -245,7 +245,7 @@ export default function CheckoutPage() {
                        <Input 
                          value={deliveryEmail} 
                          onChange={e => setDeliveryEmail(e.target.value)} 
-                         className="h-16 md:h-20 rounded-[1.5rem] bg-muted/30 border-none px-8 font-black text-lg md:text-2xl text-foreground focus:ring-2 focus:ring-primary/20 shadow-inner" 
+                         className="h-16 md:h-20 rounded-[1.5rem] bg-background border-2 border-border/50 px-8 font-black text-lg md:text-2xl text-foreground focus:ring-2 focus:ring-primary/20 shadow-inner" 
                          placeholder="name@example.com"
                        />
                        <p className="text-[10px] text-muted-foreground font-medium pr-4">سيقوم النظام بإرسال كود التفعيل لهذا البريد احتياطياً فور اكتمال الدفع.</p>
@@ -255,7 +255,7 @@ export default function CheckoutPage() {
                        <Textarea 
                          value={notes} 
                          onChange={e => setNotes(e.target.value)} 
-                         className="rounded-[2rem] bg-muted/30 border-none p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner focus:ring-2 focus:ring-primary/20" 
+                         className="rounded-[2rem] bg-background border-2 border-border/50 p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner focus:ring-2 focus:ring-primary/20" 
                          placeholder="اكتب هنا أي تفاصيل تريد إيضاحها للنظام..." 
                        />
                     </div>
