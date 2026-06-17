@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { useCart } from "@/context/CartContext";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
 import { doc, runTransaction, collection, query, where, serverTimestamp } from "firebase/firestore";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,7 +54,6 @@ export default function CheckoutPage() {
   const walletBalance = profile?.walletBalance || 0;
   const hasEnoughBalance = walletBalance >= finalTotal;
 
-  // Logic: Multi-check for enabling the button
   const canPay = items.length > 0 && 
                  !!selectedShipping && 
                  hasEnoughBalance && 
@@ -67,7 +65,7 @@ export default function CheckoutPage() {
     if (!user || !profile || !db) return;
     if (!selectedShipping) return toast({ variant: "destructive", title: "يرجى اختيار وسيلة تسليم" });
     if (!hasEnoughBalance) return toast({ variant: "destructive", title: "الرصيد غير كافٍ لإتمام العملية" });
-    if (!deliveryEmail || !deliveryEmail.includes("@")) return toast({ variant: "destructive", title: "بريد غير صالح", description: "يرجى إدخال بريد إلكتروني صحيح للتسليم." });
+    if (!deliveryEmail || !deliveryEmail.includes("@")) return toast({ variant: "destructive", title: "بريد غير صالح" });
 
     setIsProcessing(true);
     const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -76,12 +74,11 @@ export default function CheckoutPage() {
       await runTransaction(db, async (transaction) => {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists()) throw "خطأ في ملف المستخدم السيادي";
+        if (!userSnap.exists()) throw "خطأ في ملف المستخدم";
 
         const currentBalance = userSnap.data().walletBalance || 0;
-        if (currentBalance < finalTotal) throw "الرصيد غير كافٍ في المحفظة حالياً";
+        if (currentBalance < finalTotal) throw "الرصيد غير كافٍ";
 
-        // Multi-Product Stock Check & Code Extraction
         const deliveredCodes: string[] = [];
         let finalStatus: 'completed' | 'pending_stock' = 'completed';
         let finalDeliveryStatus: 'delivered' | 'preparing' = 'delivered';
@@ -89,25 +86,18 @@ export default function CheckoutPage() {
         for (const item of items) {
           const productRef = doc(db, "products", item.id);
           const productSnap = await transaction.get(productRef);
+          if (!productSnap.exists()) throw `المنتج ${item.name} غير متوفر`;
           
-          if (!productSnap.exists()) throw `المنتج ${item.name} غير متوفر في المستودع`;
           const pData = productSnap.data();
-          
-          if (pData.status === 'paused') throw `الخدمة ${item.name} متوقفة مؤقتاً`;
-
           const codes = (pData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
           
-          // If digital product requires codes but none available
           if (codes.length < item.quantity && pData.category !== 'خدمات يدوية') {
              finalStatus = 'pending_stock';
              finalDeliveryStatus = 'preparing';
-             // Still need to update stock count (manual replenishment needed)
              transaction.update(productRef, { stock: Math.max(0, (pData.stock || 0) - item.quantity) });
           } else if (codes.length >= item.quantity) {
-             // Extract required number of codes
              const codesForThisItem = codes.slice(0, item.quantity);
              deliveredCodes.push(...codesForThisItem);
-             
              const remainingCodes = codes.slice(item.quantity).join('\n');
              transaction.update(productRef, {
                shippingCodes: remainingCodes,
@@ -115,7 +105,6 @@ export default function CheckoutPage() {
                updatedAt: serverTimestamp()
              });
           } else {
-             // Manual services or mixed
              transaction.update(productRef, { stock: Math.max(0, (pData.stock || 0) - item.quantity) });
           }
         }
@@ -140,7 +129,7 @@ export default function CheckoutPage() {
           notes,
           status: finalStatus,
           deliveryStatus: finalDeliveryStatus,
-          shippingCodeSent: deliveredCodes.join(' | '), // Multi-code support
+          shippingCodeSent: deliveredCodes.join(' | '),
           balanceBefore: currentBalance,
           balanceAfter: balanceAfter,
           createdAt: new Date().toISOString()
@@ -150,7 +139,7 @@ export default function CheckoutPage() {
           userId: user.uid,
           amount: finalTotal,
           type: 'purchase',
-          description: items.length > 1 ? `استحواذ متعدد (${items.length} منتج)` : `استحواذ آلي: ${items[0].name}`,
+          description: items.length > 1 ? `استحواذ متعدد (${items.length})` : `استحواذ: ${items[0].name}`,
           orderId,
           balanceBefore: currentBalance,
           balanceAfter,
@@ -163,9 +152,9 @@ export default function CheckoutPage() {
 
       clearCart();
       setSuccessOrderId(orderId);
-      toast({ title: config?.cartLabels?.successMsg || "اكتمل البروتوكول بنجاح!" });
+      toast({ title: config?.cartLabels?.successMsg || "تم بنجاح!" });
     } catch (e: any) {
-      toast({ variant: "destructive", title: "فشل البروتوكول المالي", description: String(e) });
+      toast({ variant: "destructive", title: "فشل العملية", description: String(e) });
     } finally {
       setIsProcessing(false);
     }
@@ -173,65 +162,65 @@ export default function CheckoutPage() {
 
   if (successOrderId) return (
     <main className="min-h-screen flex items-center justify-center bg-background p-4 animate-fade-in" dir="rtl">
-       <Card className="max-w-lg w-full p-10 md:p-16 text-center luxury-card border-none bg-card shadow-2xl">
-          <div className="w-24 h-24 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-10 border border-green-500/20">
-             <CheckCircle2 size={56} className="animate-bounce" />
+       <Card className="max-w-lg w-full p-8 md:p-16 text-center luxury-card border-none bg-card shadow-2xl">
+          <div className="w-16 h-16 md:w-24 md:h-24 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 md:mb-10">
+             <CheckCircle2 size={40} className="md:w-14 md:h-14 animate-bounce" />
           </div>
-          <h2 className="text-3xl md:text-5xl font-black gold-text mb-6">{config?.cartLabels?.successMsg || "تم التسليم بنجاح!"}</h2>
-          <p className="text-muted-foreground text-base md:text-lg font-medium mb-12 leading-relaxed">
-            تمت معالجة طلبك <span className="font-mono text-primary font-black">{successOrderId}</span> وتسليمه آلياً وفق البروتوكول.
+          <h2 className="text-2xl md:text-5xl font-black gold-text mb-4 md:mb-6">{config?.cartLabels?.successMsg || "تم التسليم بنجاح!"}</h2>
+          <p className="text-muted-foreground text-sm md:text-lg font-medium mb-10 leading-relaxed">
+            رقم الطلب: <span className="font-mono text-primary font-black">{successOrderId}</span>
           </p>
-          <Button asChild className="royal-button w-full h-18 text-xl shadow-primary/20">
-             <a href={`/orders/${successOrderId}`}>عرض القسيمة والكود <ArrowLeft className="mr-3" /></a>
+          <Button asChild className="royal-button w-full h-14 md:h-18 text-base md:text-xl shadow-primary/20">
+             <a href={`/orders/${successOrderId}`}>عرض الكود والقسيمة <ArrowLeft className="mr-2" /></a>
           </Button>
        </Card>
     </main>
   );
 
   return (
-    <main className="min-h-screen bg-background pb-40" dir="rtl">
+    <main className="min-h-screen bg-background pb-32 md:pb-40" dir="rtl">
       <Navbar />
-      <div className="container mx-auto px-4 md:px-6 py-32 max-w-7xl">
-        <header className="mb-16 md:mb-24 border-r-8 border-primary pr-10 text-right">
-           <h1 className="text-4xl md:text-7xl font-headline font-black gold-text leading-tight">{config?.cartLabels?.checkoutTitle || "تأكيد الاستحواذ الآلي"}</h1>
-           <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] md:text-sm mt-3 italic">Automated Digital Asset Settlement Protocol</p>
+      <div className="container mx-auto px-4 md:px-6 py-12 md:py-32 max-w-7xl">
+        <header className="mb-10 md:mb-24 border-r-4 md:border-r-8 border-primary pr-6 md:pr-10 text-right">
+           <h1 className="text-3xl md:text-7xl font-headline font-black gold-text leading-tight">{config?.cartLabels?.checkoutTitle || "تأكيد الاستحواذ الآلي"}</h1>
+           <p className="text-muted-foreground font-bold uppercase tracking-widest text-[8px] md:text-sm mt-1 md:mt-3 italic">Automated Settlement Protocol</p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-16">
-           <div className="lg:col-span-2 space-y-16">
-              <section className="space-y-8">
-                 <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-inner">
-                       <Truck size={24} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-16">
+           <div className="lg:col-span-2 space-y-10 md:space-y-16">
+              <section className="space-y-6 md:space-y-8">
+                 <div className="flex items-center gap-3 md:gap-4 mb-2">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-inner">
+                       <Truck size={20} />
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-black">مسار التسليم السيادي</h3>
+                    <h3 className="text-xl md:text-3xl font-black">مسار التسليم</h3>
                  </div>
                  
                  {shippingLoading ? (
                    <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={40} /></div>
                  ) : (
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                       {shippingMethods?.map((m: any) => (
                         <div 
                           key={m.id} 
                           onClick={() => setSelectedShipping(m)}
-                          className={`p-6 md:p-8 rounded-[2.5rem] border-2 cursor-pointer transition-all duration-500 relative group overflow-hidden ${selectedShipping?.id === m.id ? 'border-primary bg-primary/5 shadow-2xl' : 'border-border/40 bg-card/40 hover:border-primary/30'}`}
+                          className={`p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] border-2 cursor-pointer transition-all duration-500 relative group overflow-hidden ${selectedShipping?.id === m.id ? 'border-primary bg-primary/5 shadow-xl' : 'border-border/40 bg-card/40 hover:border-primary/30'}`}
                         >
-                           <div className="flex justify-between items-start mb-6">
-                              <div className="w-14 h-14 bg-white dark:bg-zinc-800 rounded-2xl flex items-center justify-center border shadow-xl group-hover:scale-110 transition-transform">
-                                 {m.imageUrl ? <img src={m.imageUrl} className="w-full h-full object-cover rounded-2xl" alt="" /> : <Truck size={24} />}
+                           <div className="flex justify-between items-start mb-4 md:mb-6">
+                              <div className="w-10 h-10 md:w-14 md:h-14 bg-white dark:bg-zinc-800 rounded-xl md:rounded-2xl flex items-center justify-center border shadow-lg group-hover:scale-110 transition-transform">
+                                 {m.imageUrl ? <img src={m.imageUrl} className="w-full h-full object-cover rounded-xl" alt="" /> : <Truck size={20} />}
                               </div>
-                              {m.badge && <Badge className="bg-primary text-black font-black text-[7px] px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">{m.badge}</Badge>}
+                              {m.badge && <Badge className="bg-primary text-black font-black text-[6px] md:text-[7px] px-3 py-1 rounded-full uppercase tracking-widest">{m.badge}</Badge>}
                            </div>
-                           <h4 className="font-black text-xl md:text-2xl mb-2">{m.name}</h4>
-                           <p className="text-xs md:text-sm text-muted-foreground font-medium leading-relaxed mb-6 line-clamp-2">{m.description}</p>
-                           <div className="mt-4 flex justify-between items-end pt-6 border-t border-border/50">
+                           <h4 className="font-black text-lg md:text-2xl mb-1">{m.name}</h4>
+                           <p className="text-[10px] md:text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2">{m.description}</p>
+                           <div className="mt-4 flex justify-between items-end pt-4 border-t border-border/50">
                               <div className="flex flex-col">
-                                 <span className="text-[8px] font-black text-muted-foreground uppercase">رسوم إضافية</span>
-                                 <span className="font-black text-primary text-lg md:text-xl">+{formatUSD(m.extraFee)}</span>
+                                 <span className="text-[7px] md:text-[8px] font-black text-muted-foreground uppercase">رسوم إضافية</span>
+                                 <span className="font-black text-primary text-base md:text-xl">+{formatUSD(m.extraFee)}</span>
                               </div>
-                              <span className="text-[10px] font-black text-foreground uppercase bg-muted/50 px-4 py-1.5 rounded-full flex items-center gap-2">
-                                 <Zap size={12} className="text-primary animate-pulse" /> {m.deliveryTime}
+                              <span className="text-[8px] md:text-[10px] font-black text-foreground uppercase bg-muted/50 px-3 py-1 rounded-full flex items-center gap-1.5">
+                                 <Zap size={10} className="text-primary animate-pulse" /> {m.deliveryTime}
                               </span>
                            </div>
                         </div>
@@ -240,68 +229,68 @@ export default function CheckoutPage() {
                  )}
               </section>
 
-              <section className="space-y-8">
-                 <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-inner">
-                       <Mail size={24} />
+              <section className="space-y-6 md:space-y-8">
+                 <div className="flex items-center gap-3 md:gap-4 mb-2">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-inner">
+                       <Mail size={20} />
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-black">بيانات الاستقبال والتوثيق</h3>
+                    <h3 className="text-xl md:text-3xl font-black">بيانات الاستقبال</h3>
                  </div>
-                 <Card className="luxury-card p-8 md:p-12 border-none bg-card/60 backdrop-blur-xl space-y-10">
-                    <div className="space-y-4">
-                       <Label className="text-[10px] md:text-xs font-black text-primary uppercase pr-4 tracking-widest">البريد الإلكتروني المعتمد للتسليم (إجباري)</Label>
+                 <Card className="luxury-card p-6 md:p-12 border-none bg-card/60 backdrop-blur-xl space-y-8">
+                    <div className="space-y-3">
+                       <Label className="text-[9px] md:text-xs font-black text-primary uppercase pr-3 tracking-widest">البريد الإلكتروني المعتمد للتسليم</Label>
                        <Input 
                          value={deliveryEmail} 
                          onChange={e => setDeliveryEmail(e.target.value)} 
-                         className="h-16 md:h-20 rounded-[1.5rem] bg-white dark:bg-zinc-950 border-2 border-primary/20 px-8 font-black text-lg md:text-2xl shadow-inner focus:ring-2 focus:ring-primary/40 text-foreground" 
+                         className="h-14 md:h-20 rounded-xl md:rounded-[1.5rem] bg-white dark:bg-zinc-950 border-2 border-primary/20 px-6 md:px-8 font-black text-lg md:text-2xl shadow-inner focus:ring-2 focus:ring-primary/40 text-foreground" 
                          placeholder="name@example.com"
                        />
-                       <p className="text-[10px] text-muted-foreground font-medium pr-4">سيقوم النظام بإرسال كود التفعيل لهذا البريد احتياطياً.</p>
+                       <p className="text-[9px] text-muted-foreground font-medium pr-3">سيصلك الكود وتفاصيل العملية لهذا البريد.</p>
                     </div>
-                    <div className="space-y-4">
-                       <Label className="text-[10px] md:text-xs font-black text-primary uppercase pr-4 tracking-widest">ملاحظات إضافية (اختياري)</Label>
+                    <div className="space-y-3">
+                       <Label className="text-[9px] md:text-xs font-black text-primary uppercase pr-3 tracking-widest">ملاحظات (اختياري)</Label>
                        <Textarea 
                          value={notes} 
                          onChange={e => setNotes(e.target.value)} 
-                         className="rounded-[2rem] bg-white dark:bg-zinc-950 border-2 border-primary/20 p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner text-foreground focus:ring-2 focus:ring-primary/40" 
-                         placeholder="اكتب هنا أي تفاصيل تريد إيضاحها للنظام..." 
+                         className="rounded-xl md:rounded-[2rem] bg-white dark:bg-zinc-950 border-2 border-primary/20 p-5 md:p-8 font-bold text-sm md:text-lg min-h-[120px] shadow-inner text-foreground focus:ring-2 focus:ring-primary/40" 
+                         placeholder="اكتب أي ملاحظات للخدمة هنا..." 
                        />
                     </div>
                  </Card>
               </section>
            </div>
 
-           <aside className="space-y-10">
-              <Card className="luxury-card p-10 md:p-12 bg-primary/5 border-primary/20 sticky top-32 shadow-2xl">
-                 <h3 className="text-xl md:text-2xl font-black mb-10 border-b border-primary/10 pb-6 flex items-center gap-3">
-                    <Zap className="text-primary" /> تصفية الحساب المركزي
+           <aside className="space-y-8">
+              <Card className="luxury-card p-8 md:p-12 bg-primary/5 border-primary/20 sticky top-28 md:top-32 shadow-2xl">
+                 <h3 className="text-lg md:text-2xl font-black mb-8 border-b border-primary/10 pb-4 flex items-center gap-3">
+                    <Zap className="text-primary" size={20} /> تصفية الحساب
                  </h3>
-                 <div className="space-y-8">
-                    <div className="flex justify-between text-muted-foreground font-black text-xs md:text-base uppercase tracking-wider">
+                 <div className="space-y-6">
+                    <div className="flex justify-between text-muted-foreground font-black text-[10px] md:text-base uppercase tracking-wider">
                        <span>قيمة الأصول</span>
                        <span>{formatUSD(total)}</span>
                     </div>
-                    <div className="flex justify-between text-muted-foreground font-black text-xs md:text-base uppercase tracking-wider">
+                    <div className="flex justify-between text-muted-foreground font-black text-[10px] md:text-base uppercase tracking-wider">
                        <span>لوجستيات الشحن</span>
                        <span>{formatUSD(selectedShipping?.extraFee || 0)}</span>
                     </div>
                     <div className="h-px bg-primary/10 my-4" />
                     <div className="flex justify-between items-end">
-                       <span className="font-black text-xs md:text-sm uppercase tracking-[0.2em] text-primary">الإجمالي النهائي</span>
+                       <span className="font-black text-[9px] md:text-sm uppercase tracking-[0.2em] text-primary">الإجمالي النهائي</span>
                        <div className="text-right">
-                          <span className="text-4xl md:text-6xl font-black gold-text tracking-tighter leading-none">{formatUSD(finalTotal)}</span>
+                          <span className="text-3xl md:text-6xl font-black gold-text tracking-tighter leading-none">{formatUSD(finalTotal)}</span>
                        </div>
                     </div>
                     
-                    <div className="p-8 bg-zinc-900 rounded-[2.5rem] text-white mt-12 shadow-inner border border-white/5 relative overflow-hidden group">
-                       <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-[40px] rounded-full" />
-                       <div className="flex items-center gap-6 relative z-10">
-                          <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-primary border border-white/5">
-                             <Wallet size={24} />
+                    <div className="p-6 md:p-8 bg-zinc-900 rounded-2xl md:rounded-[2.5rem] text-white mt-8 shadow-inner border border-white/5 relative overflow-hidden">
+                       <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 blur-[40px] rounded-full" />
+                       <div className="flex items-center gap-4 md:gap-6 relative z-10">
+                          <div className="w-10 h-10 md:w-14 md:h-14 bg-white/10 rounded-xl flex items-center justify-center text-primary border border-white/5">
+                             <Wallet size={20} />
                           </div>
                           <div className="flex flex-col">
-                             <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">رصيدك المتوفر حالياً</span>
-                             <span className={`font-black text-2xl md:text-3xl tracking-tighter transition-colors ${hasEnoughBalance ? 'text-primary' : 'text-red-500'}`}>
+                             <span className="text-[8px] md:text-[10px] text-zinc-500 font-black uppercase tracking-widest">رصيدك الحالي</span>
+                             <span className={`font-black text-xl md:text-3xl tracking-tighter transition-colors ${hasEnoughBalance ? 'text-primary' : 'text-red-500'}`}>
                                 {formatUSD(walletBalance)}
                              </span>
                           </div>
@@ -309,25 +298,25 @@ export default function CheckoutPage() {
                     </div>
 
                     {!hasEnoughBalance && !userLoading && (
-                       <div className="p-5 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 animate-fade-in mt-6">
-                          <AlertCircle size={20} className="text-red-500 shrink-0" />
-                          <p className="text-[10px] font-black text-red-500 uppercase leading-relaxed">عذراً، رصيدك غير كافٍ. يرجى الشحن أولاً.</p>
+                       <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 mt-4">
+                          <AlertCircle size={18} className="text-red-500 shrink-0" />
+                          <p className="text-[9px] font-black text-red-500 uppercase leading-relaxed">رصيدك لا يكفي. يرجى الشحن أولاً.</p>
                        </div>
                     )}
 
                     <Button 
                       onClick={handleCompleteOrder} 
                       disabled={!canPay}
-                      className={`royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-10 group ${!canPay ? 'opacity-50 grayscale' : ''}`}
+                      className={`royal-button w-full h-16 md:h-24 text-base md:text-3xl shadow-primary/30 mt-8 group ${!canPay ? 'opacity-50 grayscale' : ''}`}
                     >
                       {isProcessing ? (
-                        <Loader2 className="animate-spin" size={32} />
+                        <Loader2 className="animate-spin" size={24} />
                       ) : (
-                        <><ShieldCheck className="ml-4 group-hover:scale-110 transition-transform" size={32} /> تأكيد الدفع الفوري</>
+                        <><ShieldCheck className="ml-2 md:ml-4 group-hover:scale-110 transition-transform" size={24} /> تأكيد الدفع الفوري</>
                       )}
                     </Button>
                     
-                    <p className="text-[9px] text-center text-muted-foreground uppercase font-black tracking-[0.3em] mt-8 opacity-60">Precision Settlement by XMOOD Cloud Engine</p>
+                    <p className="text-[7px] text-center text-muted-foreground uppercase font-black tracking-[0.3em] mt-6 opacity-60">XMOOD Cloud Engine Protocol</p>
                  </div>
               </Card>
            </aside>

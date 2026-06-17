@@ -61,11 +61,11 @@
 }
 
 .luxury-card {
-  @apply rounded-[2rem] border bg-card text-card-foreground shadow-sm transition-all duration-500 hover:shadow-2xl hover:border-primary/30 overflow-hidden relative;
+  @apply rounded-[1.5rem] md:rounded-[2rem] border bg-card text-card-foreground shadow-sm transition-all duration-500 hover:shadow-xl hover:border-primary/30 overflow-hidden relative;
 }
 
 .luxury-image {
-  @apply rounded-[1.5rem] md:rounded-[2.5rem] border-2 border-primary/10 shadow-lg object-cover overflow-hidden transition-all duration-500 hover:shadow-primary/20 hover:border-primary/30;
+  @apply rounded-[1.25rem] md:rounded-[2.5rem] border-2 border-primary/10 shadow-lg object-cover overflow-hidden transition-all duration-500 hover:shadow-primary/20 hover:border-primary/30;
 }
 
 .gold-text {
@@ -80,7 +80,7 @@
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-black rounded-[1.5rem] md:rounded-[2rem] px-8 py-4 md:py-6 shadow-xl hover:opacity-90 active:scale-95 transition-all text-xs md:text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-4 border-none disabled:opacity-50 disabled:grayscale cursor-pointer;
+  @apply bg-primary text-primary-foreground font-black rounded-[1.25rem] md:rounded-[2rem] px-6 py-3 md:px-8 md:py-6 shadow-xl hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-sm uppercase tracking-[0.15em] flex items-center justify-center gap-2 md:gap-4 border-none disabled:opacity-50 disabled:grayscale cursor-pointer;
 }
 
 .glass-morphism {
@@ -88,7 +88,7 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   @apply bg-transparent;
@@ -98,15 +98,18 @@
 }
 
 @media (max-width: 768px) {
+  .responsive-table thead {
+    display: none;
+  }
   .responsive-table tr {
-    @apply mb-6 border rounded-[2rem] p-6 bg-card shadow-lg block;
+    @apply mb-4 border rounded-[1.5rem] p-4 bg-card shadow-md block;
   }
   .responsive-table td {
-    @apply flex justify-between items-center py-4 border-b last:border-0;
+    @apply flex justify-between items-center py-3 border-b border-border/50 last:border-0 text-right;
   }
   .responsive-table td::before {
     content: attr(data-label);
-    @apply font-black text-[9px] uppercase text-muted-foreground ml-4;
+    @apply font-black text-[8px] uppercase text-muted-foreground ml-4 text-left;
   }
 }
 
@@ -127,7 +130,7 @@
 }
 
 main {
-  @apply pt-20 md:pt-24;
+  @apply pt-24 md:pt-28;
 }
 
 .will-change-scroll {
