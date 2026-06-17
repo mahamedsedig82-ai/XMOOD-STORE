@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -81,8 +82,10 @@ export function ProductCard({ product }: ProductCardProps) {
       transaction.set(doc(db, "orders", orderId), {
         userId: user.uid,
         userEmail: user.email,
+        userName: profile.displayName,
         productId: product.id,
         productName: product.name,
+        productImage: product.imageUrl || "",
         amount: product.price,
         status: 'completed',
         shippingCodeSent: selectedCode,

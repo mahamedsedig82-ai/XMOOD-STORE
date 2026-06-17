@@ -1,8 +1,9 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Palette, MailCheck
+  LogOut, ArrowLeft, Terminal, Menu, BarChart3, Database, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Palette, MailCheck, History
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -30,6 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "المخزون والمنتجات", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
     { label: "سوق الخدمات", icon: Briefcase, href: "/admin/other-services", roles: ['owner', 'admin', 'agent'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/orders", roles: ['owner', 'admin', 'gm', 'store_manager', 'support'] },
+    { label: "سجل العمليات", icon: History, href: "/admin/operations-log", roles: ['owner', 'admin', 'gm'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin'] },
     { label: "مركز الأمان", icon: ShieldCheck, href: "/admin/security", roles: ['owner', 'admin'] },
     { label: "أمن البريد", icon: MailCheck, href: "/admin/email-security", roles: ['owner', 'admin'] },
