@@ -1,18 +1,18 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { useCart } from "@/context/CartContext";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
-import { doc, runTransaction, collection, query, where, serverTimestamp } from "firebase/firestore";
+import { doc, runTransaction, collection, query, where, serverTimestamp, getDoc } from "firebase/firestore";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft, AlertCircle, ShoppingBag } from "lucide-react";
+import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft, AlertCircle, ShoppingBag, PackageX } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -29,6 +29,8 @@ export default function CheckoutPage() {
   const [deliveryEmail, setDeliveryEmail] = useState("");
   const [notes, setNotes] = useState("");
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
+  const [stockCheckLoading, setStockCheckLoading] = useState(true);
+  const [outOfStockItems, setOutOfStockItems] = useState<string[]>([]);
 
   const settingsRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -39,6 +41,32 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
   }, [user, deliveryEmail]);
+
+  // التحقق اللحظي من المخزون قبل السماح بالدفع
+  useEffect(() => {
+    const checkStock = async () => {
+      if (!db || items.length === 0) {
+        setStockCheckLoading(false);
+        return;
+      }
+      setStockCheckLoading(true);
+      const unavailable: string[] = [];
+      
+      for (const item of items) {
+        const pSnap = await getDoc(doc(db, "products", item.id));
+        if (pSnap.exists()) {
+          const data = pSnap.data();
+          const codes = (data.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
+          if (codes.length < item.quantity) {
+            unavailable.push(item.name);
+          }
+        }
+      }
+      setOutOfStockItems(unavailable);
+      setStockCheckLoading(false);
+    };
+    checkStock();
+  }, [db, items]);
 
   const shippingQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -55,18 +83,22 @@ export default function CheckoutPage() {
   const finalTotal = total + (selectedShipping?.extraFee || 0);
   const walletBalance = profile?.walletBalance || 0;
   const hasEnoughBalance = walletBalance >= finalTotal;
+  const isEverythingInStock = outOfStockItems.length === 0;
 
   const canPay = items.length > 0 && 
                  !!selectedShipping && 
                  hasEnoughBalance && 
+                 isEverythingInStock &&
                  !isProcessing && 
                  !userLoading && 
+                 !stockCheckLoading &&
                  deliveryEmail.includes("@");
 
   const handleCompleteOrder = async () => {
     if (!user || !profile || !db) return;
     if (!selectedShipping) return toast({ variant: "destructive", title: "يرجى اختيار وسيلة تسليم" });
     if (!hasEnoughBalance) return toast({ variant: "destructive", title: "الرصيد غير كافٍ" });
+    if (!isEverythingInStock) return toast({ variant: "destructive", title: "نقص في المخزون", description: "بعض الباقات نفدت حالياً." });
 
     setIsProcessing(true);
     const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -92,11 +124,7 @@ export default function CheckoutPage() {
           const codes = (pData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
           
           if (codes.length < item.quantity) {
-             finalStatus = 'pending_stock';
-             transaction.update(productRef, { 
-               stock: Math.max(0, (pData.stock || 0) - item.quantity),
-               updatedAt: serverTimestamp() 
-             });
+             throw `عذراً، نفد مخزون ${item.name} أثناء المعالجة.`;
           } else {
              const extracted = codes.slice(0, item.quantity);
              allDeliveredCodes.push(...extracted);
@@ -178,6 +206,18 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
            <div className="lg:col-span-2 space-y-12">
+              {!isEverythingInStock && (
+                 <div className="p-8 bg-red-500/10 border-2 border-red-500/20 rounded-[2.5rem] flex items-start gap-6 animate-fade-up">
+                    <PackageX size={48} className="text-red-500 shrink-0" />
+                    <div>
+                       <h3 className="text-2xl font-black text-red-500 mb-2">توقف إجباري: نفاد المخزون</h3>
+                       <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                         عذراً سيادة العميل، المنتجات التالية نفدت حالياً من مستودعاتنا: <span className="text-red-500 font-black">{outOfStockItems.join(", ")}</span>. يرجى إزالتها من السلة أو الانتظار حتى يتم تزويد المخزون.
+                       </p>
+                    </div>
+                 </div>
+              )}
+
               <section className="space-y-8">
                  <h3 className="text-2xl md:text-3xl font-black flex items-center gap-4"><Truck size={24} className="text-primary" /> مسار التسليم المعتمد</h3>
                  {shippingLoading ? (
@@ -203,11 +243,11 @@ export default function CheckoutPage() {
                  <Card className="luxury-card p-6 md:p-12 border-none bg-card/60 backdrop-blur-xl space-y-8">
                     <div className="space-y-3">
                        <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">بريد التسليم الرقمي (إلزامي)</Label>
-                       <Input value={deliveryEmail} onChange={e => setDeliveryEmail(e.target.value)} className="h-16 rounded-2xl bg-white dark:bg-zinc-950 border-2 border-primary/10 px-6 font-bold text-lg focus:border-primary transition-all" placeholder="name@example.com" />
+                       <Input value={deliveryEmail} onChange={e => setDeliveryEmail(e.target.value)} className="h-16 rounded-2xl bg-white dark:bg-zinc-950 border-2 border-primary px-6 font-bold text-lg focus:border-primary transition-all shadow-xl" placeholder="name@example.com" />
                     </div>
                     <div className="space-y-3">
                        <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">ملاحظات إضافية للمنفذ</Label>
-                       <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="rounded-3xl bg-white dark:bg-zinc-950 border-2 border-primary/10 p-6 font-bold min-h-[120px] focus:border-primary transition-all" placeholder="أي تعليمات خاصة لضمان نجاح التسليم؟" />
+                       <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="rounded-3xl bg-white dark:bg-zinc-950 border-2 border-primary p-6 font-bold min-h-[120px] focus:border-primary transition-all shadow-xl" placeholder="أي تعليمات خاصة لضمان نجاح التسليم؟" />
                     </div>
                  </Card>
               </section>
@@ -230,7 +270,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <Button onClick={handleCompleteOrder} disabled={!canPay} className="royal-button w-full h-24 text-2xl shadow-primary/30 mt-10">
-                      {isProcessing ? <Loader2 className="animate-spin" /> : "تأكيد الدفع السيادي"}
+                      {isProcessing ? <Loader2 className="animate-spin" /> : stockCheckLoading ? "جاري فحص المخزون..." : "تأكيد الدفع السيادي"}
                     </Button>
 
                     {!hasEnoughBalance && (
