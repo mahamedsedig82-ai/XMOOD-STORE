@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -21,7 +22,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const saved = localStorage.getItem('xmood-cart');
-    if (saved) setItems(JSON.parse(saved));
+    if (saved) {
+      try {
+        setItems(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load cart");
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -29,15 +36,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [items]);
 
   const addItem = (item: CartItem) => {
+    let message = "";
     setItems(prev => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) {
-        toast({ title: "تم تحديث الكمية في السلة" });
+        message = "تم تحديث الكمية في السلة";
         return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      toast({ title: "تمت الإضافة للسلة السيادية" });
+      message = "تمت الإضافة للسلة السيادية";
       return [...prev, item];
     });
+    
+    // Call toast outside the state updater to avoid React warnings
+    if (message) toast({ title: message });
   };
 
   const removeItem = (id: string) => {

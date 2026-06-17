@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -106,6 +107,9 @@ export default function ProfessionalWalletPage() {
         setIsEditing(false);
         toast({ title: "تم التحديث بنجاح" });
       })
+      .catch(() => {
+        toast({ variant: "destructive", title: "فشل التحديث", description: "تأكد من اتصالك بالإنترنت." });
+      })
       .finally(() => setIsUpdating(false));
   };
 
@@ -117,6 +121,8 @@ export default function ProfessionalWalletPage() {
         const b64 = await compressImage(file);
         setNewPhotoURL(b64);
         toast({ title: "تم تجهيز الصورة" });
+      } catch (err) {
+        toast({ variant: "destructive", title: "فشل معالجة الصورة" });
       } finally {
         setIsUpdating(false);
       }

@@ -44,6 +44,7 @@ export function isSuspiciousInput(text: string): { isSuspicious: boolean; reason
  * تسجيل الأحداث الأمنية لضمان "التتبع" في لوحة الإدارة.
  */
 export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'access_denied' | 'tamper_attempt', description: string, userEmail?: string) {
+  if (!db) return;
   try {
     addDoc(collection(db, "security_logs"), {
       type,
@@ -53,7 +54,7 @@ export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'ac
       timestamp: new Date().toISOString()
     });
   } catch (e) {
-    console.error("Failed to log security event");
+    // Fail silently in offline mode to avoid crashing app
   }
 }
 
@@ -61,12 +62,14 @@ export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'ac
  * Sovereign Identity Sync: Ensures user profile exists in Firestore with full security data.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
-  if (!user) return;
+  if (!user || !db) return;
   const userRef = doc(db, "users", user.uid);
   
   try {
-    const userDoc = await getDoc(userRef);
-    if (!userDoc.exists()) {
+    // Avoid blocking UI if offline
+    const userDoc = await getDoc(userRef).catch(() => null);
+    
+    if (!userDoc || !userDoc.exists()) {
       const initialProfile = {
         uid: user.uid,
         displayName: additionalData.displayName || user.displayName || user.email?.split("@")[0] || "عضو",
@@ -87,7 +90,7 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         securityAnswer: additionalData.securityAnswer || "",
         updatedAt: serverTimestamp(),
       };
-      setDoc(userRef, initialProfile);
+      setDoc(userRef, initialProfile, { merge: true });
       logSecurityEvent('login_success', "إنشاء عضوية جديدة ومزامنة الملف", user.email || "");
     } else {
       const updatePayload = { 

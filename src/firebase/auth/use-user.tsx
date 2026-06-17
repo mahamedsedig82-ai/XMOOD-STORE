@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -45,26 +46,26 @@ export function useUser() {
     const userDocRef = doc(db, 'users', user.uid);
     let isMounted = true;
 
-    const unsubscribeProfile = onSnapshot(userDocRef, async (snapshot) => {
+    const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
       if (!isMounted) return;
 
       if (snapshot.exists()) {
         const data = snapshot.data() as UserProfile;
         
-        // ترقية تلقائية للمدراء الأساسيين
+        // ترقية تلقائية للمدراء الأساسيين (غير معطلة للأداء)
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         if (isMaster && data.role !== 'owner') {
-          await updateDoc(userDocRef, { role: 'owner', label: 'المدير العام السيادي' });
+          updateDoc(userDocRef, { role: 'owner', label: 'المدير العام السيادي' });
         }
 
         setProfile({ ...data, uid: snapshot.id });
         setLoading(false); 
       } else {
         // إنشاء ملف أولي إذا كان مفقوداً (للحماية)
-        await syncUserProfile(user);
+        syncUserProfile(user);
       }
     }, (err) => {
-      console.error("[AUTH] Profile Stream Error:", err);
+      // Handle offline mode or missing permissions gracefully
       if (isMounted) setLoading(false);
     });
 
