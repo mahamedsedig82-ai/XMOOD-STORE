@@ -55,7 +55,7 @@ export default function CheckoutPage() {
   const walletBalance = profile?.walletBalance || 0;
   const hasEnoughBalance = walletBalance >= finalTotal;
 
-  // التحقق من الجاهزية للدفع - جعل الشروط واضحة
+  // Logic: Check if all requirements met
   const canPay = items.length > 0 && !!selectedShipping && hasEnoughBalance && !isProcessing && !userLoading && deliveryEmail.includes("@");
 
   const handleCompleteOrder = async () => {
@@ -76,7 +76,6 @@ export default function CheckoutPage() {
         const currentBalance = userSnap.data().walletBalance || 0;
         if (currentBalance < finalTotal) throw "الرصيد غير كافٍ لإتمام العملية";
 
-        // التحقق من أول منتج (لتبسيط الأتمتة)
         const mainItem = items[0];
         const productRef = doc(db, "products", mainItem.id);
         const productSnap = await transaction.get(productRef);
@@ -86,7 +85,7 @@ export default function CheckoutPage() {
         
         if (pData.status === 'paused') throw "الخدمة متوقفة مؤقتاً بطلب من الإدارة";
         
-        // التحقق الإلزامي من كود الشحن للمنتجات الرقمية الفورية
+        // Digital stock check
         const codes = (pData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
         
         if (codes.length <= 0 && pData.category !== 'خدمات يدوية') {

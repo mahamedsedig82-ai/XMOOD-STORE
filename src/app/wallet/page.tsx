@@ -204,7 +204,7 @@ export default function ProfessionalWalletPage() {
                     <Zap size={22} className="text-primary animate-pulse" /> {config?.walletPage?.uidTitle || "بروتوكول الإيداع السيادي"}
                  </h3>
                  <p className="text-[11px] md:text-sm text-zinc-500 dark:text-zinc-400 mb-8 font-medium leading-relaxed">
-                    {config?.walletPage?.uidDesc || "زود محفظتك بالرصيد عبر أحد وكلائنا المعتمدين."}
+                    {config?.walletPage?.uidDesc || "زود محفظتك بالرصيد عبر أحد وكلائنا المعتمدين؛ قدم معرفك الرقمي (UID) الموحد أدناه لضمان وصول الحوالة في الوقت الفعلي."}
                  </p>
               </div>
               <div className="bg-zinc-100 dark:bg-zinc-800/50 px-4 md:px-6 py-4 md:py-5 rounded-2xl border border-dashed border-primary/30 flex items-center justify-between gap-4 cursor-pointer hover:bg-primary/5 transition-all group" onClick={() => copyToClipboard(user?.uid || "", "المعرف السيادي")}>
