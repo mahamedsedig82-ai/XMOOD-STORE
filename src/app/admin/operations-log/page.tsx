@@ -38,9 +38,10 @@ export default function AdminOperationsControlCenter() {
 
   const { data: orders, loading } = useCollection(ordersQuery);
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, label: string = "النص") => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
-    toast({ title: "تم النسخ بنجاح" });
+    toast({ title: "تم النسخ بنجاح", description: `تم حفظ ${label} في الحافظة.` });
   };
 
   const stats = useMemo(() => {
@@ -197,7 +198,7 @@ export default function AdminOperationsControlCenter() {
                                 <p className="font-bold text-sm truncate max-w-[150px]">{order.userName}</p>
                                 <p 
                                   className="text-[8px] font-mono text-primary uppercase tracking-tighter cursor-pointer hover:underline flex items-center gap-1"
-                                  onClick={() => copyToClipboard(order.id)}
+                                  onClick={() => copyToClipboard(order.id, "رقم المرجع")}
                                 >
                                   REF: {order.id} <Copy size={8} />
                                 </p>
@@ -249,7 +250,7 @@ export default function AdminOperationsControlCenter() {
                        <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-1.5 rounded-full font-black text-[9px] uppercase tracking-[0.3em]">Official Sovereign Record</Badge>
                        <h2 className="text-3xl md:text-5xl font-headline font-black gold-text leading-tight">بيانات العملية الآلية</h2>
                        <div className="flex items-center gap-4 text-xs font-mono opacity-50">
-                          <span className="flex items-center gap-2 cursor-pointer hover:text-white" onClick={() => copyToClipboard(selectedOrder.id)}><Tag size={12}/> REF: {selectedOrder.id} <Copy size={10}/></span>
+                          <span className="flex items-center gap-2 cursor-pointer hover:text-white" onClick={() => copyToClipboard(selectedOrder.id, "رقم المرجع")}><Tag size={12}/> REF: {selectedOrder.id} <Copy size={10}/></span>
                           <span className="flex items-center gap-2"><Clock size={12}/> {new Date(selectedOrder.createdAt).toLocaleString('ar-EG')}</span>
                        </div>
                     </div>
@@ -300,7 +301,7 @@ export default function AdminOperationsControlCenter() {
                              <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-3"><Zap size={14}/> كود التسليم المستخرج</h4>
                              <div 
                                 className="p-8 bg-zinc-900 border-2 border-dashed border-primary/40 rounded-[2.5rem] text-center cursor-pointer hover:bg-zinc-800 transition-all group"
-                                onClick={() => copyToClipboard(selectedOrder.shippingCodeSent || "")}
+                                onClick={() => copyToClipboard(selectedOrder.shippingCodeSent || "", "كود التسليم")}
                               >
                                 <p className="text-[8px] text-muted-foreground uppercase font-black mb-4 flex items-center justify-center gap-2">
                                   Auto-Extracted Secret Key <Copy size={10} className="opacity-0 group-hover:opacity-100" />

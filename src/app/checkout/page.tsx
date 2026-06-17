@@ -55,8 +55,8 @@ export default function CheckoutPage() {
   const walletBalance = profile?.walletBalance || 0;
   const hasEnoughBalance = walletBalance >= finalTotal;
 
-  // التحقق من الجاهزية للدفع
-  const canPay = items.length > 0 && selectedShipping && hasEnoughBalance && !isProcessing && !userLoading && deliveryEmail.includes("@");
+  // التحقق من الجاهزية للدفع - جعل الشروط واضحة
+  const canPay = items.length > 0 && !!selectedShipping && hasEnoughBalance && !isProcessing && !userLoading && deliveryEmail.includes("@");
 
   const handleCompleteOrder = async () => {
     if (!user || !profile || !db) return;
@@ -244,7 +244,7 @@ export default function CheckoutPage() {
                        <Input 
                          value={deliveryEmail} 
                          onChange={e => setDeliveryEmail(e.target.value)} 
-                         className="h-16 md:h-20 rounded-[1.5rem] bg-white dark:bg-zinc-900 border-2 border-border px-8 font-black text-lg md:text-2xl shadow-inner focus:ring-2 focus:ring-primary/20" 
+                         className="h-16 md:h-20 rounded-[1.5rem] bg-white dark:bg-zinc-900 border-2 border-border px-8 font-black text-lg md:text-2xl shadow-inner focus:ring-2 focus:ring-primary/20 text-foreground" 
                          placeholder="name@example.com"
                        />
                        <p className="text-[10px] text-muted-foreground font-medium pr-4">سيقوم النظام بإرسال كود التفعيل لهذا البريد احتياطياً.</p>
@@ -309,7 +309,7 @@ export default function CheckoutPage() {
                     <Button 
                       onClick={handleCompleteOrder} 
                       disabled={!canPay}
-                      className="royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-10 group"
+                      className={`royal-button w-full h-20 md:h-24 text-xl md:text-3xl shadow-primary/30 mt-10 group ${!canPay ? 'opacity-50 grayscale' : ''}`}
                     >
                       {isProcessing ? (
                         <Loader2 className="animate-spin" size={32} />
