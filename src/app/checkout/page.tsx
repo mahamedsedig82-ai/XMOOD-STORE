@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -50,11 +51,12 @@ export default function CheckoutPage() {
         const userSnap = await transaction.get(userRef);
         if (!userSnap.exists()) throw "Profile Error";
 
-        const currentBalance = userSnap.data().walletBalance || 0;
-        if (currentBalance < finalTotal) throw "Insufficient Balance";
+        const balanceBefore = userSnap.data().walletBalance || 0;
+        if (balanceBefore < finalTotal) throw "Insufficient Balance";
+        const balanceAfter = balanceBefore - finalTotal;
 
         // 1. DEDUCT BALANCE
-        transaction.update(userRef, { walletBalance: currentBalance - finalTotal });
+        transaction.update(userRef, { walletBalance: balanceAfter });
 
         // 2. CREATE ORDER
         transaction.set(doc(db, "orders", orderId), {
@@ -71,6 +73,8 @@ export default function CheckoutPage() {
           notes,
           status: 'processing',
           deliveryStatus: 'preparing',
+          balanceBefore,
+          balanceAfter,
           createdAt: new Date().toISOString()
         });
 
@@ -80,6 +84,8 @@ export default function CheckoutPage() {
           amount: finalTotal,
           description: `شراء سيادي: ${items.length} منتجات عبر السلة`,
           orderId,
+          balanceBefore,
+          balanceAfter,
           createdAt: new Date().toISOString()
         });
       });
@@ -177,7 +183,7 @@ export default function CheckoutPage() {
                        <span>رسوم الشحن</span>
                        <span>{formatUSD(selectedShipping?.extraFee || 0)}</span>
                     </div>
-                    <div className="h-px bg-border/50 my-6" />
+                    <div className="h-px bg-border/50 my-4" />
                     <div className="flex justify-between items-end">
                        <span className="font-black text-sm uppercase">المطلوب دفعه</span>
                        <span className="text-4xl font-black gold-text tracking-tighter">{formatUSD(finalTotal)}</span>
@@ -211,3 +217,4 @@ export default function CheckoutPage() {
     </main>
   );
 }
+
