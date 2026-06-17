@@ -55,13 +55,18 @@ export default function CheckoutPage() {
   const walletBalance = profile?.walletBalance || 0;
   const hasEnoughBalance = walletBalance >= finalTotal;
 
-  // Logic: Check if all requirements met
-  const canPay = items.length > 0 && !!selectedShipping && hasEnoughBalance && !isProcessing && !userLoading && deliveryEmail.includes("@");
+  // Logic: Multi-check for enabling the button
+  const canPay = items.length > 0 && 
+                 !!selectedShipping && 
+                 hasEnoughBalance && 
+                 !isProcessing && 
+                 !userLoading && 
+                 deliveryEmail.includes("@");
 
   const handleCompleteOrder = async () => {
     if (!user || !profile || !db) return;
     if (!selectedShipping) return toast({ variant: "destructive", title: "يرجى اختيار وسيلة تسليم" });
-    if (!hasEnoughBalance) return toast({ variant: "destructive", title: "الرصيد غير كافٍ" });
+    if (!hasEnoughBalance) return toast({ variant: "destructive", title: "الرصيد غير كافٍ لإتمام العملية" });
     if (!deliveryEmail || !deliveryEmail.includes("@")) return toast({ variant: "destructive", title: "بريد غير صالح", description: "يرجى إدخال بريد إلكتروني صحيح للتسليم." });
 
     setIsProcessing(true);
@@ -71,49 +76,54 @@ export default function CheckoutPage() {
       await runTransaction(db, async (transaction) => {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists()) throw "خطأ في ملف المستخدم";
+        if (!userSnap.exists()) throw "خطأ في ملف المستخدم السيادي";
 
         const currentBalance = userSnap.data().walletBalance || 0;
-        if (currentBalance < finalTotal) throw "الرصيد غير كافٍ لإتمام العملية";
+        if (currentBalance < finalTotal) throw "الرصيد غير كافٍ في المحفظة حالياً";
 
-        const mainItem = items[0];
-        const productRef = doc(db, "products", mainItem.id);
-        const productSnap = await transaction.get(productRef);
-        
-        if (!productSnap.exists()) throw "المنتج غير موجود في المستودع";
-        const pData = productSnap.data();
-        
-        if (pData.status === 'paused') throw "الخدمة متوقفة مؤقتاً بطلب من الإدارة";
-        
-        // Digital stock check
-        const codes = (pData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
-        
-        if (codes.length <= 0 && pData.category !== 'خدمات يدوية') {
-           throw "عذراً، نفد مخزون أكواد هذا المنتج حالياً. يرجى مراجعة الإدارة.";
-        }
+        // Multi-Product Stock Check & Code Extraction
+        const deliveredCodes: string[] = [];
+        let finalStatus: 'completed' | 'pending_stock' = 'completed';
+        let finalDeliveryStatus: 'delivered' | 'preparing' = 'delivered';
 
-        let deliveredCode = "";
-        let finalStatus: any = 'completed';
-        let finalDeliveryStatus: any = 'delivered';
+        for (const item of items) {
+          const productRef = doc(db, "products", item.id);
+          const productSnap = await transaction.get(productRef);
+          
+          if (!productSnap.exists()) throw `المنتج ${item.name} غير متوفر في المستودع`;
+          const pData = productSnap.data();
+          
+          if (pData.status === 'paused') throw `الخدمة ${item.name} متوقفة مؤقتاً`;
 
-        if (codes.length > 0) {
-          deliveredCode = codes[0]; 
-          const remainingCodes = codes.slice(1).join('\n');
-          transaction.update(productRef, {
-            shippingCodes: remainingCodes,
-            stock: Math.max(0, (pData.stock || 0) - 1),
-            updatedAt: serverTimestamp()
-          });
-        } else {
-          finalStatus = 'pending_stock';
-          finalDeliveryStatus = 'preparing';
-          transaction.update(productRef, { stock: Math.max(0, pData.stock - 1) });
+          const codes = (pData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
+          
+          // If digital product requires codes but none available
+          if (codes.length < item.quantity && pData.category !== 'خدمات يدوية') {
+             finalStatus = 'pending_stock';
+             finalDeliveryStatus = 'preparing';
+             // Still need to update stock count (manual replenishment needed)
+             transaction.update(productRef, { stock: Math.max(0, (pData.stock || 0) - item.quantity) });
+          } else if (codes.length >= item.quantity) {
+             // Extract required number of codes
+             const codesForThisItem = codes.slice(0, item.quantity);
+             deliveredCodes.push(...codesForThisItem);
+             
+             const remainingCodes = codes.slice(item.quantity).join('\n');
+             transaction.update(productRef, {
+               shippingCodes: remainingCodes,
+               stock: Math.max(0, (pData.stock || 0) - item.quantity),
+               updatedAt: serverTimestamp()
+             });
+          } else {
+             // Manual services or mixed
+             transaction.update(productRef, { stock: Math.max(0, (pData.stock || 0) - item.quantity) });
+          }
         }
 
         const balanceAfter = currentBalance - finalTotal;
         transaction.update(userRef, { 
           walletBalance: balanceAfter,
-          completedDeals: (userSnap.data().completedDeals || 0) + 1
+          completedDeals: (userSnap.data().completedDeals || 0) + items.length
         });
 
         transaction.set(doc(db, "orders", orderId), {
@@ -130,7 +140,7 @@ export default function CheckoutPage() {
           notes,
           status: finalStatus,
           deliveryStatus: finalDeliveryStatus,
-          shippingCodeSent: deliveredCode,
+          shippingCodeSent: deliveredCodes.join(' | '), // Multi-code support
           balanceBefore: currentBalance,
           balanceAfter: balanceAfter,
           createdAt: new Date().toISOString()
@@ -140,7 +150,7 @@ export default function CheckoutPage() {
           userId: user.uid,
           amount: finalTotal,
           type: 'purchase',
-          description: `استحواذ آلي: ${mainItem.name}`,
+          description: items.length > 1 ? `استحواذ متعدد (${items.length} منتج)` : `استحواذ آلي: ${items[0].name}`,
           orderId,
           balanceBefore: currentBalance,
           balanceAfter,
@@ -153,7 +163,7 @@ export default function CheckoutPage() {
 
       clearCart();
       setSuccessOrderId(orderId);
-      toast({ title: config?.cartLabels?.successMsg || "تم التسليم بنجاح!" });
+      toast({ title: config?.cartLabels?.successMsg || "اكتمل البروتوكول بنجاح!" });
     } catch (e: any) {
       toast({ variant: "destructive", title: "فشل البروتوكول المالي", description: String(e) });
     } finally {
@@ -243,7 +253,7 @@ export default function CheckoutPage() {
                        <Input 
                          value={deliveryEmail} 
                          onChange={e => setDeliveryEmail(e.target.value)} 
-                         className="h-16 md:h-20 rounded-[1.5rem] bg-white dark:bg-zinc-900 border-2 border-border px-8 font-black text-lg md:text-2xl shadow-inner focus:ring-2 focus:ring-primary/20 text-foreground" 
+                         className="h-16 md:h-20 rounded-[1.5rem] bg-white dark:bg-zinc-950 border-2 border-primary/20 px-8 font-black text-lg md:text-2xl shadow-inner focus:ring-2 focus:ring-primary/40 text-foreground" 
                          placeholder="name@example.com"
                        />
                        <p className="text-[10px] text-muted-foreground font-medium pr-4">سيقوم النظام بإرسال كود التفعيل لهذا البريد احتياطياً.</p>
@@ -253,7 +263,7 @@ export default function CheckoutPage() {
                        <Textarea 
                          value={notes} 
                          onChange={e => setNotes(e.target.value)} 
-                         className="rounded-[2rem] bg-white dark:bg-zinc-900 border-2 border-border p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner text-foreground focus:ring-2 focus:ring-primary/20" 
+                         className="rounded-[2rem] bg-white dark:bg-zinc-950 border-2 border-primary/20 p-6 md:p-8 font-bold text-sm md:text-lg min-h-[150px] shadow-inner text-foreground focus:ring-2 focus:ring-primary/40" 
                          placeholder="اكتب هنا أي تفاصيل تريد إيضاحها للنظام..." 
                        />
                     </div>
