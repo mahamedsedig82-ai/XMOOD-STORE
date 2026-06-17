@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { loginEmail, registerEmail, sendMagicLink, resetPassword, syncUserProfile, isSuspiciousInput, logSecurityEvent } from "@/lib/auth";
+import { loginEmail, registerEmail, sendMagicLink, resetPassword, syncUserProfile, isSuspiciousInput, logSecurityEvent, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { 
-  Loader2, Mail, Lock, ShieldCheck, Fingerprint, Shield
+  Loader2, Mail, Lock, ShieldCheck, Fingerprint, Shield, Sparkles, Send
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -86,7 +86,8 @@ export default function SecurityLoginPage() {
           securityQuestion,
           securityAnswer
         });
-        toast({ title: "تم إنشاء العضوية", description: "مرحباً بك في مجتمع النخبة الرقمي." });
+        await sendAccountVerification(res.user);
+        toast({ title: "تم إنشاء العضوية", description: "تفقد بريدك الإلكتروني لتوثيق الحساب." });
       } else {
         await loginEmail(cleanEmail, password);
         toast({ title: "تم تأكيد الدخول", description: "جاري تحميل واجهتك السيادية..." });
@@ -105,15 +106,15 @@ export default function SecurityLoginPage() {
 
   const handleMagicLink = async () => {
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail) return toast({ variant: "destructive", title: "تنبيه بريدي", description: "أدخل بريدك الإلكتروني لإرسال الرابط السحري." });
+    if (!cleanEmail) return toast({ variant: "destructive", title: "تنبيه بريدي", description: "أدخل بريدك الإلكتروني أولاً." });
     if (checkSecurity(email)) return;
     
     setLoading(true);
     try {
       await sendMagicLink(cleanEmail);
-      toast({ title: "تم إرسال المفتاح السحري", description: "تفقد صندوق الوارد لتأمين الدخول الفوري." });
+      toast({ title: "تم إرسال المفتاح السحري", description: "تفقد صندوق الوارد (أو مجلد السبام) لتأمين الدخول." });
     } catch (error) {
-      toast({ variant: "destructive", title: "فشل الإرسال" });
+      toast({ variant: "destructive", title: "فشل الإرسال", description: "تأكد من صحة البريد أو حاول لاحقاً." });
     } finally {
       setLoading(false);
     }
@@ -202,11 +203,17 @@ export default function SecurityLoginPage() {
                             </div>
                          </div>
                       </div>
-                      <Button onClick={() => handleEmailAuth('login')} disabled={loading} className="w-full royal-button h-16 text-lg">
-                         {loading ? <Loader2 className="animate-spin" /> : "دخول سيادي للمحفظة"}
-                      </Button>
-                      <div className="flex flex-col md:flex-row gap-3">
-                         <Button onClick={handleMagicLink} variant="outline" className="flex-1 h-12 rounded-xl text-[9px] font-black uppercase tracking-widest" disabled={loading}>رابط سحري</Button>
+
+                      <div className="space-y-3">
+                        <Button onClick={() => handleEmailAuth('login')} disabled={loading} className="w-full royal-button h-16 text-lg">
+                           {loading ? <Loader2 className="animate-spin" /> : "دخول سيادي للمحفظة"}
+                        </Button>
+                        <Button onClick={handleMagicLink} disabled={loading} variant="outline" className="w-full h-14 rounded-2xl bg-primary/5 text-primary border-primary/20 font-black text-[10px] uppercase tracking-widest gap-2">
+                           <Sparkles size={16} /> دخول عبر الرابط السحري (بدون كلمة مرور)
+                        </Button>
+                      </div>
+
+                      <div className="flex flex-col md:flex-row gap-3 pt-4 border-t">
                          <Button onClick={handleResetPassword} variant="ghost" className="flex-1 h-12 rounded-xl text-muted-foreground font-black text-[9px] uppercase tracking-widest">استعادة الوصول</Button>
                       </div>
                    </TabsContent>

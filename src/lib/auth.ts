@@ -66,7 +66,7 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         label: 'عضو بريميوم',
         securityLevel: 'enhanced',
         isCaptchaVerified: true,
-        photoURL: additionalData.photoURL || user.photoURL || `https://picsum.photos/seed/${user.uid}/200/200`,
+        photoURL: additionalData.photoURL || user.photoURL || `https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png`,
         createdAt: new Date().toISOString(),
         lastSeen: new Date().toISOString(),
         isVerified: user.emailVerified || false,
