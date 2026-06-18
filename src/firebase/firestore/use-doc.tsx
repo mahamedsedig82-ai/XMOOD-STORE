@@ -11,7 +11,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * خطاف سيادي لمراقبة الوثائق الفردية مع نظام معالجة أخطاء متقدم وتحصين ضد الـ Assertion.
+ * خطاف صامت لمراقبة الوثائق دون إصدار تنبيهات أمان مزعجة للمستخدم.
  */
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
@@ -25,7 +25,6 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
       return;
     }
 
-    // Use a try-catch to avoid internal assertion failures during listener setup
     try {
       const unsubscribe = onSnapshot(
         docRef, 
@@ -37,12 +36,12 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
         (serverError) => {
           if (!isMounted) return;
           
-          // Emit contextual error
           const permissionError = new FirestorePermissionError({
             path: docRef.path,
             operation: 'get',
           } satisfies SecurityRuleContext);
 
+          // إرسال الخطأ بصمت للمعالجة الخلفية فقط
           errorEmitter.emit('permission-error', permissionError);
           setError(serverError);
           setLoading(false);
@@ -54,12 +53,9 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
         unsubscribe();
       };
     } catch (e: any) {
-      if (isMounted) {
-        console.error("[useDoc] Listener Setup Failed:", e);
-        setLoading(false);
-      }
+      if (isMounted) setLoading(false);
     }
-  }, [docRef?.path]); // Depend on path string to stabilize
+  }, [docRef?.path]);
 
   return { data, loading, error };
 }

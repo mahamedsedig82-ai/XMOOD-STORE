@@ -155,7 +155,7 @@ export default function CheckoutPage() {
       <Navbar />
       <div className="container mx-auto px-4 py-32 max-w-6xl">
         <header className="mb-16">
-          <Badge className="bg-primary/10 text-primary mb-4 px-6 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">Sovereign Gateway</Badge>
+          <Badge className="bg-primary/10 text-primary mb-4 px-6 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">Sovereign Gateway</Badge>
           <h1 className="text-5xl md:text-7xl font-headline font-black gold-text tracking-tighter">إتمام الطلب</h1>
         </header>
 

@@ -54,9 +54,9 @@
   body { @apply bg-background text-foreground antialiased font-body transition-colors duration-300; }
 }
 
-/* 🛡️ ULTRA-VISIBLE INPUTS (HIGH CONTRAST) */
+/* 🛡️ ULTRA-VISIBLE LUXURY INPUTS */
 input, textarea, select {
-  @apply border-2 border-primary/60 bg-white dark:bg-zinc-950 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all outline-none font-bold shadow-xl !important;
+  @apply border-2 border-primary/80 bg-white dark:bg-zinc-950 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all outline-none font-bold shadow-xl !important;
 }
 
 .luxury-card {
@@ -79,7 +79,6 @@ input, textarea, select {
   scroll-behavior: smooth;
 }
 
-/* Custom Scrollbar for Luxury Feel */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { @apply bg-transparent; }
 ::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-all; }

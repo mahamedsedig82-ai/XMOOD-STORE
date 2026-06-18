@@ -41,7 +41,6 @@ function VerifyEmailContent() {
         });
     }
 
-    // Auto-polling to detect verification from another device/tab
     const interval = setInterval(async () => {
       if (auth.currentUser) {
         await auth.currentUser.reload();
@@ -68,7 +67,7 @@ function VerifyEmailContent() {
           </div>
           <div className="space-y-4">
              <h2 className="text-4xl font-headline font-black gold-text">بانتظار التوثيق</h2>
-             <p className="text-muted-foreground text-lg font-medium leading-relaxed">أرسلنا رابط التفعيل الرسمي لبريدك الإلكتروني، يرجى النقر عليه لتنشيط محفظتك.</p>
+             <p className="text-muted-foreground text-lg font-medium leading-relaxed">أرسلنا رابط التفعيل لبريدك الإلكتروني، يرجى النقر عليه لتنشيط حسابك.</p>
           </div>
           <div className="p-6 bg-muted/30 rounded-2xl flex items-center justify-center gap-4 border border-primary/10">
              <Loader2 className="animate-spin text-primary" size={24} />
@@ -121,7 +120,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
       <Navbar />
-      <Suspense fallback={<div className="flex flex-col items-center gap-6"><Loader2 className="animate-spin text-primary" size={64} /><p className="font-black text-xs uppercase tracking-widest gold-text">Loading Security...</p></div>}>
+      <Suspense fallback={<div className="flex flex-col items-center gap-6"><Loader2 className="animate-spin text-primary" size={64} /><p className="font-black text-xs uppercase tracking-widest gold-text">Loading...</p></div>}>
         <VerifyEmailContent />
       </Suspense>
     </div>
