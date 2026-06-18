@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useMemo } from "react";
@@ -48,10 +49,12 @@ export default function AdminProducts() {
         img.onload = () => {
           const canvas = document.createElement("canvas");
           const MAX_WIDTH = 800;
-          canvas.width = MAX_WIDTH;
-          canvas.height = (img.height / img.width) * MAX_WIDTH;
+          let width = img.width;
+          let height = img.height;
+          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+          canvas.width = width; canvas.height = height;
           const ctx = canvas.getContext("2d");
-          ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+          ctx?.drawImage(img, 0, 0, width, height);
           resolve(canvas.toDataURL("image/jpeg", 0.6));
         };
       };
@@ -66,6 +69,9 @@ export default function AdminProducts() {
       try {
         const b64 = await compressImage(file);
         setForm({ ...form, imageUrl: b64 });
+        toast({ title: "تمت معالجة الصورة" });
+      } catch (err) {
+        toast({ variant: "destructive", title: "فشل المعالجة" });
       } finally {
         setIsProcessing(false);
       }
@@ -78,7 +84,9 @@ export default function AdminProducts() {
       return;
     }
     
+    setIsProcessing(true);
     const codesList = form.shippingCodes.split('\n').filter(c => c.trim() !== "");
+    // مزامنة المخزون الرقمي مع عدد الأكواد إذا كانت موجودة
     const currentStock = codesList.length > 0 ? codesList.length : Number(form.stock);
     
     const data = { 
@@ -89,22 +97,28 @@ export default function AdminProducts() {
       updatedAt: serverTimestamp() 
     };
 
-    if (editingId) {
-      updateDoc(doc(db, "products", editingId), data)
-        .then(() => { toast({ title: "تم التحديث" }); setIsOpen(false); resetForm(); })
-        .catch(async (e) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: `products/${editingId}`, operation: 'update', requestResourceData: data })); });
-    } else {
-      addDoc(collection(db, "products"), { ...data, createdAt: new Date().toISOString() })
-        .then(() => { toast({ title: "تم النشر" }); setIsOpen(false); resetForm(); })
-        .catch(async (e) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'products', operation: 'create', requestResourceData: data })); });
-    }
+    const action = editingId 
+      ? updateDoc(doc(db, "products", editingId), data)
+      : addDoc(collection(db, "products"), { ...data, createdAt: new Date().toISOString() });
+
+    action.then(() => {
+      toast({ title: editingId ? "تم التحديث السيادي" : "تم النشر في المستودع" });
+      setIsOpen(false);
+      resetForm();
+    }).catch(async (e) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ 
+        path: editingId ? `products/${editingId}` : 'products', 
+        operation: editingId ? 'update' : 'create', 
+        requestResourceData: data 
+      }));
+    }).finally(() => setIsProcessing(false));
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm("حذف هذه الباقة نهائياً؟") || !db) return;
+    if (!confirm("هل أنت متأكد من حذف هذه الباقة من المستودع السيادي؟") || !db) return;
     const docRef = doc(db, "products", id);
     deleteDoc(docRef)
-      .then(() => toast({ title: "تم الحذف" }))
+      .then(() => toast({ title: "تم الحذف بنجاح" }))
       .catch(async (e) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'delete' })); });
   };
 
@@ -148,50 +162,50 @@ export default function AdminProducts() {
               <div className="space-y-2"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">التصنيف</label><Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} placeholder="شحن ألعاب، بطاقات..." /></div>
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2 flex justify-between"><span>السعر (USD)</span><span className="text-primary">يقابل: {formatSDG(Number(form.price) || 0, config?.siteInfo?.usdRate || 5400)}</span></label>
-                <div className="relative"><DollarSign className="absolute right-4 top-1/2 -translate-y-1/2 text-primary" size={20} /><Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-14 pr-12 text-primary font-black" /></div>
+                <div className="relative"><DollarSign className="absolute right-4 top-1/2 -translate-y-1/2 text-primary" size={20} /><Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-14 pr-12 text-primary font-black border-2 border-primary/20" /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-2"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">المخزون اليدوي</label><Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} /></div>
-                 <div className="space-y-2"><label className="text-[10px] font-bold text-red-500 uppercase pr-2">الحد الأدنى</label><Input type="number" value={form.minStock} onChange={e => setForm({...form, minStock: e.target.value})} className="text-red-500" /></div>
+                 <div className="space-y-2"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">المخزون اليدوي</label><Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="border-2 border-primary/20" /></div>
+                 <div className="space-y-2"><label className="text-[10px] font-bold text-red-500 uppercase pr-2">الحد الأدنى</label><Input type="number" value={form.minStock} onChange={e => setForm({...form, minStock: e.target.value})} className="text-red-500 border-2 border-red-500/20" /></div>
               </div>
               <div className="col-span-full space-y-4">
                  <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">صورة المنتج</label>
-                 <div onClick={() => fileInputRef.current?.click()} className="h-32 bg-muted/40 border-2 border-dashed border-primary/20 rounded-[2rem] flex items-center justify-center cursor-pointer overflow-hidden group hover:bg-primary/5">
-                    {form.imageUrl ? <img src={form.imageUrl} className="h-full w-full object-cover" alt="" /> : <div className="text-center"><Upload className="text-primary mx-auto mb-2" /><p className="text-[10px] font-black opacity-30">اضغط للاختيار</p></div>}
+                 <div onClick={() => fileInputRef.current?.click()} className="h-32 bg-muted/40 border-2 border-dashed border-primary/20 rounded-[2rem] flex items-center justify-center cursor-pointer overflow-hidden group hover:bg-primary/5 transition-all">
+                    {form.imageUrl ? <img src={form.imageUrl} className="h-full w-full object-cover" alt="" /> : <div className="text-center"><Upload className="text-primary mx-auto mb-2" /><p className="text-[10px] font-black opacity-30">اضغط للاختيار من الاستوديو</p></div>}
                     <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
                  </div>
               </div>
-              <div className="col-span-full space-y-2"><label className="text-[10px] font-bold text-primary uppercase pr-2">أكواد التسليم الفوري (كود في كل سطر)</label><Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="min-h-[150px] font-mono text-xs text-primary" placeholder="CODE-ABC-123..." /></div>
+              <div className="col-span-full space-y-2"><label className="text-[10px] font-bold text-primary uppercase pr-2">أكواد التسليم الفوري (كود في كل سطر)</label><Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="min-h-[150px] font-mono text-xs text-primary border-2 border-primary/30" placeholder="CODE-ABC-123..." /></div>
             </div>
-            <DialogFooter className="mt-10"><Button onClick={handleSubmit} className="w-full h-18 royal-button text-xl shadow-xl"><Zap size={20} className="ml-2" /> تأكيد ونشر الباقة</Button></DialogFooter>
+            <DialogFooter className="mt-10"><Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-18 royal-button text-xl shadow-xl">{isProcessing ? <Loader2 className="animate-spin" /> : <><Zap size={20} className="ml-2" /> تأكيد ونشر الباقة</>}</Button></DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
       <Card className="luxury-card border-none shadow-2xl overflow-hidden bg-card/60 backdrop-blur-xl">
         <CardHeader className="p-10 pb-0">
-          <div className="relative w-full md:max-w-xl"><Search className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/40 w-5 h-5" /><Input placeholder="البحث في المستودع..." className="pr-14 h-14 bg-background border-none rounded-2xl text-lg shadow-inner" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /></div>
+          <div className="relative w-full md:max-w-xl"><Search className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/40 w-5 h-5" /><Input placeholder="البحث في المستودع..." className="pr-14 h-14 bg-background border-none rounded-2xl text-lg shadow-inner border-2 border-primary/10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /></div>
         </CardHeader>
         <CardContent className="p-0 mt-10 overflow-x-auto">
           <Table className="responsive-table">
             <TableHeader className="bg-muted/30"><TableRow><TableHead className="text-right py-8 pr-10 font-black text-[10px] uppercase text-zinc-500">الباقة</TableHead><TableHead className="text-right font-black text-[10px] uppercase text-zinc-500">القيمة</TableHead><TableHead className="text-right font-black text-[10px] uppercase text-zinc-500">المخزون</TableHead><TableHead className="text-center font-black text-[10px] uppercase text-zinc-500">التحكم</TableHead></TableRow></TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin mx-auto text-primary" size={50} /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin text-primary mx-auto" size={50} /></TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold">لم يتم العثور على باقات</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold uppercase tracking-widest opacity-30">لم يتم العثور على أصول مطابقة</TableCell></TableRow>
               ) : filtered.map((p) => (
-                <TableRow key={p.id} className="hover:bg-primary/5 border-b border-border/30 transition-all">
+                <TableRow key={p.id} className="hover:bg-primary/5 border-b border-border/30 transition-all group">
                   <TableCell className="py-8 pr-10" data-label="الباقة">
                     <div className="flex items-center gap-4">
                       <img src={p.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} className="w-16 h-16 rounded-[1.5rem] object-cover border shadow-md" alt="" />
-                      <div className="flex flex-col"><span className="font-black text-lg text-foreground">{p.name}</span><span className="text-[9px] text-primary font-black uppercase tracking-widest">{p.category}</span></div>
+                      <div className="flex flex-col"><span className="font-black text-lg text-foreground group-hover:text-primary transition-colors">{p.name}</span><span className="text-[9px] text-primary font-black uppercase tracking-widest">{p.category}</span></div>
                     </div>
                   </TableCell>
                   <TableCell data-label="القيمة" className="font-black text-primary text-2xl tracking-tighter">${p.price}</TableCell>
                   <TableCell data-label="المخزون"><Badge variant="outline" className={`rounded-full px-4 py-1 text-[10px] font-black ${p.stock <= (p.minStock || 5) ? 'text-red-500 border-red-500/20 bg-red-500/5 animate-pulse' : 'text-green-500 border-green-500/20 bg-green-500/5'}`}>{p.stock} Unit</Badge></TableCell>
                   <TableCell className="text-center" data-label="التحكم">
-                    <div className="flex justify-center gap-4"><Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-primary hover:bg-primary/10 shadow-sm border" onClick={() => startEdit(p)}><Edit2 size={18} /></Button><Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-red-500 hover:bg-red-50 shadow-sm border" onClick={() => handleDelete(p.id)}><Trash2 size={18} /></Button></div>
+                    <div className="flex justify-center gap-4"><Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-primary hover:bg-primary/10 shadow-sm border border-primary/10" onClick={() => startEdit(p)}><Edit2 size={18} /></Button><Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-red-500 hover:bg-red-50 shadow-sm border border-red-500/10" onClick={() => handleDelete(p.id)}><Trash2 size={18} /></Button></div>
                   </TableCell>
                 </TableRow>
               ))}
