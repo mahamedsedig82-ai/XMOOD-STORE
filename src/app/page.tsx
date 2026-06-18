@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -38,7 +39,7 @@ export default function HomePage() {
         <div className="container mx-auto px-6 relative z-10 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="space-y-12 md:space-y-16">
             
-            <div className="flex flex-col items-center gap-8">
+            <div className="flex flex-col items-center gap-10">
                <div className="logo-glow-container">
                   {config?.appearance?.logoUrl ? (
                     <motion.div
@@ -48,17 +49,17 @@ export default function HomePage() {
                     >
                       <img 
                         src={config.appearance.logoUrl} 
-                        className="h-36 w-36 md:h-64 md:w-64 rounded-full object-cover border-4 border-primary/20 shadow-[0_0_50px_rgba(212,175,55,0.3)] hover:scale-105 transition-transform duration-700" 
+                        className="h-40 w-40 md:h-64 md:w-64 rounded-full object-cover border-4 border-primary/20 shadow-[0_0_60px_rgba(212,175,55,0.3)] hover:scale-105 transition-transform duration-700" 
                         alt="XMOOD Logo" 
                       />
-                      <div className="absolute inset-0 rounded-full shadow-[inset_0_0_20px_rgba(0,0,0,0.2)] pointer-events-none" />
+                      <div className="absolute inset-0 rounded-full shadow-[inset_0_0_30px_rgba(0,0,0,0.3)] pointer-events-none" />
                     </motion.div>
                   ) : (
-                    <h1 className="handwritten-logo text-5xl md:text-8xl drop-shadow-2xl" style={{ direction: 'ltr' }}>XMOOD STORE</h1>
+                    <h1 className="handwritten-logo text-6xl md:text-9xl drop-shadow-2xl" style={{ direction: 'ltr' }}>XMOOD STORE</h1>
                   )}
                </div>
                
-               <div className="space-y-6">
+               <div className="space-y-6 pt-4">
                   <h2 className="text-2xl md:text-4xl font-handwriting text-primary opacity-90 tracking-wide leading-relaxed drop-shadow-sm">
                     {config?.siteInfo?.subtitle || "مركز الخدمات الرقمية المعتمدة"}
                   </h2>

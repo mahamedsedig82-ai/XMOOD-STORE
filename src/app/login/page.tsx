@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -25,7 +26,7 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState("login");
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isVerified } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -40,7 +41,7 @@ export default function LoginPage() {
       if (user.emailVerified) {
         router.replace("/wallet");
       } else {
-        router.push("/verify-email?waiting=true");
+        router.replace("/verify-email?waiting=true");
       }
     }
   }, [user, router]);
@@ -100,9 +101,9 @@ export default function LoginPage() {
             <div className="p-10 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-6">
                <div className="logo-glow-container">
                  {config?.appearance?.logoUrl ? (
-                   <img src={config.appearance.logoUrl} className="h-24 w-24 rounded-full object-cover border-2 border-primary/20 shadow-xl drop-shadow-xl" alt="XMOOD Logo" />
+                   <img src={config.appearance.logoUrl} className="h-28 w-28 rounded-full object-cover border-4 border-primary/20 shadow-[0_0_40px_rgba(212,175,55,0.2)]" alt="XMOOD Logo" />
                  ) : (
-                   <h2 className="handwritten-logo text-3xl md:text-5xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
+                   <h2 className="handwritten-logo text-3xl md:text-4xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
                  )}
                </div>
                <Badge variant="outline" className="text-[9px] font-black text-primary border-primary/30 uppercase tracking-[0.4em] px-6 py-1.5 rounded-full bg-primary/5">
