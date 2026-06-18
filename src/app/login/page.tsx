@@ -38,7 +38,7 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
-  // 🛡️ Centralized Redirect Guard
+  // 🛡️ Safe Redirect Guard
   useEffect(() => {
     if (isMounted && !authLoading && user) {
       if (isVerified) {
@@ -66,7 +66,7 @@ export default function LoginPage() {
         await syncUserProfile(res.user, { displayName: fullName, phoneNumber: phone });
         await sendAccountVerification(res.user);
         toast({ title: "تم إنشاء العضوية بنجاح" });
-        router.push("/verify-email?waiting=true");
+        // التحويل يتم عبر الـ useEffect بمجرد تغير حالة الـ user
       } else {
         await loginEmail(email, password);
         toast({ title: "جاري تأمين الدخول..." });
@@ -76,12 +76,11 @@ export default function LoginPage() {
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
       if (error.code === 'auth/invalid-credential') msg = "البريد أو كلمة المرور غير صحيحة.";
       toast({ variant: "destructive", title: "فشل العملية", description: msg });
-    } finally {
       setLoading(false);
     }
   };
 
-  if (!isMounted || authLoading) {
+  if (!isMounted || authLoading || user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="animate-spin text-primary" size={60} />

@@ -8,13 +8,15 @@ import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
 /**
- * 🛡️ Unitary Identity Hook 6.0
- * Ensures synchronized loading of Auth and Firestore profiles with zero loop risk.
+ * 🛡️ Unitary Identity Hook 7.0
+ * إدارة احترافية للمستمعات تمنع أخطاء Firestore Assertion نهائياً.
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // مراجع لتنظيف المستمعات ومنع التداخل
   const unsubscribeProfileRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export function useUser() {
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       
-      // Cleanup previous profile listener if exists
+      // 1. تنظيف مستمع البروفايل السابق عند تغيير حالة الدخول
       if (unsubscribeProfileRef.current) {
         unsubscribeProfileRef.current();
         unsubscribeProfileRef.current = null;
@@ -35,18 +37,17 @@ export function useUser() {
       if (firebaseUser) {
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         
+        // 2. تفعيل مستمع البروفايل الجديد
         unsubscribeProfileRef.current = onSnapshot(userDocRef, (snapshot) => {
           if (snapshot.exists()) {
             setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
             setLoading(false);
           } else {
-            // Profile doesn't exist yet, trigger idempotent sync
-            syncUserProfile(firebaseUser).then(() => {
-              // The snapshot listener will catch the creation and update profile
-            }).catch(() => setLoading(false));
+            // مزامنة الملف إذا لم يكن موجوداً
+            syncUserProfile(firebaseUser).catch(() => setLoading(false));
           }
         }, (err) => {
-          console.warn("[AUTH_SYNC] Profile Guard Active");
+          console.warn("[AUTH_SYNC] Listener Guard Active");
           setLoading(false);
         });
       } else {
@@ -55,9 +56,13 @@ export function useUser() {
       }
     });
 
+    // تنظيف كافة المستمعات عند مغادرة الصفحة أو التطبيق
     return () => {
       unsubscribeAuth();
-      if (unsubscribeProfileRef.current) unsubscribeProfileRef.current();
+      if (unsubscribeProfileRef.current) {
+        unsubscribeProfileRef.current();
+        unsubscribeProfileRef.current = null;
+      }
     };
   }, []);
 

@@ -8,35 +8,36 @@ import {
   DocumentData,
   Unsubscribe
 } from 'firebase/firestore';
-import { auth } from '../index';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * 🛡️ Safety-Enhanced Collection Hook 4.0
- * تم السماح بالاستماع للبيانات العامة حتى بدون مستخدم مسجل.
+ * 🛡️ Safety-Enhanced Collection Hook 5.0
+ * إصلاح جذري لمنع خطأ INTERNAL ASSERTION عبر إدارة صارمة للـ Unsubscribe
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   
+  // استخدام Ref لضمان تتبع المستمع الحالي وإغلاقه بدقة
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
+    // 1. تنظيف أي مستمع قديم فوراً قبل البدء
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
     }
 
-    // 🛡️ Guard: فقط نمنع إذا لم يوجد استعلام أصلاً
     if (!query) {
-      setLoading(false);
       setData([]);
+      setLoading(false);
       return;
     }
 
     try {
+      setLoading(true);
       const unsubscribe = onSnapshot(
         query, 
         (snapshot: QuerySnapshot<T>) => {
@@ -48,19 +49,15 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
           setLoading(false);
         }, 
         (serverError) => {
-          // 🛡️ معالجة هادئة لأخطاء الصلاحيات (خاصة عند Logout)
-          const path = (query as any)._query?.path?.toString() || 'collection';
-          
-          if (serverError.code === 'permission-denied') {
-            console.warn(`[FIRESTORE_GUARD] Access denied to path: ${path}`);
-          } else {
-             const permissionError = new FirestorePermissionError({
+          // معالجة هادئة لأخطاء الصلاحيات
+          if (serverError.code !== 'permission-denied') {
+            const path = (query as any)._query?.path?.toString() || 'collection';
+            const permissionError = new FirestorePermissionError({
               path,
               operation: 'list',
             } satisfies SecurityRuleContext);
             errorEmitter.emit('permission-error', permissionError);
           }
-          
           setError(serverError);
           setLoading(false);
         }
@@ -68,16 +65,18 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
 
       unsubscribeRef.current = unsubscribe;
     } catch (e) {
-      console.error("[FIRESTORE_HOOK] Runtime Guard:", e);
+      console.error("[FIRESTORE_COLLECTION] Error:", e);
       setLoading(false);
     }
 
+    // 2. ضمان التنظيف عند الـ Unmount أو تغيير الـ Query
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
+        unsubscribeRef.current = null;
       }
     };
-  }, [query, auth.currentUser?.uid]); 
+  }, [query]); // التغيير يعتمد فقط على المرجع المستقر للـ Query
 
   return { data, loading, error };
 }
