@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { loginEmail, registerEmail, syncUserProfile, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Loader2, CheckCircle2, UserPlus, Mail, Lock, User, Phone, KeyRound, Sparkles, ShieldCheck } from "lucide-react";
+import { Loader2, UserPlus, Mail, Lock, KeyRound, Sparkles, ShieldCheck, Phone, User } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/firebase";
@@ -73,120 +73,100 @@ export default function LoginPage() {
     <main className="min-h-screen bg-[#050505] relative overflow-hidden" dir="rtl">
       <Navbar />
       
-      {/* Immersive Background */}
-      <div className="fixed inset-0 pointer-events-none">
-         <motion.div 
-           animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-           transition={{ duration: 15, repeat: Infinity }}
-           className="absolute top-[-20%] right-[-10%] w-[1200px] h-[1200px] bg-emerald-900/20 blur-[200px] rounded-full" 
-         />
-         <motion.div 
-           animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.3, 0.1] }}
-           transition={{ duration: 20, repeat: Infinity, delay: 2 }}
-           className="absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] bg-amber-600/10 blur-[180px] rounded-full" 
-         />
+      {/* Background Ambience */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 blur-[150px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-900/10 blur-[120px] rounded-full" />
       </div>
 
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center pt-24 relative z-10">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }} 
-          animate={{ opacity: 1, scale: 1 }} 
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="w-full max-w-2xl"
+          initial={{ opacity: 0, y: 30 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="w-full max-w-xl"
         >
-          <Card className="emerald-glass rounded-[4rem] overflow-hidden border-white/5 relative">
-            {/* Animated Glow Border */}
-            <div className="absolute inset-0 border-2 border-primary/20 rounded-[4rem] pointer-events-none" />
-            
-            <div className="p-16 text-center relative border-b border-white/5 bg-white/[0.02]">
-               <motion.div 
-                 whileHover={{ rotate: 15, scale: 1.1 }}
-                 className="w-32 h-32 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-[0_0_50px_rgba(212,175,55,0.2)] border border-primary/30 group"
-               >
-                  <KeyRound size={56} className="text-primary group-hover:gold-text transition-all" />
-               </motion.div>
-               <h2 className="text-6xl md:text-8xl font-headline font-black gold-text mb-2 tracking-tighter">بوابة النخبة</h2>
-               <p className="text-[11px] font-black text-emerald-500 uppercase tracking-[0.8em] mt-4 opacity-70">Identity & Secure Access</p>
+          <Card className="luxury-card border-white/5 bg-zinc-950/80 backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+            <div className="p-10 text-center border-b border-white/5 bg-white/[0.02]">
+               <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl border border-primary/20">
+                  <KeyRound size={40} className="text-primary" />
+               </div>
+               <h2 className="text-4xl font-headline font-black gold-text mb-1">بوابة النخبة</h2>
+               <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em] opacity-60">Identity & Secure Access</p>
             </div>
 
-            <CardContent className="px-10 md:px-20 pb-20 pt-16">
+            <CardContent className="p-8 md:p-12">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-16 p-2 bg-black/60 rounded-[2.5rem] border border-white/10 shadow-2xl">
-                  <TabsTrigger value="login" className="rounded-[2rem] font-black text-[11px] uppercase py-6 data-[state=active]:bg-primary data-[state=active]:text-black transition-all duration-500">تسجيل الدخول</TabsTrigger>
-                  <TabsTrigger value="signup" className="rounded-[2rem] font-black text-[11px] uppercase py-6 data-[state=active]:bg-primary data-[state=active]:text-black transition-all duration-500">إنشاء حساب</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 mb-10 p-1.5 bg-black/60 rounded-2xl border border-white/10">
+                  <TabsTrigger value="login" className="rounded-xl font-black text-[10px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">تسجيل الدخول</TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-xl font-black text-[10px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">إنشاء حساب</TabsTrigger>
                 </TabsList>
 
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeTab}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.5 }}
-                    className="space-y-12"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-8"
                   >
                     {activeTab === 'login' ? (
-                      <div className="space-y-12">
-                        <div className="space-y-8">
-                           <div className="space-y-4">
-                              <Label className="text-[12px] font-black uppercase text-primary/70 pr-8 flex items-center gap-4">
-                                <Mail size={18} /> البريد الإلكتروني
-                              </Label>
+                      <div className="space-y-8">
+                        <div className="space-y-6">
+                           <div className="space-y-3">
+                              <Label className="text-[10px] font-black uppercase text-primary/70 pr-4 flex items-center gap-2"><Mail size={14} /> البريد الإلكتروني</Label>
                               <Input 
                                 value={email} 
                                 onChange={e => setEmail(e.target.value)} 
                                 type="email" 
-                                placeholder="example@xmood.com" 
-                                className="h-20 text-center bg-black/40 border-primary/30 text-white placeholder:text-zinc-700 shadow-2xl text-xl rounded-[2.2rem]" 
+                                placeholder="name@example.com" 
+                                className="h-16 text-center text-lg rounded-2xl" 
                               />
                            </div>
-                           <div className="space-y-4">
-                              <Label className="text-[12px] font-black uppercase text-primary/70 pr-8 flex items-center gap-4">
-                                <Lock size={18} /> كلمة المرور
-                              </Label>
+                           <div className="space-y-3">
+                              <Label className="text-[10px] font-black uppercase text-primary/70 pr-4 flex items-center gap-2"><Lock size={14} /> كلمة المرور</Label>
                               <Input 
                                 value={password} 
                                 onChange={e => setPassword(e.target.value)} 
                                 type="password" 
                                 placeholder="••••••••" 
-                                className="h-20 text-center bg-black/40 border-primary/30 text-white placeholder:text-zinc-700 shadow-2xl text-xl rounded-[2.2rem]" 
+                                className="h-16 text-center text-lg rounded-2xl" 
                               />
                            </div>
                         </div>
                         <Button 
                           onClick={() => handleAuth('login')} 
                           disabled={loading} 
-                          className="w-full royal-button h-24 text-3xl shadow-[0_20px_50px_rgba(212,175,55,0.3)] rounded-[2.5rem]"
+                          className="w-full royal-button h-18 text-lg shadow-primary/20"
                         >
-                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={36} className="ml-5" /> دخول آمن للنظام</>}
+                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={24} className="ml-3" /> دخول آمن</>}
                         </Button>
                       </div>
                     ) : (
-                      <div className="space-y-10">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-4">
-                               <Label className="text-[12px] font-black uppercase text-primary/70 pr-8">الاسم الكامل</Label>
-                               <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Full Name" className="h-18 bg-black/40 border-white/10 text-white shadow-xl rounded-[2rem] text-lg" />
+                      <div className="space-y-6">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                               <Label className="text-[10px] font-black text-primary/70 pr-4">الاسم بالكامل</Label>
+                               <Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-14 text-sm" placeholder="Full Name" />
                             </div>
-                            <div className="space-y-4">
-                               <Label className="text-[12px] font-black uppercase text-primary/70 pr-8">رقم الهاتف</Label>
-                               <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." className="h-18 bg-black/40 border-white/10 text-white shadow-xl rounded-[2rem] text-lg" />
+                            <div className="space-y-2">
+                               <Label className="text-[10px] font-black text-primary/70 pr-4">رقم الهاتف</Label>
+                               <Input value={phone} onChange={e => setPhone(e.target.value)} className="h-14 text-sm font-mono" placeholder="+966..." />
                             </div>
                          </div>
-                         <div className="space-y-4">
-                            <Label className="text-[12px] font-black uppercase text-primary/70 pr-8">البريد الإلكتروني</Label>
-                            <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="email@example.com" className="h-18 bg-black/40 border-white/10 text-white shadow-xl rounded-[2rem] text-lg" />
+                         <div className="space-y-2">
+                            <Label className="text-[10px] font-black text-primary/70 pr-4">البريد الإلكتروني</Label>
+                            <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-14 text-sm" placeholder="email@example.com" />
                          </div>
-                         <div className="space-y-4">
-                            <Label className="text-[12px] font-black uppercase text-primary/70 pr-8">كلمة المرور</Label>
-                            <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-18 bg-black/40 border-white/10 text-white shadow-xl rounded-[2rem] text-lg" />
+                         <div className="space-y-2">
+                            <Label className="text-[10px] font-black text-primary/70 pr-4">كلمة المرور</Label>
+                            <Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-14 text-sm" placeholder="••••••••" />
                          </div>
                          <Button 
                            onClick={() => handleAuth('signup')} 
                            disabled={loading} 
-                           className="w-full royal-button h-24 text-3xl mt-8 shadow-[0_20px_50px_rgba(212,175,55,0.3)] rounded-[2.5rem]"
+                           className="w-full royal-button h-18 text-lg mt-4 shadow-primary/20"
                          >
-                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={36} className="ml-5" /> إنشاء العضوية السيادية</>}
+                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={24} className="ml-3" /> إنشاء عضوية سيادية</>}
                          </Button>
                       </div>
                     )}
@@ -195,9 +175,9 @@ export default function LoginPage() {
               </Tabs>
             </CardContent>
           </Card>
-          <p className="text-center mt-16 text-[11px] font-black text-zinc-600 uppercase tracking-[0.6em] opacity-50">
-            <Sparkles size={12} className="inline mr-2 text-primary" /> 
-            Precision Security by XMOOD Cloud Intelligence
+          <p className="text-center mt-10 text-[9px] font-black text-zinc-600 uppercase tracking-[0.6em] opacity-40">
+            <Sparkles size={10} className="inline mr-2 text-primary" /> 
+            Powered by XMOOD Cloud Intelligence
           </p>
         </motion.div>
       </div>
