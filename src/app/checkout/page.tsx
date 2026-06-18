@@ -145,7 +145,7 @@ export default function CheckoutPage() {
           <CheckCircle2 size={80} className="text-green-500 mx-auto mb-8 animate-bounce" />
           <h2 className="text-4xl font-headline font-black mb-4">تمت العملية بنجاح</h2>
           <p className="text-muted-foreground mb-10 font-medium">تم خصم المبلغ وتجهيز القسيمة الرقمية الخاصة بك.</p>
-          <Button asChild className="royal-button w-full h-16 text-lg"><Link href={`/orders/${successOrderId}`}>عرض القسيمة</Link></Button>
+          <Button asChild className="royal-button w-full h-16 text-lg shadow-xl"><Link href={`/orders/${successOrderId}`}>عرض القسيمة</Link></Button>
        </Card>
     </main>
   );
@@ -192,7 +192,7 @@ export default function CheckoutPage() {
                    value={deliveryEmail} 
                    onChange={e => setDeliveryEmail(e.target.value)} 
                    placeholder="أدخل البريد لاستقبال الكود..." 
-                   className="h-18 rounded-3xl"
+                   className="h-18 rounded-3xl shadow-xl"
                  />
               </section>
            </div>
@@ -220,7 +220,7 @@ export default function CheckoutPage() {
                     <Button 
                       onClick={handleCompleteOrder} 
                       disabled={isProcessing || !items.length || !selectedShipping || !hasEnoughBalance || outOfStockItems.length > 0 || !isVerified} 
-                      className="royal-button w-full h-20 text-xl"
+                      className="royal-button w-full h-20 text-xl shadow-xl"
                     >
                       {isProcessing ? <Loader2 className="animate-spin" /> : "تأكيد الدفع والاستلام"}
                     </Button>

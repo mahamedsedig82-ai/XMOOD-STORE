@@ -17,13 +17,19 @@ export function Footer() {
       <div className="container mx-auto px-6 text-center">
         <div className="mb-10 flex flex-col items-center group">
           <Link href="/" className="flex flex-col items-center">
-            <span className="handwritten-logo text-6xl md:text-8xl mb-2">Xmood</span>
-            <span className="text-[10px] md:text-xs font-black tracking-[1em] uppercase text-primary opacity-60 group-hover:opacity-100 transition-opacity">Sovereign Store</span>
+            {config?.appearance?.logoUrl ? (
+              <img src={config.appearance.logoUrl} className="h-16 md:h-20 w-auto object-contain mb-4" alt="Logo" />
+            ) : (
+              <>
+                <span className="handwritten-logo text-6xl md:text-8xl mb-2">Xmood <span>Store</span></span>
+                <span className="text-[10px] md:text-xs font-black tracking-[1em] uppercase text-primary opacity-60 group-hover:opacity-100 transition-opacity">Sovereign Marketplace</span>
+              </>
+            )}
           </Link>
         </div>
         
         <p className="text-muted-foreground max-w-2xl mx-auto mb-16 text-lg md:text-xl leading-relaxed font-medium">
-          {config?.footer?.aboutText || config?.pageContent?.footerAbout || "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية المتكاملة عبر منصة XMOOD المتطورة."}
+          {config?.footer?.aboutText || "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية المتكاملة عبر منصة XMOOD المتطورة."}
         </p>
         
         {config?.footer?.showAddress && config?.footer?.address && (
@@ -72,7 +78,7 @@ export function Footer() {
         )}
 
         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] opacity-40">
-          {config?.footer?.copyright || config?.siteInfo?.copyright || "© 2025 XMOOD SOVEREIGN. ALL RIGHTS RESERVED."}
+          {config?.footer?.copyright || "© 2025 XMOOD SOVEREIGN. ALL RIGHTS RESERVED."}
         </p>
       </div>
     </footer>

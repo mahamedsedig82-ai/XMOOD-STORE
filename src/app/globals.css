@@ -82,10 +82,10 @@ input, textarea, select {
 }
 
 .handwritten-logo span {
-  @apply font-handwriting text-primary-foreground;
+  @apply font-handwriting text-primary;
   -webkit-text-fill-color: hsl(var(--primary));
-  font-size: 1.2em;
-  margin-right: -10px;
+  font-size: 1.1em;
+  margin-right: -4px;
 }
 
 .handwritten-logo:hover {

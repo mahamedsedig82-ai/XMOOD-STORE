@@ -34,7 +34,7 @@ export function Navbar() {
 
   useEffect(() => {
     setIsMounted(true);
-    const savedTheme = localStorage.getItem('xmood-theme') || 'light';
+    const savedTheme = typeof window !== 'undefined' ? localStorage.getItem('xmood-theme') || 'light' : 'light';
     setTheme(savedTheme as any);
     document.documentElement.classList.toggle('dark', savedTheme === 'dark');
   }, []);
@@ -42,7 +42,9 @@ export function Navbar() {
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
-    localStorage.setItem('xmood-theme', next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('xmood-theme', next);
+    }
     document.documentElement.classList.toggle('dark', next === 'dark');
   };
 
@@ -66,7 +68,7 @@ export function Navbar() {
   const isAdmin = ['owner', 'admin', 'gm'].includes(profile?.role || '');
 
   return (
-    <nav className="fixed top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl h-20">
+    <nav className="fixed top-0 z-[100] w-full border-b bg-background/80 backdrop-blur-xl h-20">
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
           {config?.appearance?.logoUrl ? (
@@ -74,7 +76,7 @@ export function Navbar() {
           ) : (
             <div className="flex flex-col items-center">
               <span className="handwritten-logo text-3xl md:text-4xl leading-none">XMOOD <span>Store</span></span>
-              <span className="text-[7px] font-black tracking-[0.4em] uppercase text-primary -mt-1 opacity-80 group-hover:opacity-100 transition-opacity">Sovereign Store</span>
+              <span className="text-[7px] font-black tracking-[0.4em] uppercase text-primary -mt-1 opacity-80 group-hover:opacity-100 transition-opacity">Sovereign Excellence</span>
             </div>
           )}
         </Link>

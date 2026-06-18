@@ -30,7 +30,7 @@ export default function AdminContentManager() {
   
   const [form, setForm] = useState({
     appearance: { primaryColor: "#d4af37", logoUrl: "", faviconUrl: "" },
-    siteInfo: { title: "XMOOD STORE", subtitle: "", description: "", copyright: "" },
+    siteInfo: { title: "XMOOD STORE", subtitle: "", description: "", copyright: "", usdRate: 5400 },
     gallerySettings: {
       title: "معرض الإبداع الرقمي",
       subtitle: "استلهم من أرقى التصاميم والهويات البصرية التي نفذتها أنامل خبراء الإبداع.",
@@ -42,7 +42,7 @@ export default function AdminContentManager() {
       ratingLabel: "تقييم العملاء",
       allowPublicRating: true
     },
-    contact: { whatsapp: "", email: "" },
+    contact: { whatsapp: "", email: "", telegram: "", facebook: "", instagram: "", youtube: "" },
     footer: {
       isActive: true,
       logoUrl: "",
@@ -62,6 +62,8 @@ export default function AdminContentManager() {
         gallerySettings: { ...prev.gallerySettings, ...(config.gallerySettings || {}) },
         agentSettings: { ...prev.agentSettings, ...(config.agentSettings || {}) },
         appearance: { ...prev.appearance, ...(config.appearance || {}) },
+        siteInfo: { ...prev.siteInfo, ...(config.siteInfo || {}) },
+        contact: { ...prev.contact, ...(config.contact || {}) },
         footer: { ...prev.footer, ...(config.footer || {}) }
       }));
     }
@@ -135,7 +137,7 @@ export default function AdminContentManager() {
           <h1 className="text-4xl md:text-5xl font-headline font-black gold-text leading-tight">مركز التحكم بالمحتوى</h1>
           <p className="text-muted-foreground mt-3 font-bold uppercase tracking-widest text-[10px]">Universal Content & Identity Master</p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg w-full md:w-auto">
+        <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg w-full md:w-auto shadow-xl">
           {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ كافة التعديلات</>}
         </Button>
       </header>
@@ -145,11 +147,14 @@ export default function AdminContentManager() {
           <TabsTrigger value="visual" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <Palette size={16} className="text-primary" /> الهوية واللوقو
           </TabsTrigger>
+          <TabsTrigger value="info" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
+            <FileText size={16} className="text-primary" /> بيانات الموقع
+          </TabsTrigger>
           <TabsTrigger value="sections" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
             <LayoutGrid size={16} className="text-primary" /> نصوص الأقسام
           </TabsTrigger>
-          <TabsTrigger value="footer" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
-            <AlignRight size={16} className="text-primary" /> التذييل
+          <TabsTrigger value="contact" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">
+            <LinkIcon size={16} className="text-primary" /> التواصل والتذييل
           </TabsTrigger>
         </TabsList>
 
@@ -189,7 +194,7 @@ export default function AdminContentManager() {
                           {form.appearance.logoUrl ? (
                             <img src={form.appearance.logoUrl} className="h-16 w-auto object-contain" alt="" />
                           ) : (
-                            <span className="text-3xl font-headline font-black gold-text">XMOOD</span>
+                            <span className="handwritten-logo text-4xl md:text-5xl">XMOOD <span>Store</span></span>
                           )}
                        </div>
                     </div>
@@ -198,56 +203,89 @@ export default function AdminContentManager() {
            </Card>
         </TabsContent>
 
+        <TabsContent value="info">
+           <Card className="luxury-card p-10 space-y-8 border-none bg-primary/5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">عنوان الموقع</Label>
+                    <Input value={form.siteInfo.title} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, title: e.target.value}})} />
+                 </div>
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">العنوان الفرعي</Label>
+                    <Input value={form.siteInfo.subtitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, subtitle: e.target.value}})} />
+                 </div>
+                 <div className="col-span-full space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">وصف الموقع (SEO)</Label>
+                    <Textarea value={form.siteInfo.description} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, description: e.target.value}})} className="min-h-[100px]" />
+                 </div>
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">سعر صرف الدولار (SDG)</Label>
+                    <Input type="number" value={form.siteInfo.usdRate} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, usdRate: Number(e.target.value)}})} />
+                 </div>
+              </div>
+           </Card>
+        </TabsContent>
+
         <TabsContent value="sections">
            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Card className="luxury-card p-10 space-y-6 border-none bg-primary/5">
-                 <h3 className="text-xl font-black flex items-center gap-3"><Users className="text-primary" /> نصوص الوكلاء والتقييم</h3>
+              <Card className="luxury-card p-10 space-y-6 border-none bg-muted/20">
+                 <h3 className="text-xl font-black flex items-center gap-3"><Users className="text-primary" /> نصوص الوكلاء</h3>
                  <div className="space-y-4">
                     <div className="space-y-2">
-                       <Label className="text-[9px] font-bold uppercase text-muted-foreground">عنوان صفحة الوكلاء</Label>
-                       <Input value={form.agentSettings.title} onChange={e => setForm({...form, agentSettings: {...form.agentSettings, title: e.target.value}})} className="h-12 bg-background border-none rounded-xl font-bold" />
+                       <Label className="text-[9px] font-bold uppercase text-muted-foreground">عنوان الصفحة</Label>
+                       <Input value={form.agentSettings.title} onChange={e => setForm({...form, agentSettings: {...form.agentSettings, title: e.target.value}})} />
                     </div>
                     <div className="space-y-2">
-                       <Label className="text-[9px] font-bold uppercase text-muted-foreground">وصف صفحة الوكلاء</Label>
-                       <Textarea value={form.agentSettings.subtitle} onChange={e => setForm({...form, agentSettings: {...form.agentSettings, subtitle: e.target.value}})} className="bg-background border-none rounded-xl min-h-[80px]" />
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-background rounded-xl border border-primary/10">
-                       <div><p className="font-bold text-sm">تفعيل نظام تقييم العملاء</p><p className="text-[8px] text-muted-foreground">السماح للأعضاء بتقييم أداء الوكلاء</p></div>
-                       <Switch checked={form.agentSettings.allowPublicRating} onCheckedChange={(v) => setForm({...form, agentSettings: {...form.agentSettings, allowPublicRating: v}})} />
+                       <Label className="text-[9px] font-bold uppercase text-muted-foreground">الوصف</Label>
+                       <Textarea value={form.agentSettings.subtitle} onChange={e => setForm({...form, agentSettings: {...form.agentSettings, subtitle: e.target.value}})} className="min-h-[80px]" />
                     </div>
                  </div>
               </Card>
 
-              <Card className="luxury-card p-10 space-y-6 border-none bg-primary/5">
-                 <h3 className="text-xl font-black flex items-center gap-3"><Briefcase className="text-primary" /> نصوص معرض الإبداع</h3>
+              <Card className="luxury-card p-10 space-y-6 border-none bg-muted/20">
+                 <h3 className="text-xl font-black flex items-center gap-3"><Briefcase className="text-primary" /> نصوص المعرض</h3>
                  <div className="space-y-4">
                     <div className="space-y-2">
                        <Label className="text-[9px] font-bold uppercase text-muted-foreground">عنوان المعرض</Label>
-                       <Input value={form.gallerySettings.title} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, title: e.target.value}})} className="h-12 bg-background border-none rounded-xl font-bold" />
+                       <Input value={form.gallerySettings.title} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, title: e.target.value}})} />
                     </div>
                     <div className="space-y-2">
-                       <Label className="text-[9px] font-bold uppercase text-muted-foreground">وصف المعرض</Label>
-                       <Textarea value={form.gallerySettings.subtitle} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, subtitle: e.target.value}})} className="bg-background border-none rounded-xl min-h-[80px]" />
-                    </div>
-                    <div className="space-y-2">
-                       <Label className="text-[9px] font-bold uppercase text-muted-foreground">نص زر الطلب</Label>
-                       <Input value={form.gallerySettings.buttonText} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, buttonText: e.target.value}})} className="h-12 bg-background border-none rounded-xl font-bold" />
+                       <Label className="text-[9px] font-bold uppercase text-muted-foreground">نص الزر</Label>
+                       <Input value={form.gallerySettings.buttonText} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, buttonText: e.target.value}})} />
                     </div>
                  </div>
               </Card>
            </div>
         </TabsContent>
 
-        <TabsContent value="footer">
-           <Card className="luxury-card p-8 md:p-12 space-y-8 border-none">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <TabsContent value="contact">
+           <Card className="luxury-card p-10 space-y-10 border-none bg-zinc-950 text-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground">نص "عن المتجر"</Label>
-                    <Textarea value={form.footer.aboutText} onChange={e => setForm({...form, footer: {...form.footer, aboutText: e.target.value}})} className="bg-muted/40 border-none rounded-2xl min-h-[120px] p-4" />
+                    <Label className="text-[10px] font-black uppercase text-primary">واتساب الدعم</Label>
+                    <Input value={form.contact.whatsapp} onChange={e => setForm({...form, contact: {...form.contact, whatsapp: e.target.value}})} className="bg-white/5 border-primary/20" />
                  </div>
                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground">حقوق النشر</Label>
-                    <Input value={form.footer.copyright} onChange={e => setForm({...form, footer: {...form.footer, copyright: e.target.value}})} className="h-14 bg-muted/40 border-none rounded-2xl" />
+                    <Label className="text-[10px] font-black uppercase text-primary">البريد الرسمي</Label>
+                    <Input value={form.contact.email} onChange={e => setForm({...form, contact: {...form.contact, email: e.target.value}})} className="bg-white/5 border-primary/20" />
+                 </div>
+                 <div className="space-y-3">
+                    <Label className="text-[10px] font-black uppercase text-primary">معرف تلجرام</Label>
+                    <Input value={form.contact.telegram} onChange={e => setForm({...form, contact: {...form.contact, telegram: e.target.value}})} className="bg-white/5 border-primary/20" />
+                 </div>
+              </div>
+              
+              <div className="pt-10 border-t border-white/5 space-y-8">
+                 <h3 className="text-xl font-black text-primary">إعدادات التذييل (Footer)</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground">نص "عن المتجر"</Label>
+                       <Textarea value={form.footer.aboutText} onChange={e => setForm({...form, footer: {...form.footer, aboutText: e.target.value}})} className="bg-white/5 border-primary/20 min-h-[120px]" />
+                    </div>
+                    <div className="space-y-3">
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground">عنوان المركز الموحد</Label>
+                       <Input value={form.footer.address} onChange={e => setForm({...form, footer: {...form.footer, address: e.target.value}})} className="bg-white/5 border-primary/20" />
+                    </div>
                  </div>
               </div>
            </Card>
