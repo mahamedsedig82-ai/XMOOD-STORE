@@ -35,7 +35,6 @@ export function Navbar() {
   }, [db]);
   const { data: config } = useDoc(settingsRef);
 
-  // جلب التصنيفات للعرض في القائمة الجانبية
   const productsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, "products"), limit(20));
@@ -175,75 +174,77 @@ export function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 z-[140] bg-black/80 backdrop-blur-md lg:hidden"
+              className="fixed inset-0 z-[140] bg-black/90 backdrop-blur-md lg:hidden"
             />
             <motion.div 
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 z-[160] h-screen w-[85%] max-w-[320px] bg-background border-l-2 border-primary/20 shadow-2xl lg:hidden flex flex-col mobile-sidebar-shadow"
+              transition={{ type: "spring", damping: 30, stiffness: 200 }}
+              className="fixed top-0 right-0 z-[160] h-screen w-[88%] max-w-[340px] bg-background border-l-2 border-primary/20 shadow-2xl lg:hidden flex flex-col mobile-sidebar-shadow"
             >
-              {/* Sidebar Header */}
-              <div className="p-8 border-b border-border/50 flex flex-col gap-4 bg-muted/5">
+              {/* Sidebar Header - Enhanced Padding */}
+              <div className="p-8 border-b border-border/50 flex flex-col gap-5 bg-muted/5 shrink-0">
                 <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20 shadow-sm">
-                         <Sparkles size={20} className="text-primary animate-pulse" />
+                   <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 shadow-sm">
+                         <Sparkles size={24} className="text-primary animate-pulse" />
                       </div>
-                      <span className="font-black text-xs gold-text uppercase tracking-widest">XMOOD SOVEREIGN</span>
+                      <span className="font-black text-sm gold-text uppercase tracking-widest leading-none">XMOOD<br/>SOVEREIGN</span>
                    </div>
-                   <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="rounded-full bg-muted/60 h-10 w-10">
-                      <X size={18} />
+                   <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="rounded-full bg-muted/60 h-11 w-11 border border-border/40">
+                      <X size={22} />
                    </Button>
                 </div>
                 {user && (
-                   <Link href="/wallet" className="flex items-center gap-4 p-4 rounded-2xl bg-card border shadow-sm mt-4 active:scale-95 transition-all">
-                      <Avatar className="w-10 h-10 border-2 border-primary/10">
+                   <Link href="/wallet" className="flex items-center gap-5 p-5 rounded-2xl bg-card border border-primary/10 shadow-lg mt-4 active:scale-95 transition-all">
+                      <Avatar className="w-12 h-12 border-2 border-primary/15 shadow-md">
                          <AvatarImage src={profile?.photoURL} />
-                         <AvatarFallback>XM</AvatarFallback>
+                         <AvatarFallback className="bg-primary/10 text-primary font-bold">XM</AvatarFallback>
                       </Avatar>
                       <div className="overflow-hidden">
-                         <p className="font-black text-xs truncate">{profile?.displayName}</p>
-                         <p className="text-[9px] font-bold text-primary uppercase">{profile?.label || "عضو سيادي"}</p>
+                         <p className="font-black text-sm truncate text-foreground">{profile?.displayName}</p>
+                         <p className="text-[9px] font-bold text-primary uppercase tracking-widest mt-0.5">{profile?.label || "عضو سيادي"}</p>
                       </div>
                    </Link>
                 )}
               </div>
 
-              {/* Sidebar Content (Scrollable) */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-10">
+              {/* Sidebar Content (Scrollable) - Improved Spacing */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-12">
                 
-                {/* Main Navigation */}
-                <div className="space-y-3">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] pr-4 mb-2">القوائم الرئيسية</p>
+                {/* Main Navigation - More room between items */}
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] pr-4 mb-4 opacity-50">القوائم الرئيسية</p>
                   {navLinks.map((link) => (
                     <Link 
                       key={link.href} 
                       href={link.href} 
-                      className={`flex items-center justify-between p-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all ${pathname === link.href ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'hover:bg-primary/5 text-foreground/80 border border-transparent'}`}
+                      className={`flex items-center justify-between p-5 rounded-2xl font-black text-[12px] uppercase tracking-widest transition-all ${pathname === link.href ? 'bg-primary text-black shadow-xl shadow-primary/20 scale-[1.02]' : 'hover:bg-primary/5 text-foreground/80 border border-transparent'}`}
                     >
-                      <div className="flex items-center gap-4">
-                        <link.icon size={18} className={pathname === link.href ? 'text-black' : 'text-primary'} />
+                      <div className="flex items-center gap-5">
+                        <link.icon size={20} className={pathname === link.href ? 'text-black' : 'text-primary'} />
                         {link.label}
                       </div>
-                      <ChevronLeft size={14} className="opacity-30" />
+                      <ChevronLeft size={16} className={pathname === link.href ? 'text-black/30' : 'opacity-20'} />
                     </Link>
                   ))}
                 </div>
 
-                {/* Categories & Offers (The missing sections) */}
+                {/* Categories & Offers - Better visual grouping */}
                 {categories.length > 0 && (
-                   <div className="space-y-3">
-                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] pr-4 mb-2">الأقسام الرقمية</p>
-                      <div className="grid grid-cols-1 gap-2">
+                   <div className="space-y-4">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] pr-4 mb-4 opacity-50">الأقسام الرقمية</p>
+                      <div className="grid grid-cols-1 gap-3">
                          {categories.map((cat, i) => (
                             <Link 
                               key={i} 
                               href={`/store?category=${cat}`} 
-                              className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 text-[10px] font-bold text-foreground/70 transition-all border border-transparent hover:border-primary/10"
+                              className="flex items-center gap-4 p-4 rounded-xl hover:bg-muted/80 text-[11px] font-black text-foreground/70 transition-all border border-border/30 hover:border-primary/20"
                             >
-                               <LayoutGrid size={14} className="text-primary/60" />
+                               <div className="w-8 h-8 bg-primary/5 rounded-lg flex items-center justify-center">
+                                  <LayoutGrid size={16} className="text-primary/60" />
+                               </div>
                                {String(cat)}
                             </Link>
                          ))}
@@ -251,53 +252,54 @@ export function Navbar() {
                    </div>
                 )}
 
-                {/* Exclusive Offers */}
-                <div className="space-y-4">
-                   <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] pr-4 mb-2">العروض والضمان</p>
-                   <Link href="/middleman" className="block p-5 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent border border-primary/20 group">
-                      <div className="flex items-center gap-3 mb-2">
-                         <ShieldCheck size={20} className="text-primary" />
-                         <span className="font-black text-xs">نظام الضمان الموثوق</span>
+                {/* Trust & Guarantees - Standout section */}
+                <div className="space-y-5">
+                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] pr-4 mb-4 opacity-50">نظام الضمان</p>
+                   <Link href="/middleman" className="block p-6 rounded-3xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 group relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-primary/30" />
+                      <div className="flex items-center gap-4 mb-3">
+                         <ShieldCheck size={24} className="text-primary" />
+                         <span className="font-black text-xs text-foreground">الوسطاء المعتمدون</span>
                       </div>
-                      <p className="text-[9px] text-muted-foreground leading-relaxed font-bold">تواصل مع وسطاء معتمدين لتأمين صفقاتك في السوق المفتوح.</p>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed font-bold">تأمين كامل لكافة صفقاتك مع وسطاء ذوي سمعة رقمية عالية.</p>
                    </Link>
                 </div>
 
-                {/* Admin Access (Highlighted) */}
+                {/* Admin Access - Prominent Visibility */}
                 {isAdmin && (
-                  <div className="pt-4 border-t border-border/50">
+                  <div className="pt-6 border-t border-border/50">
                     <Link 
                       href="/admin" 
-                      className={`flex items-center gap-5 p-5 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all ${pathname.startsWith('/admin') ? 'bg-blue-600 text-white shadow-xl' : 'text-blue-500 bg-blue-500/5 border-2 border-blue-500/20'}`}
+                      className={`flex items-center gap-5 p-6 rounded-3xl font-black text-[12px] uppercase tracking-widest transition-all shadow-lg ${pathname.startsWith('/admin') ? 'bg-blue-600 text-white' : 'text-blue-500 bg-blue-500/10 border-2 border-blue-500/20'}`}
                     >
-                      <ShieldAlert size={22} />
+                      <ShieldAlert size={24} />
                       لوحة الإدارة السيادية
                     </Link>
                   </div>
                 )}
               </div>
               
-              {/* Sidebar Footer */}
-              <div className="p-8 border-t border-border/50 bg-muted/5 space-y-6">
-                <div className="flex justify-between items-center bg-background p-4 rounded-2xl border shadow-inner">
-                   <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">نمط الواجهة</span>
-                   <div className="flex gap-4">
-                      <Sun size={18} className={theme === 'light' ? 'text-primary scale-110' : 'opacity-30'} onClick={toggleTheme} />
-                      <Moon size={18} className={theme === 'dark' ? 'text-primary scale-110' : 'opacity-30'} onClick={toggleTheme} />
+              {/* Sidebar Footer - Redesigned for clarity */}
+              <div className="p-8 border-t border-border/50 bg-muted/10 space-y-6 shrink-0">
+                <div className="flex justify-between items-center bg-background/50 backdrop-blur-sm p-4 rounded-2xl border border-border/40 shadow-inner">
+                   <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">المظهر</span>
+                   <div className="flex gap-5">
+                      <button onClick={toggleTheme} className={`transition-all ${theme === 'light' ? 'text-primary scale-125' : 'opacity-40 hover:opacity-100'}`}><Sun size={20} /></button>
+                      <button onClick={toggleTheme} className={`transition-all ${theme === 'dark' ? 'text-primary scale-125' : 'opacity-40 hover:opacity-100'}`}><Moon size={20} /></button>
                    </div>
                 </div>
 
                 {user ? (
-                   <Button variant="ghost" onClick={handleSignOut} className="w-full justify-center gap-4 h-14 rounded-2xl font-black text-[10px] text-red-500 border border-red-500/20 bg-red-500/5 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
-                      <LogOut size={18} /> تسجيل الخروج
+                   <Button variant="ghost" onClick={handleSignOut} className="w-full justify-center gap-4 h-16 rounded-2xl font-black text-[11px] text-red-500 border border-red-500/20 bg-red-500/10 uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all shadow-sm">
+                      <LogOut size={20} /> تسجيل الخروج
                    </Button>
                 ) : (
-                  <Button asChild className="w-full royal-button h-16 shadow-lg shadow-primary/20">
+                  <Button asChild className="w-full royal-button h-18 shadow-2xl shadow-primary/20 text-sm">
                     <Link href="/login">دخول عالم النخبة</Link>
                   </Button>
                 )}
                 <div className="text-center">
-                   <p className="text-[7px] font-black text-muted-foreground uppercase tracking-[0.5em] opacity-30">XMOOD OS 9.0 CORE</p>
+                   <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.6em] opacity-30">XMOOD OS 10.0 CORE</p>
                 </div>
               </div>
             </motion.div>
