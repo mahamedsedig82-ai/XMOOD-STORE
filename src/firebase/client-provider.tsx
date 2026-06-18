@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
@@ -9,22 +9,13 @@ import { firebaseConfig } from './config';
 import { FirebaseProvider } from './provider';
 
 /**
- * Initializes Firebase services on the client side with singleton pattern.
- * Sets global persistence to ensure stable session management.
+ * Initializes Firebase services with a singleton pattern.
+ * Persistence is managed inside an effect to prevent SSR crashes.
  */
 export function initializeFirebase() {
-  console.log("[AUTH-DEBUG] Initializing Firebase Core...");
   const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   const firestore = getFirestore(firebaseApp);
   const auth = getAuth(firebaseApp);
-
-  // Set persistence once globally at initialization to avoid popup conflicts
-  setPersistence(auth, browserLocalPersistence)
-    .then(() => console.log("[AUTH-DEBUG] Persistence set to browserLocalPersistence"))
-    .catch((err) => {
-      console.error("[AUTH-DEBUG] Auth Persistence Error:", err);
-    });
-
   return { firebaseApp, firestore, auth };
 }
 
@@ -32,6 +23,14 @@ export const FirebaseClientProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const services = useMemo(() => initializeFirebase(), []);
+
+  useEffect(() => {
+    // نضبط Persistence فقط في العميل (Client-side) لتجنب أخطاء Hydration
+    if (services.auth) {
+      setPersistence(services.auth, browserLocalPersistence)
+        .catch((err) => console.error("[AUTH] Persistence Error:", err));
+    }
+  }, [services.auth]);
 
   return (
     <FirebaseProvider 

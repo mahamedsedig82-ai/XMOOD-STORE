@@ -12,7 +12,8 @@ import { onAuthStateChanged, applyActionCode } from "firebase/auth";
 import { toast } from "@/hooks/use-toast";
 
 /**
- * صفحة التحقق السيادي: تقوم بتوثيق الهوية ونقل المستخدم تلقائياً للمحفظة.
+ * صفحة التحقق السيادية: تقوم بتوثيق الهوية ونقل المستخدم تلقائياً للمحفظة.
+ * تم تحصينها ضد أخطاء SSR عبر تغليف الوصول لـ window داخل useEffect.
  */
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
@@ -20,9 +21,10 @@ export default function VerifyEmailPage() {
   const auth = useAuth();
 
   useEffect(() => {
-    const verify = async () => {
-      if (!auth) return;
+    // نضمن أن الكود يعمل فقط في المتصفح
+    if (typeof window === 'undefined' || !auth) return;
 
+    const verify = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const oobCode = urlParams.get('oobCode');
       const mode = urlParams.get('mode');
@@ -78,7 +80,7 @@ export default function VerifyEmailPage() {
       }
     };
     verify();
-  }, [router, auth]);
+  }, [router, auth, status]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">

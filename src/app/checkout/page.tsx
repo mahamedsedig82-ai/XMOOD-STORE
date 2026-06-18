@@ -16,7 +16,7 @@ import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "next/link"; // تأكيد استيراد Link لمنع ReferenceError
 
 /**
  * صفحة الدفع السيادية: تضمن حماية المخزون بنسبة 100% وتمنع البيع عند النفاد.
@@ -45,7 +45,6 @@ export default function CheckoutPage() {
     if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
   }, [user, deliveryEmail]);
 
-  // 🛡️ درع فحص المخزون الصارم
   useEffect(() => {
     const checkStock = async () => {
       if (!db || items.length === 0) {
