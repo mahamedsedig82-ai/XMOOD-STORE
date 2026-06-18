@@ -1,37 +1,54 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { STORE_PRODUCTS } from "@/app/lib/mock-data";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, limit } from "firebase/firestore";
 import { explainProduct } from "@/ai/flows/ai-product-explainer";
-import { Cpu, Send, User, Loader2, Sparkles } from "lucide-react";
+import { Cpu, Send, User, Loader2, Sparkles, Zap, ShieldCheck } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function ConciergePage() {
-  const [query, setQuery] = useState("");
+  const db = useFirestore();
+  const [queryInput, setQueryInput] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', content: string }[]>([
     { role: 'ai', content: 'مرحباً بك في وحدة التحليل الرقمي لمتجر XMOOD. أنا مساعدك النصي الذكي، جاهز لتحليل استفساراتك حول باقاتنا وخدماتنا الحصرية.' }
   ]);
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSend() {
-    if (!query.trim()) return;
+  // جلب المنتجات الحقيقية لتزويد الـ AI بالسياق الصحيح
+  const productsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "products"), limit(50));
+  }, [db]);
+  const { data: products } = useCollection(productsQuery);
 
-    const userMsg = query;
-    setQuery("");
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isLoading]);
+
+  async function handleSend() {
+    if (!queryInput.trim() || isLoading) return;
+
+    const userMsg = queryInput;
+    setQueryInput("");
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setIsLoading(true);
 
     try {
       const result = await explainProduct({
         userQuery: userMsg,
-        availableProducts: STORE_PRODUCTS.map(p => ({
+        availableProducts: (products || []).map(p => ({
           id: p.id,
           name: p.name,
-          description: p.description,
+          description: p.description || "",
           price: p.price,
           category: p.category
         }))
@@ -39,7 +56,7 @@ export default function ConciergePage() {
 
       setMessages(prev => [...prev, { role: 'ai', content: result.aiResponse }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'ai', content: 'عذراً، واجهت النواة التحليلية خطأ غير متوقع. يرجى إعادة المحاولة.' }]);
+      setMessages(prev => [...prev, { role: 'ai', content: 'عذراً، واجهت النواة التحليلية خطأ غير متوقع في معالجة البيانات. يرجى إعادة المحاولة لاحقاً.' }]);
     } finally {
       setIsLoading(false);
     }
@@ -48,69 +65,85 @@ export default function ConciergePage() {
   return (
     <main className="min-h-screen bg-black">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 h-[calc(100vh-80px)] max-w-4xl pt-32">
-        <div className="bg-zinc-950/60 backdrop-blur-3xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col h-full border border-white/5">
-          <div className="bg-white/5 p-8 border-b border-white/5 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-[calc(100vh-100px)] max-w-5xl pt-32 pb-6">
+        <div className="emerald-glass rounded-[3.5rem] overflow-hidden flex flex-col h-full border border-primary/10 shadow-[0_0_100px_rgba(0,0,0,0.8)]">
+          
+          {/* Header */}
+          <div className="bg-white/[0.03] p-8 border-b border-white/5 flex items-center justify-between backdrop-blur-3xl">
             <div className="flex items-center gap-6">
-              <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
-                <Cpu className="w-7 h-7" />
+              <div className="w-16 h-16 bg-primary/10 rounded-[1.5rem] flex items-center justify-center text-primary border border-primary/20 shadow-2xl">
+                <Cpu className="w-8 h-8 animate-pulse" />
               </div>
               <div>
-                <h1 className="font-headline text-3xl font-bold gold-text">المحلل الذكي XMOOD</h1>
-                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.3em] mt-1">Advanced Textual Analysis Engine</p>
+                <h1 className="font-headline text-3xl font-black gold-text tracking-tighter">المحلل الذكي XMOOD</h1>
+                <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em] mt-1">Sovereign Neural Analysis Core</p>
               </div>
             </div>
-            <div className="hidden sm:flex items-center gap-2 text-green-500 bg-green-500/5 px-4 py-1.5 rounded-full border border-green-500/10">
-               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-               <span className="text-[9px] font-bold uppercase tracking-widest">System Active</span>
+            <div className="hidden sm:flex items-center gap-4 px-6 py-2 bg-green-500/5 rounded-full border border-green-500/20 shadow-inner">
+               <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" />
+               <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Core Active</span>
             </div>
           </div>
 
-          <ScrollArea className="flex-1 p-10">
-            <div className="space-y-10">
-              {messages.map((m, i) => (
-                <div key={i} className={`flex gap-6 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xl border ${m.role === 'ai' ? 'bg-primary text-black border-primary/20' : 'bg-zinc-900 text-zinc-400 border-white/5'}`}>
-                    {m.role === 'ai' ? <Sparkles size={24} /> : <User size={24} />}
-                  </div>
-                  <div className={`p-8 rounded-[2rem] max-w-[80%] text-base leading-relaxed shadow-2xl font-bold ${m.role === 'ai' ? 'bg-primary/5 border-primary/10 border text-zinc-200' : 'bg-zinc-900 border-white/5 border text-zinc-300'}`}>
-                    {m.content}
-                  </div>
-                </div>
-              ))}
+          {/* Chat Area */}
+          <ScrollArea className="flex-1 p-8 md:p-12">
+            <div className="space-y-12">
+              <AnimatePresence mode="popLayout">
+                {messages.map((m, i) => (
+                  <motion.div 
+                    key={i} 
+                    initial={{ opacity: 0, x: m.role === 'ai' ? -20 : 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className={`flex gap-6 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}
+                  >
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-2xl border transition-transform hover:scale-110 ${m.role === 'ai' ? 'bg-primary text-black border-primary/30' : 'bg-zinc-900 text-zinc-400 border-white/10'}`}>
+                      {m.role === 'ai' ? <Sparkles size={28} /> : <User size={28} />}
+                    </div>
+                    <div className={`p-8 rounded-[2.5rem] max-w-[85%] text-lg leading-relaxed shadow-2xl font-bold border ${m.role === 'ai' ? 'bg-primary/5 border-primary/20 text-zinc-100' : 'bg-zinc-900/50 border-white/5 text-zinc-300'}`}>
+                      {m.content}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              
               {isLoading && (
-                <div className="flex gap-6">
-                  <div className="w-12 h-12 rounded-2xl bg-primary text-black flex items-center justify-center animate-pulse">
-                    <Sparkles size={24} />
+                <div className="flex gap-6 animate-pulse">
+                  <div className="w-14 h-14 rounded-2xl bg-primary text-black flex items-center justify-center shadow-xl">
+                    <Sparkles size={28} />
                   </div>
-                  <div className="p-8 bg-primary/5 rounded-[2rem] border border-primary/10">
-                    <Loader2 className="animate-spin text-primary" />
+                  <div className="p-8 bg-primary/5 border border-primary/20 rounded-[2.5rem] flex items-center gap-4">
+                    <Loader2 className="animate-spin text-primary" size={24} />
+                    <span className="text-xs font-black uppercase text-primary/60 tracking-widest">جاري التحليل المنطقي...</span>
                   </div>
                 </div>
               )}
+              <div ref={scrollRef} />
             </div>
           </ScrollArea>
 
-          <div className="p-10 bg-black/40 border-t border-white/5 backdrop-blur-2xl">
-            <div className="relative flex gap-4 max-w-4xl mx-auto">
+          {/* Input Area */}
+          <div className="p-8 md:p-10 bg-black/60 border-t border-white/5 backdrop-blur-3xl">
+            <div className="relative flex gap-4 max-w-5xl mx-auto items-center">
               <Input 
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                value={queryInput}
+                onChange={(e) => setQueryInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="أدخل استفسارك للتحليل.. مثال: 'قارن بين باقات UC المتوفرة'" 
-                className="h-18 rounded-2xl border-none bg-zinc-900 px-8 text-white font-bold text-lg"
+                placeholder="أدخل استفسارك للتحليل.. مثال: 'قارن بين باقات الشحن المتوفرة'" 
+                className="h-20 rounded-[1.75rem] border-none bg-zinc-900 px-10 text-white font-bold text-xl shadow-2xl focus:ring-2 focus:ring-primary/20"
+                disabled={isLoading}
               />
               <Button 
                 onClick={handleSend}
-                disabled={isLoading}
-                className="h-18 w-18 rounded-2xl bg-primary hover:bg-primary/90 shadow-2xl shrink-0 text-black"
+                disabled={isLoading || !queryInput.trim()}
+                className="h-20 w-20 rounded-[1.75rem] bg-primary hover:bg-primary/90 shadow-[0_15px_40px_rgba(212,175,55,0.3)] shrink-0 text-black transition-all active:scale-95"
               >
-                <Send className="rtl:rotate-180" size={24} />
+                {isLoading ? <Loader2 className="animate-spin" /> : <Send className="rtl:rotate-180" size={32} />}
               </Button>
             </div>
-            <p className="text-[9px] text-center mt-6 text-zinc-600 uppercase font-black tracking-[0.5em]">
-              Precision Analysis by XMOOD AI Core
-            </p>
+            <div className="flex justify-center gap-8 mt-8 opacity-30 grayscale hover:opacity-80 transition-opacity">
+               <div className="flex items-center gap-2"><Zap size={14} /><span className="text-[8px] font-black uppercase tracking-widest">Real-time Data Sync</span></div>
+               <div className="flex items-center gap-2"><ShieldCheck size={14} /><span className="text-[8px] font-black uppercase tracking-widest">Secure Query Execution</span></div>
+            </div>
           </div>
         </div>
       </div>
