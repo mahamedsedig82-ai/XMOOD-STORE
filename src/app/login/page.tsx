@@ -176,7 +176,7 @@ export default function LoginPage() {
                 <Sparkles size={18} />
              </div>
              <p className="text-[8px] font-black text-primary uppercase tracking-[0.4em]">
-               Powered by XMOOD Cloud Intelligence
+               <Sparkles size={8} /> Powered by XMOOD Cloud Intelligence <Sparkles size={8} />
              </p>
           </div>
         </motion.div>

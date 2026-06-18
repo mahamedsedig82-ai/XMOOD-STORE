@@ -97,7 +97,7 @@ export default function HomePage() {
       <section className="py-24 md:py-32 bg-background">
         <div className="container mx-auto px-6">
            <div className="text-center mb-20 space-y-3">
-              <h2 className="text-xl md:text-3xl font-headline font-black uppercase tracking-tighter">م <span className="gold-text">يميزنا</span></h2>
+              <h2 className="text-2xl md:text-4xl font-headline font-black uppercase tracking-tighter">ما <span className="gold-text">يميزنا</span></h2>
               <p className="text-muted-foreground uppercase font-black text-[10px] tracking-[0.5em] opacity-30">The Sovereign Excellence Protocol</p>
            </div>
            
