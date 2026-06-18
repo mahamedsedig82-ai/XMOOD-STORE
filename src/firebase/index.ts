@@ -19,14 +19,8 @@ if (getApps().length > 0) {
   app = initializeApp(firebaseConfig);
 }
 
-// 🔐 تهيئة Firestore مرة واحدة فقط بضبط مستقر للإنتاج
-try {
-  firestore = getFirestore(app);
-} catch (e) {
-  console.warn("Firestore already initialized or error occurred:", e);
-  firestore = getFirestore(app);
-}
-
+// 🔐 تهيئة الخدمات بنظام الـ Singleton المستقر
+firestore = getFirestore(app);
 auth = getAuth(app);
 
 export { app as firebaseApp, firestore, auth };

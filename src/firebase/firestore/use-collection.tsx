@@ -5,7 +5,8 @@ import {
   Query, 
   onSnapshot, 
   QuerySnapshot, 
-  DocumentData 
+  DocumentData,
+  Unsubscribe
 } from 'firebase/firestore';
 import { auth } from '../index';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -13,27 +14,31 @@ import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/e
 
 /**
  * 🛡️ Safety-Enhanced Collection Hook
+ * تم تزويده بحواجز أمان تمنع تسرب المستمعات بعد خروج المستخدم، مما يحل مشكلة تراكم الأخطاء.
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   
-  const isMounted = useRef(true);
+  const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
-    isMounted.current = true;
-    
-    // تأمين: لا نبدأ المستمع إذا لم يكن هناك استعلام أو لم يكن المستخدم مسجلاً
+    // 1. تنظيف استباقي لأي مستمع نشط
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
+    }
+
     if (!query) {
       setLoading(false);
       return;
     }
 
+    // 2. بدء المستمع مع آلية تنظيف صارمة
     const unsubscribe = onSnapshot(
       query, 
       (snapshot: QuerySnapshot<T>) => {
-        if (!isMounted.current) return;
         const items = snapshot.docs.map(doc => ({
           ...doc.data(),
           id: doc.id
@@ -42,8 +47,12 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         setLoading(false);
       }, 
       (serverError) => {
-        if (!isMounted.current) return;
-        
+        // 🛡️ إذا فقد المستخدم هويته، نتوقف صمتاً لتجنب إزعاج الواجهة
+        if (!auth.currentUser) {
+          setLoading(false);
+          return;
+        }
+
         const path = (query as any)._query?.path?.toString() || 'collection';
         const permissionError = new FirestorePermissionError({
           path,
@@ -56,9 +65,13 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
       }
     );
 
+    unsubscribeRef.current = unsubscribe;
+
     return () => {
-      isMounted.current = false;
-      unsubscribe();
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+        unsubscribeRef.current = null;
+      }
     };
   }, [query]); 
 

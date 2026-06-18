@@ -76,7 +76,6 @@ export default function LoginPage() {
         router.replace("/wallet");
       }
     } catch (error: any) {
-      console.error("[AUTH_UI] Error:", error);
       let msg = "فشل في عملية المصادقة. يرجى التأكد من البيانات.";
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
       if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') msg = "البريد أو كلمة المرور غير صحيحة.";
@@ -98,7 +97,6 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-background relative overflow-hidden" dir="rtl">
       <Navbar />
-      
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center pt-32 pb-16 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
           <Card className="luxury-card border-none overflow-hidden bg-card/60 backdrop-blur-3xl shadow-2xl">
@@ -127,13 +125,7 @@ export default function LoginPage() {
                 </TabsList>
 
                 <AnimatePresence mode="wait">
-                  <motion.div 
-                    key={activeTab} 
-                    initial={{ opacity: 0, x: 10 }} 
-                    animate={{ opacity: 1, x: 0 }} 
-                    exit={{ opacity: 0, x: -10 }}
-                    className="space-y-6"
-                  >
+                  <motion.div key={activeTab} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-6">
                     {activeTab === 'login' ? (
                       <div className="space-y-5">
                          <div className="space-y-2">
@@ -156,12 +148,10 @@ export default function LoginPage() {
                          </div>
                          <div className="space-y-2"><Label className="text-[10px] font-black text-primary/80 pr-3">البريد الإلكتروني</Label><Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-12" /></div>
                          <div className="space-y-2"><Label className="text-[10px] font-black text-primary/80 pr-3">كلمة المرور</Label><Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-12" /></div>
-                         
                          <div className="p-5 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex gap-3">
                             <AlertCircle size={18} className="text-amber-500 shrink-0 mt-1" />
                             <p className="text-[10px] font-bold text-zinc-400 leading-relaxed">تنبيه أمني: يرجى فحص مجلد <b>Spam</b> للعثور على رابط تفعيل العضوية بعد التسجيل.</p>
                          </div>
-
                          <Button onClick={() => handleAuth('signup')} disabled={loading} className="royal-button w-full h-16 text-base mt-2">
                            {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={20} className="ml-2" /> إنشاء عضوية سيادية</>}
                          </Button>

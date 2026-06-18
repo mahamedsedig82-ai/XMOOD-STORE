@@ -46,26 +46,26 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * 🛡️ Clean Logout Sequence
- * تنفيذ تسلسل الخروج النظيف لضمان عزل الجلسة تماماً.
+ * 🛡️ Clean Logout Sequence (Sovereign Wipe)
+ * تنفيذ تسلسل الخروج النظيف لضمان عزل الجلسة تماماً ومنع تداخل البيانات.
  */
 export const logout = async () => {
   if (!auth) return;
   try {
     // 1. مسح البيانات المحلية والاشتراكات في المتصفح أولاً
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('xmood-cart');
       sessionStorage.clear();
-      // يمكن إضافة localStorage.removeItem إذا كان هناك بيانات جلسة محددة
     }
     
     // 2. تسجيل الخروج من Firebase
     await signOut(auth);
     
-    // 3. إعادة تحميل الصفحة لضمان تصفير حالة React تماماً
+    // 3. إعادة تحميل الصفحة إجبارياً لضمان تصفير حالة React تماماً (Clean Slate)
     window.location.href = '/login';
   } catch (error) {
     console.error("[AUTH_LOGOUT] Error:", error);
-    throw error;
+    window.location.href = '/login';
   }
 };
 

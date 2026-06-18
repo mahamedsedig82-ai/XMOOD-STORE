@@ -8,8 +8,8 @@ import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
 /**
- * 🛡️ Robust Auth State Hook
- * يضمن عزل الجلسات تماماً وتنظيف كافة المستمعات عند تسجيل الخروج لمنع تسرب الذاكرة.
+ * 🛡️ Robust Auth State Hook (Single Source of Truth)
+ * يضمن عزل الجلسات تماماً وتنظيف كافة المستمعات عند تسجيل الخروج لمنع تسرب الذاكرة والأخطاء المتراكمة.
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -25,7 +25,7 @@ export function useUser() {
     }
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-      // 1. تنظيف أي مستمع قديم فوراً
+      // 1. تنظيف أي مستمع قديم فوراً عند تغير حالة المستخدم
       if (unsubscribeProfileRef.current) {
         unsubscribeProfileRef.current();
         unsubscribeProfileRef.current = null;
@@ -40,25 +40,34 @@ export function useUser() {
         
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         
-        // 2. بدء مستمع البروفايل مع معالجة الأخطاء
-        unsubscribeProfileRef.current = onSnapshot(userDocRef, (snapshot) => {
-          if (snapshot.exists()) {
-            setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
+        // 2. بدء مستمع البروفايل مع حماية ضد الانهيارات
+        try {
+          unsubscribeProfileRef.current = onSnapshot(userDocRef, (snapshot) => {
+            if (snapshot.exists()) {
+              setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
+              setLoading(false);
+            } else {
+              // مزامنة أولية للحسابات الجديدة إذا لم يوجد بروفايل
+              syncUserProfile(firebaseUser).finally(() => {
+                if (firebaseUser.uid === auth.currentUser?.uid) setLoading(false);
+              });
+            }
+          }, (err) => {
+            console.warn("[AUTH_GUARD] Profile Snapshot Restricted:", err.message);
             setLoading(false);
-          } else {
-            // مزامنة أولية للحسابات الجديدة
-            syncUserProfile(firebaseUser).finally(() => setLoading(false));
-          }
-        }, (err) => {
-          console.error("[AUTH_GUARD] Profile Access Restricted:", err);
+          });
+        } catch (e) {
           setLoading(false);
-        });
+        }
       }
     });
 
     return () => {
       unsubscribeAuth();
-      if (unsubscribeProfileRef.current) unsubscribeProfileRef.current();
+      if (unsubscribeProfileRef.current) {
+        unsubscribeProfileRef.current();
+        unsubscribeProfileRef.current = null;
+      }
     };
   }, []);
 
