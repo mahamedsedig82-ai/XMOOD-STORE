@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { loginEmail, registerEmail, sendMagicLink, resetPassword, syncUserProfile, isSuspiciousInput, logSecurityEvent, sendAccountVerification } from "@/lib/auth";
+import { loginEmail, registerEmail, sendMagicLink, syncUserProfile, isSuspiciousInput, logSecurityEvent, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { 
-  Loader2, Mail, Lock, ShieldCheck, Fingerprint, Shield, Sparkles, Send, CheckCircle2
+  Loader2, Mail, Lock, ShieldCheck, Fingerprint, Shield, Sparkles, Send, CheckCircle2, HelpCircle
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -175,11 +175,11 @@ export default function SecurityLoginPage() {
                       <div className="space-y-4">
                          <div className="space-y-2">
                             <Label className="text-[9px] font-black text-primary uppercase pr-4">البريد الإلكتروني المعتمد</Label>
-                            <Input placeholder="name@example.com" className="h-14 bg-white dark:bg-zinc-950 border-none rounded-xl px-6 font-bold" value={email} onChange={e => setEmail(e.target.value)} />
+                            <Input placeholder="name@example.com" className="h-14" value={email} onChange={e => setEmail(e.target.value)} />
                          </div>
                          <div className="space-y-2">
                             <Label className="text-[9px] font-black text-primary uppercase pr-4">كلمة المرور المشفرة</Label>
-                            <Input type="password" placeholder="••••••••" className="h-14 bg-white dark:bg-zinc-950 border-none rounded-xl px-6 font-bold" value={password} onChange={e => setPassword(e.target.value)} />
+                            <Input type="password" placeholder="••••••••" className="h-14" value={password} onChange={e => setPassword(e.target.value)} />
                          </div>
                       </div>
                       <Button onClick={() => handleEmailAuth('login')} disabled={loading} className="w-full royal-button h-16 text-lg">دخول سيادي للمحفظة</Button>
@@ -188,14 +188,35 @@ export default function SecurityLoginPage() {
 
                    <TabsContent value="signup" className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12 bg-white dark:bg-zinc-950 border-none rounded-xl px-4 font-bold" /></div>
-                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">الهاتف الدولي</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12 bg-white dark:bg-zinc-950 border-none rounded-xl px-4 font-bold" /></div>
-                         <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">البريد الإلكتروني</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-12 bg-white dark:bg-zinc-950 border-none rounded-xl px-4 font-bold" /></div>
-                         <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">كلمة المرور</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-12 bg-white dark:bg-zinc-950 border-none rounded-xl px-4 font-bold" /></div>
+                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12" /></div>
+                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">الهاتف الدولي</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12" /></div>
+                         <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">البريد الإلكتروني</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-12" /></div>
+                         <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">كلمة المرور</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-12" /></div>
+                         
+                         {/* Security Question Section */}
+                         <div className="md:col-span-2 space-y-2">
+                            <Label className="text-[9px] font-black text-primary uppercase pr-3 flex items-center gap-2"><HelpCircle size={10}/> اختر سؤال أمان (للطوارئ)</Label>
+                            <Select onValueChange={setSecurityQuestion}>
+                               <SelectTrigger className="h-12 border-2 border-primary bg-background rounded-xl">
+                                  <SelectValue placeholder="اختر سؤال الأمان..." />
+                               </SelectTrigger>
+                               <SelectContent className="bg-card border-2 border-primary">
+                                  <SelectItem value="q1">ما هو اسم أول مدرسة التحقت بها؟</SelectItem>
+                                  <SelectItem value="q2">ما هو اسم حيوانك الأليف الأول؟</SelectItem>
+                                  <SelectItem value="q3">ما هو اسم مدينتك المفضلة؟</SelectItem>
+                                  <SelectItem value="q4">ما هو لقب العائلة القديم؟</SelectItem>
+                               </SelectContent>
+                            </Select>
+                         </div>
+                         <div className="md:col-span-2 space-y-2">
+                            <Label className="text-[9px] font-black text-primary uppercase pr-3">إجابة سؤال الأمان</Label>
+                            <Input value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} className="h-12" placeholder="أدخل إجابتك السرية هنا..." />
+                         </div>
                       </div>
-                      <div className="p-6 bg-primary/5 rounded-[2rem] border border-primary/20 space-y-4">
-                         <div className="flex items-center justify-between"><Label className="text-xs font-black text-primary">تحقق CAPTCHA الذكي</Label><Badge variant="outline" className="text-sm font-black px-4 py-1.5">{captchaChallenge.a} + {captchaChallenge.b} = ؟</Badge></div>
-                         <Input placeholder="أدخل الناتج..." className="h-14 bg-white dark:bg-zinc-950 border-none rounded-xl px-6 text-center font-black text-xl text-primary" value={captchaInput} onChange={e => setCaptchaInput(e.target.value)} />
+
+                      <div className="p-6 bg-primary/5 rounded-[2rem] border-2 border-primary/30 space-y-4 shadow-inner">
+                         <div className="flex items-center justify-between"><Label className="text-xs font-black text-primary">تحقق CAPTCHA الذكي</Label><Badge variant="outline" className="text-sm font-black px-4 py-1.5 border-primary">{captchaChallenge.a} + {captchaChallenge.b} = ؟</Badge></div>
+                         <Input placeholder="أدخل الناتج..." className="h-14 text-center font-black text-xl text-primary" value={captchaInput} onChange={e => setCaptchaInput(e.target.value)} />
                       </div>
                       <Button onClick={() => handleEmailAuth('signup')} disabled={loading} className="w-full royal-button h-16 text-lg">إنشاء العضوية السيادية</Button>
                    </TabsContent>

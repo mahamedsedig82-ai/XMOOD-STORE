@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -24,26 +25,31 @@ export default function VerifyEmailPage() {
       const mode = urlParams.get('mode');
 
       try {
+        // 1. بروتوكول توثيق الرابط التقليدي (Email Verification)
         if (oobCode && mode === 'verifyEmail') {
            await applyActionCode(auth, oobCode);
+           // إعادة تحميل المستخدم للتأكد من تحديث حالة التحقق
            if (auth.currentUser) {
               await auth.currentUser.reload();
               await syncUserProfile(auth.currentUser);
               setStatus('success');
               toast({ title: "تم توثيق الهوية السيادية" });
-              router.replace("/wallet");
+              // توجيه تلقائي وفوري
+              setTimeout(() => router.replace("/wallet"), 1000);
               return;
            }
         }
 
+        // 2. بروتوكول الرابط السحري (Magic Link)
         const userFromMagic = await completeMagicLinkSignIn();
         if (userFromMagic) {
           setStatus('success');
           toast({ title: "تم الدخول بنجاح" });
-          router.replace("/wallet");
+          setTimeout(() => router.replace("/wallet"), 1000);
           return;
         }
 
+        // 3. مراقب الحالة النشط
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await firebaseUser.reload();
@@ -55,9 +61,10 @@ export default function VerifyEmailPage() {
           }
         });
         
+        // مهلة زمنية للفشل
         const timeout = setTimeout(() => {
            if (status === 'verifying' && !oobCode) setStatus('error');
-        }, 8000);
+        }, 10000);
 
         return () => {
           unsubscribe();
@@ -70,7 +77,7 @@ export default function VerifyEmailPage() {
       }
     };
     verify();
-  }, [router, auth, status]);
+  }, [auth, router]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">

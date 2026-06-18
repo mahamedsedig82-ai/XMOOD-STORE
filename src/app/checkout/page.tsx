@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -41,6 +42,7 @@ export default function CheckoutPage() {
     if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
   }, [user, deliveryEmail]);
 
+  // 🛡️ درع فحص المخزون الفوري
   useEffect(() => {
     const checkStock = async () => {
       if (!db || items.length === 0) {
@@ -267,7 +269,7 @@ export default function CheckoutPage() {
                     <div className="h-px bg-primary/10 my-4" />
                     <div className="flex justify-between items-end"><span className="font-black text-xs text-primary uppercase tracking-widest">الإجمالي النهائي</span><span className="text-4xl md:text-6xl font-black gold-text tracking-tighter">{formatUSD(finalTotal)}</span></div>
                     
-                    <div className="p-8 bg-zinc-900 rounded-[2.5rem] text-white mt-10 border border-white/5 shadow-inner">
+                    <div className="p-8 bg-zinc-900 rounded-[2.5rem] text-white mt-10 border-2 border-primary/30 shadow-inner">
                        <div className="flex items-center gap-5">
                           <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary"><Wallet size={28} /></div>
                           <div><p className="text-[9px] text-zinc-500 uppercase font-black tracking-widest mb-1">رصيدك المتوفر</p><p className={`font-black text-2xl tracking-tighter ${hasEnoughBalance ? 'text-white' : 'text-red-500'}`}>{formatUSD(walletBalance)}</p></div>
@@ -279,7 +281,7 @@ export default function CheckoutPage() {
                     </Button>
 
                     {!hasEnoughBalance && (
-                       <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 mt-6">
+                       <div className="flex items-center gap-3 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-2xl text-red-500 mt-6">
                           <AlertCircle size={18} className="shrink-0" />
                           <p className="text-[10px] font-black uppercase leading-tight">عذراً، الرصيد غير كافٍ. يرجى الشحن عبر الوكلاء المعتمدين.</p>
                        </div>

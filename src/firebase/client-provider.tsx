@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useEffect } from 'react';
@@ -20,7 +21,8 @@ export const FirebaseClientProvider: React.FC<{
   const services = useMemo(() => initializeFirebase(), []);
 
   useEffect(() => {
-    if (services.auth) {
+    // التفعيل فقط في بيئة المتصفح لتجنب أخطاء SSR
+    if (services.auth && typeof window !== 'undefined') {
       setPersistence(services.auth, browserLocalPersistence)
         .catch((err) => console.error("[AUTH] Persistence Error:", err));
     }
