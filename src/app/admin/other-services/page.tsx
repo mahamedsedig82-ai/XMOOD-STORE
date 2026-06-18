@@ -7,13 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Edit2, Zap, Loader2, Upload, DollarSign, UserCheck, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, Edit2, Zap, Loader2, Upload, DollarSign, UserCheck, ShieldCheck, Briefcase } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { formatUSD } from "@/lib/currency";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AdminOtherServices() {
   const { profile } = useUser();
@@ -40,8 +38,45 @@ export default function AdminOtherServices() {
     return allServices.filter((s: any) => s.agentId === profile.uid);
   }, [allServices, profile]);
 
-  const handleSubmit = () => {
-    if (!form.name || !form.price || !db) return;
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 600;
+          canvas.width = MAX_WIDTH;
+          canvas.height = (img.height / img.width) * MAX_WIDTH;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
+        };
+      };
+      reader.onerror = reject;
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsProcessing(true);
+      try {
+        const b64 = await compressImage(file);
+        setForm({ ...form, imageUrl: b64 });
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.price || !db) {
+      toast({ variant: "destructive", title: "يرجى إكمال البيانات" });
+      return;
+    }
     setIsProcessing(true);
     const data = { 
       ...form, 
@@ -50,26 +85,32 @@ export default function AdminOtherServices() {
       updatedAt: serverTimestamp() 
     };
 
-    if (editingId) {
-      const serviceRef = doc(db, "other_services", editingId);
-      updateDoc(serviceRef, data)
-        .then(() => { toast({ title: "تم التحديث" }); setIsOpen(false); resetForm(); })
-        .catch(async () => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: serviceRef.path, operation: 'update' })))
-        .finally(() => setIsProcessing(false));
-    } else {
-      addDoc(collection(db, "other_services"), { ...data, createdAt: serverTimestamp() })
-        .then(() => { toast({ title: "تم النشر" }); setIsOpen(false); resetForm(); })
-        .finally(() => setIsProcessing(false));
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, "other_services", editingId), data);
+        toast({ title: "تم تحديث الخدمة" });
+      } else {
+        await addDoc(collection(db, "other_services"), { ...data, createdAt: new Date().toISOString() });
+        toast({ title: "تم إضافة الخدمة بنجاح" });
+      }
+      setIsOpen(false);
+      resetForm();
+    } catch (e) {
+      toast({ variant: "destructive", title: "خطأ في العملية" });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const handleDelete = (id: string) => {
-    if (!db || !confirm("حذف هذه الخدمة نهائياً؟")) return;
+  const handleDelete = async (id: string) => {
+    if (!confirm("حذف هذه الخدمة نهائياً؟")) return;
     setIsProcessing(true);
-    deleteDoc(doc(db, "other_services", id))
-      .then(() => toast({ title: "تم الحذف بنجاح" }))
-      .catch(async () => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: `other_services/${id}`, operation: 'delete' })))
-      .finally(() => setIsProcessing(false));
+    try {
+      await deleteDoc(doc(db, "other_services", id));
+      toast({ title: "تم الحذف بنجاح" });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const resetForm = () => {
@@ -85,26 +126,32 @@ export default function AdminOtherServices() {
 
   return (
     <div className="space-y-12 animate-fade-in pb-32" dir="rtl">
-      <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card/60 p-8 rounded-[2.5rem] border shadow-sm">
+      <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card/60 p-8 rounded-[2.5rem] border shadow-xl">
         <div>
            <h1 className="text-4xl font-headline font-black gold-text">إدارة سوق الخدمات</h1>
-           <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1">Professional Solutions Management</p>
+           <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1">Professional Solutions Manager</p>
         </div>
         <Dialog open={isOpen} onOpenChange={(v) => { setIsOpen(v); if(!v) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button className="royal-button h-16 px-12 text-lg"><Plus size={24} className="ml-3" /> إضافة خدمة جديدة</Button>
+            <Button className="royal-button h-16 px-12 text-lg shadow-xl"><Plus size={24} className="ml-3" /> إضافة خدمة جديدة</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl bg-card border-none rounded-[3rem] p-10 max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle className="text-3xl font-black gold-text">{editingId ? 'تعديل الخدمة' : 'إنشاء خدمة جديدة'}</DialogTitle></DialogHeader>
+          <DialogContent className="max-w-2xl bg-card border-none rounded-[3rem] p-10 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <DialogHeader><DialogTitle className="text-3xl font-black gold-text flex items-center gap-4"><Briefcase size={28} /> {editingId ? 'تعديل الخدمة' : 'إنشاء خدمة جديدة'}</DialogTitle></DialogHeader>
             <div className="space-y-8 mt-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">اسم الخدمة</label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div>
+                 <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">اسم الخدمة</label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="تصميم، شحن، برمجة..." /></div>
                  <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">السعر (USD)</label><Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} /></div>
               </div>
-              <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">رابط الصورة</label><Input value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} /></div>
-              <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">وصف الخدمة</label><Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="وصف الخدمة..." /></div>
+              <div className="space-y-2">
+                 <label className="text-[10px] font-black text-primary uppercase pr-3">صورة الخدمة</label>
+                 <div onClick={() => fileInputRef.current?.click()} className="h-32 bg-muted/40 border-2 border-dashed border-primary/20 rounded-2xl flex items-center justify-center cursor-pointer overflow-hidden group hover:bg-primary/5 transition-all">
+                    {form.imageUrl ? <img src={form.imageUrl} className="h-full w-full object-cover" alt="" /> : <div className="text-center"><Upload className="text-primary mx-auto mb-2" /><p className="text-[10px] font-black opacity-30">رفع من الاستوديو</p></div>}
+                    <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
+                 </div>
+              </div>
+              <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">وصف الخدمة</label><Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="شرح مفصل للخدمة المقدمة..." /></div>
             </div>
-            <DialogFooter className="mt-10"><Button onClick={handleSubmit} disabled={isProcessing} className="royal-button w-full h-16">{isProcessing ? <Loader2 className="animate-spin" /> : "حفظ الخدمة السيادية"}</Button></DialogFooter>
+            <DialogFooter className="mt-10"><Button onClick={handleSubmit} disabled={isProcessing} className="royal-button w-full h-16 text-xl shadow-xl">{isProcessing ? <Loader2 className="animate-spin" /> : <><Zap size={20} className="ml-2" /> حفظ وإطلاق الخدمة</>}</Button></DialogFooter>
           </DialogContent>
         </Dialog>
       </header>
@@ -113,9 +160,9 @@ export default function AdminOtherServices() {
         {loading ? (
           <div className="col-span-full py-40 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={60} /></div>
         ) : services?.length === 0 ? (
-          <div className="col-span-full py-40 text-center luxury-card border-dashed opacity-30">
-             <ShieldCheck size={100} className="mx-auto mb-6" />
-             <p className="text-xl font-black uppercase tracking-widest">لا توجد خدمات مسجلة</p>
+          <div className="col-span-full py-40 text-center luxury-card border-dashed opacity-30 flex flex-col items-center">
+             <Briefcase size={100} className="text-muted-foreground mb-6" />
+             <p className="text-xl font-black uppercase tracking-widest">لا توجد خدمات مسجلة حالياً</p>
           </div>
         ) : services?.map((s: any) => (
           <Card key={s.id} className="luxury-card border-none flex flex-col group h-full shadow-lg">
@@ -131,8 +178,6 @@ export default function AdminOtherServices() {
                    <span className="text-[8px] font-black text-zinc-500 uppercase">{s.agentName}</span>
                 </div>
              </CardContent>
-             
-             {/* ISOLATED ADMIN BAR - FIXED AT BOTTOM OUTSIDE CONTENT */}
              <div className="p-5 bg-muted/30 border-t flex gap-4 mt-auto">
                 <Button onClick={() => startEdit(s)} variant="outline" className="flex-1 h-12 rounded-xl font-black text-[10px] uppercase gap-2 border-primary/20 text-primary hover:bg-primary/5 shadow-sm"><Edit2 size={16} /> تعديل</Button>
                 <Button onClick={() => handleDelete(s.id)} disabled={isProcessing} variant="destructive" className="w-12 h-12 rounded-xl p-0 shadow-xl shadow-red-500/10">

@@ -5,7 +5,7 @@ import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-// 🛡️ Singleton Pattern with Connectivity Shield
+// 🛡️ Singleton Pattern with Connectivity Shield V6.0
 let app: FirebaseApp;
 let firestore: Firestore;
 let auth: Auth;
@@ -17,8 +17,8 @@ if (getApps().length > 0) {
 }
 
 /**
- * تحصين Firestore ضد الانهيارات المتكررة وتهيئة الاتصال المستقر.
- * experimentalForceLongPolling يضمن الاتصال في البيئات المقيدة والشبكات الضعيفة.
+ * تحصين Firestore ضد الانهيارات وتفعيل تقنيات الاتصال المستقر.
+ * experimentalForceLongPolling يحل مشكلة الـ Backend Connectivity في Next.js 15.
  */
 firestore = initializeFirestore(app, {
   experimentalForceLongPolling: true,
