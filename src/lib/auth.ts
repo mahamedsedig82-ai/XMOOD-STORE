@@ -46,22 +46,16 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * 🛡️ Sovereign Wipe Logout (إصلاح ca9/b815 الجذري)
- * تنفيذ تسلسل الخروج النظيف لضمان عزل الجلسة تماماً.
+ * 🛡️ Sovereign Wipe Logout
  */
 export const logout = async () => {
   if (!auth) return;
   try {
-    // 1. مسح البيانات المحلية والـ Storage أولاً لمنع المستمعات من محاولة الوصول
     if (typeof window !== 'undefined') {
       localStorage.removeItem('xmood-cart');
       sessionStorage.clear();
     }
-    
-    // 2. تسجيل الخروج من Firebase (سيقوم useUser آلياً بإلغاء مستمع البروفايل)
     await signOut(auth);
-    
-    // 3. إعادة تحميل الصفحة إجبارياً لضمان تصفير حالة الـ SDK تماماً (Hard Reset)
     window.location.href = '/login';
   } catch (error) {
     console.error("[AUTH_LOGOUT] Error:", error);
@@ -70,17 +64,19 @@ export const logout = async () => {
 };
 
 /**
- * 🛡️ Verification Service
+ * 🛡️ Verification Service (Fixed link delivery)
  */
 export const sendAccountVerification = async (user: User) => {
   try {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://xmood-36c92.firebaseapp.com';
-    await sendEmailVerification(user, {
-      url: `${baseUrl}/verify-email`,
+    // 🔗 استخدام النطاق الرسمي الموثق لضمان وصول الرسالة
+    const actionCodeSettings = {
+      url: 'https://xmood-36c92.firebaseapp.com/verify-email',
       handleCodeInApp: true,
-    });
-  } catch (error) {
-    console.error("[AUTH_VERIFY] Send Error:", error);
+    };
+    await sendEmailVerification(user, actionCodeSettings);
+    console.log("[AUTH_VERIFY] Verification link dispatched.");
+  } catch (error: any) {
+    console.error("[AUTH_VERIFY] Send Error:", error.code, error.message);
     throw error;
   }
 };
