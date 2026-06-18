@@ -2,7 +2,7 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Settings, Image as ImageIcon, Zap, Loader2, Palette, Globe, History, GitBranch, Layers, ShoppingCart, LayoutDashboard
+  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Settings, Image as ImageIcon, Zap, Loader2, GitBranch, Layers, ShoppingCart
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -33,7 +33,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "إدارة المعرض", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'gm', 'designer'] },
     { label: "إدارة الوكلاء", icon: ShieldCheck, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
     { label: "إدارة الفروع", icon: GitBranch, href: "/admin/branches", roles: ['owner', 'admin', 'gm'] },
-    { label: "الهيكل التنظيمي", icon: Layers, href: "/admin/categories", roles: ['owner', 'admin', 'gm'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
     { label: "المالية والبنك", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'gm', 'accountant'] },
     { label: "الإعدادات الشاملة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin', 'gm'] },
@@ -71,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {profile?.label || "ADMIN ACCESS"}
             </Badge>
           </SidebarHeader>
-          <SidebarContent className="p-6 overflow-y-auto smooth-scroll custom-scrollbar text-right">
+          <SidebarContent className="p-6 overflow-y-auto custom-scrollbar text-right">
              <SidebarMenu className="gap-3">
                {visibleSections.map((item) => (
                  <SidebarMenuItem key={item.href}>

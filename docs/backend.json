@@ -1,52 +1,41 @@
-
 {
   "entities": {
     "UserProfile": {
       "title": "User Profile PRO",
-      "description": "Extended user info with multi-level roles and community status",
+      "description": "Extended user info with multi-level roles",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
         "displayName": { "type": "string" },
         "email": { "type": "string" },
         "walletBalance": { "type": "number" },
-        "role": { 
-          "type": "string", 
-          "enum": ["owner", "admin", "gm", "community_admin", "community_mod", "store_manager", "design_manager", "designer", "accountant", "support", "middleman", "agent", "user"] 
-        },
-        "isTrusted": { "type": "boolean" },
-        "communityStatus": { "type": "string", "enum": ["active", "muted", "banned"] },
-        "photoURL": { "type": "string" },
+        "role": { "type": "string" },
         "isVerified": { "type": "boolean" },
-        "affinityPoints": { "type": "number" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "completedDeals": { "type": "number" },
         "phoneNumber": { "type": "string" },
-        "residence": { "type": "string" },
-        "age": { "type": "number" }
+        "createdAt": { "type": "string" }
       },
       "required": ["uid", "email", "role"]
     }
   },
   "auth": {
-    "providers": ["password", "google.com"]
+    "providers": ["password"]
   },
   "firestore": {
     "/users/{userId}": {
       "schema": "UserProfile",
-      "description": "Sovereign user profiles"
-    },
-    "/settings/{id}": {
-      "schema": "object",
-      "description": "Central app configurations"
+      "description": "User profiles"
     },
     "/products/{productId}": {
       "schema": "object",
-      "description": "Store items and stock"
+      "description": "Store items"
     },
     "/orders/{orderId}": {
       "schema": "object",
       "description": "Sales records"
+    },
+    "/settings/{id}": {
+      "schema": "object",
+      "description": "Global configs"
     },
     "/transactions/{id}": {
       "schema": "object",
@@ -54,47 +43,7 @@
     },
     "/site_branches/{id}": {
       "schema": "object",
-      "description": "Site navigation branches"
-    },
-    "/categories/{id}": {
-      "schema": "object",
-      "description": "Product categories"
-    },
-    "/marketplace_listings/{id}": {
-      "schema": "object",
-      "description": "Open market listings"
-    },
-    "/gallery/{id}": {
-      "schema": "object",
-      "description": "Design portfolio"
-    },
-    "/other_services/{id}": {
-      "schema": "object",
-      "description": "Professional services"
-    },
-    "/security_logs/{id}": {
-      "schema": "object",
-      "description": "Security events and alerts"
-    },
-    "/community_audit_logs/{logId}": {
-      "schema": "object",
-      "description": "Administrative action logs"
-    },
-    "/agent_ratings/{id}": {
-      "schema": "object",
-      "description": "Customer feedback for agents"
-    },
-    "/design_requests/{id}": {
-      "schema": "object",
-      "description": "Customer design orders"
-    },
-    "/system_heartbeats/{userId}": {
-      "schema": "object",
-      "description": "User online status monitoring"
-    },
-    "/shipping_methods/{id}": {
-      "schema": "object",
-      "description": "Delivery logistics methods"
+      "description": "Navigation links"
     }
   }
 }

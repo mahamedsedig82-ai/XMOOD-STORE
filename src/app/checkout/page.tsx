@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,7 +18,7 @@ import Link from "next/link";
 
 /**
  * 🛡️ صفحة الدفع والاستحواذ السيادي.
- * تم تحصينها بدرع فحص المخزون (Anti-Zero Stock) ومنع التجاوزات المالية.
+ * تم تحصينها بدرع فحص المخزون ومنع التجاوزات المالية.
  */
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
@@ -31,7 +30,6 @@ export default function CheckoutPage() {
   const [selectedShipping, setSelectedShipping] = useState<any>(null);
   const [deliveryEmail, setDeliveryEmail] = useState("");
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
-  const [stockCheckLoading, setStockCheckLoading] = useState(true);
   const [outOfStockItems, setOutOfStockItems] = useState<string[]>([]);
 
   const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
@@ -41,34 +39,20 @@ export default function CheckoutPage() {
     if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
   }, [user, deliveryEmail]);
 
-  // 🛡️ درع فحص المخزون الفوري لمنع البيع عند نفاد الأكواد
+  // 🛡️ درع فحص المخزون الفوري
   useEffect(() => {
     const checkStock = async () => {
-      if (!db || items.length === 0) {
-        setStockCheckLoading(false);
-        return;
-      }
-      setStockCheckLoading(true);
+      if (!db || items.length === 0) return;
       const unavailable: string[] = [];
-      try {
-        for (const item of items) {
-          const pSnap = await getDoc(doc(db, "products", item.id));
-          if (pSnap.exists()) {
-            const data = pSnap.data();
-            const codes = (data.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
-            if (codes.length < item.quantity || (data.stock || 0) < item.quantity) {
-              unavailable.push(item.name);
-            }
-          } else {
-            unavailable.push(item.name);
-          }
+      for (const item of items) {
+        const pSnap = await getDoc(doc(db, "products", item.id));
+        if (pSnap.exists()) {
+          const data = pSnap.data();
+          const codes = (data.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
+          if (codes.length < item.quantity) unavailable.push(item.name);
         }
-      } catch (e) {
-        console.error("[STOCK_CHECK] Failed:", e);
-      } finally {
-        setOutOfStockItems(unavailable);
-        setStockCheckLoading(false);
       }
+      setOutOfStockItems(unavailable);
     };
     checkStock();
   }, [db, items]);
@@ -77,7 +61,7 @@ export default function CheckoutPage() {
     if (!db) return null;
     return query(collection(db, "shipping_methods"), where("isActive", "==", true));
   }, [db]);
-  const { data: shippingMethods, loading: shippingLoading } = useCollection(shippingQuery);
+  const { data: shippingMethods } = useCollection(shippingQuery);
 
   useEffect(() => {
     if (shippingMethods && shippingMethods.length > 0 && !selectedShipping) {
@@ -101,10 +85,10 @@ export default function CheckoutPage() {
       await runTransaction(db, async (transaction) => {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists()) throw "Profile missing";
+        if (!userSnap.exists()) throw "الملف غير موجود";
 
         const currentBalance = userSnap.data().walletBalance || 0;
-        if (currentBalance < finalTotal) throw "Insufficient balance";
+        if (currentBalance < finalTotal) throw "الرصيد لا يكفي";
 
         const allDeliveredCodes: string[] = [];
 
@@ -114,7 +98,7 @@ export default function CheckoutPage() {
           const pData = productSnap.data();
           const codes = (pData?.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
           
-          if (codes.length < item.quantity) throw `عذراً، نفد مخزون ${item.name} للتو.`;
+          if (codes.length < item.quantity) throw `نفد مخزون ${item.name}`;
 
           const extracted = codes.slice(0, item.quantity);
           allDeliveredCodes.push(...extracted);
@@ -127,8 +111,7 @@ export default function CheckoutPage() {
           });
         }
 
-        const balanceAfter = currentBalance - finalTotal;
-        transaction.update(userRef, { walletBalance: balanceAfter });
+        transaction.update(userRef, { walletBalance: currentBalance - finalTotal });
 
         transaction.set(doc(db, "orders", orderId), {
           id: orderId,
@@ -141,22 +124,8 @@ export default function CheckoutPage() {
           deliveryEmail,
           status: 'completed',
           shippingCodeSent: allDeliveredCodes.join(' | '),
-          balanceBefore: currentBalance,
-          balanceAfter: balanceAfter,
-          deliveryStatus: 'delivered',
           createdAt: new Date().toISOString()
         });
-
-        const transData = {
-          userId: user.uid,
-          amount: finalTotal,
-          type: 'purchase',
-          description: `شراء أصول رقمية [${items.length}]`,
-          orderId,
-          createdAt: new Date().toISOString()
-        };
-        transaction.set(doc(collection(db, "transactions")), transData);
-        transaction.set(doc(collection(db, "users", user.uid, "transactions")), transData);
       });
 
       clearCart();
@@ -176,7 +145,6 @@ export default function CheckoutPage() {
            <Card className="max-w-lg w-full p-16 text-center luxury-card border-none bg-card shadow-2xl">
               <ShieldAlert className="w-20 h-20 text-red-500 mx-auto mb-8" />
               <h2 className="text-3xl font-black mb-4">التوثيق مطلوب</h2>
-              <p className="text-muted-foreground mb-10">لا يمكنك إتمام عملية الشراء قبل توثيق هويتك البريدية.</p>
               <Button asChild className="royal-button w-full h-16"><Link href="/verify-email?waiting=true">تفعيل الحساب الآن</Link></Button>
            </Card>
         </main>
@@ -186,12 +154,9 @@ export default function CheckoutPage() {
   if (successOrderId) return (
     <main className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
        <Card className="max-w-lg w-full p-8 md:p-16 text-center luxury-card border-none bg-card shadow-2xl">
-          <CheckCircle2 size={64} className="text-green-500 mx-auto mb-8 animate-bounce" />
-          <h2 className="text-3xl md:text-5xl font-black gold-text mb-6">{config?.cartLabels?.successMsg || "تم التسليم بنجاح!"}</h2>
-          <p className="text-muted-foreground mb-10">المرجع السيادي: <span className="font-mono text-primary font-black tracking-widest">{successOrderId}</span></p>
-          <Button asChild className="royal-button w-full h-16 text-lg">
-             <Link href={`/orders/${successOrderId}`}>فتح القسيمة الرسمية <ArrowLeft className="mr-3" /></Link>
-          </Button>
+          <CheckCircle2 size={64} className="text-green-500 mx-auto mb-8" />
+          <h2 className="text-3xl md:text-5xl font-black gold-text mb-6">تم التسليم!</h2>
+          <Button asChild className="royal-button w-full h-16"><Link href={`/orders/${successOrderId}`}>فتح القسيمة <ArrowLeft className="mr-3" /></Link></Button>
        </Card>
     </main>
   );
@@ -200,31 +165,30 @@ export default function CheckoutPage() {
     <main className="min-h-screen bg-background pb-32" dir="rtl">
       <Navbar />
       <div className="container mx-auto px-4 md:px-6 py-12 md:py-32 max-w-7xl">
-        <header className="mb-12 md:mb-24 border-r-8 border-primary pr-10 text-right">
+        <header className="mb-12 border-r-8 border-primary pr-10 text-right">
            <h1 className="text-4xl md:text-7xl font-headline font-black gold-text leading-tight">{config?.cartLabels?.checkoutTitle || "تأكيد الاستحواذ"}</h1>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
            <div className="lg:col-span-2 space-y-12">
-              {!isEverythingInStock && (
-                 <div className="p-8 bg-red-500/10 border-2 border-red-500/20 rounded-[2.5rem] flex items-start gap-6 animate-fade-up">
+              {outOfStockItems.length > 0 && (
+                 <div className="p-8 bg-red-500/10 border-2 border-red-500/20 rounded-[2.5rem] flex items-start gap-6">
                     <PackageX size={48} className="text-red-500 shrink-0" />
                     <div>
                        <h3 className="text-2xl font-black text-red-500 mb-2">توقف إجباري: نفاد المخزون</h3>
-                       <p className="text-sm font-bold text-zinc-400">المنتجات التالية نفدت حالياً: <span className="text-red-500 font-black">{outOfStockItems.join(", ")}</span></p>
+                       <p className="text-sm font-bold text-zinc-400">المنتجات التالية نفدت: {outOfStockItems.join(", ")}</p>
                     </div>
                  </div>
               )}
 
               <section className="space-y-8">
-                 <h3 className="text-2xl md:text-3xl font-black flex items-center gap-4"><Truck size={24} className="text-primary" /> مسار التسليم المعتمد</h3>
+                 <h3 className="text-2xl md:text-3xl font-black flex items-center gap-4"><Truck size={24} className="text-primary" /> مسار التسليم</h3>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {shippingMethods?.map((m: any) => (
-                      <div key={m.id} onClick={() => setSelectedShipping(m)} className={`p-8 rounded-[2rem] border-2 cursor-pointer transition-all ${selectedShipping?.id === m.id ? 'border-primary bg-primary/5 shadow-xl scale-[1.02]' : 'border-border bg-card'}`}>
-                         <h4 className="font-black text-2xl mb-1">{m.name}</h4>
-                         <div className="flex justify-between items-center pt-6 border-t border-primary/10">
-                            <span className="font-black text-2xl text-primary tracking-tighter">+{formatUSD(m.extraFee)}</span>
-                            <Badge variant="secondary" className="text-[9px] font-black uppercase px-4 py-1.5 rounded-full">{m.deliveryTime}</Badge>
+                      <div key={m.id} onClick={() => setSelectedShipping(m)} className={`p-8 rounded-[2rem] border-2 cursor-pointer transition-all ${selectedShipping?.id === m.id ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
+                         <h4 className="font-black text-2xl">{m.name}</h4>
+                         <div className="flex justify-between items-center pt-6 border-t mt-4">
+                            <span className="font-black text-2xl text-primary">+{formatUSD(m.extraFee)}</span>
                          </div>
                       </div>
                     ))}
@@ -233,31 +197,22 @@ export default function CheckoutPage() {
 
               <section className="space-y-8">
                  <h3 className="text-2xl md:text-3xl font-black flex items-center gap-4"><Mail size={24} className="text-primary" /> بروتوكول الاستقبال</h3>
-                 <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl space-y-8">
-                    <div className="space-y-3">
-                       <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">بريد التسليم الرقمي</Label>
-                       <Input value={deliveryEmail} onChange={e => setDeliveryEmail(e.target.value)} className="h-16 rounded-2xl" placeholder="name@example.com" />
-                    </div>
-                 </Card>
+                 <Input value={deliveryEmail} onChange={e => setDeliveryEmail(e.target.value)} className="h-16 rounded-2xl" placeholder="name@example.com" />
               </section>
            </div>
 
            <aside>
-              <Card className="luxury-card p-8 md:p-12 bg-primary/5 border-primary/20 sticky top-32 shadow-2xl">
-                 <h3 className="text-2xl font-black mb-10 border-b border-primary/10 pb-6 flex items-center gap-3"><Zap size={20} className="text-primary animate-pulse" /> ملخص الحساب</h3>
+              <Card className="luxury-card p-8 md:p-12 bg-primary/5 border-primary/20 sticky top-32">
+                 <h3 className="text-2xl font-black mb-10 flex items-center gap-3"><Zap size={20} className="text-primary animate-pulse" /> ملخص الحساب</h3>
                  <div className="space-y-8">
-                    <div className="flex justify-between text-muted-foreground font-black text-xs uppercase tracking-widest"><span>قيمة الأصول</span><span>{formatUSD(total)}</span></div>
-                    <div className="h-px bg-primary/10 my-4" />
-                    <div className="flex justify-between items-end"><span className="font-black text-xs text-primary uppercase tracking-widest">الإجمالي النهائي</span><span className="text-4xl md:text-6xl font-black gold-text tracking-tighter">{formatUSD(finalTotal)}</span></div>
-                    
-                    <div className="p-8 bg-zinc-950 rounded-[2.5rem] mt-10 border-2 border-primary/30 shadow-inner">
+                    <div className="flex justify-between items-end"><span className="font-black text-xs text-primary uppercase">الإجمالي النهائي</span><span className="text-4xl md:text-6xl font-black gold-text tracking-tighter">{formatUSD(finalTotal)}</span></div>
+                    <div className="p-8 bg-zinc-950 rounded-[2.5rem] mt-10 border-2 border-primary/30">
                        <div className="flex items-center gap-5">
                           <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary"><Wallet size={28} /></div>
-                          <div><p className="text-[9px] text-zinc-500 uppercase font-black tracking-widest mb-1">رصيدك المتوفر</p><p className={`font-black text-2xl tracking-tighter ${hasEnoughBalance ? 'text-white' : 'text-red-500'}`}>{formatUSD(walletBalance)}</p></div>
+                          <div><p className="text-[9px] text-zinc-500 uppercase font-black">رصيدك</p><p className={`font-black text-2xl ${hasEnoughBalance ? 'text-white' : 'text-red-500'}`}>{formatUSD(walletBalance)}</p></div>
                        </div>
                     </div>
-
-                    <Button onClick={handleCompleteOrder} disabled={isProcessing || !items.length || !selectedShipping || !hasEnoughBalance || !isEverythingInStock || !isVerified} className="royal-button w-full h-24 text-2xl shadow-primary/30 mt-10">
+                    <Button onClick={handleCompleteOrder} disabled={isProcessing || !items.length || !selectedShipping || !hasEnoughBalance || outOfStockItems.length > 0 || !isVerified} className="royal-button w-full h-24 text-2xl mt-10">
                       {isProcessing ? <Loader2 className="animate-spin" /> : "تأكيد الدفع السيادي"}
                     </Button>
                  </div>

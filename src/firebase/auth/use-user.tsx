@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -10,7 +9,6 @@ import { syncUserProfile } from '@/lib/auth';
 
 /**
  * خطاف مخصص لإدارة حالة المستخدم والتحقق السيادي.
- * تم تحصينه لمنع الأخطاء الداخلية وحلقات التكرار اللانهائية.
  */
 export function useUser() {
   const auth = useAuth();
@@ -19,7 +17,7 @@ export function useUser() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const MASTER_ADMINS = ["MAHAMEDFK3@GMAIL.COM", "XMOODSTORE.SUPPORT@GMAIL.COM", "ADMIN@XMOOD.COM"];
+  const MASTER_ADMINS = ["MAHAMEDFK3@GMAIL.COM", "XMOODSTORE.SUPPORT@GMAIL.COM"];
 
   useEffect(() => {
     if (!auth) return;
@@ -46,19 +44,16 @@ export function useUser() {
       if (snapshot.exists()) {
         const data = snapshot.data() as UserProfile;
         
-        // التحقق من الرتبة السيادية للمدراء مع منع الحلقات التكرارية
+        // التحقق السيادي للمدراء
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         if (isMaster && data.role !== 'owner') {
-          updateDoc(userDocRef, { role: 'owner', label: 'المدير العام السيادي' }).catch(() => {});
+          updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' }).catch(() => {});
         }
 
         setProfile({ ...data, uid: snapshot.id });
         setLoading(false); 
       } else {
-        // إنشاء تلقائي للملف في حال الفقدان (Self-Healing)
-        syncUserProfile(user).catch(() => {
-           if (isMounted) setLoading(false);
-        });
+        syncUserProfile(user).catch(() => { if (isMounted) setLoading(false); });
       }
     }, (err) => {
       if (isMounted) setLoading(false);
@@ -72,7 +67,7 @@ export function useUser() {
 
   const isStaff = !!(user && (
     MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || 
-    ['owner', 'admin', 'gm', 'store_manager', 'design_manager', 'designer', 'accountant', 'support', 'middleman', 'agent'].includes(profile?.role || '')
+    ['owner', 'admin', 'gm', 'store_manager'].includes(profile?.role || '')
   ));
   
   return { 
@@ -80,7 +75,6 @@ export function useUser() {
     profile, 
     loading: loading || (!!user && !profile),
     isVerified: user?.emailVerified || false,
-    isAdmin: isStaff,
-    role: profile?.role
+    isAdmin: isStaff
   };
 }

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
@@ -48,8 +47,7 @@ function VerifyEmailContent() {
 
     handleVerification();
 
-    // 🛡️ نظام الرصد اللحظي (Precision Polling Guard)
-    // يقوم بفحص حالة البريد كل 3 ثوانٍ وتوجيه المستخدم فوراً
+    // 🛡️ نظام الرصد اللحظي (Auto-Polling)
     const checkInterval = setInterval(async () => {
       if (auth.currentUser) {
         try {
@@ -68,7 +66,7 @@ function VerifyEmailContent() {
   }, [searchParams, router]);
 
   return (
-    <Card className="w-full max-w-lg p-10 md:p-20 text-center luxury-card border-none bg-card shadow-2xl relative overflow-hidden animate-fade-in">
+    <Card className="w-full max-w-lg p-10 md:p-20 text-center luxury-card border-none bg-card shadow-2xl relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] -mr-32 -mt-32" />
       
       {status === 'waiting' && (
@@ -77,16 +75,15 @@ function VerifyEmailContent() {
              <Mail className="w-14 h-14 text-primary animate-pulse" />
           </div>
           <div className="space-y-4">
-            <h2 className="text-3xl md:text-4xl font-black gold-text leading-tight">بانتظار تفعيل <br/> الهوية الرقمية</h2>
-            <p className="text-muted-foreground font-medium text-lg leading-relaxed">
-              أرسلنا رابط التفعيل لبريدك. <br/>
-              افتح الرابط في هاتفك وسنقوم بنقلك للمحفظة تلقائياً.
+            <h2 className="text-3xl md:text-4xl font-black gold-text">بانتظار تفعيل <br/> الهوية الرقمية</h2>
+            <p className="text-muted-foreground font-medium text-lg">
+              أرسلنا رابط التفعيل لبريدك. افتح الرابط في هاتفك وسنقوم بنقلك للمحفظة تلقائياً.
             </p>
           </div>
-          <div className="pt-10 border-t border-border/50 flex flex-col items-center gap-4">
+          <div className="pt-10 flex flex-col items-center gap-4">
              <div className="flex items-center gap-3">
                 <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">جاري الرصد اللحظي للحالة...</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">جاري الرصد اللحظي...</p>
              </div>
           </div>
         </div>
@@ -94,11 +91,8 @@ function VerifyEmailContent() {
 
       {status === 'verifying' && (
         <div className="space-y-10 relative z-10 py-10">
-          <div className="relative mx-auto w-24 h-24">
-             <Loader2 className="w-full h-full text-primary animate-spin" />
-             <ShieldCheck className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary/40" size={32} />
-          </div>
-          <h2 className="text-2xl font-black">جاري معالجة البروتوكول...</h2>
+          <Loader2 className="w-24 h-24 text-primary animate-spin mx-auto" />
+          <h2 className="text-2xl font-black">جاري معالجة التوثيق...</h2>
         </div>
       )}
 
@@ -108,7 +102,7 @@ function VerifyEmailContent() {
              <ShieldCheck className="w-16 h-14" />
           </div>
           <h2 className="text-3xl md:text-4xl font-black gold-text">تم التوثيق بنجاح!</h2>
-          <div className="flex items-center justify-center gap-2 text-[10px] font-black text-green-600 uppercase tracking-widest">
+          <div className="flex items-center justify-center gap-2 text-[10px] font-black text-green-600 uppercase">
              <RefreshCw className="animate-spin" size={12} /> جاري فتح المحفظة...
           </div>
         </div>
@@ -119,8 +113,7 @@ function VerifyEmailContent() {
           <div className="w-24 h-24 bg-red-500/10 text-red-500 rounded-[2rem] flex items-center justify-center mx-auto border-2 border-red-500/20">
              <XCircle className="w-12 h-12" />
           </div>
-          <h2 className="text-2xl font-black text-red-500 uppercase tracking-tighter">فشل توثيق الرابط</h2>
-          <p className="text-muted-foreground font-medium">ربما انتهت صلاحية الرابط أو تم استخدامه مسبقاً.</p>
+          <h2 className="text-2xl font-black text-red-500">فشل توثيق الرابط</h2>
           <Button asChild className="royal-button w-full h-16"><a href="/login">العودة لبوابة الدخول <ArrowLeft className="mr-3" /></a></Button>
         </div>
       )}
@@ -132,12 +125,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
       <Navbar />
-      <Suspense fallback={
-        <div className="flex flex-col items-center gap-6">
-          <Loader2 className="animate-spin text-primary" size={60} />
-          <p className="font-bold text-xs uppercase tracking-widest">جاري تأمين الاتصال السيادي...</p>
-        </div>
-      }>
+      <Suspense fallback={<Loader2 className="animate-spin text-primary" size={60} />}>
         <VerifyEmailContent />
       </Suspense>
     </div>
