@@ -44,11 +44,11 @@ export default function HomePage() {
                    initial={{ scale: 0.9, opacity: 0 }}
                    animate={{ scale: 1, opacity: 1 }}
                    src={config.appearance.logoUrl} 
-                   className="h-32 md:h-64 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" 
+                   className="h-32 md:h-56 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" 
                    alt="Logo" 
                  />
                ) : (
-                 <h1 className="handwritten-logo text-4xl md:text-6xl drop-shadow-xl">XMOOD STORE</h1>
+                 <h1 className="handwritten-logo text-4xl md:text-5xl drop-shadow-xl" style={{ direction: 'ltr' }}>XMOOD STORE</h1>
                )}
                
                <div className="space-y-4">

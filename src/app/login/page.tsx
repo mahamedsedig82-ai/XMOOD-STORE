@@ -99,13 +99,18 @@ export default function LoginPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
           <Card className="luxury-card border-none overflow-hidden bg-card/60 backdrop-blur-3xl shadow-2xl">
             <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-4">
-               <h2 className="handwritten-logo text-4xl md:text-5xl mb-2" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
+               <h2 className="handwritten-logo text-3xl md:text-5xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
                <Badge variant="outline" className="text-[8px] font-black text-primary border-primary/20 uppercase tracking-[0.4em] px-4 py-1">
                  Sovereign Identity Portal
                </Badge>
             </div>
 
             <CardContent className="p-6 md:p-10">
+              <div className="text-center mb-10">
+                 <h3 className="text-2xl font-black">{activeTab === 'login' ? 'مرحباً بعودتك' : 'انضم للنخبة'}</h3>
+                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-2">Accessing Secure Sovereign Neural Core</p>
+              </div>
+
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-8 p-1 bg-muted/40 rounded-2xl border h-14">
                   <TabsTrigger value="login" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-black">تسجيل الدخول</TabsTrigger>
@@ -161,11 +166,11 @@ export default function LoginPage() {
           
           <div className="text-center mt-8 space-y-3 opacity-40">
              <div className="flex items-center justify-center gap-4 text-primary">
-                <ShieldCheck size={18} />
-                <Lock size={18} />
-                <Sparkles size={18} />
+                <Sparkles size={16} />
+                <ShieldCheck size={16} />
+                <Sparkles size={16} />
              </div>
-             <p className="text-[8px] font-black text-primary uppercase tracking-[0.4em]">
+             <p className="text-[7px] font-black text-primary uppercase tracking-[0.4em]">
                Powered by XMOOD Cloud Intelligence
              </p>
           </div>

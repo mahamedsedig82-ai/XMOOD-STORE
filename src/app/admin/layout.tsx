@@ -85,7 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                {config?.appearance?.logoUrl ? (
                  <img src={config.appearance.logoUrl} className="h-12 w-auto object-contain rounded-xl shadow-md border border-primary/10" alt="Logo" />
                ) : (
-                 <span className="handwritten-logo text-xl">XMOOD STORE</span>
+                 <span className="handwritten-logo text-xl" style={{ direction: 'ltr' }}>XMOOD STORE</span>
                )}
             </Link>
             <Badge variant="outline" className="text-[8px] uppercase font-black border-primary/20 text-primary px-4 py-1 rounded-full tracking-widest bg-primary/5">

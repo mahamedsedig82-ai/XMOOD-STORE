@@ -64,8 +64,8 @@
   transition: all 0.5s ease;
   letter-spacing: 0.15em;
   font-weight: 900;
-  line-height: 1.4;
-  direction: ltr; /* Ensure brand name is always LTR */
+  line-height: 1.2;
+  direction: ltr !important;
 }
 
 .emerald-glass {
@@ -106,5 +106,5 @@ input:focus, textarea:focus, select:focus {
   .responsive-table td { @apply block py-5 text-right flex justify-between items-center border-b border-border/50; }
   .responsive-table td::before { content: attr(data-label); @apply font-black text-[10px] uppercase text-muted-foreground ml-6 tracking-widest; }
   .luxury-card { @apply rounded-[2.5rem]; }
-  .handwritten-logo { letter-spacing: 0.1em; }
+  .handwritten-logo { letter-spacing: 0.1em; line-height: 1.1; }
 }
