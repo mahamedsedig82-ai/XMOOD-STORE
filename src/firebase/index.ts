@@ -2,11 +2,11 @@
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore, persistentLocalCache, _InMemoryCache } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-// 🛡️ Singleton Pattern to prevent INTERNAL ASSERTION FAILED
+// 🛡️ Singleton Pattern with Connectivity Shield
 let app: FirebaseApp;
 let firestore: Firestore;
 let auth: Auth;
@@ -17,7 +17,11 @@ if (getApps().length > 0) {
   app = initializeApp(firebaseConfig);
 }
 
-firestore = getFirestore(app);
+// تحصين Firestore ضد الانهيارات المتكررة وتهيئة الاتصال المستقر
+firestore = initializeFirestore(app, {
+  experimentalForceLongPolling: true, // يضمن الاتصال حتى في الشبكات الضعيفة
+});
+
 auth = getAuth(app);
 
 export { app as firebaseApp, firestore, auth };

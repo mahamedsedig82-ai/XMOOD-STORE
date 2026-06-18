@@ -57,11 +57,11 @@ export function Navbar() {
   };
 
   const navLinks = [
-    { label: "الرئيسية", href: "/", icon: Home },
-    { label: "المتجر", href: "/store", icon: Store },
-    { label: "الخدمات", href: "/other-services", icon: Briefcase },
-    { label: "المعرض", href: "/designs/gallery", icon: Palette },
-    { label: "الوكلاء", href: "/middleman", icon: ShieldCheck },
+    { label: config?.navLabels?.home || "الرئيسية", href: "/", icon: Home },
+    { label: config?.navLabels?.store || "المتجر", href: "/store", icon: Store },
+    { label: config?.navLabels?.services || "الخدمات", href: "/other-services", icon: Briefcase },
+    { label: config?.navLabels?.gallery || "المعرض", href: "/designs/gallery", icon: Palette },
+    { label: config?.navLabels?.agents || "الوكلاء", href: "/middleman", icon: ShieldCheck },
   ];
 
   if (!isMounted) return null;

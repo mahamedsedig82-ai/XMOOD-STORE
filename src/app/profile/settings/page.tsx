@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -183,18 +184,6 @@ export default function ProfileSettingsPage() {
                           {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ ملفي الشخصي</>}
                        </Button>
                        <Button variant="outline" onClick={() => router.push("/wallet")} className="h-18 px-10 rounded-2xl border-primary/20 text-muted-foreground font-black text-xs uppercase tracking-widest">إلغاء</Button>
-                    </div>
-                 </div>
-              </Card>
-
-              <Card className="luxury-card p-8 border-none bg-red-500/5 border-red-500/10">
-                 <div className="flex items-start gap-6">
-                    <Shield size={32} className="text-red-500 shrink-0" />
-                    <div>
-                       <h4 className="font-black text-lg text-red-500 mb-1">منطقة أمان الهوية</h4>
-                       <p className="text-[10px] font-bold text-muted-foreground leading-relaxed uppercase">
-                         يتم تشفير كافة البيانات المحدثة سيادياً. لا تشارك كلمة مرورك مع أي طرف خارجي حتى لو ادعى أنه من فريق الدعم.
-                       </p>
                     </div>
                  </div>
               </Card>
