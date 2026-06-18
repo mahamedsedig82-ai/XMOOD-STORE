@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -73,11 +72,11 @@ export function Navbar() {
       <div className="container mx-auto px-6 h-full flex items-center justify-between">
         <Link href="/" className="flex items-center gap-4 group transition-all hover:scale-105">
           {config?.appearance?.logoUrl ? (
-            <img src={config.appearance.logoUrl} className="h-10 md:h-12 w-auto object-contain rounded-[1.25rem] border border-primary/20 shadow-lg" alt="Logo" />
+            <img src={config.appearance.logoUrl} className="h-11 md:h-14 w-auto object-contain rounded-xl border border-primary/10 shadow-lg" alt="Logo" />
           ) : (
             <div className="flex flex-col">
-              <span className="handwritten-logo text-2xl md:text-3xl leading-none tracking-widest">XMOOD <span>STORE</span></span>
-              <span className="text-[7px] font-black tracking-[0.4em] uppercase text-primary/40 mt-1">Sovereign Edition</span>
+              <span className="handwritten-logo text-2xl md:text-3xl leading-none tracking-widest" style={{ direction: 'ltr' }}>XMOOD <span>STORE</span></span>
+              <span className="text-[7px] font-black tracking-[0.5em] uppercase text-primary/40 mt-1">Sovereign Cloud</span>
             </div>
           )}
         </Link>
@@ -87,45 +86,45 @@ export function Navbar() {
             <Link 
               key={link.href} 
               href={link.href} 
-              className={`text-[10px] font-black uppercase tracking-[0.2em] hover:text-primary transition-all relative group ${pathname === link.href ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`text-[10px] font-black uppercase tracking-[0.25em] hover:text-primary transition-all relative group ${pathname === link.href ? 'text-primary' : 'text-muted-foreground'}`}
             >
               {link.label}
-              <span className={`absolute -bottom-2 left-0 h-[1.5px] bg-primary transition-all duration-500 ${pathname === link.href ? 'w-full' : 'w-0 group-hover:w-1/2'}`} />
+              <span className={`absolute -bottom-2.5 left-0 h-[2px] bg-primary transition-all duration-500 ${pathname === link.href ? 'w-full' : 'w-0 group-hover:w-1/2'}`} />
             </Link>
           ))}
         </div>
 
         <div className="flex items-center gap-4 md:gap-6">
-          <Link href="/cart" className="relative p-3.5 bg-muted/40 hover:bg-primary/10 rounded-2xl transition-all border border-transparent hover:border-primary/20">
-            <ShoppingCart size={18} className="text-foreground" />
+          <Link href="/cart" className="relative p-3.5 bg-muted/50 hover:bg-primary/10 rounded-2xl transition-all border border-primary/5 hover:border-primary/20 shadow-inner">
+            <ShoppingCart size={20} className="text-foreground" />
             {itemCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-black text-[9px] font-black rounded-full flex items-center justify-center shadow-lg border-2 border-background">
+              <span className="absolute -top-2 -right-2 w-6 h-6 bg-primary text-black text-[10px] font-black rounded-full flex items-center justify-center shadow-xl border-2 border-background animate-fade-in">
                 {itemCount}
               </span>
             )}
           </Link>
 
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-2xl h-11 w-11 bg-muted/40 border border-transparent hover:border-primary/20 transition-all">
-            {theme === 'dark' ? <Sun size={18} className="text-yellow-500" /> : <Moon size={18} className="text-primary" />}
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-2xl h-11 w-11 bg-muted/50 border border-primary/5 hover:border-primary/20 transition-all shadow-inner">
+            {theme === 'dark' ? <Sun size={20} className="text-yellow-500" /> : <Moon size={20} className="text-primary" />}
           </Button>
 
           {user ? (
             <div className="flex items-center gap-4">
                <Link href="/wallet">
-                 <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-lg rounded-xl transition-transform hover:scale-105 overflow-hidden">
+                 <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-xl rounded-xl transition-transform hover:scale-110 overflow-hidden">
                    <AvatarImage src={profile?.photoURL} className="object-cover" />
                    <AvatarFallback className="bg-primary/5 text-primary font-bold"><User size={18}/></AvatarFallback>
                  </Avatar>
                </Link>
                {isAdmin && (
-                 <Link href="/admin">
-                   <Button variant="ghost" size="icon" className="text-primary h-11 w-11 rounded-xl bg-primary/5 border border-primary/10 hover:bg-primary/10"><LayoutDashboard size={18} /></Button>
+                 <Link href="/admin" className="hidden sm:block">
+                   <Button variant="ghost" size="icon" className="text-primary h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 shadow-lg"><LayoutDashboard size={20} /></Button>
                  </Link>
                )}
-               <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-500 h-11 w-11 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-50"><LogOut size={18} /></Button>
+               <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-500 h-11 w-11 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all shadow-lg"><LogOut size={20} /></Button>
             </div>
           ) : (
-            <Button asChild className="royal-button h-11 px-8 rounded-xl shadow-md text-[10px]">
+            <Button asChild className="royal-button h-11 px-8 rounded-xl shadow-xl text-[10px]">
               <Link href="/login">دخول</Link>
             </Button>
           )}

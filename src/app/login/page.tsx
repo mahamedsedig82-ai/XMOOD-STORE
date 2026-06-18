@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -95,66 +94,72 @@ export default function LoginPage() {
     <main className="min-h-screen bg-background relative overflow-hidden" dir="rtl">
       <Navbar />
       
-      <div className="container mx-auto px-4 min-h-screen flex items-center justify-center pt-28 pb-12 relative z-10">
+      <div className="container mx-auto px-4 min-h-screen flex items-center justify-center pt-32 pb-16 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
           <Card className="luxury-card border-none overflow-hidden bg-card/60 backdrop-blur-3xl shadow-2xl">
-            <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-4">
-               <h2 className="handwritten-logo text-3xl md:text-5xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
-               <Badge variant="outline" className="text-[8px] font-black text-primary border-primary/20 uppercase tracking-[0.4em] px-4 py-1">
+            <div className="p-10 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-6">
+               <div className="logo-glow-container">
+                 {config?.appearance?.logoUrl ? (
+                   <img src={config.appearance.logoUrl} className="h-20 w-auto object-contain drop-shadow-xl" alt="XMOOD" />
+                 ) : (
+                   <h2 className="handwritten-logo text-3xl md:text-5xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
+                 )}
+               </div>
+               <Badge variant="outline" className="text-[9px] font-black text-primary border-primary/30 uppercase tracking-[0.4em] px-6 py-1.5 rounded-full bg-primary/5">
                  Sovereign Identity Portal
                </Badge>
             </div>
 
-            <CardContent className="p-6 md:p-10">
-              <div className="text-center mb-10">
-                 <h3 className="text-2xl font-black">{activeTab === 'login' ? 'مرحباً بعودتك' : 'انضم للنخبة'}</h3>
-                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-2">Accessing Secure Sovereign Neural Core</p>
+            <CardContent className="p-8 md:p-12">
+              <div className="text-center mb-12">
+                 <h3 className="text-3xl font-black text-foreground">مرحباً بك في المحرك</h3>
+                 <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-[0.3em] mt-3">Accessing Secure Sovereign Neural Core</p>
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-8 p-1 bg-muted/40 rounded-2xl border h-14">
-                  <TabsTrigger value="login" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-black">تسجيل الدخول</TabsTrigger>
-                  <TabsTrigger value="signup" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-black">إنشاء حساب</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 mb-10 p-1.5 bg-muted/50 rounded-2xl border h-16 shadow-inner">
+                  <TabsTrigger value="login" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-black transition-all">تسجيل الدخول</TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-black transition-all">إنشاء حساب</TabsTrigger>
                 </TabsList>
 
                 <AnimatePresence mode="wait">
                   <motion.div 
                     key={activeTab} 
-                    initial={{ opacity: 0, x: 10 }} 
+                    initial={{ opacity: 0, x: 15 }} 
                     animate={{ opacity: 1, x: 0 }} 
-                    exit={{ opacity: 0, x: -10 }}
-                    className="space-y-6"
+                    exit={{ opacity: 0, x: -15 }}
+                    className="space-y-8"
                   >
                     {activeTab === 'login' ? (
                       <div className="space-y-6">
-                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-primary/70 pr-4">البريد الإلكتروني</Label>
-                            <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="user@xmood.pro" className="h-14" />
+                         <div className="space-y-3">
+                            <Label className="text-[10px] font-black uppercase text-primary/80 pr-4 tracking-widest">البريد الإلكتروني المعتمد</Label>
+                            <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="user@xmood.pro" className="h-14 bg-background/50" />
                          </div>
-                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase text-primary/70 pr-4">كلمة المرور</Label>
-                            <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-14" />
+                         <div className="space-y-3">
+                            <Label className="text-[10px] font-black uppercase text-primary/80 pr-4 tracking-widest">مفتاح المرور</Label>
+                            <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-14 bg-background/50" />
                          </div>
-                        <Button onClick={() => handleAuth('login')} disabled={loading} className="w-full h-16 royal-button text-base shadow-xl mt-4">
-                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={20} className="ml-3" /> تأمين الدخول الملكي</>}
+                        <Button onClick={() => handleAuth('login')} disabled={loading} className="w-full h-18 royal-button text-lg shadow-primary/20 mt-6 group">
+                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={22} className="ml-3 group-hover:scale-110 transition-transform" /> تأمين الدخول الملكي</>}
                         </Button>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2"><Label className="text-[9px] font-black text-primary/70 pr-4">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12" /></div>
-                            <div className="space-y-2"><Label className="text-[9px] font-black text-primary/70 pr-4">رقم الهاتف</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12" /></div>
+                      <div className="space-y-6">
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-3"><Label className="text-[10px] font-black text-primary/80 pr-4 tracking-widest">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-14 bg-background/50" placeholder="عضو النخبة" /></div>
+                            <div className="space-y-3"><Label className="text-[10px] font-black text-primary/80 pr-4 tracking-widest">رقم الجوال</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-14 bg-background/50" placeholder="+966..." /></div>
                          </div>
-                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary/70 pr-4">البريد الإلكتروني</Label><Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-12" /></div>
-                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary/70 pr-4">كلمة المرور</Label><Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-12" /></div>
+                         <div className="space-y-3"><Label className="text-[10px] font-black text-primary/80 pr-4 tracking-widest">البريد الإلكتروني</Label><Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-14 bg-background/50" placeholder="you@example.com" /></div>
+                         <div className="space-y-3"><Label className="text-[10px] font-black text-primary/80 pr-4 tracking-widest">كلمة المرور</Label><Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="تأكد من قوتها..." className="h-14 bg-background/50" /></div>
                          
-                         <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl flex gap-3">
-                            <AlertCircle size={18} className="text-amber-500 shrink-0" />
-                            <p className="text-[9px] font-bold text-zinc-400 leading-relaxed">يرجى فحص مجلد <b>Spam</b> حتماً للعثور على رابط التفعيل.</p>
+                         <div className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex gap-4">
+                            <AlertCircle size={20} className="text-amber-500 shrink-0 mt-0.5" />
+                            <p className="text-[11px] font-bold text-zinc-400 leading-relaxed">تنبيه أمني: يرجى فحص مجلد <b>Spam</b> حتماً للعثور على رابط تفعيل العضوية في حال لم تره في صندوق الوارد.</p>
                          </div>
 
-                         <Button onClick={() => handleAuth('signup')} disabled={loading} className="w-full h-16 royal-button text-base mt-2">
-                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={20} className="ml-3" /> إنشاء عضوية سيادية</>}
+                         <Button onClick={() => handleAuth('signup')} disabled={loading} className="w-full h-18 royal-button text-lg group">
+                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={22} className="ml-3 group-hover:scale-110 transition-transform" /> إنشاء عضوية سيادية</>}
                          </Button>
                       </div>
                     )}
@@ -164,14 +169,16 @@ export default function LoginPage() {
             </CardContent>
           </Card>
           
-          <div className="text-center mt-8 space-y-3 opacity-40">
-             <div className="flex items-center justify-center gap-4 text-primary">
-                <Sparkles size={16} />
-                <ShieldCheck size={16} />
-                <Sparkles size={16} />
+          <div className="text-center mt-12 space-y-4 opacity-40">
+             <div className="flex items-center justify-center gap-6 text-primary">
+                <Sparkles size={18} />
+                <div className="h-px w-10 bg-primary/20" />
+                <ShieldCheck size={18} />
+                <div className="h-px w-10 bg-primary/20" />
+                <Sparkles size={18} />
              </div>
-             <p className="text-[7px] font-black text-primary uppercase tracking-[0.4em]">
-               Powered by XMOOD Cloud Intelligence
+             <p className="text-[8px] font-black text-primary uppercase tracking-[0.6em]">
+               Powered by XMOOD Cloud Intelligence Hub
              </p>
           </div>
         </motion.div>
