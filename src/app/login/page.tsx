@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { loginEmail, registerEmail, syncUserProfile, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Loader2, UserPlus, Mail, Lock, ShieldCheck, Sparkles, AlertCircle } from "lucide-react";
+import { Loader2, UserPlus, ShieldCheck, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState("login");
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: userLoading, isVerified } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -37,13 +37,13 @@ export default function LoginPage() {
   useEffect(() => {
     setIsMounted(true);
     if (!userLoading && user) {
-      if (user.emailVerified) {
+      if (isVerified) {
         router.replace("/wallet");
       } else {
         router.replace("/verify-email?waiting=true");
       }
     }
-  }, [user, userLoading, router]);
+  }, [user, userLoading, isVerified, router]);
 
   const handleAuth = async (type: 'login' | 'signup') => {
     if (!email || !password) {
@@ -54,14 +54,15 @@ export default function LoginPage() {
     try {
       if (type === 'signup') {
         if (!fullName || !phone) {
-          toast({ variant: "destructive", title: "بيانات ناقصة" });
+          toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى ملء كافة الخانات المطلوبة." });
           setLoading(false);
           return;
         }
         const res = await registerEmail(email, password, fullName);
         await syncUserProfile(res.user, { displayName: fullName, phoneNumber: phone });
         await sendAccountVerification(res.user);
-        toast({ title: "تم إنشاء العضوية"، description: "راجع بريدك للتفعيل." });
+        toast({ title: "تم إنشاء العضوية"، description: "يرجى مراجعة بريدك الإلكتروني (بما في ذلك مجلد Spam) لتفعيل الحساب." });
+        router.push("/verify-email?waiting=true");
       } else {
         const res = await loginEmail(email, password);
         await syncUserProfile(res.user);
@@ -74,7 +75,11 @@ export default function LoginPage() {
         router.replace("/wallet");
       }
     } catch (error: any) {
-      toast({ variant: "destructive", title: "فشل العملية" });
+      console.error("Auth Error:", error);
+      let msg = "فشل في عملية المصادقة. يرجى التأكد من البيانات.";
+      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
+      if (error.code === 'auth/wrong-password') msg = "كلمة المرور غير صحيحة.";
+      toast({ variant: "destructive", title: "فشل العملية", description: msg });
     } finally {
       setLoading(false);
     }
@@ -92,33 +97,25 @@ export default function LoginPage() {
             <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-6">
                <div className="logo-glow-container">
                  {config?.appearance?.logoUrl ? (
-                   <div className="relative">
-                      <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-125" />
-                      <img 
-                        src={config.appearance.logoUrl} 
-                        className="h-24 w-24 rounded-full object-cover border-4 border-primary/20 shadow-2xl relative z-10" 
-                        alt="XMOOD Logo" 
-                      />
-                   </div>
+                   <img 
+                    src={config.appearance.logoUrl} 
+                    className="h-24 w-24 rounded-full object-cover border-4 border-primary/20 shadow-2xl relative z-10" 
+                    alt="Logo" 
+                   />
                  ) : (
                    <h2 className="handwritten-logo text-3xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
                  )}
                </div>
-               <Badge variant="outline" className="text-[9px] font-black text-primary border-primary/30 uppercase tracking-[0.3em] px-5 py-1 rounded-full bg-primary/5">
+               <Badge variant="outline" className="text-[9px] font-black text-primary border-primary/30 uppercase tracking-[0.4em] px-5 py-1 rounded-full bg-primary/5">
                  Sovereign Identity Portal
                </Badge>
             </div>
 
             <CardContent className="p-6 md:p-10">
-              <div className="text-center mb-8">
-                 <h3 className="text-2xl font-black text-foreground">مرحباً بك في المحرك</h3>
-                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] mt-2">Accessing Secure Sovereign Neural Core</p>
-              </div>
-
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-8 p-1 bg-muted/50 rounded-2xl h-14 border">
-                  <TabsTrigger value="login" className="rounded-xl font-black text-[9px] uppercase data-[state=active]:bg-primary data-[state=active]:text-black transition-all">تسجيل الدخول</TabsTrigger>
-                  <TabsTrigger value="signup" className="rounded-xl font-black text-[9px] uppercase data-[state=active]:bg-primary data-[state=active]:text-black transition-all">إنشاء حساب</TabsTrigger>
+                  <TabsTrigger value="login" className="rounded-xl font-black text-[9px] uppercase transition-all">تسجيل الدخول</TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-xl font-black text-[9px] uppercase transition-all">إنشاء حساب</TabsTrigger>
                 </TabsList>
 
                 <AnimatePresence mode="wait">
@@ -139,7 +136,7 @@ export default function LoginPage() {
                             <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">مفتاح المرور</Label>
                             <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-12" />
                          </div>
-                        <Button onClick={() => handleAuth('login')} disabled={loading} className="royal-button w-full h-16 text-base mt-4 shadow-primary/20">
+                        <Button onClick={() => handleAuth('login')} disabled={loading} className="royal-button w-full h-16 text-base mt-4">
                           {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={20} className="ml-2" /> تأمين الدخول الملكي</>}
                         </Button>
                       </div>
@@ -154,7 +151,7 @@ export default function LoginPage() {
                          
                          <div className="p-5 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex gap-3">
                             <AlertCircle size={18} className="text-amber-500 shrink-0 mt-1" />
-                            <p className="text-[10px] font-bold text-zinc-400 leading-relaxed">تنبيه أمني: يرجى فحص مجلد <b>Spam</b> حتماً للعثور على رابط تفعيل العضوية.</p>
+                            <p className="text-[10px] font-bold text-zinc-400 leading-relaxed">تنبيه أمني: يرجى فحص مجلد <b>Spam</b> للعثور على رابط تفعيل العضوية بعد التسجيل.</p>
                          </div>
 
                          <Button onClick={() => handleAuth('signup')} disabled={loading} className="royal-button w-full h-16 text-base mt-2">

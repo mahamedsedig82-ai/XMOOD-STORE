@@ -1,4 +1,3 @@
-
 "use client";
 
 import { 
@@ -12,40 +11,45 @@ import {
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { auth, firestore as db } from "@/firebase";
 
+/**
+ * 🛡️ Profile Sync Service
+ * Ensures the Firestore user profile is always consistent with the Auth state.
+ */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
   const userRef = doc(db, "users", user.uid);
   try {
     const userDoc = await getDoc(userRef);
+    const baseProfile = {
+      uid: user.uid,
+      displayName: additionalData.displayName || user.displayName || user.email?.split("@")[0] || "عضو",
+      email: user.email?.toLowerCase(),
+      isVerified: user.emailVerified || false,
+      updatedAt: serverTimestamp(),
+      ...additionalData
+    };
+
     if (!userDoc.exists()) {
-      const initialProfile = {
-        uid: user.uid,
-        displayName: additionalData.displayName || user.displayName || user.email?.split("@")[0] || "عضو",
-        email: user.email?.toLowerCase(),
-        phoneNumber: additionalData.phoneNumber || "",
+      await setDoc(userRef, {
+        ...baseProfile,
         walletBalance: 0,
         role: 'user',
         label: 'عضو موثق',
         photoURL: `https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png`,
         createdAt: new Date().toISOString(),
-        isVerified: user.emailVerified || false,
-        updatedAt: serverTimestamp(),
-        ...additionalData
-      };
-      await setDoc(userRef, initialProfile, { merge: true });
+      }, { merge: true });
     } else {
-      // تحديث صامت للحفاظ على الرتب والبيانات المالية
-      await updateDoc(userRef, { 
-        updatedAt: serverTimestamp(),
-        isVerified: user.emailVerified || false,
-        ...additionalData
-      });
+      await updateDoc(userRef, baseProfile);
     }
   } catch (error) {
     console.error("Auth Sync Error:", error);
   }
 }
 
+/**
+ * 🛡️ Reliable Verification Service
+ * Sends email verification with a proper production-ready redirect link.
+ */
 export const sendAccountVerification = async (user: User) => {
   try {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://xmood-36c92.firebaseapp.com';
