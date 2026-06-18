@@ -48,11 +48,11 @@ export default function HomePage() {
                    alt="XMOOD Logo" 
                  />
                ) : (
-                 <h1 className="handwritten-logo text-4xl md:text-6xl drop-shadow-xl">XMOOD STORE</h1>
+                 <h1 className="handwritten-logo text-4xl md:text-5xl drop-shadow-xl">XMOOD STORE</h1>
                )}
                
                <div className="space-y-4">
-                  <h2 className="text-xl md:text-3xl font-handwriting text-primary opacity-90 tracking-wide animate-fade-in leading-relaxed">
+                  <h2 className="text-lg md:text-2xl font-handwriting text-primary opacity-90 tracking-wide animate-fade-in leading-relaxed">
                     {config?.siteInfo?.subtitle || "مركز الخدمات الرقمية المعتمدة"}
                   </h2>
                   <div className="h-1 w-20 bg-primary/20 mx-auto rounded-full" />
@@ -80,7 +80,7 @@ export default function HomePage() {
           <div className="container mx-auto px-6">
             <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-8">
               <div className="text-center md:text-right">
-                <h2 className="text-3xl md:text-5xl font-headline font-black uppercase">باقات <span className="gold-text">النخبة</span></h2>
+                <h2 className="text-2xl md:text-4xl font-headline font-black uppercase">باقات <span className="gold-text">النخبة</span></h2>
                 <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.4em] mt-3 opacity-40">Elite Sovereign Selection</p>
               </div>
               <Button asChild variant="ghost" className="text-primary font-black uppercase text-[10px] tracking-widest hover:bg-primary/10 px-10 h-14 rounded-xl border border-primary/10">
@@ -97,7 +97,7 @@ export default function HomePage() {
       <section className="py-24 md:py-32 bg-background">
         <div className="container mx-auto px-6">
            <div className="text-center mb-20 space-y-3">
-              <h2 className="text-2xl md:text-4xl font-headline font-black uppercase tracking-tighter">ما <span className="gold-text">يميزنا</span></h2>
+              <h2 className="text-xl md:text-3xl font-headline font-black uppercase tracking-tighter">م <span className="gold-text">يميزنا</span></h2>
               <p className="text-muted-foreground uppercase font-black text-[10px] tracking-[0.5em] opacity-30">The Sovereign Excellence Protocol</p>
            </div>
            

@@ -26,7 +26,7 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState("login");
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const { user, isVerified, profile } = useUser();
+  const { user, isVerified } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -41,7 +41,7 @@ export default function LoginPage() {
       if (user.emailVerified) {
         router.replace("/wallet");
       } else {
-        router.replace("/verify-email?waiting=true");
+        router.push("/verify-email?waiting=true");
       }
     }
   }, [user, isVerified, router]);
@@ -110,7 +110,7 @@ export default function LoginPage() {
                {config?.appearance?.logoUrl ? (
                  <img src={config.appearance.logoUrl} className="h-16 w-auto object-contain rounded-xl shadow-md" alt="Logo" />
                ) : (
-                 <h2 className="handwritten-logo text-3xl">XMOOD STORE</h2>
+                 <h2 className="handwritten-logo text-3xl mb-1">XMOOD STORE</h2>
                )}
                <Badge variant="outline" className="text-[8px] font-black text-primary border-primary/20 uppercase tracking-[0.4em] px-4 py-1">Sovereign Identity Portal</Badge>
             </div>
@@ -155,7 +155,7 @@ export default function LoginPage() {
                          
                          <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl flex gap-3">
                             <AlertCircle size={18} className="text-amber-500 shrink-0" />
-                            <p className="text-[9px] font-bold text-zinc-400 leading-relaxed">يرجى فحص مجلد <b>Spam</b> أو <b>الرسائل المزعجة</b> حتماً للعثور على رابط تفعيل الحساب.</p>
+                            <p className="text-[9px] font-bold text-zinc-400 leading-relaxed">يرجى فحص مجلد <b>Spam</b> حتماً للعثور على رابط التفعيل.</p>
                          </div>
 
                          <Button onClick={() => handleAuth('signup')} disabled={loading} className="w-full h-16 royal-button text-base mt-2">
