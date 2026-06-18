@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, ImageIcon, Loader2, Upload, ShieldCheck, Zap } from "lucide-react";
+import { Plus, Trash2, ImageIcon, Loader2, Upload, Zap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function DesignerPortfolioAdmin() {
   const { profile, user } = useUser();
@@ -66,45 +68,55 @@ export default function DesignerPortfolioAdmin() {
     }
   };
 
-  const handleAddToGallery = async () => {
+  const handleAddToGallery = () => {
     if (!newDesign.title || !newDesign.imageUrl || !db || !user) {
-      toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إكمال العنوان ورفع الصورة." });
+      toast({ variant: "destructive", title: "بيانات ناقصة" });
       return;
     }
-    setIsProcessing(true);
-    try {
-      await addDoc(collection(db, "gallery"), {
-        ...newDesign,
-        designerId: user.uid,
-        designerName: profile?.displayName || "مصمم معتمد",
-        designerPhone: profile?.phoneNumber || "",
-        createdAt: new Date().toISOString(),
-        timestamp: serverTimestamp()
+
+    const data = {
+      ...newDesign,
+      designerId: user.uid,
+      designerName: profile?.displayName || "مصمم معتمد",
+      designerPhone: profile?.phoneNumber || "",
+      createdAt: new Date().toISOString(),
+      timestamp: serverTimestamp()
+    };
+
+    addDoc(collection(db, "gallery"), data)
+      .then(() => {
+        setIsGalleryOpen(false);
+        setNewDesign({ title: "", description: "", imageUrl: "", category: "Logo" });
+        toast({ title: "تم النشر بنجاح" });
+      })
+      .catch(async (e) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: 'gallery',
+          operation: 'create',
+          requestResourceData: data
+        }));
       });
-      setIsGalleryOpen(false);
-      setNewDesign({ title: "", description: "", imageUrl: "", category: "Logo" });
-      toast({ title: "تم النشر في المعرض بنجاح" });
-    } catch (e) {
-      toast({ variant: "destructive", title: "خطأ في الإضافة" });
-    } finally {
-      setIsProcessing(false);
-    }
   };
 
-  const handleDeleteItem = async (id: string) => {
-    if (!confirm("حذف هذا العمل الفني نهائياً؟")) return;
-    setIsProcessing(true);
-    try {
-      await deleteDoc(doc(db, "gallery", id));
-      toast({ title: "تم الحذف بنجاح" });
-    } finally {
-      setIsProcessing(false);
-    }
+  const handleDeleteItem = (id: string) => {
+    if (!confirm("حذف هذا العمل الفني نهائياً؟") || !db) return;
+    
+    const docRef = doc(db, "gallery", id);
+    deleteDoc(docRef)
+      .then(() => {
+        toast({ title: "تم الحذف بنجاح" });
+      })
+      .catch(async (e) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'delete'
+        }));
+      });
   };
 
   return (
     <div className="space-y-12 animate-fade-in pb-32" dir="rtl">
-      <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card/60 p-8 rounded-[2.5rem] border shadow-sm">
+      <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card/60 p-8 rounded-[3rem] border shadow-sm">
         <div>
            <h1 className="text-4xl font-headline font-black gold-text">إدارة معرض الأعمال</h1>
            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1">Creative Portfolio Hub</p>
@@ -132,7 +144,7 @@ export default function DesignerPortfolioAdmin() {
                  <Textarea value={newDesign.description} onChange={e => setNewDesign({...newDesign, description: e.target.value})} placeholder="اشرح تفاصيل التصميم..." />
               </div>
             </div>
-            <DialogFooter className="mt-10"><Button onClick={handleAddToGallery} disabled={isProcessing} className="royal-button w-full h-18 text-xl">{isProcessing ? <Loader2 className="animate-spin" /> : <><Zap size={20} className="ml-2" /> نشر العمل الآن</>}</Button></DialogFooter>
+            <DialogFooter className="mt-10"><Button onClick={handleAddToGallery} className="royal-button w-full h-18 text-xl"><Zap size={20} className="ml-2" /> نشر العمل الآن</Button></DialogFooter>
           </DialogContent>
         </Dialog>
       </header>
@@ -156,8 +168,8 @@ export default function DesignerPortfolioAdmin() {
                 <p className="text-sm text-muted-foreground line-clamp-2 h-10 leading-relaxed font-medium">{item.description}</p>
              </CardContent>
              <div className="p-5 bg-muted/30 border-t mt-auto">
-                <Button onClick={() => handleDeleteItem(item.id)} disabled={isProcessing} variant="destructive" className="w-full h-12 rounded-xl gap-3 font-black text-[10px] uppercase tracking-widest shadow-xl">
-                   {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <><Trash2 size={18} /> حذف العمل نهائياً</>}
+                <Button onClick={() => handleDeleteItem(item.id)} variant="destructive" className="w-full h-12 rounded-xl gap-3 font-black text-[10px] uppercase tracking-widest shadow-xl">
+                   <Trash2 size={18} /> حذف العمل نهائياً
                 </Button>
              </div>
           </Card>

@@ -10,11 +10,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Save, Loader2, Palette, ImageIcon, 
   Upload, DollarSign, Globe, Smartphone, 
-  ShoppingCart, MessageSquare, Zap, LayoutGrid, Award, ShieldCheck
+  ShoppingCart, MessageSquare, Zap, LayoutGrid, ShieldCheck
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AdminContentManager() {
   const db = useFirestore();
@@ -94,17 +96,23 @@ export default function AdminContentManager() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!db || !settingsRef) return;
     setIsSaving(true);
-    try {
-      await setDoc(settingsRef, { ...form, updatedAt: serverTimestamp() }, { merge: true });
-      toast({ title: "تم تثبيت الهوية الأسطورية بنجاح" });
-    } catch (e) {
-      toast({ variant: "destructive", title: "فشل الحفظ" });
-    } finally {
-      setIsSaving(false);
-    }
+    const data = { ...form, updatedAt: serverTimestamp() };
+    
+    setDoc(settingsRef, data, { merge: true })
+      .then(() => {
+        toast({ title: "تم تثبيت التغييرات بنجاح" });
+      })
+      .catch(async (e) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: settingsRef.path,
+          operation: 'write',
+          requestResourceData: data
+        }));
+      })
+      .finally(() => setIsSaving(false));
   };
 
   if (loading) return (
@@ -121,17 +129,17 @@ export default function AdminContentManager() {
           <h1 className="text-4xl md:text-5xl font-headline font-black gold-text">مركز التحكم بالهوية والمحتوى</h1>
           <p className="text-muted-foreground mt-3 font-bold uppercase tracking-widest text-[10px]">Universal Identity & Content Controller</p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg w-full md:w-auto shadow-primary/30">
-          {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ التغييرات الأسطورية</>}
+        <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg w-full md:w-auto">
+          {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ التغييرات</>}
         </Button>
       </header>
 
       <Tabs defaultValue="visual" className="w-full">
-        <TabsList className="bg-card p-2 rounded-[2.5rem] h-auto border mb-12 flex flex-wrap gap-2 px-6 justify-center shadow-2xl">
-          <TabsTrigger value="visual" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">الهوية واللوقو</TabsTrigger>
-          <TabsTrigger value="site" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">بيانات الموقع</TabsTrigger>
-          <TabsTrigger value="sections" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">نصوص الأقسام</TabsTrigger>
-          <TabsTrigger value="footer" className="flex-1 min-w-[140px] rounded-[1.5rem] font-black text-[9px] uppercase tracking-widest py-5 gap-2">التواصل والتذييل</TabsTrigger>
+        <TabsList className="bg-card p-2 rounded-[3rem] h-auto border mb-12 flex flex-wrap gap-2 px-6 justify-center shadow-2xl">
+          <TabsTrigger value="visual" className="flex-1 min-w-[140px] rounded-[2rem] font-black text-[9px] uppercase tracking-widest py-5">الهوية واللوقو</TabsTrigger>
+          <TabsTrigger value="site" className="flex-1 min-w-[140px] rounded-[2rem] font-black text-[9px] uppercase tracking-widest py-5">بيانات الموقع</TabsTrigger>
+          <TabsTrigger value="sections" className="flex-1 min-w-[140px] rounded-[2rem] font-black text-[9px] uppercase tracking-widest py-5">نصوص الأقسام</TabsTrigger>
+          <TabsTrigger value="footer" className="flex-1 min-w-[140px] rounded-[2rem] font-black text-[9px] uppercase tracking-widest py-5">التواصل والتذييل</TabsTrigger>
         </TabsList>
 
         <TabsContent value="visual">
@@ -139,7 +147,7 @@ export default function AdminContentManager() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                  <div className="space-y-8">
                     <div className="space-y-4">
-                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو الموقع الرسمي (رفع من الهاتف)</Label>
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو الموقع الرسمي</Label>
                        <div 
                          onClick={() => fileInputRef.current?.click()}
                          className="h-64 bg-muted/40 border-2 border-dashed border-primary/20 rounded-[3rem] flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-all overflow-hidden relative group shadow-inner"
@@ -198,7 +206,7 @@ export default function AdminContentManager() {
                     <Input type="number" value={form.siteInfo.usdRate} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, usdRate: Number(e.target.value)}})} className="h-14 font-black text-2xl text-primary" />
                  </div>
                  <div className="col-span-full space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">وصف الموقع (لتحسين محركات البحث)</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">وصف الموقع</Label>
                     <Textarea value={form.siteInfo.description} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, description: e.target.value}})} className="min-h-[120px] rounded-[2rem]" />
                  </div>
               </div>

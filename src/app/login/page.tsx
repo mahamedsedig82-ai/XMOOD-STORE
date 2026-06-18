@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { loginEmail, registerEmail, syncUserProfile, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Loader2, Shield, CheckCircle2, UserPlus, Mail, Lock, User, Phone, Sparkles, KeyRound } from "lucide-react";
+import { Loader2, CheckCircle2, UserPlus, Mail, Lock, User, Phone, KeyRound } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/firebase";
@@ -73,7 +73,6 @@ export default function LoginPage() {
     <main className="min-h-screen bg-zinc-950 relative overflow-hidden" dir="rtl">
       <Navbar />
       
-      {/* 🌌 Emerald Immersive Background */}
       <div className="fixed inset-0 pointer-events-none">
          <motion.div 
            animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
@@ -94,8 +93,7 @@ export default function LoginPage() {
           className="w-full max-w-xl"
         >
           <Card className="luxury-card border-white/5 bg-zinc-900/80 backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.6)] rounded-[3.5rem] overflow-hidden">
-            <div className="p-12 text-center relative">
-               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+            <div className="p-12 text-center relative border-b border-white/5">
                <div className="w-28 h-28 bg-primary/10 rounded-[3rem] flex items-center justify-center mx-auto mb-8 shadow-inner border border-primary/20 group hover:scale-110 transition-transform duration-500">
                   <KeyRound size={48} className="text-primary group-hover:rotate-12 transition-transform" />
                </div>
@@ -103,7 +101,7 @@ export default function LoginPage() {
                <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.6em] mt-3">Identity & Secure Access</p>
             </div>
 
-            <CardContent className="px-8 md:px-16 pb-16">
+            <CardContent className="px-8 md:px-16 pb-16 pt-12">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-12 p-2 bg-black/50 rounded-[2rem] border border-white/10 shadow-2xl">
                   <TabsTrigger value="login" className="rounded-[1.5rem] font-black text-[10px] uppercase py-5 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">تسجيل الدخول</TabsTrigger>
@@ -132,7 +130,7 @@ export default function LoginPage() {
                            </div>
                         </div>
                         <Button onClick={() => handleAuth('login')} disabled={loading} className="w-full royal-button h-24 text-2xl shadow-primary/40 rounded-[2rem]">
-                          {loading ? <Loader2 className="animate-spin" /> : <><CheckCircle2 size={32} className="ml-4" /> دخول آمن للبروتوكول</>}
+                          {loading ? <Loader2 className="animate-spin" /> : <><CheckCircle2 size={32} className="ml-4" /> دخول آمن للنظام</>}
                         </Button>
                       </div>
                     ) : (

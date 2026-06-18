@@ -2,7 +2,7 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Settings, Image as ImageIcon, Zap, Loader2, GitBranch, Layers, ShoppingCart, LayoutGrid
+  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Image as ImageIcon, Zap, Loader2, GitBranch, ShoppingCart, LayoutGrid
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -77,7 +77,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                    <SidebarMenuButton 
                      asChild 
                      isActive={pathname === item.href}
-                     className={`h-14 px-6 rounded-2xl transition-all duration-300 ${pathname === item.href ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'hover:bg-primary/5 text-muted-foreground'}`}
+                     className={`h-14 px-6 rounded-[1.5rem] transition-all duration-300 ${pathname === item.href ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'hover:bg-primary/5 text-muted-foreground'}`}
                    >
                      <Link href={item.href} className="flex flex-row-reverse items-center gap-5 w-full">
                        <item.icon size={20} className={pathname === item.href ? 'text-white' : 'text-primary'} />
@@ -89,10 +89,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </SidebarMenu>
           </SidebarContent>
           <div className="p-8 border-t bg-muted/20 space-y-4">
-            <Button asChild variant="outline" className="w-full h-12 rounded-xl text-[10px] font-black uppercase gap-4 border-primary/20">
+            <Button asChild variant="outline" className="w-full h-12 rounded-2xl text-[10px] font-black uppercase gap-4 border-primary/20">
               <Link href="/"><ArrowLeft size={16} /> العودة للمتجر</Link>
             </Button>
-            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-12 rounded-xl text-red-500 font-black text-[10px] uppercase gap-4">
+            <Button variant="ghost" onClick={() => signOut(auth!)} className="w-full h-12 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-4">
               <LogOut size={16} /> خروج آمن
             </Button>
           </div>
@@ -101,7 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background overflow-hidden">
           <header className="h-24 border-b flex items-center justify-between px-6 md:px-10 bg-background/90 backdrop-blur-xl z-[60] shrink-0">
              <div className="flex items-center gap-4 md:gap-6">
-                <div className="w-10 h-10 md:w-14 md:h-14 bg-primary/10 rounded-xl md:rounded-2xl flex items-center justify-center text-primary border border-primary/20">
+                <div className="w-10 h-10 md:w-14 md:h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
                    <Terminal size={24} />
                 </div>
                 <div className="flex flex-col text-right">

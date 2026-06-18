@@ -23,7 +23,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 43 70% 50%;
-    --radius: 2.5rem;
+    --radius: 3rem;
   }
 
   .dark {
@@ -54,7 +54,7 @@
   body { @apply bg-background text-foreground antialiased font-body transition-colors duration-500; }
 }
 
-/* 🏆 THE LEGENDARY SIGNATURE LOGO - VERSION 6.0 */
+/* 🏆 THE LEGENDARY SIGNATURE LOGO - VERSION 7.0 */
 .handwritten-logo {
   @apply font-headline text-foreground select-none cursor-default inline-block py-2 relative;
   background: linear-gradient(135deg, #8b6e00 0%, #d4af37 40%, #f9d976 50%, #d4af37 60%, #8b6e00 100%);
@@ -86,7 +86,7 @@ input, textarea, select {
 }
 
 .luxury-card {
-  @apply rounded-[2.5rem] border bg-card/60 backdrop-blur-xl text-card-foreground shadow-2xl hover:shadow-primary/10 transition-all duration-500 border-primary/10 overflow-hidden;
+  @apply rounded-[3rem] border bg-card/60 backdrop-blur-xl text-card-foreground shadow-2xl hover:shadow-primary/10 transition-all duration-500 border-primary/10 overflow-hidden;
 }
 
 .gold-text {
@@ -116,4 +116,16 @@ input, textarea, select {
 
 .animate-fade-up {
   animation: fade-up 0.5s ease-out forwards;
+}
+
+.responsive-table {
+  @apply w-full border-collapse;
+}
+
+@media (max-width: 768px) {
+  .responsive-table thead { @apply hidden; }
+  .responsive-table tr { @apply block mb-6 bg-card rounded-[2rem] border-2 border-primary/10 overflow-hidden shadow-xl; }
+  .responsive-table td { @apply block p-4 text-right flex justify-between items-center border-b border-border/50; }
+  .responsive-table td::before { content: attr(data-label); @apply font-black text-[9px] uppercase text-muted-foreground ml-4; }
+  .responsive-table td:last-child { @apply border-none bg-primary/5 justify-center; }
 }

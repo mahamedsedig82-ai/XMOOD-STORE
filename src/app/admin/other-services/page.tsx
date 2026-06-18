@@ -7,11 +7,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Edit2, Zap, Loader2, Upload, DollarSign, UserCheck, ShieldCheck, Briefcase } from "lucide-react";
+import { Plus, Trash2, Edit2, Zap, Loader2, Upload, Briefcase } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { formatUSD } from "@/lib/currency";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AdminOtherServices() {
   const { profile } = useUser();
@@ -72,12 +74,11 @@ export default function AdminOtherServices() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!form.name || !form.price || !db) {
       toast({ variant: "destructive", title: "يرجى إكمال البيانات" });
       return;
     }
-    setIsProcessing(true);
     const data = { 
       ...form, 
       price: Number(form.price), 
@@ -85,32 +86,23 @@ export default function AdminOtherServices() {
       updatedAt: serverTimestamp() 
     };
 
-    try {
-      if (editingId) {
-        await updateDoc(doc(db, "other_services", editingId), data);
-        toast({ title: "تم تحديث الخدمة" });
-      } else {
-        await addDoc(collection(db, "other_services"), { ...data, createdAt: new Date().toISOString() });
-        toast({ title: "تم إضافة الخدمة بنجاح" });
-      }
-      setIsOpen(false);
-      resetForm();
-    } catch (e) {
-      toast({ variant: "destructive", title: "خطأ في العملية" });
-    } finally {
-      setIsProcessing(false);
+    if (editingId) {
+      updateDoc(doc(db, "other_services", editingId), data)
+        .then(() => { toast({ title: "تم التحديث" }); setIsOpen(false); resetForm(); })
+        .catch(async (e) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: `other_services/${editingId}`, operation: 'update', requestResourceData: data })); });
+    } else {
+      addDoc(collection(db, "other_services"), { ...data, createdAt: new Date().toISOString() })
+        .then(() => { toast({ title: "تمت الإضافة" }); setIsOpen(false); resetForm(); })
+        .catch(async (e) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'other_services', operation: 'create', requestResourceData: data })); });
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("حذف هذه الخدمة نهائياً؟")) return;
-    setIsProcessing(true);
-    try {
-      await deleteDoc(doc(db, "other_services", id));
-      toast({ title: "تم الحذف بنجاح" });
-    } finally {
-      setIsProcessing(false);
-    }
+  const handleDelete = (id: string) => {
+    if (!confirm("حذف هذه الخدمة نهائياً؟") || !db) return;
+    const docRef = doc(db, "other_services", id);
+    deleteDoc(docRef)
+      .then(() => toast({ title: "تم الحذف بنجاح" }))
+      .catch(async (e) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'delete' })); });
   };
 
   const resetForm = () => {
@@ -126,7 +118,7 @@ export default function AdminOtherServices() {
 
   return (
     <div className="space-y-12 animate-fade-in pb-32" dir="rtl">
-      <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card/60 p-8 rounded-[2.5rem] border shadow-xl">
+      <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card/60 p-8 rounded-[3rem] border shadow-xl">
         <div>
            <h1 className="text-4xl font-headline font-black gold-text">إدارة سوق الخدمات</h1>
            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1">Professional Solutions Manager</p>
@@ -151,7 +143,7 @@ export default function AdminOtherServices() {
               </div>
               <div className="space-y-2"><label className="text-[10px] font-black text-primary uppercase pr-3">وصف الخدمة</label><Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="شرح مفصل للخدمة المقدمة..." /></div>
             </div>
-            <DialogFooter className="mt-10"><Button onClick={handleSubmit} disabled={isProcessing} className="royal-button w-full h-16 text-xl shadow-xl">{isProcessing ? <Loader2 className="animate-spin" /> : <><Zap size={20} className="ml-2" /> حفظ وإطلاق الخدمة</>}</Button></DialogFooter>
+            <DialogFooter className="mt-10"><Button onClick={handleSubmit} className="royal-button w-full h-16 text-xl shadow-xl"><Zap size={20} className="ml-2" /> حفظ وإطلاق الخدمة</Button></DialogFooter>
           </DialogContent>
         </Dialog>
       </header>
@@ -180,8 +172,8 @@ export default function AdminOtherServices() {
              </CardContent>
              <div className="p-5 bg-muted/30 border-t flex gap-4 mt-auto">
                 <Button onClick={() => startEdit(s)} variant="outline" className="flex-1 h-12 rounded-xl font-black text-[10px] uppercase gap-2 border-primary/20 text-primary hover:bg-primary/5 shadow-sm"><Edit2 size={16} /> تعديل</Button>
-                <Button onClick={() => handleDelete(s.id)} disabled={isProcessing} variant="destructive" className="w-12 h-12 rounded-xl p-0 shadow-xl shadow-red-500/10">
-                   {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 size={20} />}
+                <Button onClick={() => handleDelete(s.id)} variant="destructive" className="w-12 h-12 rounded-xl p-0 shadow-xl shadow-red-500/10">
+                   <Trash2 size={20} />
                 </Button>
              </div>
           </Card>
