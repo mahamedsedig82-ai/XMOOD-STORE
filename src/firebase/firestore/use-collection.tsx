@@ -12,19 +12,18 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * 🛡️ Sovereign Collection Hook 20.0 (Strict Lifecycle Management)
- * Uses physical useRef tracking to ensure absolute cleanup and prevent Firestore Internal Assertions.
+ * 🛡️ Sovereign Collection Hook 21.0 (Assertion-Proof)
+ * Uses Ref-Shielded logic to ensure physical listener cleanup and prevent internal state corruption.
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   
-  // Physical reference to the active subscription to prevent overlapping
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
-    // 1. Forcefully kill any existing listener before starting a new one
+    // 🛡️ Kill overlapping listener before starting a new one
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
@@ -60,14 +59,12 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         }
       );
 
-      // Store the new unsubscription function
       unsubscribeRef.current = unsubscribe;
     } catch (e: any) {
       setError(e);
       setLoading(false);
     }
 
-    // 2. Final cleanup on unmount
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current();

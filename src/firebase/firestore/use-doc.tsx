@@ -12,8 +12,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * 🛡️ Sovereign Document Hook 20.0 (Strict Lifecycle Management)
- * Prevents assertion errors by enforcing physical cleanup of onSnapshot.
+ * 🛡️ Sovereign Document Hook 21.0 (Assertion-Proof)
+ * Strictly manages individual document listeners with mandatory physical cleanup.
  */
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
@@ -23,6 +23,7 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
+    // 🛡️ Ensure previous listener is dead
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;

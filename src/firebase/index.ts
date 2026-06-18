@@ -6,17 +6,17 @@ import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
 /**
- * 🛡️ Firebase Sovereign Engine 20.0 (Strict Singleton Guard)
- * Prevent double initialization and stabilize instances for Next.js 15 Fast Refresh.
+ * 🛡️ Firebase Sovereign Singleton Engine 21.0
+ * Strictly prevents multiple initializations and stabilizes service instances.
  */
 let app: FirebaseApp;
 let firestore: Firestore;
 let auth: Auth;
 
-if (getApps().length > 0) {
-  app = getApp();
-} else {
+if (!getApps().length) {
   app = initializeApp(firebaseConfig);
+} else {
+  app = getApp();
 }
 
 firestore = getFirestore(app);
@@ -24,7 +24,7 @@ auth = getAuth(app);
 
 export { app as firebaseApp, firestore, auth };
 
-// Re-export secured hooks
+// Centralized exports for system-wide stability
 export * from './provider';
 export * from './client-provider';
 export * from './auth/use-user';

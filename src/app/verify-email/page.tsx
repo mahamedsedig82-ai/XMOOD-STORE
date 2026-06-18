@@ -26,7 +26,7 @@ function VerifyEmailContent() {
     const oobCode = searchParams.get('oobCode');
     const mode = searchParams.get('mode');
 
-    // 1. Process direct verification link
+    // 1. Process link verification
     if (oobCode && mode === 'verifyEmail' && !isActionProcessed.current) {
       isActionProcessed.current = true;
       setStatus('verifying');
@@ -37,7 +37,7 @@ function VerifyEmailContent() {
             await syncUserProfile(auth.currentUser);
           }
           setStatus('success');
-          // Smooth redirect after success
+          // Smooth redirect after success celebration
           setTimeout(() => router.replace("/store"), 2500);
         })
         .catch(() => {
@@ -46,7 +46,7 @@ function VerifyEmailContent() {
       return;
     }
 
-    // 2. Real-time verification monitoring
+    // 2. Real-time background monitoring for verification
     const interval = setInterval(async () => {
       if (auth.currentUser && status === 'waiting') {
         await auth.currentUser.reload();

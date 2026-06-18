@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
   
   const router = useRouter();
-  const { user, loading: authLoading, isVerified, authSettled, profile } = useUser();
+  const { user, loading: authLoading, isVerified, authSettled } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -38,7 +38,7 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
-  // 🛡️ Sovereign Redirect Guard: Prevent infinite loops and race conditions
+  // 🛡️ Sovereign Redirect Guard: Orchestrated transition
   useEffect(() => {
     if (isMounted && authSettled && !authLoading && user) {
       if (isVerified) {
