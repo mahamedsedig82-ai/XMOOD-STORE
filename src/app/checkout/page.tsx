@@ -8,14 +8,13 @@ import { doc, runTransaction, collection, query, where, serverTimestamp, getDoc 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft, AlertCircle, ShoppingBag, PackageX, ShieldAlert } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "next/link"; // 🛡️ تم إصلاح الاستيراد المفقود
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
@@ -41,7 +40,7 @@ export default function CheckoutPage() {
     if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
   }, [user, deliveryEmail]);
 
-  // 🛡️ درع فحص المخزون الفوري
+  // 🛡️ درع فحص المخزون الفوري (Anti-Zero Stock Protection)
   useEffect(() => {
     const checkStock = async () => {
       if (!db || items.length === 0) {

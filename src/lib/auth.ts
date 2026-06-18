@@ -9,10 +9,10 @@ import {
   updateProfile
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc, addDoc, collection } from "firebase/firestore";
-import { auth, db } from "./firebase";
+import { auth, firestore as db } from "@/firebase";
 
 /**
- * تسجيل الأحداث الأمنية لضمان التتبع والتحليل.
+ * تسجيل الأحداث الأمنية لضمان التتبع والتحليل السيادي.
  */
 export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'access_denied' | 'tamper_attempt', description: string, userEmail?: string) {
   if (!db) return;
@@ -28,8 +28,7 @@ export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'ac
 }
 
 /**
- * مزامنة ملف المستخدم الشخصي مع قاعدة البيانات.
- * تم تحصينها لمنع إنشاء بيانات ناقصة أو تالفة.
+ * مزامنة ملف المستخدم الشخصي مع قاعدة البيانات المركزية.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -73,7 +72,7 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * إرسال رابط توثيق الحساب مع تحصين مسار العودة.
+ * إرسال رابط توثيق الحساب مع تحصين مسار العودة (Deep Linking).
  */
 export const sendAccountVerification = async (user: User) => {
   try {

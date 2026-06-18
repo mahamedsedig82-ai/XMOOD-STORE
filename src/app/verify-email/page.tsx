@@ -6,19 +6,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, ShieldCheck, XCircle, Mail, RefreshCw, ArrowLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/firebase";
+import { auth } from "@/firebase";
 import { applyActionCode } from "firebase/auth";
 import { toast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/layout/Navbar";
 
 /**
- * محتوى صفحة التحقق المعزول لمتطلبات Suspense في Next.js 15
+ * 🛡️ محرك التحقق السيادي - تم تحصينه ضد أخطاء الـ SSR والـ Assertion.
  */
 function VerifyEmailContent() {
   const [status, setStatus] = useState<'waiting' | 'verifying' | 'success' | 'error'>('waiting');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const auth = useAuth();
 
   useEffect(() => {
     if (!auth) return;
@@ -26,7 +25,6 @@ function VerifyEmailContent() {
     const oobCode = searchParams.get('oobCode');
     const mode = searchParams.get('mode');
 
-    // 🛡️ معالجة الضغط المباشر على الرابط
     const handleVerification = async () => {
       if (oobCode && mode === 'verifyEmail') {
         setStatus('verifying');
@@ -48,7 +46,7 @@ function VerifyEmailContent() {
 
     handleVerification();
 
-    // 🛡️ نظام المراقبة اللحظي (Auto-Polling Guard)
+    // 🛡️ نظام المراقبة اللحظي (Precision Auto-Polling Guard)
     const checkInterval = setInterval(async () => {
       if (auth.currentUser) {
         try {
@@ -60,13 +58,13 @@ function VerifyEmailContent() {
             setTimeout(() => router.replace("/wallet"), 1000);
           }
         } catch (e) {
-          // خطأ صامت في الخلفية لإكمال المراقبة
+          // خطأ صامت في الخلفية لضمان استمرارية الرصد
         }
       }
     }, 3000);
 
     return () => clearInterval(checkInterval);
-  }, [auth, searchParams, router]);
+  }, [searchParams, router]);
 
   return (
     <Card className="w-full max-w-lg p-10 md:p-20 text-center luxury-card border-none bg-card shadow-2xl relative overflow-hidden animate-fade-in">
@@ -133,7 +131,7 @@ export default function VerifyEmailPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
       <Navbar />
-      <Suspense fallback={<Loader2 className="animate-spin text-primary" size={60} />}>
+      <Suspense fallback={<div className="flex flex-col items-center gap-6"><Loader2 className="animate-spin text-primary" size={60} /><p className="font-bold text-xs uppercase tracking-widest">جاري تأمين الاتصال السيادي...</p></div>}>
         <VerifyEmailContent />
       </Suspense>
     </div>
