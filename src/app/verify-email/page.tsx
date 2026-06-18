@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, Mail, ShieldCheck, XCircle, Zap, CheckCircle, AlertCircle, RefreshCw, ArrowRight, ShoppingBag } from "lucide-react";
+import { Loader2, Mail, Zap, CheckCircle, AlertCircle, RefreshCw, XCircle, ShoppingBag } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/firebase";
@@ -18,14 +18,17 @@ function VerifyEmailContent() {
   const [isResending, setIsResending] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isActionProcessed = useRef(false);
 
   useEffect(() => {
-    if (!auth) return;
+    if (!auth || isActionProcessed.current) return;
 
     const oobCode = searchParams.get('oobCode');
     const mode = searchParams.get('mode');
 
+    // 1. معالجة رابط التفعيل المباشر
     if (oobCode && mode === 'verifyEmail') {
+      isActionProcessed.current = true;
       setStatus('verifying');
       applyActionCode(auth, oobCode)
         .then(async () => {
@@ -34,17 +37,17 @@ function VerifyEmailContent() {
             await syncUserProfile(auth.currentUser);
           }
           setStatus('success');
-          // 🛡️ Immediate Sovereign Redirect after 2s
-          setTimeout(() => {
-            router.replace("/store");
-          }, 2000);
+          // 🛡️ تحويل فوري للمتجر بعد النجاح
+          setTimeout(() => router.replace("/store"), 2000);
         })
         .catch((err) => {
-          console.error("Verification Error:", err);
+          console.error("Verification Guard Active:", err.message);
           setStatus('error');
         });
+      return;
     }
 
+    // 2. نظام المراقبة اللحظي لحالة التفعيل (في حالة الانتظار)
     const interval = setInterval(async () => {
       if (auth.currentUser && status === 'waiting') {
         await auth.currentUser.reload();
@@ -128,12 +131,7 @@ function VerifyEmailContent() {
           )}
 
           {status === 'verifying' && (
-            <motion.div 
-              key="verifying"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="py-12 space-y-6"
-            >
+            <motion.div key="verifying" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 space-y-6">
               <div className="relative w-20 h-20 mx-auto">
                 <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
                 <div className="relative w-full h-full bg-primary rounded-[2rem] flex items-center justify-center shadow-xl">
@@ -145,13 +143,8 @@ function VerifyEmailContent() {
           )}
 
           {status === 'success' && (
-            <motion.div 
-              key="success"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="py-12 space-y-8"
-            >
-              <div className="w-24 h-24 bg-green-500 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl shadow-green-500/20 animate-bounce">
+            <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="py-12 space-y-8">
+              <div className="w-24 h-24 bg-green-500 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl animate-bounce">
                 <CheckCircle className="w-12 h-12 text-white" />
               </div>
               <div className="space-y-3">
@@ -165,12 +158,7 @@ function VerifyEmailContent() {
           )}
 
           {status === 'error' && (
-            <motion.div 
-              key="error"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="space-y-8 py-6"
-            >
+            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 py-6">
               <div className="w-20 h-20 bg-red-500/10 rounded-[2rem] flex items-center justify-center mx-auto border border-red-500/20">
                 <XCircle className="w-10 h-10 text-red-500" />
               </div>
@@ -178,9 +166,7 @@ function VerifyEmailContent() {
                 <h2 className="text-2xl font-black text-red-500">فشل التحقق</h2>
                 <p className="text-muted-foreground text-sm font-medium">الرابط المستخدم غير صالح أو منتهي الصلاحية.</p>
               </div>
-              <Button asChild className="royal-button w-full h-16">
-                <Link href="/login">العودة لصفحة الدخول</Link>
-              </Button>
+              <Button asChild className="royal-button w-full h-16"><Link href="/login">العودة لصفحة الدخول</Link></Button>
             </motion.div>
           )}
         </AnimatePresence>

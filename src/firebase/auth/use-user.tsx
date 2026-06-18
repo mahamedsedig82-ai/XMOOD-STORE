@@ -2,22 +2,22 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { auth, firestore as db } from '../index';
 import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
 /**
- * 🛡️ Unitary Identity Hook 7.0
- * إدارة احترافية للمستمعات تمنع أخطاء Firestore Assertion نهائياً.
+ * 🛡️ Centralized Sovereign Identity Hook 8.0
+ * نظام إدارة هوية مركزي يمنع تداخل المستمعات ويقضي على أخطاء Firestore Assertion.
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // مراجع لتنظيف المستمعات ومنع التداخل
-  const unsubscribeProfileRef = useRef<(() => void) | null>(null);
+  // مرجع ثابت لضمان وجود مستمع واحد فقط للملف الشخصي في أي وقت
+  const profileUnsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
     if (!auth) {
@@ -25,43 +25,48 @@ export function useUser() {
       return;
     }
 
-    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+    // 1. مراقبة حالة المصادقة المركزية
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       
-      // 1. تنظيف مستمع البروفايل السابق عند تغيير حالة الدخول
-      if (unsubscribeProfileRef.current) {
-        unsubscribeProfileRef.current();
-        unsubscribeProfileRef.current = null;
+      // إغلاق أي مستمع بروفايل قديم فوراً عند تغير حالة المستخدم
+      if (profileUnsubscribeRef.current) {
+        profileUnsubscribeRef.current();
+        profileUnsubscribeRef.current = null;
       }
 
       if (firebaseUser) {
-        const userDocRef = doc(db, 'users', firebaseUser.uid);
-        
-        // 2. تفعيل مستمع البروفايل الجديد
-        unsubscribeProfileRef.current = onSnapshot(userDocRef, (snapshot) => {
-          if (snapshot.exists()) {
-            setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
+        try {
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          
+          // تفعيل مستمع البروفايل بضمانات التنظيف
+          profileUnsubscribeRef.current = onSnapshot(userDocRef, (snapshot) => {
+            if (snapshot.exists()) {
+              setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
+              setLoading(false);
+            } else {
+              // إذا لم يوجد الملف، نقوم بمزامنة أولية
+              syncUserProfile(firebaseUser).catch(() => setLoading(false));
+            }
+          }, (err) => {
+            console.warn("[AUTH_SYNC] Profile Listener Guarded:", err.message);
             setLoading(false);
-          } else {
-            // مزامنة الملف إذا لم يكن موجوداً
-            syncUserProfile(firebaseUser).catch(() => setLoading(false));
-          }
-        }, (err) => {
-          console.warn("[AUTH_SYNC] Listener Guard Active");
+          });
+        } catch (e) {
+          console.error("[AUTH_SYNC] Critical Initialization Error");
           setLoading(false);
-        });
+        }
       } else {
         setProfile(null);
         setLoading(false);
       }
     });
 
-    // تنظيف كافة المستمعات عند مغادرة الصفحة أو التطبيق
+    // تنظيف نهائي عند مغادرة التطبيق بالكامل
     return () => {
       unsubscribeAuth();
-      if (unsubscribeProfileRef.current) {
-        unsubscribeProfileRef.current();
-        unsubscribeProfileRef.current = null;
+      if (profileUnsubscribeRef.current) {
+        profileUnsubscribeRef.current();
       }
     };
   }, []);
@@ -71,7 +76,7 @@ export function useUser() {
   return { 
     user, 
     profile, 
-    loading: loading || (!!user && !profile),
+    loading: loading || (!!user && !profile), // منع حالة "شبه الجاهزية"
     isVerified: user?.emailVerified || false,
     isAdmin
   };

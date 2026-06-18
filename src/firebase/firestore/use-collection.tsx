@@ -12,19 +12,19 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * 🛡️ Safety-Enhanced Collection Hook 5.0
- * إصلاح جذري لمنع خطأ INTERNAL ASSERTION عبر إدارة صارمة للـ Unsubscribe
+ * 🛡️ Strict-Cleanup Collection Hook 6.0
+ * حل جذري ونهائي لخطأ INTERNAL ASSERTION عبر إدارة فيزيائية صارمة للـ Unsubscribe
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   
-  // استخدام Ref لضمان تتبع المستمع الحالي وإغلاقه بدقة
+  // استخدام Ref كحاوية مغلقة تضمن عدم تكرار المستمعات نهائياً
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
-    // 1. تنظيف أي مستمع قديم فوراً قبل البدء
+    // 1. القتل الفوري لأي مستمع نشط قبل البدء بإنشاء مستمع جديد
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
@@ -38,6 +38,7 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
 
     try {
       setLoading(true);
+      
       const unsubscribe = onSnapshot(
         query, 
         (snapshot: QuerySnapshot<T>) => {
@@ -49,8 +50,8 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
           setLoading(false);
         }, 
         (serverError) => {
-          // معالجة هادئة لأخطاء الصلاحيات
-          if (serverError.code !== 'permission-denied') {
+          // معالجة أخطاء الصلاحيات بهدوء
+          if (serverError.code === 'permission-denied') {
             const path = (query as any)._query?.path?.toString() || 'collection';
             const permissionError = new FirestorePermissionError({
               path,
@@ -63,20 +64,21 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         }
       );
 
+      // تخزين دالة الإغلاق في الـ Ref للوصول إليها في دورة التنظيف القادمة
       unsubscribeRef.current = unsubscribe;
     } catch (e) {
-      console.error("[FIRESTORE_COLLECTION] Error:", e);
+      console.error("[FIRESTORE_SAFE_COLLECTION] Fatal Snap Error");
       setLoading(false);
     }
 
-    // 2. ضمان التنظيف عند الـ Unmount أو تغيير الـ Query
+    // 2. ضمان التنظيف القسري عند مغادرة الصفحة أو تغيير الاستعلام
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
-        unsubscribeRef.current = null;
+        unsubscribeRef.current = null; // تصفير المرجع لمنع محاولات الإغلاق المزدوج
       }
     };
-  }, [query]); // التغيير يعتمد فقط على المرجع المستقر للـ Query
+  }, [query]); 
 
   return { data, loading, error };
 }

@@ -6,8 +6,8 @@ import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
 /**
- * 🛡️ Firebase Sovereign Engine 4.0
- * Singleton pattern ensuring zero duplicate initializations.
+ * 🛡️ Firebase Sovereign Engine 5.0 (Strict Singleton)
+ * ضمان تهيئة التطبيق مرة واحدة فقط لمنع أخطاء الـ Internal Assertion المكررة.
  */
 let app: FirebaseApp;
 let firestore: Firestore;
@@ -24,6 +24,7 @@ auth = getAuth(app);
 
 export { app as firebaseApp, firestore, auth };
 
+// تصدير الأدوات والخطافات المحصنة
 export * from './provider';
 export * from './client-provider';
 export * from './auth/use-user';

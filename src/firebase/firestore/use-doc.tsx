@@ -12,8 +12,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * 🛡️ Safety-Enhanced Document Hook 5.0
- * حماية ميكانيكية ضد تعارض الحالات أثناء التنقل بين الصفحات
+ * 🛡️ Strict-Cleanup Document Hook 6.0
+ * تحصين دورة حياة المستمع لمنع أخطاء تداخل الحالة في Firestore
  */
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
@@ -23,7 +23,7 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
-    // إغلاق المستمع السابق فوراً
+    // قتل المستمع السابق فوراً
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
@@ -44,7 +44,7 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
           setLoading(false);
         }, 
         (serverError) => {
-          if (serverError.code !== 'permission-denied') {
+          if (serverError.code === 'permission-denied') {
             const permissionError = new FirestorePermissionError({
               path: docRef.path,
               operation: 'get',
@@ -58,7 +58,7 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
 
       unsubscribeRef.current = unsubscribe;
     } catch (e) {
-      console.error("[FIRESTORE_DOC] Error:", e);
+      console.error("[FIRESTORE_SAFE_DOC] Fatal Snap Error");
       setLoading(false);
     }
 
@@ -68,7 +68,7 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
         unsubscribeRef.current = null;
       }
     };
-  }, [docRef?.path]); // الاعتماد على المسار لضمان الاستقرار
+  }, [docRef?.path]); // الاعتماد على المسار كمعيار استقرار وحيد
 
   return { data, loading, error };
 }

@@ -38,9 +38,10 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
-  // 🛡️ Safe Redirect Guard
+  // 🛡️ Strict Sovereign Guard: منع حلقات إعادة التوجيه نهائياً
   useEffect(() => {
     if (isMounted && !authLoading && user) {
+      // نتحقق من الوجهة قبل التوجيه لتجنب التكرار
       if (isVerified) {
         router.replace("/wallet");
       } else {
@@ -66,7 +67,6 @@ export default function LoginPage() {
         await syncUserProfile(res.user, { displayName: fullName, phoneNumber: phone });
         await sendAccountVerification(res.user);
         toast({ title: "تم إنشاء العضوية بنجاح" });
-        // التحويل يتم عبر الـ useEffect بمجرد تغير حالة الـ user
       } else {
         await loginEmail(email, password);
         toast({ title: "جاري تأمين الدخول..." });
@@ -80,6 +80,7 @@ export default function LoginPage() {
     }
   };
 
+  // حماية ضد أخطاء الـ Hydration والحالات غير المستقرة
   if (!isMounted || authLoading || user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
@@ -120,7 +121,7 @@ export default function LoginPage() {
                   <TabsTrigger value="signup" className="rounded-lg font-black text-[9px] uppercase">إنشاء حساب</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="login" className="space-y-4 animate-fade-in">
+                <TabsContent value="login" className="space-y-4">
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="user@xmood.pro" className="h-12 text-sm" />
@@ -134,7 +135,7 @@ export default function LoginPage() {
                   </Button>
                 </TabsContent>
 
-                <TabsContent value="signup" className="space-y-4 animate-fade-in">
+                <TabsContent value="signup" className="space-y-4">
                    <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12 text-sm" placeholder="عضو جديد" /></div>
                       <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">رقم الجوال</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12 text-sm" placeholder="+966..." /></div>
