@@ -98,12 +98,8 @@ export default function LoginPage() {
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center pt-28 pb-12 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
           <Card className="luxury-card border-none overflow-hidden bg-card/60 backdrop-blur-3xl shadow-2xl">
-            <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-6">
-               {config?.appearance?.logoUrl ? (
-                 <img src={config.appearance.logoUrl} className="h-16 w-auto object-contain rounded-xl shadow-md" alt="Logo" />
-               ) : (
-                 <h2 className="handwritten-logo text-3xl mb-1">XMOOD STORE</h2>
-               )}
+            <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-4">
+               <h2 className="handwritten-logo text-4xl md:text-5xl mb-2" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
                <Badge variant="outline" className="text-[8px] font-black text-primary border-primary/20 uppercase tracking-[0.4em] px-4 py-1">
                  Sovereign Identity Portal
                </Badge>

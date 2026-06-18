@@ -65,6 +65,7 @@
   letter-spacing: 0.15em;
   font-weight: 900;
   line-height: 1.4;
+  direction: ltr; /* Ensure brand name is always LTR */
 }
 
 .emerald-glass {
