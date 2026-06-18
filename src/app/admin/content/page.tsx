@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -30,7 +29,7 @@ export default function AdminContentManager() {
   
   const [form, setForm] = useState({
     appearance: { primaryColor: "#d4af37", logoUrl: "" },
-    siteInfo: { title: "XMOOD STORE", subtitle: "SOVEREIGN ASSETS DISPATCH", description: "", usdRate: 5400 },
+    siteInfo: { title: "XMOOD STORE", subtitle: "مركز الخدمات الرقمية المعتمدة", description: "", usdRate: 5400 },
     navLabels: { home: "الرئيسية", store: "المتجر", services: "سوق الخدمات", gallery: "معرض الإبداع", agents: "الوكلاء" },
     cartLabels: { cartTitle: "تجهيز الشحن الفوري", emptyCartMsg: "لم يتم تحديد أي باقات للشحن حالياً", checkoutTitle: "تأكيد الاستحواذ الآلي", successMsg: "تم التسليم بنجاح!", summaryTitle: "ملخص أمر الشحن" },
     gallerySettings: { title: "معرض الإبداع الرقمي", subtitle: "استلهم من أرقى التصاميم والهويات البصرية.", badge: "بورتفوليو نخبة المصممين", buttonText: "طلب تصميم مشابه" },
@@ -227,10 +226,10 @@ export default function AdminContentManager() {
            <Card className="luxury-card p-8 md:p-12 border-none bg-blue-500/5">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                  <div className="space-y-8">
-                    <h3 className="text-2xl font-black flex items-center gap-4 text-blue-600 uppercase"><Bot size={32} /> إعدادات المساعد الإرشادي</h3>
+                    <h3 className="text-2xl font-black flex items-center gap-4 text-blue-600 uppercase"><Bot size={32} /> إعدادات المساعد الذكي</h3>
                     <div className="space-y-6">
-                       <div className="space-y-2"><Label className="text-[10px] font-black uppercase opacity-60">اسم البوت الذكي</Label><Input value={form.bot.name} onChange={e => setForm({...form, bot: {...form.bot, name: e.target.value}})} className="h-14 bg-card border-none" /></div>
-                       <div className="space-y-2"><Label className="text-[10px] font-black uppercase opacity-60">رسالة الترحيب الأولى</Label><Textarea value={form.bot.greeting} onChange={e => setForm({...form, bot: {...form.bot, greeting: e.target.value}})} className="min-h-[120px] bg-card border-none" /></div>
+                       <div className="space-y-2"><Label className="text-[10px] font-black uppercase opacity-60">اسم البوت</Label><Input value={form.bot.name} onChange={e => setForm({...form, bot: {...form.bot, name: e.target.value}})} className="h-14 bg-card border-none" /></div>
+                       <div className="space-y-2"><Label className="text-[10px] font-black uppercase opacity-60">الرسالة الترحيبية</Label><Textarea value={form.bot.greeting} onChange={e => setForm({...form, bot: {...form.bot, greeting: e.target.value}})} className="min-h-[120px] bg-card border-none" /></div>
                     </div>
                  </div>
                  <div className="p-10 bg-card rounded-[2.5rem] border border-blue-500/10 shadow-2xl flex flex-col items-center text-center gap-6">

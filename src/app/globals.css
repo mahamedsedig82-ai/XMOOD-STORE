@@ -54,25 +54,20 @@
   body { @apply bg-background text-foreground antialiased font-body transition-colors duration-500; }
 }
 
-/* 💎 ELEGANT BRANDING STYLE - XMOOD STORE SIGNATURE */
 .handwritten-logo {
   @apply font-headline select-none cursor-default inline-flex items-center py-1 relative uppercase;
   background: linear-gradient(135deg, #b8860b 0%, #f9d976 50%, #b8860b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.15));
+  filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.15));
   transition: all 0.5s ease;
-  letter-spacing: 0.15em; /* زيادة التباعد لمنع التداخل نهائياً */
+  letter-spacing: 0.15em;
   font-weight: 900;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .handwritten-logo span {
-  @apply ml-3;
-}
-
-.handwritten-logo:hover {
-  filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
+  @apply ml-2;
 }
 
 .emerald-glass {
@@ -84,7 +79,6 @@
   @apply border-2 border-primary/20 shadow-[0_0_30px_rgba(212,175,55,0.05)] focus-within:border-primary focus-within:shadow-[0_0_40px_rgba(212,175,55,0.15)] transition-all;
 }
 
-/* 🛡️ ULTRA-VISIBLE INPUTS */
 input, textarea, select {
   @apply bg-white dark:bg-zinc-900/60 px-8 py-5 rounded-[2rem] outline-none font-bold text-right w-full transition-all !important;
   border: 1.5px solid rgba(212, 175, 55, 0.15) !important;

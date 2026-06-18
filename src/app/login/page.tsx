@@ -99,11 +99,11 @@ export default function LoginPage() {
         >
           <Card className="emerald-glass rounded-[2.5rem] md:rounded-[3rem] border-white/5 overflow-hidden shadow-2xl">
             <div className="p-8 md:p-12 text-center border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
-               <h2 className="handwritten-logo text-3xl md:text-5xl mb-2 tracking-widest uppercase">XMOOD <span>STORE</span></h2>
-               <p className="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em] md:tracking-[0.5em] opacity-60">Sovereign Identity Portal</p>
+               <h2 className="handwritten-logo text-2xl md:text-4xl mb-2 tracking-widest uppercase">XMOOD <span>STORE</span></h2>
+               <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.4em] opacity-60">Sovereign Identity Portal</p>
             </div>
 
-            <CardContent className="p-6 md:p-12 space-y-8 md:space-y-10">
+            <CardContent className="p-6 md:p-10 space-y-8">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-8 md:mb-10 p-1 bg-black/40 rounded-xl md:rounded-2xl border border-white/10 h-14 md:h-18">
                   <TabsTrigger value="login" className="rounded-lg md:rounded-xl font-black text-[9px] md:text-[10px] uppercase py-2 md:py-3 data-[state=active]:bg-primary data-[state=active]:text-black transition-all shadow-lg">تسجيل الدخول</TabsTrigger>
@@ -117,11 +117,11 @@ export default function LoginPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.3 }}
-                    className="space-y-6 md:space-y-8"
+                    className="space-y-6"
                   >
                     {activeTab === 'login' ? (
-                      <div className="space-y-8 md:space-y-10">
-                        <div className="space-y-4 md:space-y-6">
+                      <div className="space-y-8">
+                        <div className="space-y-4">
                            <div className="space-y-2">
                               <Label className="text-[9px] md:text-[10px] font-black uppercase text-primary/70 pr-4 tracking-widest flex items-center gap-2">
                                 <Mail size={12} /> البريد الإلكتروني
@@ -131,7 +131,7 @@ export default function LoginPage() {
                                 onChange={e => setEmail(e.target.value)} 
                                 type="email" 
                                 placeholder="user@xmood.pro" 
-                                className="h-14 md:h-16 text-center text-base md:text-lg bg-zinc-950/50 border-primary/20 gold-glow-border" 
+                                className="h-14 md:h-16 text-center text-base bg-zinc-950/50 border-primary/20 gold-glow-border" 
                               />
                            </div>
                            <div className="space-y-2">
@@ -143,7 +143,7 @@ export default function LoginPage() {
                                 onChange={e => setPassword(e.target.value)} 
                                 type="password" 
                                 placeholder="••••••••" 
-                                className="h-14 md:h-16 text-center text-base md:text-lg bg-zinc-950/50 border-primary/20 gold-glow-border" 
+                                className="h-14 md:h-16 text-center text-base bg-zinc-950/50 border-primary/20 gold-glow-border" 
                               />
                            </div>
                         </div>
@@ -156,8 +156,8 @@ export default function LoginPage() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="space-y-5 md:space-y-6">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                      <div className="space-y-5">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                <Label className="text-[8px] md:text-[9px] font-black text-primary/70 pr-4 uppercase">الاسم الكامل</Label>
                                <Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12 md:h-14 text-sm bg-zinc-950/50 border-primary/20" placeholder="Elite Member Name" />
@@ -176,9 +176,9 @@ export default function LoginPage() {
                             <Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-12 md:h-14 text-sm bg-zinc-950/50 border-primary/20" placeholder="••••••••" />
                          </div>
                          
-                         <div className="p-4 md:p-5 bg-primary/5 border border-primary/10 rounded-xl md:rounded-2xl flex gap-3 md:gap-4 items-start">
+                         <div className="p-4 md:p-5 bg-primary/5 border border-primary/10 rounded-xl md:rounded-2xl flex gap-3 items-start">
                             <AlertCircle size={16} className="text-primary shrink-0 mt-0.5" />
-                            <p className="text-[9px] md:text-[10px] font-bold text-zinc-400 leading-relaxed">
+                            <p className="text-[9px] font-bold text-zinc-400 leading-relaxed">
                                تنبيه: ستصلك رسالة تفعيل. إذا لم تجدها، تحقق فوراً من مجلد <b>Spam</b> أو <b>Junk</b>.
                             </p>
                          </div>
@@ -186,7 +186,7 @@ export default function LoginPage() {
                          <Button 
                            onClick={() => handleAuth('signup')} 
                            disabled={loading} 
-                           className="w-full h-16 md:h-18 rounded-xl md:rounded-2xl bg-primary text-black font-black text-base md:text-lg mt-2 md:mt-4 shadow-xl shadow-primary/10"
+                           className="w-full h-16 md:h-18 rounded-xl md:rounded-2xl bg-primary text-black font-black text-base md:text-lg mt-2 shadow-xl shadow-primary/10"
                          >
                            {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={20} className="ml-3" /> إنشاء عضوية</>}
                          </Button>
@@ -198,13 +198,13 @@ export default function LoginPage() {
             </CardContent>
           </Card>
           
-          <div className="text-center mt-8 md:mt-12 space-y-2 opacity-40">
-             <p className="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em] md:tracking-[0.5em]">
+          <div className="text-center mt-8 space-y-2 opacity-40">
+             <p className="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em]">
                Precision Secure Access Engine
              </p>
-             <p className="text-[7px] md:text-[8px] font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
+             <div className="text-[7px] md:text-[8px] font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
                <Sparkles size={10} /> Powered by XMOOD Cloud Intelligence <Sparkles size={10} />
-             </p>
+             </div>
           </div>
         </motion.div>
       </div>
