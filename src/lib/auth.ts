@@ -12,7 +12,8 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Profile Sync Service
+ * 🛡️ Profile Sync Service 4.0
+ * ضمان وجود ملف شخصي لكل مستخدم مع حماية ضد التكرار.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -38,7 +39,11 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         createdAt: new Date().toISOString(),
       }, { merge: true });
     } else {
-      await updateDoc(userRef, baseProfile);
+      // تحديث البيانات المتغيرة فقط لتجنب Loops
+      const existing = userDoc.data();
+      if (existing.isVerified !== user.emailVerified) {
+        await updateDoc(userRef, { isVerified: user.emailVerified });
+      }
     }
   } catch (error) {
     console.error("[AUTH_SYNC] Error:", error);
@@ -64,19 +69,18 @@ export const logout = async () => {
 };
 
 /**
- * 🛡️ Verification Service (Fixed link delivery)
+ * 🛡️ Verification Service
  */
 export const sendAccountVerification = async (user: User) => {
+  if (!user) return;
   try {
-    // 🔗 استخدام النطاق الرسمي الموثق لضمان وصول الرسالة
     const actionCodeSettings = {
       url: 'https://xmood-36c92.firebaseapp.com/verify-email',
       handleCodeInApp: true,
     };
     await sendEmailVerification(user, actionCodeSettings);
-    console.log("[AUTH_VERIFY] Verification link dispatched.");
   } catch (error: any) {
-    console.error("[AUTH_VERIFY] Send Error:", error.code, error.message);
+    console.error("[AUTH_VERIFY] Send Error:", error.code);
     throw error;
   }
 };
