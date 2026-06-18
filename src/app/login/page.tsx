@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { loginEmail, registerEmail, sendMagicLink, syncUserProfile, isSuspiciousInput, logSecurityEvent, sendAccountVerification } from "@/lib/auth";
+import { loginEmail, registerEmail, sendMagicLink, syncUserProfile, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { 
-  Loader2, Mail, Lock, ShieldCheck, Fingerprint, Shield, Sparkles, Send, CheckCircle2, HelpCircle
+  Loader2, Mail, Lock, Shield, HelpCircle
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -50,14 +50,16 @@ export default function SecurityLoginPage() {
   const handleEmailAuth = async (type: 'login' | 'signup') => {
     const cleanEmail = email.trim().toLowerCase();
     
-    if (!cleanEmail || !password) return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى ملء كافة الحقول الإلزامية." });
+    if (!cleanEmail || !password) {
+      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى ملء البريد الإلكتروني وكلمة المرور." });
+    }
     
     if (type === 'signup') {
-      if (!phone || !securityQuestion || !securityAnswer) {
-        return toast({ variant: "destructive", title: "بروتوكول الأمان", description: "رقم الهاتف وسؤال الأمان متطلبات أساسية." });
+      if (!fullName || !phone || !securityQuestion || !securityAnswer) {
+        return toast({ variant: "destructive", title: "بروتوكول الأمان", description: "يرجى ملء كافة بيانات التسجيل المطلوبة." });
       }
       if (Number(captchaInput) !== captchaChallenge.a + captchaChallenge.b) {
-        toast({ variant: "destructive", title: "فشل التحقق البشري", description: "الإجابة الأمنية غير صحيحة." });
+        toast({ variant: "destructive", title: "فشل التحقق البشري", description: "ناتج العملية الحسابية غير صحيح." });
         generateCaptcha();
         return;
       }
@@ -76,23 +78,28 @@ export default function SecurityLoginPage() {
         });
         await sendAccountVerification(res.user);
         setIsWaitingVerification(true);
-        toast({ title: "تم إنشاء الحساب", description: "يرجى التحقق من بريدك الإلكتروني لتنشيط العضوية." });
+        toast({ title: "تم إنشاء الحساب بنجاح", description: "افحص بريدك الإلكتروني لتنشيط العضوية السيادية." });
       } else {
         const res = await loginEmail(cleanEmail, password);
         if (!res.user.emailVerified) {
           setIsWaitingVerification(true);
-          toast({ variant: "destructive", title: "الحساب غير موثق", description: "يرجى التحقق من بريدك الإلكتروني أولاً." });
+          toast({ variant: "destructive", title: "الحساب غير موثق", description: "يجب توثيق بريدك الإلكتروني قبل الدخول للمحفظة." });
           setLoading(false);
           return;
         }
-        toast({ title: "تم تأكيد الدخول", description: "جاري تحميل واجهتك السيادية..." });
+        // مزامنة صامتة للملف الشخصي وتوجيه فوري
+        syncUserProfile(res.user).catch(() => {});
+        toast({ title: "تم تأكيد الهوية", description: "مرحباً بك مجدداً في نظام XMOOD." });
         router.replace("/wallet");
       }
     } catch (error: any) {
-      let msg = "يرجى التحقق من صحة البيانات.";
-      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
+      console.error("Auth Error:", error);
+      let msg = "حدث خطأ غير متوقع. يرجى مراجعة البيانات.";
+      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً في النظام.";
       if (error.code === 'auth/wrong-password') msg = "كلمة المرور غير صحيحة.";
-      toast({ variant: "destructive", title: "خطأ في المصادقة", description: msg });
+      if (error.code === 'auth/user-not-found') msg = "لا يوجد حساب مسجل بهذا البريد.";
+      if (error.code === 'auth/invalid-credential') msg = "خطأ في بيانات الاعتماد. تأكد من البريد وكلمة المرور.";
+      toast({ variant: "destructive", title: "فشل المصادقة", description: msg });
     } finally {
       if (!isWaitingVerification) setLoading(false);
     }
@@ -100,12 +107,12 @@ export default function SecurityLoginPage() {
 
   const handleMagicLink = async () => {
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail) return toast({ variant: "destructive", title: "تنبيه بريدي", description: "أدخل بريدك الإلكتروني أولاً." });
+    if (!cleanEmail) return toast({ variant: "destructive", title: "تنبيه", description: "أدخل بريدك الإلكتروني أولاً." });
     setLoading(true);
     try {
       await sendMagicLink(cleanEmail);
       setIsWaitingVerification(true);
-      toast({ title: "تم الإرسال", description: "افحص بريدك الإلكتروني لتسجيل الدخول الفوري." });
+      toast({ title: "تم إرسال الرابط السحري", description: "افحص بريدك الإلكتروني للدخول الفوري." });
     } catch (error) {
       toast({ variant: "destructive", title: "فشل الإرسال" });
     } finally {
@@ -181,10 +188,10 @@ export default function SecurityLoginPage() {
 
                    <TabsContent value="signup" className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12" /></div>
-                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">الهاتف الدولي</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12" /></div>
-                         <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">البريد الإلكتروني</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-12" /></div>
-                         <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">كلمة المرور</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-12" /></div>
+                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12" placeholder="الاسم كما في الهوية" /></div>
+                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">الهاتف الدولي</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12" placeholder="+249..." /></div>
+                         <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">البريد الإلكتروني</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-12" placeholder="name@example.com" /></div>
+                         <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">كلمة المرور</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-12" placeholder="أدخل كلمة مرور قوية" /></div>
                          
                          <div className="md:col-span-2 space-y-2">
                             <Label className="text-[9px] font-black text-primary uppercase pr-3 flex items-center gap-2"><HelpCircle size={10}/> سؤال الأمان (للطوارئ)</Label>

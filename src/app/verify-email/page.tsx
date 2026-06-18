@@ -33,7 +33,7 @@ export default function VerifyEmailPage() {
               await syncUserProfile(auth.currentUser);
            }
            setStatus('success');
-           toast({ title: "تم توثيق الهوية السيادية" });
+           toast({ title: "تم توثيق الهوية السيادية بنجاح" });
            setTimeout(() => router.replace("/wallet"), 1500);
            return;
         }
@@ -43,30 +43,30 @@ export default function VerifyEmailPage() {
           const userFromMagic = await completeMagicLinkSignIn();
           if (userFromMagic) {
             setStatus('success');
-            toast({ title: "تم الدخول بنجاح" });
+            toast({ title: "تم تسجيل الدخول الآمن بنجاح" });
             setTimeout(() => router.replace("/wallet"), 1500);
             return;
           }
         }
 
-        // 3. مراقب الحالة اللحظي
+        // 3. مراقب الحالة اللحظي (في حال تم التوثيق في تبويب آخر)
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await firebaseUser.reload();
             if (firebaseUser.emailVerified) {
               await syncUserProfile(firebaseUser);
               setStatus('success');
-              router.replace("/wallet");
+              setTimeout(() => router.replace("/wallet"), 1500);
             }
           }
         });
         
-        // مهلة زمنية للفشل
+        // مهلة زمنية للفشل إذا لم يتم رصد أي كود توثيق
         const timeout = setTimeout(() => {
            if (status === 'verifying' && !oobCode && !isSignInWithEmailLink(auth, window.location.href)) {
               setStatus('error');
            }
-        }, 20000);
+        }, 15000);
 
         return () => {
           unsubscribe();
@@ -117,7 +117,7 @@ export default function VerifyEmailPage() {
                <XCircle className="w-14 h-14" />
             </div>
             <h2 className="text-3xl font-black text-red-500">فشل في توثيق الرابط</h2>
-            <p className="text-muted-foreground text-sm font-medium">ربما انتهت صلاحية الرابط أو تم استخدامه مسبقاً. يرجى طلب رابط جديد.</p>
+            <p className="text-muted-foreground text-sm font-medium">ربما انتهت صلاحية الرابط أو تم استخدامه مسبقاً. يرجى طلب رابط جديد من صفحة الدخول.</p>
             <div className="pt-8 flex flex-col gap-4">
                <Button asChild className="royal-button w-full h-16"><a href="/login">العودة لصفحة الدخول</a></Button>
                <Button asChild variant="ghost" className="w-full h-14"><a href="/"><Home className="ml-2" size={16} /> الرئيسية</a></Button>

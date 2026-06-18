@@ -104,7 +104,7 @@ export default function CheckoutPage() {
     if (!user || !profile || !db) return;
     if (!selectedShipping) return toast({ variant: "destructive", title: "يرجى اختيار وسيلة تسليم" });
     if (!hasEnoughBalance) return toast({ variant: "destructive", title: "الرصيد غير كافٍ" });
-    if (!isEverythingInStock) return toast({ variant: "destructive", title: "نقص في المخزون", description: "بعض الباقات نفدت حالياً." });
+    if (!isEverythingInStock) return toast({ variant: "destructive", title: "نقص في المخزون", description: "بعض الباقات نفدت حالياً من المستودع." });
 
     setIsProcessing(true);
     const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
