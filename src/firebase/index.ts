@@ -6,8 +6,9 @@ import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
 /**
- * 🛡️ Firebase Sovereign Engine 5.0 (Strict Singleton)
- * ضمان تهيئة التطبيق مرة واحدة فقط لمنع أخطاء الـ Internal Assertion المكررة.
+ * 🛡️ Firebase Sovereign Engine 19.0 (Strict Singleton Guard)
+ * تحصين المحرك ضد التهيئة المزدوجة التي يسببها Next.js 15 Turbopack.
+ * هذا الملف هو المصدر الوحيد والنهائي لكافة خدمات Firebase في المشروع.
  */
 let app: FirebaseApp;
 let firestore: Firestore;
@@ -24,7 +25,7 @@ auth = getAuth(app);
 
 export { app as firebaseApp, firestore, auth };
 
-// تصدير الأدوات والخطافات المحصنة
+// تصدير الأدوات والخطافات المحصنة بنظام الـ Refs
 export * from './provider';
 export * from './client-provider';
 export * from './auth/use-user';

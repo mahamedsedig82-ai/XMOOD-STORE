@@ -12,8 +12,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * 🛡️ Strict-Cleanup Document Hook 6.0
- * تحصين دورة حياة المستمع لمنع أخطاء تداخل الحالة في Firestore
+ * 🛡️ Sovereign Document Hook 19.0 (Anti-Assertion Pattern)
+ * إدارة اشتراكات ذكية تمنع تداخل الحالة في Firestore وتدعم الأداء السريع.
  */
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
@@ -23,7 +23,6 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
-    // قتل المستمع السابق فوراً
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
@@ -45,11 +44,7 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
         }, 
         (serverError) => {
           if (serverError.code === 'permission-denied') {
-            const permissionError = new FirestorePermissionError({
-              path: docRef.path,
-              operation: 'get',
-            } satisfies SecurityRuleContext);
-            errorEmitter.emit('permission-error', permissionError);
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'get' }));
           }
           setError(serverError);
           setLoading(false);
@@ -58,7 +53,6 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
 
       unsubscribeRef.current = unsubscribe;
     } catch (e) {
-      console.error("[FIRESTORE_SAFE_DOC] Fatal Snap Error");
       setLoading(false);
     }
 
@@ -68,7 +62,7 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
         unsubscribeRef.current = null;
       }
     };
-  }, [docRef?.path]); // الاعتماد على المسار كمعيار استقرار وحيد
+  }, [docRef?.path]);
 
   return { data, loading, error };
 }
