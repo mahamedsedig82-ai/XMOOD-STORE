@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -55,7 +54,7 @@
   body { @apply bg-background text-foreground antialiased font-body transition-colors duration-500; }
 }
 
-/* 💎 ELEGANT BRANDING STYLE */
+/* 💎 ELEGANT BRANDING STYLE - XMOOD STORE SIGNATURE */
 .handwritten-logo {
   @apply font-headline select-none cursor-default inline-flex items-center py-1 relative uppercase;
   background: linear-gradient(135deg, #b8860b 0%, #f9d976 50%, #b8860b 100%);
@@ -63,7 +62,7 @@
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.15));
   transition: all 0.5s ease;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
   font-weight: 900;
 }
 

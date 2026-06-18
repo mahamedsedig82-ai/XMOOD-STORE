@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -50,12 +49,12 @@ export default function HomePage() {
             </div>
 
             <div className="relative inline-block">
-               <h1 className="text-5xl md:text-8xl font-headline font-black leading-none tracking-tighter text-foreground uppercase flex flex-col items-center">
-                 <span className="handwritten-logo text-6xl md:text-9xl drop-shadow-[0_0_20px_rgba(212,175,55,0.2)]">XMOOD STORE</span>
+               <h1 className="text-4xl md:text-7xl font-headline font-black leading-none tracking-tighter text-foreground uppercase flex flex-col items-center">
+                 <span className="handwritten-logo text-5xl md:text-8xl drop-shadow-[0_0_20px_rgba(212,175,55,0.15)]">XMOOD STORE</span>
                </h1>
             </div>
 
-            <p className="text-xl md:text-3xl text-muted-foreground max-w-4xl mx-auto font-medium leading-relaxed italic opacity-70 border-r-2 border-primary/20 pr-8">
+            <p className="text-lg md:text-2xl text-muted-foreground max-w-4xl mx-auto font-medium leading-relaxed italic opacity-70 border-r-2 border-primary/20 pr-8">
               {config?.siteInfo?.description || "المستودع الرقمي الأول لإدارة وتوريد أصول النخبة من شحن الألعاب والخدمات التقنية المعتمدة سيادياً."}
             </p>
             
