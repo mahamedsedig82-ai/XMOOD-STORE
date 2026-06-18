@@ -5,7 +5,7 @@ import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-// 🛡️ Singleton Pattern with Connectivity Shield V9.0
+// 🛡️ Singleton Pattern with Immunity Shield V10.0
 let app: FirebaseApp;
 let firestore: Firestore;
 let auth: Auth;
@@ -17,12 +17,16 @@ if (getApps().length > 0) {
 }
 
 /**
- * تحصين Firestore ضد أخطاء Assertion والـ Backend Connectivity.
- * تفعيل Long Polling يحل مشكلة الـ Network Timeout في بعض البيئات.
+ * تحصين Firestore ضد أخطاء Assertion المزدوجة.
+ * يتم استخدام try-catch لضمان عدم تهيئة المحرك مرتين في بيئة Next.js.
  */
-firestore = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-});
+try {
+  firestore = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+  });
+} catch (e) {
+  firestore = getFirestore(app);
+}
 
 auth = getAuth(app);
 

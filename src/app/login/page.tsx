@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -26,7 +25,7 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState("login");
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const { user, isVerified } = useUser();
+  const { user, isVerified, loading: userLoading } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -37,14 +36,15 @@ export default function LoginPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    if (user) {
+    // 🛡️ نظام التوجيه الذكي: يمنع الحلقات اللانهائية
+    if (!userLoading && user) {
       if (user.emailVerified) {
         router.replace("/wallet");
       } else {
         router.replace("/verify-email?waiting=true");
       }
     }
-  }, [user, router]);
+  }, [user, userLoading, router]);
 
   const handleAuth = async (type: 'login' | 'signup') => {
     if (!email || !password) {
@@ -101,9 +101,16 @@ export default function LoginPage() {
             <div className="p-10 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-6">
                <div className="logo-glow-container">
                  {config?.appearance?.logoUrl ? (
-                   <img src={config.appearance.logoUrl} className="h-28 w-28 rounded-full object-cover border-4 border-primary/20 shadow-[0_0_40px_rgba(212,175,55,0.2)]" alt="XMOOD Logo" />
+                   <div className="relative">
+                      <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+                      <img 
+                        src={config.appearance.logoUrl} 
+                        className="h-28 w-28 rounded-full object-cover border-4 border-primary/20 shadow-2xl relative z-10" 
+                        alt="XMOOD Logo" 
+                      />
+                   </div>
                  ) : (
-                   <h2 className="handwritten-logo text-3xl md:text-4xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
+                   <h2 className="handwritten-logo text-4xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
                  )}
                </div>
                <Badge variant="outline" className="text-[9px] font-black text-primary border-primary/30 uppercase tracking-[0.4em] px-6 py-1.5 rounded-full bg-primary/5">
@@ -155,7 +162,7 @@ export default function LoginPage() {
                          <div className="space-y-3"><Label className="text-[10px] font-black text-primary/80 pr-4 tracking-widest">كلمة المرور</Label><Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="تأكد من قوتها..." className="h-14 bg-background/50" /></div>
                          
                          <div className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex gap-4">
-                            <AlertCircle size={20} className="text-amber-500 shrink-0 mt-0.5" />
+                            <AlertCircle size={20} className="text-amber-500 shrink-0" />
                             <p className="text-[11px] font-bold text-zinc-400 leading-relaxed">تنبيه أمني: يرجى فحص مجلد <b>Spam</b> حتماً للعثور على رابط تفعيل العضوية في حال لم تره في صندوق الوارد.</p>
                          </div>
 

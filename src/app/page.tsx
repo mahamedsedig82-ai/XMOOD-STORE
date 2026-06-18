@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -47,12 +46,12 @@ export default function HomePage() {
                       animate={{ scale: 1, opacity: 1 }}
                       className="relative"
                     >
+                      <div className="absolute inset-0 bg-primary/10 blur-[60px] rounded-full scale-150" />
                       <img 
                         src={config.appearance.logoUrl} 
-                        className="h-40 w-40 md:h-64 md:w-64 rounded-full object-cover border-4 border-primary/20 shadow-[0_0_60px_rgba(212,175,55,0.3)] hover:scale-105 transition-transform duration-700" 
+                        className="h-40 w-40 md:h-64 md:w-64 rounded-full object-cover border-4 border-primary/20 shadow-[0_0_60px_rgba(212,175,55,0.3)] hover:scale-105 transition-transform duration-700 relative z-10" 
                         alt="XMOOD Logo" 
                       />
-                      <div className="absolute inset-0 rounded-full shadow-[inset_0_0_30px_rgba(0,0,0,0.3)] pointer-events-none" />
                     </motion.div>
                   ) : (
                     <h1 className="handwritten-logo text-6xl md:text-9xl drop-shadow-2xl" style={{ direction: 'ltr' }}>XMOOD STORE</h1>
@@ -60,22 +59,22 @@ export default function HomePage() {
                </div>
                
                <div className="space-y-6 pt-4">
-                  <h2 className="text-2xl md:text-4xl font-handwriting text-primary opacity-90 tracking-wide leading-relaxed drop-shadow-sm">
+                  <h2 className="text-xl md:text-3xl font-handwriting text-primary opacity-90 tracking-wide leading-relaxed drop-shadow-sm">
                     {config?.siteInfo?.subtitle || "مركز الخدمات الرقمية المعتمدة"}
                   </h2>
                   <div className="h-1.5 w-24 bg-gradient-to-r from-transparent via-primary/40 to-transparent mx-auto rounded-full" />
                </div>
             </div>
 
-            <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto font-medium leading-relaxed italic opacity-70 px-6">
+            <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed italic opacity-70 px-6">
               {config?.siteInfo?.description || "المستودع الرقمي الأول لإدارة وتوريد أصول النخبة من شحن الألعاب والخدمات التقنية المعتمدة سيادياً وفقاً لأعلى معايير الأمان العالمية."}
             </p>
             
-            <div className="flex flex-wrap justify-center gap-8 pt-6">
-              <Button asChild className="royal-button h-16 md:h-20 px-14 text-sm shadow-xl shadow-primary/20 hover:-translate-y-1">
+            <div className="flex flex-wrap justify-center gap-6 pt-6">
+              <Button asChild className="royal-button h-16 md:h-20 px-12 text-sm shadow-xl shadow-primary/20 hover:-translate-y-1">
                 <Link href="/store">دخول المستودع</Link>
               </Button>
-              <Button asChild variant="outline" className="h-16 md:h-20 px-14 rounded-[1.5rem] border-primary/20 hover:bg-primary/5 font-black text-[10px] uppercase tracking-[0.2em] gap-3 transition-all">
+              <Button asChild variant="outline" className="h-16 md:h-20 px-12 rounded-[1.5rem] border-primary/20 hover:bg-primary/5 font-black text-[10px] uppercase tracking-[0.2em] gap-3 transition-all">
                 <Link href="/designs/gallery" className="flex items-center gap-3"><Palette size={20} /> معرض الإبداع</Link>
               </Button>
             </div>
@@ -88,8 +87,8 @@ export default function HomePage() {
           <div className="container mx-auto px-6">
             <div className="flex flex-col md:flex-row items-center justify-between mb-20 gap-10">
               <div className="text-center md:text-right">
-                <h2 className="text-3xl md:text-5xl font-headline font-black uppercase tracking-tight">ما <span className="gold-text">يميزنا</span></h2>
-                <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.5em] mt-4 opacity-50">Elite Sovereign Selection Protocols</p>
+                <h2 className="text-2xl md:text-4xl font-headline font-black uppercase tracking-tight">ما <span className="gold-text">يميزنا</span></h2>
+                <p className="text-muted-foreground font-black text-[9px] uppercase tracking-[0.5em] mt-3 opacity-50">Elite Sovereign Selection Protocols</p>
               </div>
               <Button asChild variant="ghost" className="text-primary font-black uppercase text-[10px] tracking-widest hover:bg-primary/10 px-10 h-14 rounded-2xl border border-primary/10">
                 <Link href="/store" className="flex items-center gap-4">كافة الأصول الرقمية <ArrowRight size={18} className="rotate-180" /></Link>
