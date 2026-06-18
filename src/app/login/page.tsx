@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
   
   const router = useRouter();
-  const { user, loading: authLoading, isVerified, authSettled } = useUser();
+  const { user, profile, loading: authLoading, isVerified, authSettled } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -38,16 +38,19 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
-  // 🛡️ Sovereign Redirect Guard: Orchestrated transition
+  /**
+   * 🛡️ SOVEREIGN REDIRECT GUARD 2.0
+   * Wait for COMPLETE state stabilization (User + Profile)
+   */
   useEffect(() => {
-    if (isMounted && authSettled && !authLoading && user) {
+    if (isMounted && !authLoading && user && profile) {
       if (isVerified) {
         router.replace("/wallet");
       } else {
         router.replace("/verify-email?waiting=true");
       }
     }
-  }, [user, authLoading, isVerified, router, isMounted, authSettled]);
+  }, [user, profile, authLoading, isVerified, router, isMounted]);
 
   const handleAuth = async (type: 'login' | 'signup') => {
     if (!email || !password) {
@@ -66,6 +69,7 @@ export default function LoginPage() {
         await syncUserProfile(res.user, { displayName: fullName, phoneNumber: phone });
         await sendAccountVerification(res.user);
         toast({ title: "تم إنشاء العضوية بنجاح" });
+        // Redirect handled by useEffect once profile is synced
       } else {
         await loginEmail(email, password);
         toast({ title: "جاري تأمين الدخول..." });
@@ -78,7 +82,7 @@ export default function LoginPage() {
     }
   };
 
-  if (!isMounted || authLoading || (user && !authSettled)) {
+  if (!isMounted || authLoading || (user && !profile)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="animate-spin text-primary" size={60} />

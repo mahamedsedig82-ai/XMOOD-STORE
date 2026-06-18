@@ -15,7 +15,8 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Profile Sync Service 6.0 (Race-Condition Guarded)
+ * 🛡️ Profile Sync Service 7.0 (Atomic Integrity)
+ * Ensures user document existence without overwriting critical financial/role data.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -32,34 +33,36 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
     };
 
     if (!userDoc.exists()) {
+      // 🛡️ INITIAL CREATION: Safe defaults
       await setDoc(userRef, {
         ...baseProfile,
         walletBalance: 0,
         role: 'user',
         label: 'عضو موثق',
-        photoURL: `https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png`,
+        photoURL: user.photoURL || `https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png`,
         createdAt: new Date().toISOString(),
       }, { merge: true });
     } else {
+      // 🛡️ INCREMENTAL UPDATE: Only sync changes (like verification status)
       const existing = userDoc.data();
-      if (existing.isVerified !== user.emailVerified) {
+      const needsUpdate = existing.isVerified !== user.emailVerified || 
+                          (additionalData.displayName && existing.displayName !== additionalData.displayName);
+
+      if (needsUpdate) {
         await updateDoc(userRef, { 
           isVerified: user.emailVerified,
+          displayName: additionalData.displayName || existing.displayName,
           updatedAt: serverTimestamp() 
         });
       }
     }
   } catch (error) {
-    // Silent catch for background syncs to prevent crashing the UI
+    console.error("[AUTH_SYNC] Profile stabilization failed:", error);
   }
 }
 
 /**
  * 🛡️ Sovereign Wipe Logout (STRICT ATOMIC ORDER)
- * 1. Clear State (Implicit via useUser effect)
- * 2. Wipe Local Cache
- * 3. Await SignOut
- * 4. Hard Redirect
  */
 export const logout = async () => {
   if (!auth) return;
@@ -69,11 +72,7 @@ export const logout = async () => {
       localStorage.removeItem('xmood-theme');
       sessionStorage.clear();
     }
-    
-    // The useUser hook's useEffect will catch the auth change and kill listeners.
     await signOut(auth);
-    
-    // Final hard reset to ensure no corrupted state remains
     window.location.href = '/login';
   } catch (error) {
     window.location.href = '/login';
@@ -99,7 +98,7 @@ export const loginWithGoogle = async () => {
 };
 
 /**
- * 🛡️ Verification Service
+ * 🛡️ Verification Service (Strict Config)
  */
 export const sendAccountVerification = async (user: User) => {
   if (!user) return;
@@ -110,7 +109,7 @@ export const sendAccountVerification = async (user: User) => {
     };
     await sendEmailVerification(user, actionCodeSettings);
   } catch (error: any) {
-    console.error("[AUTH_VERIFY] Failed to send link");
+    console.error("[AUTH_VERIFY] Link dispatch failure:", error.message);
     throw error;
   }
 };

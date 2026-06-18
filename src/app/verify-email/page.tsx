@@ -26,7 +26,7 @@ function VerifyEmailContent() {
     const oobCode = searchParams.get('oobCode');
     const mode = searchParams.get('mode');
 
-    // 1. Process link verification
+    // 1. Process link verification via OOB Code
     if (oobCode && mode === 'verifyEmail' && !isActionProcessed.current) {
       isActionProcessed.current = true;
       setStatus('verifying');
@@ -34,11 +34,11 @@ function VerifyEmailContent() {
         .then(async () => {
           if (auth.currentUser) {
             await auth.currentUser.reload();
+            // 🛡️ CRITICAL SYNC: Ensure Firestore knows user is now verified
             await syncUserProfile(auth.currentUser);
           }
           setStatus('success');
-          // Smooth redirect after success celebration
-          setTimeout(() => router.replace("/store"), 2500);
+          setTimeout(() => router.replace("/wallet"), 2500);
         })
         .catch(() => {
           setStatus('error');
@@ -46,15 +46,16 @@ function VerifyEmailContent() {
       return;
     }
 
-    // 2. Real-time background monitoring for verification
+    // 2. Real-time background monitoring for verification (Polled)
     const interval = setInterval(async () => {
       if (auth.currentUser && status === 'waiting') {
         await auth.currentUser.reload();
         if (auth.currentUser.emailVerified) {
           clearInterval(interval);
+          // 🛡️ CRITICAL SYNC: Force Firestore update before redirecting
           await syncUserProfile(auth.currentUser);
           setStatus('success');
-          setTimeout(() => router.replace("/store"), 2500);
+          setTimeout(() => router.replace("/wallet"), 2500);
         }
       }
     }, 3000);
@@ -122,7 +123,7 @@ function VerifyEmailContent() {
               </div>
               <h2 className="text-3xl font-black text-green-500 leading-tight">ممتاز تم التحقق<br/>عد للمتجر للاستمتاع بخدماتنا</h2>
               <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest animate-pulse">جاري توجيهك الآن...</p>
-              <Button asChild className="royal-button w-full h-16 mt-6"><Link href="/store">الذهاب للمتجر يدوياً</Link></Button>
+              <Button asChild className="royal-button w-full h-16 mt-6"><Link href="/wallet">الانتقال للمحفظة</Link></Button>
             </motion.div>
           )}
 
