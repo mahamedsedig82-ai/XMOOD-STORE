@@ -50,6 +50,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const visibleSections = useMemo(() => {
     if (!profile?.role) return [];
+    // Owners and Admins see everything. Others see based on roles array.
     return allSections.filter(item => 
       profile.role === 'owner' || profile.role === 'admin' || item.roles.includes(profile.role)
     );
@@ -57,15 +58,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (isClient && !loading) {
-      if (!user) router.replace('/login');
-      else if (profile && !isAdmin) router.replace('/');
+      if (!user) {
+        router.replace('/login');
+      } else if (profile && !isAdmin) {
+        router.replace('/');
+      }
     }
   }, [loading, user, isAdmin, profile, isClient, router]);
 
   if (!isClient || loading || (user && !profile)) {
-    return <div className="flex flex-col items-center justify-center min-h-screen bg-background"><Loader2 className="animate-spin text-primary" size={60} /></div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-4">
+        <Loader2 className="animate-spin text-primary" size={60} />
+        <p className="text-[10px] font-black uppercase tracking-widest gold-text">Securing Sovereign Access...</p>
+      </div>
+    );
   }
 
+  // Final check to prevent layout rendering for non-admins
   if (!user || !isAdmin || !profile) return null;
 
   async function handleSignOut() {
@@ -106,7 +116,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </SidebarMenu>
           </SidebarContent>
           <div className="p-6 border-t bg-muted/10 space-y-3">
-            <Button asChild variant="outline" className="w-full h-11 rounded-xl text-[9px] font-black uppercase gap-3 border-primary/20">
+            <Button asChild variant="outline" className="w-full h-11 rounded-xl text-[9px] font-black uppercase gap-3 border-primary/20 hover:bg-primary/5">
               <Link href="/"><ArrowRight size={14} className="rotate-0" /> العودة للمتجر</Link>
             </Button>
             <Button variant="ghost" onClick={handleSignOut} className="w-full h-11 rounded-xl text-red-500 font-black text-[9px] uppercase gap-3 hover:bg-red-50">
@@ -128,7 +138,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
              <div className="flex items-center gap-4">
                 <Badge className="bg-green-500/5 text-green-600 border-none text-[8px] font-black px-4 py-1.5 rounded-full uppercase shadow-sm">Identity Verified</Badge>
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" />
              </div>
           </header>
 

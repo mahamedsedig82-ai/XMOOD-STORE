@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, Moon, Sun, Home, Store, Palette, ShieldCheck, 
-  Wallet, LayoutDashboard, LogOut, Briefcase, ShoppingCart, User, X
+  Wallet, LayoutDashboard, LogOut, Briefcase, ShoppingCart, User, X, ShieldAlert
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -16,7 +16,7 @@ import { useCart } from "@/context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function Navbar() {
-  const { user, profile } = useUser();
+  const { user, profile, isAdmin } = useUser();
   const auth = useAuth();
   const db = useFirestore();
   const pathname = usePathname();
@@ -66,8 +66,6 @@ export function Navbar() {
 
   if (!isMounted) return null;
 
-  const isAdmin = ['owner', 'admin', 'gm'].includes(profile?.role || '');
-
   return (
     <nav className="fixed top-0 z-[100] w-full border-b bg-background/85 backdrop-blur-xl h-20 md:h-24" dir="rtl">
       <div className="container h-full flex items-center justify-between px-4 md:px-6">
@@ -87,7 +85,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link 
               key={link.href} 
@@ -98,6 +96,16 @@ export function Navbar() {
               <span className={`absolute -bottom-2.5 left-0 h-[2px] bg-primary transition-all ${pathname === link.href ? 'w-full' : 'w-0'}`} />
             </Link>
           ))}
+          
+          {/* Admin Dashboard Link for Desktop */}
+          {isAdmin && (
+            <Link 
+              href="/admin" 
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[9px] font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all shadow-sm"
+            >
+              <ShieldAlert size={14} /> لوحة الإدارة
+            </Link>
+          )}
         </div>
 
         {/* Actions Section */}
@@ -160,18 +168,21 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              
+              {/* Admin Dashboard Link for Mobile Menu */}
               {isAdmin && (
                 <Link 
                   href="/admin" 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-4 p-5 rounded-2xl font-black text-xs uppercase tracking-widest text-blue-500 bg-blue-500/5 border border-blue-500/10"
+                  className="flex items-center gap-4 p-5 rounded-2xl font-black text-xs uppercase tracking-widest text-blue-500 bg-blue-500/5 border border-blue-500/10 shadow-sm"
                 >
                   <LayoutDashboard size={20} />
                   وحدة التحكم الإدارية
                 </Link>
               )}
+              
               {user && (
-                <Button variant="ghost" onClick={handleSignOut} className="justify-start gap-4 p-5 h-auto rounded-2xl font-black text-xs text-red-500">
+                <Button variant="ghost" onClick={handleSignOut} className="justify-start gap-4 p-5 h-auto rounded-2xl font-black text-xs text-red-500 mt-4 border border-red-500/10 bg-red-500/5">
                   <LogOut size={20} /> تسجيل الخروج
                 </Button>
               )}
