@@ -23,7 +23,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 43 70% 50%;
-    --radius: 1rem;
+    --radius: 1.25rem;
   }
 
   .dark {
@@ -51,21 +51,36 @@
 
 @layer base {
   * { @apply border-border; }
-  body { @apply bg-background text-foreground antialiased font-body; }
+  body { @apply bg-background text-foreground antialiased font-body transition-colors duration-300; }
 }
 
+/* Luxury Input Styling */
 input, textarea, select {
-  @apply border-2 border-primary/40 bg-white dark:bg-zinc-900 px-4 py-3 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold !important;
+  @apply border-2 border-primary/50 bg-white dark:bg-zinc-900 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all outline-none font-bold shadow-sm !important;
 }
 
 .luxury-card {
-  @apply rounded-2xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-300;
+  @apply rounded-[2.5rem] border bg-card/60 backdrop-blur-xl text-card-foreground shadow-xl hover:shadow-2xl transition-all duration-500 hover:translate-y-[-4px];
 }
 
 .gold-text {
-  @apply bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-transparent font-bold;
+  @apply bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 bg-clip-text text-transparent font-black tracking-tighter;
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-bold rounded-xl px-6 py-3 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2;
+  @apply bg-primary text-primary-foreground font-black rounded-2xl px-10 py-5 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-3 shadow-lg shadow-primary/20 uppercase text-[10px] tracking-widest;
+}
+
+.handwritten-logo {
+  @apply font-headline font-black tracking-tighter text-foreground;
+}
+
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .luxury-card { @apply rounded-[1.5rem] p-6; }
+  .royal-button { @apply px-6 py-4; }
 }
