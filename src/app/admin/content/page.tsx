@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -11,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Save, Loader2, Palette, ImageIcon, 
   Upload, DollarSign, Globe, Smartphone, 
-  ShoppingCart, MessageSquare, Zap, LayoutGrid, ShieldCheck, Send, Instagram, Youtube, Facebook, Bot
+  ShoppingCart, MessageSquare, Zap, LayoutGrid, ShieldCheck, Send, Instagram, Youtube, Facebook, Bot, Type
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,14 +29,14 @@ export default function AdminContentManager() {
   
   const [form, setForm] = useState({
     appearance: { primaryColor: "#d4af37", logoUrl: "" },
-    siteInfo: { title: "XMOOD STORE", subtitle: "مركز الخدمات الرقمية المعتمدة", description: "", usdRate: 5400 },
+    siteInfo: { title: "XMOOD STORE", subtitle: "SOVEREIGN ASSETS DISPATCH", description: "", usdRate: 5400 },
     navLabels: { home: "الرئيسية", store: "المتجر", services: "سوق الخدمات", gallery: "معرض الإبداع", agents: "الوكلاء" },
     cartLabels: { cartTitle: "تجهيز الشحن الفوري", emptyCartMsg: "لم يتم تحديد أي باقات للشحن حالياً", checkoutTitle: "تأكيد الاستحواذ الآلي", successMsg: "تم التسليم بنجاح!", summaryTitle: "ملخص أمر الشحن" },
     gallerySettings: { title: "معرض الإبداع الرقمي", subtitle: "استلهم من أرقى التصاميم والهويات البصرية.", badge: "بورتفوليو نخبة المصممين", buttonText: "طلب تصميم مشابه" },
     agentSettings: { title: "الوكلاء المعتمدون", subtitle: "شبكة من الخبراء المعتمدين لتنفيذ عمليات الشحن والوساطة.", badge: "دليل الوكلاء والوسطاء" },
-    bot: { name: "X-GUIDE", greeting: "مرحباً بك! أنا مرشدك الذكي في متجر XMOOD. كيف يمكنني مساعدتك اليوم؟ ✨", avatarUrl: "", primaryColor: "#d4af37" },
+    bot: { name: "X-GUIDE", greeting: "مرحباً بك! أنا مرشدك الذكي في متجر XMOOD STORE. كيف يمكنني مساعدتك اليوم؟ ✨", avatarUrl: "", primaryColor: "#d4af37" },
     contact: { whatsapp: "", email: "", telegram: "", facebook: "", instagram: "", youtube: "" },
-    footer: { isActive: true, aboutText: "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية.", copyright: "© 2025 XMOOD. ALL RIGHTS RESERVED." }
+    footer: { isActive: true, aboutText: "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية.", copyright: "© 2025 XMOOD STORE. ALL RIGHTS RESERVED." }
   });
 
   useEffect(() => {
@@ -121,7 +120,7 @@ export default function AdminContentManager() {
     <div className="space-y-12 animate-fade-in pb-40 text-right" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b pb-10">
         <div>
-          <h1 className="text-4xl md:text-5xl font-headline font-black gold-text leading-tight tracking-tighter">مركز التحكم بالمحتوى</h1>
+          <h1 className="text-4xl md:text-5xl font-headline font-black gold-text leading-tight tracking-tighter uppercase">مركز التحكم بالمحتوى</h1>
           <p className="text-muted-foreground mt-2 font-bold uppercase tracking-widest text-[10px]">Universal Content & Strings Controller</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-12 text-lg">
@@ -131,7 +130,7 @@ export default function AdminContentManager() {
 
       <Tabs defaultValue="site" className="w-full">
         <TabsList className="bg-card p-2 rounded-[2rem] h-auto border mb-10 flex flex-wrap gap-2 justify-center shadow-lg">
-          <TabsTrigger value="site" className="flex-1 min-w-[140px] rounded-xl font-black text-[9px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">بيانات الموقع والهوية</TabsTrigger>
+          <TabsTrigger value="site" className="flex-1 min-w-[140px] rounded-xl font-black text-[9px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">البيانات والهوية</TabsTrigger>
           <TabsTrigger value="nav" className="flex-1 min-w-[140px] rounded-xl font-black text-[9px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">نصوص القوائم</TabsTrigger>
           <TabsTrigger value="sections" className="flex-1 min-w-[140px] rounded-xl font-black text-[9px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">نصوص الأقسام</TabsTrigger>
           <TabsTrigger value="bot" className="flex-1 min-w-[140px] rounded-xl font-black text-[9px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">المساعد الذكي</TabsTrigger>
@@ -143,17 +142,17 @@ export default function AdminContentManager() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                  <div className="space-y-8">
                     <div className="space-y-3">
-                       <Label className="text-[10px] font-black uppercase text-primary pr-4 tracking-widest">لوقو الموقع الرسمي (شفاف مفضل)</Label>
+                       <Label className="text-[10px] font-black uppercase text-primary pr-4 tracking-widest">لوقو الموقع الرسمي (حواف ناعمة تلقائياً)</Label>
                        <div 
                          onClick={() => fileInputRef.current?.click()}
-                         className="h-64 bg-muted/40 border-2 border-dashed border-primary/20 rounded-[3rem] flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-all overflow-hidden relative"
+                         className="h-64 bg-muted/40 border-2 border-dashed border-primary/20 rounded-[3rem] flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-all overflow-hidden relative shadow-inner"
                        >
                           {form.appearance.logoUrl ? (
                             <img src={form.appearance.logoUrl} className="h-full w-full object-contain p-8 rounded-[2rem]" alt="Logo Preview" />
                           ) : (
                             <div className="text-center space-y-4 opacity-40">
                                <Upload className="mx-auto" size={48} />
-                               <p className="text-[10px] font-black uppercase tracking-widest">رفع صورة من الاستوديو</p>
+                               <p className="text-[10px] font-black uppercase tracking-widest">رفع من الاستوديو</p>
                             </div>
                           )}
                           <input type="file" ref={fileInputRef} onChange={handleLogoUpload} className="hidden" accept="image/*" />
@@ -161,11 +160,11 @@ export default function AdminContentManager() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase text-primary pr-4">عنوان الموقع (Hero Title)</Label>
-                          <Input value={form.siteInfo.title} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, title: e.target.value}})} className="h-14 font-black" />
+                          <Label className="text-[10px] font-black uppercase text-primary pr-4">عنوان الموقع (ALL CAPS)</Label>
+                          <Input value={form.siteInfo.title} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, title: e.target.value}})} className="h-14 font-black uppercase" />
                        </div>
                        <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase text-primary pr-4">العنوان الفرعي (Hero Sub)</Label>
+                          <Label className="text-[10px] font-black uppercase text-primary pr-4">العنوان الفرعي</Label>
                           <Input value={form.siteInfo.subtitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, subtitle: e.target.value}})} className="h-14 font-bold" />
                        </div>
                     </div>
@@ -178,7 +177,7 @@ export default function AdminContentManager() {
                           {form.appearance.logoUrl ? (
                             <img src={form.appearance.logoUrl} className="h-16 w-auto object-contain rounded-xl shadow-lg" alt="" />
                           ) : (
-                            <span className="handwritten-logo text-4xl">XMOOD <span>Store</span></span>
+                            <span className="handwritten-logo text-4xl">XMOOD <span>STORE</span></span>
                           )}
                        </div>
                        <div className="w-full space-y-4">
@@ -187,6 +186,10 @@ export default function AdminContentManager() {
                        </div>
                     </div>
                  </div>
+              </div>
+              <div className="space-y-3">
+                 <Label className="text-[10px] font-black uppercase text-primary pr-4">وصف المتجر العام</Label>
+                 <Textarea value={form.siteInfo.description} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, description: e.target.value}})} className="min-h-[120px]" placeholder="ادخل وصفاً مفصلاً يظهر في الواجهة الرئيسية..." />
               </div>
            </Card>
         </TabsContent>
@@ -207,7 +210,7 @@ export default function AdminContentManager() {
         <TabsContent value="sections">
            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
               <Card className="luxury-card p-10 space-y-8 bg-zinc-950/60 text-white border-none">
-                 <h3 className="text-2xl font-black flex items-center gap-3 gold-text"><LayoutGrid size={24} /> نصوص المعرض</h3>
+                 <h3 className="text-2xl font-black flex items-center gap-3 gold-text uppercase"><LayoutGrid size={24} /> نصوص المعرض</h3>
                  <div className="space-y-6">
                     <div className="space-y-1.5"><Label className="text-[9px] font-black uppercase opacity-60 pr-3">العنوان الرئيسي</Label><Input value={form.gallerySettings.title} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, title: e.target.value}})} className="bg-white/5 border-white/10" /></div>
                     <div className="space-y-1.5"><Label className="text-[9px] font-black uppercase opacity-60 pr-3">الوصف التعريفي</Label><Textarea value={form.gallerySettings.subtitle} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, subtitle: e.target.value}})} className="min-h-[100px] bg-white/5 border-white/10" /></div>
@@ -215,7 +218,7 @@ export default function AdminContentManager() {
                  </div>
               </Card>
               <Card className="luxury-card p-10 space-y-8 bg-primary/5 border-none">
-                 <h3 className="text-2xl font-black flex items-center gap-3 text-primary"><ShoppingCart size={24} /> نصوص نظام الشحن (السلة)</h3>
+                 <h3 className="text-2xl font-black flex items-center gap-3 text-primary uppercase"><ShoppingCart size={24} /> نصوص نظام الشحن (السلة)</h3>
                  <div className="space-y-6">
                     <div className="space-y-1.5"><Label className="text-[9px] font-black uppercase text-primary pr-3">عنوان صفحة الشحن</Label><Input value={form.cartLabels.cartTitle} onChange={e => setForm({...form, cartLabels: {...form.cartLabels, cartTitle: e.target.value}})} /></div>
                     <div className="space-y-1.5"><Label className="text-[9px] font-black uppercase text-primary pr-3">رسالة السلة الفارغة</Label><Input value={form.cartLabels.emptyCartMsg} onChange={e => setForm({...form, cartLabels: {...form.cartLabels, emptyCartMsg: e.target.value}})} /></div>
@@ -229,7 +232,7 @@ export default function AdminContentManager() {
            <Card className="luxury-card p-10 md:p-16 border-none bg-blue-500/5">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                  <div className="space-y-8">
-                    <h3 className="text-2xl font-black flex items-center gap-3 text-blue-500"><Bot size={28} /> إعدادات المساعد الإرشادي</h3>
+                    <h3 className="text-2xl font-black flex items-center gap-3 text-blue-500 uppercase"><Bot size={28} /> إعدادات المساعد الإرشادي</h3>
                     <div className="space-y-4">
                        <div className="space-y-2"><Label className="text-[10px] font-black uppercase opacity-60">اسم البوت</Label><Input value={form.bot.name} onChange={e => setForm({...form, bot: {...form.bot, name: e.target.value}})} /></div>
                        <div className="space-y-2"><Label className="text-[10px] font-black uppercase opacity-60">رسالة الترحيب</Label><Textarea value={form.bot.greeting} onChange={e => setForm({...form, bot: {...form.bot, greeting: e.target.value}})} className="min-h-[120px]" /></div>
@@ -240,7 +243,7 @@ export default function AdminContentManager() {
                        <Bot size={40} />
                     </div>
                     <div>
-                       <p className="text-lg font-black text-blue-500">{form.bot.name}</p>
+                       <p className="text-lg font-black text-blue-500 uppercase">{form.bot.name}</p>
                        <p className="text-sm font-medium text-muted-foreground mt-2 leading-relaxed">{form.bot.greeting}</p>
                     </div>
                  </div>
