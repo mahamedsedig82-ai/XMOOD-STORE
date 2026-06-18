@@ -60,14 +60,19 @@
   background: linear-gradient(135deg, #b8860b 0%, #f9d976 50%, #b8860b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.15));
+  filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.1));
   transition: all 0.5s ease;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em; /* تم زيادة التباعد لمنع التداخل */
   font-weight: 900;
+  line-height: 1.2;
+}
+
+.handwritten-logo span {
+  @apply ml-2;
 }
 
 .handwritten-logo:hover {
-  filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
+  filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.25));
 }
 
 .emerald-glass {
@@ -98,7 +103,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-black rounded-[1.5rem] px-12 py-6 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase text-[12px] tracking-[0.2em] border border-white/10;
+  @apply bg-primary text-primary-foreground font-black rounded-[1.5rem] px-8 md:px-12 py-5 md:py-6 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase text-[10px] md:text-[12px] tracking-[0.2em] border border-white/10;
 }
 
 .animate-fade-in { animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -110,8 +115,12 @@ input:focus, textarea:focus, select:focus {
 
 @media (max-width: 768px) {
   .responsive-table thead { @apply hidden; }
-  .responsive-table tr { @apply block mb-12 bg-card rounded-[3.5rem] border-2 border-primary/5 p-10 shadow-2xl; }
-  .responsive-table td { @apply block py-6 text-right flex justify-between items-center border-b border-border/50; }
-  .responsive-table td::before { content: attr(data-label); @apply font-black text-[11px] uppercase text-muted-foreground ml-8 tracking-widest; }
-  .responsive-table td:last-child { @apply border-none bg-primary/10 justify-center py-10 rounded-[2.5rem] mt-8; }
+  .responsive-table tr { @apply block mb-12 bg-card rounded-[3rem] border-2 border-primary/5 p-8 shadow-2xl; }
+  .responsive-table td { @apply block py-5 text-right flex justify-between items-center border-b border-border/50; }
+  .responsive-table td::before { content: attr(data-label); @apply font-black text-[10px] uppercase text-muted-foreground ml-6 tracking-widest; }
+  .responsive-table td:last-child { @apply border-none bg-primary/10 justify-center py-8 rounded-[2rem] mt-6; }
+  
+  .luxury-card {
+    @apply rounded-[2.5rem];
+  }
 }

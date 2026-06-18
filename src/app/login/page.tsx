@@ -91,23 +91,23 @@ export default function LoginPage() {
         <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/5 blur-[150px] rounded-full" />
       </div>
 
-      <div className="container mx-auto px-4 min-h-screen flex items-center justify-center pt-32 pb-20 relative z-10">
+      <div className="container mx-auto px-4 min-h-screen flex items-center justify-center pt-24 pb-12 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 30 }} 
           animate={{ opacity: 1, y: 0 }} 
           className="w-full max-w-xl"
         >
-          <Card className="emerald-glass rounded-[3rem] border-white/5 overflow-hidden shadow-2xl">
-            <div className="p-10 md:p-12 text-center border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
-               <h2 className="handwritten-logo text-4xl md:text-5xl mb-2 tracking-widest uppercase">XMOOD <span>STORE</span></h2>
-               <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.5em] opacity-60">Sovereign Identity Portal</p>
+          <Card className="emerald-glass rounded-[2.5rem] md:rounded-[3rem] border-white/5 overflow-hidden shadow-2xl">
+            <div className="p-8 md:p-12 text-center border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
+               <h2 className="handwritten-logo text-3xl md:text-5xl mb-2 tracking-widest uppercase">XMOOD <span>STORE</span></h2>
+               <p className="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em] md:tracking-[0.5em] opacity-60">Sovereign Identity Portal</p>
             </div>
 
-            <CardContent className="p-8 md:p-12 space-y-10">
+            <CardContent className="p-6 md:p-12 space-y-8 md:space-y-10">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-10 p-1.5 bg-black/40 rounded-2xl border border-white/10 h-16 md:h-18">
-                  <TabsTrigger value="login" className="rounded-xl font-black text-[10px] uppercase py-3 data-[state=active]:bg-primary data-[state=active]:text-black transition-all shadow-lg">تسجيل الدخول</TabsTrigger>
-                  <TabsTrigger value="signup" className="rounded-xl font-black text-[10px] uppercase py-3 data-[state=active]:bg-primary data-[state=active]:text-black transition-all shadow-lg">إنشاء حساب</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 mb-8 md:mb-10 p-1 bg-black/40 rounded-xl md:rounded-2xl border border-white/10 h-14 md:h-18">
+                  <TabsTrigger value="login" className="rounded-lg md:rounded-xl font-black text-[9px] md:text-[10px] uppercase py-2 md:py-3 data-[state=active]:bg-primary data-[state=active]:text-black transition-all shadow-lg">تسجيل الدخول</TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-lg md:rounded-xl font-black text-[9px] md:text-[10px] uppercase py-2 md:py-3 data-[state=active]:bg-primary data-[state=active]:text-black transition-all shadow-lg">إنشاء حساب</TabsTrigger>
                 </TabsList>
 
                 <AnimatePresence mode="wait">
@@ -117,13 +117,13 @@ export default function LoginPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.3 }}
-                    className="space-y-8"
+                    className="space-y-6 md:space-y-8"
                   >
                     {activeTab === 'login' ? (
-                      <div className="space-y-10">
-                        <div className="space-y-6">
+                      <div className="space-y-8 md:space-y-10">
+                        <div className="space-y-4 md:space-y-6">
                            <div className="space-y-2">
-                              <Label className="text-[10px] font-black uppercase text-primary/70 pr-4 tracking-widest flex items-center gap-2">
+                              <Label className="text-[9px] md:text-[10px] font-black uppercase text-primary/70 pr-4 tracking-widest flex items-center gap-2">
                                 <Mail size={12} /> البريد الإلكتروني
                               </Label>
                               <Input 
@@ -131,11 +131,11 @@ export default function LoginPage() {
                                 onChange={e => setEmail(e.target.value)} 
                                 type="email" 
                                 placeholder="user@xmood.pro" 
-                                className="h-16 text-center text-lg bg-zinc-950/50 border-primary/20 gold-glow-border" 
+                                className="h-14 md:h-16 text-center text-base md:text-lg bg-zinc-950/50 border-primary/20 gold-glow-border" 
                               />
                            </div>
                            <div className="space-y-2">
-                              <Label className="text-[10px] font-black uppercase text-primary/70 pr-4 tracking-widest flex items-center gap-2">
+                              <Label className="text-[9px] md:text-[10px] font-black uppercase text-primary/70 pr-4 tracking-widest flex items-center gap-2">
                                 <Lock size={12} /> كلمة المرور
                               </Label>
                               <Input 
@@ -143,42 +143,42 @@ export default function LoginPage() {
                                 onChange={e => setPassword(e.target.value)} 
                                 type="password" 
                                 placeholder="••••••••" 
-                                className="h-16 text-center text-lg bg-zinc-950/50 border-primary/20 gold-glow-border" 
+                                className="h-14 md:h-16 text-center text-base md:text-lg bg-zinc-950/50 border-primary/20 gold-glow-border" 
                               />
                            </div>
                         </div>
                         <Button 
                           onClick={() => handleAuth('login')} 
                           disabled={loading} 
-                          className="w-full h-18 rounded-2xl bg-primary text-black font-black text-lg shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all"
+                          className="w-full h-16 md:h-18 rounded-xl md:rounded-2xl bg-primary text-black font-black text-base md:text-lg shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all"
                         >
-                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={24} className="ml-3" /> تأمين الدخول</>}
+                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={20} className="md:size-24 ml-3" /> تأمين الدخول</>}
                         </Button>
                       </div>
                     ) : (
-                      <div className="space-y-6">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="space-y-5 md:space-y-6">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                             <div className="space-y-2">
-                               <Label className="text-[9px] font-black text-primary/70 pr-4 uppercase">الاسم الكامل</Label>
-                               <Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-14 text-sm bg-zinc-950/50 border-primary/20" placeholder="Elite Member Name" />
+                               <Label className="text-[8px] md:text-[9px] font-black text-primary/70 pr-4 uppercase">الاسم الكامل</Label>
+                               <Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12 md:h-14 text-sm bg-zinc-950/50 border-primary/20" placeholder="Elite Member Name" />
                             </div>
                             <div className="space-y-2">
-                               <Label className="text-[9px] font-black text-primary/70 pr-4 uppercase">رقم الهاتف</Label>
-                               <Input value={phone} onChange={e => setPhone(e.target.value)} className="h-14 text-sm font-mono bg-zinc-950/50 border-primary/20" placeholder="+966..." />
+                               <Label className="text-[8px] md:text-[9px] font-black text-primary/70 pr-4 uppercase">رقم الهاتف</Label>
+                               <Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12 md:h-14 text-sm font-mono bg-zinc-950/50 border-primary/20" placeholder="+966..." />
                             </div>
                          </div>
                          <div className="space-y-2">
-                            <Label className="text-[9px] font-black text-primary/70 pr-4 uppercase">البريد الإلكتروني</Label>
-                            <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-14 text-sm bg-zinc-950/50 border-primary/20" placeholder="user@sovereign.pro" />
+                            <Label className="text-[8px] md:text-[9px] font-black text-primary/70 pr-4 uppercase">البريد الإلكتروني</Label>
+                            <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-12 md:h-14 text-sm bg-zinc-950/50 border-primary/20" placeholder="user@sovereign.pro" />
                          </div>
                          <div className="space-y-2">
-                            <Label className="text-[9px] font-black text-primary/70 pr-4 uppercase">كلمة المرور</Label>
-                            <Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-14 text-sm bg-zinc-950/50 border-primary/20" placeholder="••••••••" />
+                            <Label className="text-[8px] md:text-[9px] font-black text-primary/70 pr-4 uppercase">كلمة المرور</Label>
+                            <Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-12 md:h-14 text-sm bg-zinc-950/50 border-primary/20" placeholder="••••••••" />
                          </div>
                          
-                         <div className="p-5 bg-primary/5 border border-primary/10 rounded-2xl flex gap-4 items-start">
-                            <AlertCircle size={18} className="text-primary shrink-0 mt-0.5" />
-                            <p className="text-[10px] font-bold text-zinc-400 leading-relaxed">
+                         <div className="p-4 md:p-5 bg-primary/5 border border-primary/10 rounded-xl md:rounded-2xl flex gap-3 md:gap-4 items-start">
+                            <AlertCircle size={16} className="text-primary shrink-0 mt-0.5 md:size-18" />
+                            <p className="text-[9px] md:text-[10px] font-bold text-zinc-400 leading-relaxed">
                                تنبيه: ستصلك رسالة تفعيل. إذا لم تجدها، تحقق فوراً من مجلد <b>Spam</b> أو <b>Junk</b>.
                             </p>
                          </div>
@@ -186,9 +186,9 @@ export default function LoginPage() {
                          <Button 
                            onClick={() => handleAuth('signup')} 
                            disabled={loading} 
-                           className="w-full h-18 rounded-2xl bg-primary text-black font-black text-lg mt-4 shadow-xl shadow-primary/10"
+                           className="w-full h-16 md:h-18 rounded-xl md:rounded-2xl bg-primary text-black font-black text-base md:text-lg mt-2 md:mt-4 shadow-xl shadow-primary/10"
                          >
-                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={24} className="ml-3" /> إنشاء عضوية</>}
+                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={20} className="md:size-24 ml-3" /> إنشاء عضوية</>}
                          </Button>
                       </div>
                     )}
@@ -198,12 +198,12 @@ export default function LoginPage() {
             </CardContent>
           </Card>
           
-          <div className="text-center mt-12 space-y-2 opacity-40">
-             <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.5em]">
+          <div className="text-center mt-8 md:mt-12 space-y-2 opacity-40">
+             <p className="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em] md:tracking-[0.5em]">
                Precision Secure Access Engine
              </p>
-             <p className="text-[8px] font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
-               <Sparkles size={10} /> Powered by XMOOD Cloud Intelligence <Sparkles size={10} />
+             <p className="text-[7px] md:text-[8px] font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
+               <Sparkles size={8} md:size={10} /> Powered by XMOOD Cloud Intelligence <Sparkles size={8} md:size={10} />
              </p>
           </div>
         </motion.div>
