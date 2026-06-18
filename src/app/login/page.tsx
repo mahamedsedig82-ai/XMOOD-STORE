@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { loginEmail, registerEmail, syncUserProfile, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Loader2, UserPlus, ShieldCheck, AlertCircle } from "lucide-react";
+import { Loader2, UserPlus, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
   
   const router = useRouter();
-  const { user, loading: authLoading, isVerified } = useUser();
+  const { user, loading: authLoading, isVerified, authSettled, profile } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -38,16 +38,16 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
-  // 🛡️ Sovereign Redirect Guard: منع حلقات التوجيه اللانهائية
+  // 🛡️ Sovereign Redirect Guard: Prevent infinite loops and race conditions
   useEffect(() => {
-    if (isMounted && !authLoading && user) {
+    if (isMounted && authSettled && !authLoading && user) {
       if (isVerified) {
         router.replace("/wallet");
       } else {
         router.replace("/verify-email?waiting=true");
       }
     }
-  }, [user, authLoading, isVerified, router, isMounted]);
+  }, [user, authLoading, isVerified, router, isMounted, authSettled]);
 
   const handleAuth = async (type: 'login' | 'signup') => {
     if (!email || !password) {
@@ -78,7 +78,7 @@ export default function LoginPage() {
     }
   };
 
-  if (!isMounted || authLoading || user) {
+  if (!isMounted || authLoading || (user && !authSettled)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="animate-spin text-primary" size={60} />

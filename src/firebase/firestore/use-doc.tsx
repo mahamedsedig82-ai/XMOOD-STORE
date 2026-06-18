@@ -9,11 +9,11 @@ import {
   Unsubscribe
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * 🛡️ Sovereign Document Hook 19.0 (Anti-Assertion Pattern)
- * إدارة اشتراكات ذكية تمنع تداخل الحالة في Firestore وتدعم الأداء السريع.
+ * 🛡️ Sovereign Document Hook 20.0 (Strict Lifecycle Management)
+ * Prevents assertion errors by enforcing physical cleanup of onSnapshot.
  */
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
@@ -34,13 +34,15 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
       return;
     }
 
+    setLoading(true);
+
     try {
-      setLoading(true);
       const unsubscribe = onSnapshot(
         docRef, 
         (snapshot: DocumentSnapshot<T>) => {
           setData(snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } as T : null);
           setLoading(false);
+          setError(null);
         }, 
         (serverError) => {
           if (serverError.code === 'permission-denied') {
@@ -52,7 +54,8 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
       );
 
       unsubscribeRef.current = unsubscribe;
-    } catch (e) {
+    } catch (e: any) {
+      setError(e);
       setLoading(false);
     }
 

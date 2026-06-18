@@ -8,15 +8,15 @@ import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
 /**
- * 🛡️ Centralized Sovereign Identity Manager 19.0
- * إدارة هوية ذكية تمنع تداخل المستمعات وتقضي على أخطاء Firestore Assertion عبر الـ Ref Cleanup.
+ * 🛡️ Centralized Sovereign Identity Manager 20.0
+ * Prevents overlapping listeners and Firestore assertions using Ref-Shielded logic.
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authSettled, setAuthSettled] = useState(false);
   
-  // مرجع فيزيائي لضمان وجود مستمع واحد فقط وتدمير القديم فوراً
   const profileUnsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
@@ -27,8 +27,9 @@ export function useUser() {
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
+      setAuthSettled(true);
       
-      // قتل المستمع القديم فوراً عند أي تغير في حالة المستخدم
+      // Cleanup previous profile listener immediately
       if (profileUnsubscribeRef.current) {
         profileUnsubscribeRef.current();
         profileUnsubscribeRef.current = null;
@@ -38,20 +39,20 @@ export function useUser() {
         try {
           const userDocRef = doc(db, 'users', firebaseUser.uid);
           
-          // تفعيل المستمع الجديد مع تخزينه في الـ Ref للتحكم المطلق
           profileUnsubscribeRef.current = onSnapshot(userDocRef, (snapshot) => {
             if (snapshot.exists()) {
               setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
               setLoading(false);
             } else {
-              // مزامنة أولية في حالة عدم وجود الملف الشخصي
+              // Initial sync if profile missing
               syncUserProfile(firebaseUser).catch(() => setLoading(false));
             }
           }, (err) => {
-            console.warn("[IDENTITY_GUARD] Profile Sync Shielded:", err.message);
+            console.warn("[IDENTITY_GUARD] Profile Sync Interrupted:", err.message);
             setLoading(false);
           });
         } catch (e) {
+          console.error("[IDENTITY_GUARD] Fatal Sync Error", e);
           setLoading(false);
         }
       } else {
@@ -64,6 +65,7 @@ export function useUser() {
       unsubscribeAuth();
       if (profileUnsubscribeRef.current) {
         profileUnsubscribeRef.current();
+        profileUnsubscribeRef.current = null;
       }
     };
   }, []);
@@ -73,8 +75,9 @@ export function useUser() {
   return { 
     user, 
     profile, 
-    loading: loading || (!!user && !profile), 
+    loading: loading || !authSettled || (!!user && !profile), 
     isVerified: user?.emailVerified || false,
-    isAdmin
+    isAdmin,
+    authSettled
   };
 }

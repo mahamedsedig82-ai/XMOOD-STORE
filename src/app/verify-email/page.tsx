@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, Mail, Zap, CheckCircle, XCircle, ShoppingBag, RefreshCw, AlertCircle } from "lucide-react";
+import { Loader2, Mail, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/firebase";
@@ -21,13 +21,13 @@ function VerifyEmailContent() {
   const isActionProcessed = useRef(false);
 
   useEffect(() => {
-    if (!auth || isActionProcessed.current) return;
+    if (!auth) return;
 
     const oobCode = searchParams.get('oobCode');
     const mode = searchParams.get('mode');
 
-    // 1. معالجة رابط التفعيل المباشر
-    if (oobCode && mode === 'verifyEmail') {
+    // 1. Process direct verification link
+    if (oobCode && mode === 'verifyEmail' && !isActionProcessed.current) {
       isActionProcessed.current = true;
       setStatus('verifying');
       applyActionCode(auth, oobCode)
@@ -37,7 +37,8 @@ function VerifyEmailContent() {
             await syncUserProfile(auth.currentUser);
           }
           setStatus('success');
-          setTimeout(() => router.replace("/store"), 2000);
+          // Smooth redirect after success
+          setTimeout(() => router.replace("/store"), 2500);
         })
         .catch(() => {
           setStatus('error');
@@ -45,7 +46,7 @@ function VerifyEmailContent() {
       return;
     }
 
-    // 2. نظام المراقبة اللحظي لحالة التفعيل (Idempotent Guard)
+    // 2. Real-time verification monitoring
     const interval = setInterval(async () => {
       if (auth.currentUser && status === 'waiting') {
         await auth.currentUser.reload();
@@ -53,7 +54,7 @@ function VerifyEmailContent() {
           clearInterval(interval);
           await syncUserProfile(auth.currentUser);
           setStatus('success');
-          setTimeout(() => router.replace("/store"), 2000);
+          setTimeout(() => router.replace("/store"), 2500);
         }
       }
     }, 3000);
@@ -121,7 +122,7 @@ function VerifyEmailContent() {
               </div>
               <h2 className="text-3xl font-black text-green-500 leading-tight">ممتاز تم التحقق<br/>عد للمتجر للاستمتاع بخدماتنا</h2>
               <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest animate-pulse">جاري توجيهك الآن...</p>
-              <Button asChild className="royal-button w-full h-16"><Link href="/store">الذهاب للمتجر يدوياً</Link></Button>
+              <Button asChild className="royal-button w-full h-16 mt-6"><Link href="/store">الذهاب للمتجر يدوياً</Link></Button>
             </motion.div>
           )}
 

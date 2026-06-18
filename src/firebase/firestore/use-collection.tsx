@@ -9,21 +9,22 @@ import {
   Unsubscribe
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * 🛡️ Sovereign Collection Hook 19.0 (Anti-Assertion Pattern)
- * يستخدم نظام الـ Unsubscribe Ref لضمان استقرار Firestore ومنع انهيار الـ SDK.
+ * 🛡️ Sovereign Collection Hook 20.0 (Strict Lifecycle Management)
+ * Uses physical useRef tracking to ensure absolute cleanup and prevent Firestore Internal Assertions.
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   
+  // Physical reference to the active subscription to prevent overlapping
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
-    // 1. القتل العمد لأي مستمع نشط قبل البدء بجديد لمنع التعارض
+    // 1. Forcefully kill any existing listener before starting a new one
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
@@ -35,8 +36,9 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
       return;
     }
 
+    setLoading(true);
+    
     try {
-      setLoading(true);
       const unsubscribe = onSnapshot(
         query, 
         (snapshot: QuerySnapshot<T>) => {
@@ -46,6 +48,7 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
           } as T));
           setData(items);
           setLoading(false);
+          setError(null);
         }, 
         (serverError) => {
           if (serverError.code === 'permission-denied') {
@@ -57,12 +60,14 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         }
       );
 
+      // Store the new unsubscription function
       unsubscribeRef.current = unsubscribe;
-    } catch (e) {
+    } catch (e: any) {
+      setError(e);
       setLoading(false);
     }
 
-    // 2. ضمان التنظيف الكامل عند unmount أو تغيير الـ Query
+    // 2. Final cleanup on unmount
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
