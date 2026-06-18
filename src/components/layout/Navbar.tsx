@@ -40,6 +40,11 @@ export function Navbar() {
     document.documentElement.classList.toggle('dark', savedTheme === 'dark');
   }, []);
 
+  // Close menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
@@ -67,7 +72,7 @@ export function Navbar() {
   if (!isMounted) return null;
 
   return (
-    <nav className="fixed top-0 z-[100] w-full border-b bg-background/85 backdrop-blur-xl h-20 md:h-24" dir="rtl">
+    <nav className="fixed top-0 z-[150] w-full border-b bg-background/90 backdrop-blur-2xl h-20 md:h-24" dir="rtl">
       <div className="container h-full flex items-center justify-between px-4 md:px-6">
         
         {/* Logo Section */}
@@ -97,7 +102,6 @@ export function Navbar() {
             </Link>
           ))}
           
-          {/* Admin Dashboard Link for Desktop */}
           {isAdmin && (
             <Link 
               href="/admin" 
@@ -141,8 +145,13 @@ export function Navbar() {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="lg:hidden rounded-xl bg-muted/40 border h-10 w-10" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="lg:hidden rounded-xl bg-muted/40 border h-10 w-10 z-[200]" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={20} className="text-primary" /> : <Menu size={20} />}
           </Button>
         </div>
       </div>
@@ -150,44 +159,85 @@ export function Navbar() {
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            className="fixed inset-0 top-20 z-50 bg-background lg:hidden p-6 overflow-y-auto"
-          >
-            <div className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.href} 
-                  href={link.href} 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-4 p-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${pathname === link.href ? 'bg-primary/10 text-primary border border-primary/10 shadow-sm' : 'text-muted-foreground'}`}
-                >
-                  <link.icon size={20} className="text-primary" />
-                  {link.label}
-                </Link>
-              ))}
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 z-[140] bg-black/60 backdrop-blur-md lg:hidden"
+            />
+            <motion.div 
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 z-[160] h-full w-[80%] max-w-[320px] bg-background border-l shadow-2xl lg:hidden p-6 flex flex-col"
+            >
+              <div className="flex items-center justify-between mb-10 pb-6 border-b">
+                 <div className="flex flex-col">
+                    <span className="font-black text-xs gold-text uppercase tracking-widest">XMOOD STORE</span>
+                    <span className="text-[7px] font-black text-muted-foreground uppercase">Navigation Menu</span>
+                 </div>
+                 <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="rounded-full bg-muted/40">
+                    <X size={18} />
+                 </Button>
+              </div>
+
+              <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
+                {navLinks.map((link) => (
+                  <Link 
+                    key={link.href} 
+                    href={link.href} 
+                    className={`flex items-center gap-4 p-5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${pathname === link.href ? 'bg-primary text-black shadow-lg' : 'hover:bg-primary/5 text-muted-foreground border border-transparent hover:border-primary/10'}`}
+                  >
+                    <link.icon size={18} className={pathname === link.href ? 'text-black' : 'text-primary'} />
+                    {link.label}
+                  </Link>
+                ))}
+                
+                {/* Admin Dashboard Link - Prominent in Mobile Menu */}
+                {isAdmin && (
+                  <Link 
+                    href="/admin" 
+                    className={`flex items-center gap-4 p-5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all mt-4 ${pathname.startsWith('/admin') ? 'bg-blue-600 text-white shadow-xl' : 'text-blue-500 bg-blue-500/5 border border-blue-500/10 shadow-sm'}`}
+                  >
+                    <ShieldAlert size={18} />
+                    لوحة الإدارة السيادية
+                  </Link>
+                )}
+              </div>
               
-              {/* Admin Dashboard Link for Mobile Menu */}
-              {isAdmin && (
-                <Link 
-                  href="/admin" 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-4 p-5 rounded-2xl font-black text-xs uppercase tracking-widest text-blue-500 bg-blue-500/5 border border-blue-500/10 shadow-sm"
-                >
-                  <LayoutDashboard size={20} />
-                  وحدة التحكم الإدارية
-                </Link>
-              )}
-              
-              {user && (
-                <Button variant="ghost" onClick={handleSignOut} className="justify-start gap-4 p-5 h-auto rounded-2xl font-black text-xs text-red-500 mt-4 border border-red-500/10 bg-red-500/5">
-                  <LogOut size={20} /> تسجيل الخروج
-                </Button>
-              )}
-            </div>
-          </motion.div>
+              <div className="mt-auto pt-6 border-t space-y-4">
+                {user ? (
+                  <div className="space-y-3">
+                    <Link href="/wallet" className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 border">
+                       <Avatar className="w-10 h-10 border border-primary/20">
+                          <AvatarImage src={profile?.photoURL} />
+                          <AvatarFallback>XM</AvatarFallback>
+                       </Avatar>
+                       <div className="flex flex-col">
+                          <span className="font-black text-[10px] truncate max-w-[120px]">{profile?.displayName}</span>
+                          <span className="text-[8px] font-bold text-primary uppercase">عرض المحفظة</span>
+                       </div>
+                    </Link>
+                    <Button variant="ghost" onClick={handleSignOut} className="w-full justify-start gap-4 p-4 h-auto rounded-xl font-black text-[10px] text-red-500 border border-red-500/10 bg-red-500/5 uppercase tracking-widest">
+                      <LogOut size={16} /> تسجيل الخروج
+                    </Button>
+                  </div>
+                ) : (
+                  <Button asChild className="w-full royal-button h-14 text-[10px]">
+                    <Link href="/login">دخول المنصة</Link>
+                  </Button>
+                )}
+                <div className="flex justify-center gap-4 opacity-40 pt-4">
+                   <Sun size={14} className={theme === 'light' ? 'text-primary' : ''} onClick={toggleTheme} />
+                   <div className="w-[1px] h-4 bg-muted-foreground" />
+                   <Moon size={14} className={theme === 'dark' ? 'text-primary' : ''} onClick={toggleTheme} />
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </nav>
