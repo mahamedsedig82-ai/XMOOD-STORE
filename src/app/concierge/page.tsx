@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -42,7 +43,6 @@ export default function ConciergePage() {
     setIsLoading(true);
 
     try {
-      // تحويل البيانات لضمان عدم وجود أخطاء في الـ AI Flow
       const cleanProducts = (products || []).map(p => ({
         id: p.id || String(Math.random()),
         name: p.name || "باقة غير معروفة",
@@ -72,7 +72,6 @@ export default function ConciergePage() {
       <div className="container mx-auto px-4 h-[calc(100vh-100px)] max-w-5xl pt-32 pb-6">
         <div className="luxury-card h-full flex flex-col border-primary/10 shadow-2xl bg-card/60">
           
-          {/* Header */}
           <div className="bg-muted/10 p-6 border-b border-border flex items-center justify-between backdrop-blur-3xl">
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20 shadow-lg">
@@ -89,7 +88,6 @@ export default function ConciergePage() {
             </div>
           </div>
 
-          {/* Chat Area */}
           <ScrollArea className="flex-1 p-6 md:p-10">
             <div className="space-y-10">
               <AnimatePresence mode="popLayout">
@@ -125,7 +123,6 @@ export default function ConciergePage() {
             </div>
           </ScrollArea>
 
-          {/* Input Area */}
           <div className="p-6 md:p-8 bg-muted/10 border-t border-border backdrop-blur-xl">
             <div className="relative flex gap-3 max-w-5xl mx-auto items-center">
               <Input 

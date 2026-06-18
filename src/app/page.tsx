@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -49,8 +50,8 @@ export default function HomePage() {
             </div>
 
             <div className="relative inline-block">
-               <h1 className="text-7xl md:text-[10rem] font-headline font-black leading-none tracking-tighter text-foreground uppercase italic flex flex-col items-center">
-                 <span className="handwritten-logo text-8xl md:text-[12rem] drop-shadow-[0_0_25px_rgba(212,175,55,0.25)]">XMOOD STORE</span>
+               <h1 className="text-5xl md:text-8xl font-headline font-black leading-none tracking-tighter text-foreground uppercase flex flex-col items-center">
+                 <span className="handwritten-logo text-6xl md:text-9xl drop-shadow-[0_0_20px_rgba(212,175,55,0.2)]">XMOOD STORE</span>
                </h1>
             </div>
 

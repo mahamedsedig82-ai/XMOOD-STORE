@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -23,7 +24,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 43 70% 50%;
-    --radius: 2.5rem;
+    --radius: 3.5rem;
   }
 
   .dark {
@@ -54,40 +55,35 @@
   body { @apply bg-background text-foreground antialiased font-body transition-colors duration-500; }
 }
 
-/* 💎 SOVEREIGN XMOOD LOGO STYLE */
+/* 💎 ELEGANT BRANDING STYLE */
 .handwritten-logo {
   @apply font-headline select-none cursor-default inline-flex items-center py-1 relative uppercase;
-  background: linear-gradient(to right, #b8860b 0%, #d4af37 50%, #b8860b 100%);
+  background: linear-gradient(135deg, #b8860b 0%, #f9d976 50%, #b8860b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.25));
+  filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.15));
   transition: all 0.5s ease;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   font-weight: 900;
 }
 
-.handwritten-logo span {
-  @apply font-headline ml-3;
-  -webkit-text-fill-color: transparent;
-  background: linear-gradient(to right, #d4af37, #f9d976);
-  -webkit-background-clip: text;
-  opacity: 0.9;
+.handwritten-logo:hover {
+  filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
 }
 
-/* 🧬 EMERALD SOVEREIGN GLASS */
 .emerald-glass {
   @apply bg-zinc-950/85 backdrop-blur-[60px] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.9)];
-  background-image: radial-gradient(circle at top right, rgba(16, 185, 129, 0.05), transparent 60%);
+  background-image: radial-gradient(circle at top right, rgba(212, 175, 55, 0.03), transparent 60%);
 }
 
 .gold-glow-border {
-  @apply border-2 border-primary/20 shadow-[0_0_30px_rgba(212,175,55,0.1)] focus-within:border-primary focus-within:shadow-[0_0_40px_rgba(212,175,55,0.3)] transition-all;
+  @apply border-2 border-primary/20 shadow-[0_0_30px_rgba(212,175,55,0.05)] focus-within:border-primary focus-within:shadow-[0_0_40px_rgba(212,175,55,0.15)] transition-all;
 }
 
 /* 🛡️ ULTRA-VISIBLE INPUTS */
 input, textarea, select {
   @apply bg-white dark:bg-zinc-900/60 px-8 py-5 rounded-[2rem] outline-none font-bold text-right w-full transition-all !important;
-  border: 1.5px solid rgba(212, 175, 55, 0.2) !important;
+  border: 1.5px solid rgba(212, 175, 55, 0.15) !important;
 }
 
 input:focus, textarea:focus, select:focus {
@@ -95,7 +91,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .luxury-card {
-  @apply rounded-[3.5rem] border bg-card/60 backdrop-blur-3xl shadow-2xl hover:shadow-primary/20 transition-all duration-700 border-primary/10 overflow-hidden;
+  @apply rounded-[3.5rem] border bg-card/60 backdrop-blur-3xl shadow-2xl hover:shadow-primary/10 transition-all duration-700 border-primary/5 overflow-hidden;
 }
 
 .gold-text {
@@ -103,7 +99,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-black rounded-[1.5rem] px-12 py-6 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase text-[12px] tracking-[0.3em] border border-white/10;
+  @apply bg-primary text-primary-foreground font-black rounded-[1.5rem] px-12 py-6 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase text-[12px] tracking-[0.2em] border border-white/10;
 }
 
 .animate-fade-in { animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -115,7 +111,7 @@ input:focus, textarea:focus, select:focus {
 
 @media (max-width: 768px) {
   .responsive-table thead { @apply hidden; }
-  .responsive-table tr { @apply block mb-12 bg-card rounded-[3.5rem] border-2 border-primary/10 p-10 shadow-2xl; }
+  .responsive-table tr { @apply block mb-12 bg-card rounded-[3.5rem] border-2 border-primary/5 p-10 shadow-2xl; }
   .responsive-table td { @apply block py-6 text-right flex justify-between items-center border-b border-border/50; }
   .responsive-table td::before { content: attr(data-label); @apply font-black text-[11px] uppercase text-muted-foreground ml-8 tracking-widest; }
   .responsive-table td:last-child { @apply border-none bg-primary/10 justify-center py-10 rounded-[2.5rem] mt-8; }
