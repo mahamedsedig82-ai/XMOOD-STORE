@@ -26,7 +26,7 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState("login");
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const { user, isVerified } = useUser();
+  const { user } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -44,7 +44,7 @@ export default function LoginPage() {
         router.push("/verify-email?waiting=true");
       }
     }
-  }, [user, isVerified, router]);
+  }, [user, router]);
 
   const handleAuth = async (type: 'login' | 'signup') => {
     if (!email || !password) {
@@ -63,11 +63,7 @@ export default function LoginPage() {
         await syncUserProfile(res.user, { displayName: fullName, phoneNumber: phone });
         await sendAccountVerification(res.user);
         
-        toast({ 
-          title: "تم إنشاء العضوية بنجاح", 
-          description: "يرجى مراجعة بريدك لتفعيل الحساب.",
-        });
-        
+        toast({ title: "تم إنشاء العضوية بنجاح", description: "يرجى مراجعة بريدك لتفعيل الحساب." });
         router.push("/verify-email?waiting=true");
       } else {
         const res = await loginEmail(email, password);
@@ -75,11 +71,7 @@ export default function LoginPage() {
         
         if (!res.user.emailVerified) {
           await sendAccountVerification(res.user);
-          toast({ 
-            variant: "destructive", 
-            title: "الحساب غير موثق", 
-            description: "تم إعادة إرسال رابط التفعيل." 
-          });
+          toast({ variant: "destructive", title: "الحساب غير موثق", description: "تم إعادة إرسال رابط التفعيل." });
           router.push("/verify-email?waiting=true");
           return;
         }
@@ -106,13 +98,15 @@ export default function LoginPage() {
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center pt-28 pb-12 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
           <Card className="luxury-card border-none overflow-hidden bg-card/60 backdrop-blur-3xl shadow-2xl">
-            <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-4">
+            <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-6">
                {config?.appearance?.logoUrl ? (
                  <img src={config.appearance.logoUrl} className="h-16 w-auto object-contain rounded-xl shadow-md" alt="Logo" />
                ) : (
                  <h2 className="handwritten-logo text-3xl mb-1">XMOOD STORE</h2>
                )}
-               <Badge variant="outline" className="text-[8px] font-black text-primary border-primary/20 uppercase tracking-[0.4em] px-4 py-1">Sovereign Identity Portal</Badge>
+               <Badge variant="outline" className="text-[8px] font-black text-primary border-primary/20 uppercase tracking-[0.4em] px-4 py-1">
+                 Sovereign Identity Portal
+               </Badge>
             </div>
 
             <CardContent className="p-6 md:p-10">
@@ -176,7 +170,7 @@ export default function LoginPage() {
                 <Sparkles size={18} />
              </div>
              <p className="text-[8px] font-black text-primary uppercase tracking-[0.4em]">
-               <Sparkles size={8} /> Powered by XMOOD Cloud Intelligence <Sparkles size={8} />
+               Powered by XMOOD Cloud Intelligence
              </p>
           </div>
         </motion.div>

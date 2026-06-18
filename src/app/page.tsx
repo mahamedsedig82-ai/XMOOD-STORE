@@ -37,8 +37,8 @@ export default function HomePage() {
         </div>
 
         <div className="container mx-auto px-6 relative z-10 text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="space-y-12">
-            <div className="flex flex-col items-center gap-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="space-y-10">
+            <div className="flex flex-col items-center gap-8">
                {config?.appearance?.logoUrl ? (
                  <motion.img 
                    initial={{ scale: 0.9, opacity: 0 }}
@@ -52,7 +52,7 @@ export default function HomePage() {
                )}
                
                <div className="space-y-4">
-                  <h2 className="text-lg md:text-2xl font-handwriting text-primary opacity-90 tracking-wide animate-fade-in leading-relaxed">
+                  <h2 className="text-lg md:text-2xl font-handwriting text-primary opacity-90 tracking-wide leading-relaxed">
                     {config?.siteInfo?.subtitle || "مركز الخدمات الرقمية المعتمدة"}
                   </h2>
                   <div className="h-1 w-20 bg-primary/20 mx-auto rounded-full" />
@@ -97,7 +97,7 @@ export default function HomePage() {
       <section className="py-24 md:py-32 bg-background">
         <div className="container mx-auto px-6">
            <div className="text-center mb-20 space-y-3">
-              <h2 className="text-2xl md:text-4xl font-headline font-black uppercase tracking-tighter">ما <span className="gold-text">يميزنا</span></h2>
+              <h2 className="text-3xl md:text-4xl font-headline font-black uppercase tracking-tighter">ما <span className="gold-text">يميزنا</span></h2>
               <p className="text-muted-foreground uppercase font-black text-[10px] tracking-[0.5em] opacity-30">The Sovereign Excellence Protocol</p>
            </div>
            
