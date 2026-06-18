@@ -1,4 +1,3 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
@@ -18,8 +17,9 @@ if (getApps().length > 0) {
 }
 
 // تحصين Firestore ضد الانهيارات المتكررة وتهيئة الاتصال المستقر
+// experimentalForceLongPolling يضمن الاتصال في البيئات المقيدة
 firestore = initializeFirestore(app, {
-  experimentalForceLongPolling: true, // يضمن الاتصال حتى في الشبكات الضعيفة
+  experimentalForceLongPolling: true,
 });
 
 auth = getAuth(app);

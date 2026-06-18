@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -141,7 +140,7 @@ export default function AdminContentManager() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                  <div className="space-y-8">
                     <div className="space-y-4">
-                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو الموقع (حواف ناعمة)</Label>
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو الموقع (حواف دائرية ناعمة)</Label>
                        <div 
                          onClick={() => fileInputRef.current?.click()}
                          className="h-48 bg-muted/40 border-2 border-dashed border-primary/20 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-all overflow-hidden relative group shadow-inner"

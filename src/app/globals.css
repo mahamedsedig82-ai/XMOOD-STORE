@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -55,9 +54,9 @@
   body { @apply bg-background text-foreground antialiased font-body transition-colors duration-500; }
 }
 
-/* 🛡️ ULTRA-VISIBLE LUXURY INPUTS - FIXED RTL */
+/* 🛡️ ULTRA-VISIBLE LUXURY INPUTS - PROMINENT GOLDEN BORDERS */
 input, textarea, select {
-  @apply border-2 border-primary/40 bg-white dark:bg-zinc-950 px-6 py-4 rounded-[1.5rem] focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold shadow-xl text-right !important;
+  @apply border-2 border-primary/60 bg-white dark:bg-zinc-950 px-6 py-4 rounded-[1.5rem] focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold shadow-xl text-right !important;
 }
 
 .luxury-card {
@@ -72,7 +71,7 @@ input, textarea, select {
   @apply bg-primary text-primary-foreground font-black rounded-2xl px-10 py-5 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-3 shadow-2xl shadow-primary/30 uppercase text-[10px] tracking-widest;
 }
 
-/* ✍️ SIGNATURE REFINED LOGO - SOFT EDGES */
+/* ✍️ REFINED SIGNATURE LOGO */
 .handwritten-logo {
   @apply font-headline text-foreground transition-all duration-500 select-none cursor-default inline-block py-2;
   background: linear-gradient(135deg, #b8860b 0%, #d4af37 50%, #b8860b 100%);
@@ -86,11 +85,6 @@ input, textarea, select {
   -webkit-text-fill-color: hsl(var(--primary));
   font-size: 1.2em;
   margin-right: -2px;
-}
-
-/* SOFT LOGO CONTAINER */
-.logo-container {
-  @apply rounded-[1.5rem] overflow-hidden border-2 border-primary/10 shadow-lg;
 }
 
 .smooth-scroll {
