@@ -1,3 +1,4 @@
+
 "use client";
 
 import { 
@@ -33,6 +34,7 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
       };
       await setDoc(userRef, initialProfile, { merge: true });
     } else {
+      // تحديث صامت للحفاظ على الرتب والبيانات المالية
       await updateDoc(userRef, { 
         updatedAt: serverTimestamp(),
         isVerified: user.emailVerified || false,
