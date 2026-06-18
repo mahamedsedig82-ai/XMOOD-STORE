@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { loginEmail, registerEmail, syncUserProfile, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Loader2, UserPlus, Mail, Lock, KeyRound, Sparkles, ShieldCheck, Phone, User } from "lucide-react";
+import { Loader2, UserPlus, Mail, Lock, KeyRound, Sparkles, ShieldCheck, Phone, User, Fingerprint } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/firebase";
@@ -70,103 +70,125 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#050505] relative overflow-hidden" dir="rtl">
+    <main className="min-h-screen bg-[#020202] relative overflow-hidden" dir="rtl">
       <Navbar />
       
-      {/* Background Ambience */}
+      {/* 🌌 Atmospheric Backdrop */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 blur-[150px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-900/10 blur-[120px] rounded-full" />
+        <div className="absolute top-[-10%] right-[-10%] w-[80%] h-[80%] bg-emerald-900/10 blur-[180px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/5 blur-[150px] rounded-full" />
       </div>
 
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center pt-24 relative z-10">
         <motion.div 
-          initial={{ opacity: 0, y: 30 }} 
+          initial={{ opacity: 0, y: 50 }} 
           animate={{ opacity: 1, y: 0 }} 
-          className="w-full max-w-xl"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="w-full max-w-2xl"
         >
-          <Card className="luxury-card border-white/5 bg-zinc-950/80 backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-            <div className="p-10 text-center border-b border-white/5 bg-white/[0.02]">
-               <div className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl border border-primary/20">
-                  <KeyRound size={40} className="text-primary" />
-               </div>
-               <h2 className="text-4xl font-headline font-black gold-text mb-1">بوابة النخبة</h2>
-               <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em] opacity-60">Identity & Secure Access</p>
+          <Card className="emerald-glass rounded-[3.5rem] border-white/5 overflow-hidden">
+            <div className="p-12 text-center border-b border-white/5 bg-gradient-to-b from-white/[0.03] to-transparent">
+               <motion.div 
+                 initial={{ scale: 0.8 }} 
+                 animate={{ scale: 1 }} 
+                 className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-2xl border border-primary/20"
+               >
+                  <Fingerprint size={48} className="text-primary" />
+               </motion.div>
+               <h2 className="text-5xl font-headline font-black gold-text mb-2 tracking-tighter">بوابة النخبة</h2>
+               <p className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.6em] opacity-80">Sovereign Identity Access</p>
             </div>
 
-            <CardContent className="p-8 md:p-12">
+            <CardContent className="p-10 md:p-16">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-10 p-1.5 bg-black/60 rounded-2xl border border-white/10">
-                  <TabsTrigger value="login" className="rounded-xl font-black text-[10px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">تسجيل الدخول</TabsTrigger>
-                  <TabsTrigger value="signup" className="rounded-xl font-black text-[10px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">إنشاء حساب</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 mb-12 p-2 bg-black/40 rounded-3xl border border-white/10 h-20">
+                  <TabsTrigger value="login" className="rounded-2xl font-black text-[11px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all shadow-xl">تسجيل الدخول</TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-2xl font-black text-[11px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all shadow-xl">إنشاء حساب</TabsTrigger>
                 </TabsList>
 
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeTab}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-8"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4 }}
+                    className="space-y-10"
                   >
                     {activeTab === 'login' ? (
-                      <div className="space-y-8">
-                        <div className="space-y-6">
-                           <div className="space-y-3">
-                              <Label className="text-[10px] font-black uppercase text-primary/70 pr-4 flex items-center gap-2"><Mail size={14} /> البريد الإلكتروني</Label>
-                              <Input 
-                                value={email} 
-                                onChange={e => setEmail(e.target.value)} 
-                                type="email" 
-                                placeholder="name@example.com" 
-                                className="h-16 text-center text-lg rounded-2xl" 
-                              />
+                      <div className="space-y-10">
+                        <div className="space-y-8">
+                           <div className="space-y-3 group">
+                              <Label className="text-[10px] font-black uppercase text-primary/60 pr-6 tracking-widest flex items-center gap-3 transition-colors group-focus-within:text-primary">
+                                <Mail size={16} /> البريد الإلكتروني
+                              </Label>
+                              <div className="gold-glow-border rounded-[1.5rem]">
+                                <Input 
+                                  value={email} 
+                                  onChange={e => setEmail(e.target.value)} 
+                                  type="email" 
+                                  placeholder="admin@xmood.pro" 
+                                  className="h-18 text-center text-xl !bg-transparent border-none shadow-none" 
+                                />
+                              </div>
                            </div>
-                           <div className="space-y-3">
-                              <Label className="text-[10px] font-black uppercase text-primary/70 pr-4 flex items-center gap-2"><Lock size={14} /> كلمة المرور</Label>
-                              <Input 
-                                value={password} 
-                                onChange={e => setPassword(e.target.value)} 
-                                type="password" 
-                                placeholder="••••••••" 
-                                className="h-16 text-center text-lg rounded-2xl" 
-                              />
+                           <div className="space-y-3 group">
+                              <Label className="text-[10px] font-black uppercase text-primary/60 pr-6 tracking-widest flex items-center gap-3 transition-colors group-focus-within:text-primary">
+                                <Lock size={16} /> كلمة المرور السيادية
+                              </Label>
+                              <div className="gold-glow-border rounded-[1.5rem]">
+                                <Input 
+                                  value={password} 
+                                  onChange={e => setPassword(e.target.value)} 
+                                  type="password" 
+                                  placeholder="••••••••" 
+                                  className="h-18 text-center text-xl !bg-transparent border-none shadow-none" 
+                                />
+                              </div>
                            </div>
                         </div>
                         <Button 
                           onClick={() => handleAuth('login')} 
                           disabled={loading} 
-                          className="w-full royal-button h-18 text-lg shadow-primary/20"
+                          className="w-full h-20 rounded-[2rem] bg-primary text-black font-black text-xl shadow-[0_20px_50px_rgba(212,175,55,0.2)] hover:scale-[1.02] active:scale-95 transition-all"
                         >
-                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={24} className="ml-3" /> دخول آمن</>}
+                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={28} className="ml-4" /> تأمين الدخول</>}
                         </Button>
                       </div>
                     ) : (
-                      <div className="space-y-6">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                               <Label className="text-[10px] font-black text-primary/70 pr-4">الاسم بالكامل</Label>
-                               <Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-14 text-sm" placeholder="Full Name" />
+                      <div className="space-y-8">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                            <div className="space-y-3">
+                               <Label className="text-[10px] font-black text-primary/60 pr-6 uppercase">الاسم الكامل</Label>
+                               <div className="gold-glow-border rounded-2xl">
+                                  <Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-14 text-sm !bg-transparent border-none" placeholder="Elite Member Name" />
+                               </div>
                             </div>
-                            <div className="space-y-2">
-                               <Label className="text-[10px] font-black text-primary/70 pr-4">رقم الهاتف</Label>
-                               <Input value={phone} onChange={e => setPhone(e.target.value)} className="h-14 text-sm font-mono" placeholder="+966..." />
+                            <div className="space-y-3">
+                               <Label className="text-[10px] font-black text-primary/60 pr-6 uppercase">رقم الهاتف</Label>
+                               <div className="gold-glow-border rounded-2xl">
+                                  <Input value={phone} onChange={e => setPhone(e.target.value)} className="h-14 text-sm font-mono !bg-transparent border-none" placeholder="+966..." />
+                               </div>
                             </div>
                          </div>
-                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black text-primary/70 pr-4">البريد الإلكتروني</Label>
-                            <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-14 text-sm" placeholder="email@example.com" />
+                         <div className="space-y-3">
+                            <Label className="text-[10px] font-black text-primary/60 pr-6 uppercase">البريد الإلكتروني المعتمد</Label>
+                            <div className="gold-glow-border rounded-2xl">
+                               <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-14 text-sm !bg-transparent border-none" placeholder="email@sovereign.pro" />
+                            </div>
                          </div>
-                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black text-primary/70 pr-4">كلمة المرور</Label>
-                            <Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-14 text-sm" placeholder="••••••••" />
+                         <div className="space-y-3">
+                            <Label className="text-[10px] font-black text-primary/60 pr-6 uppercase">كلمة المرور</Label>
+                            <div className="gold-glow-border rounded-2xl">
+                               <Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-14 text-sm !bg-transparent border-none" placeholder="••••••••" />
+                            </div>
                          </div>
                          <Button 
                            onClick={() => handleAuth('signup')} 
                            disabled={loading} 
-                           className="w-full royal-button h-18 text-lg mt-4 shadow-primary/20"
+                           className="w-full h-20 rounded-[2rem] bg-primary text-black font-black text-xl mt-6 shadow-[0_20px_50px_rgba(212,175,55,0.2)]"
                          >
-                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={24} className="ml-3" /> إنشاء عضوية سيادية</>}
+                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={28} className="ml-4" /> إنشاء عضوية نُخبوية</>}
                          </Button>
                       </div>
                     )}
@@ -175,10 +197,14 @@ export default function LoginPage() {
               </Tabs>
             </CardContent>
           </Card>
-          <p className="text-center mt-10 text-[9px] font-black text-zinc-600 uppercase tracking-[0.6em] opacity-40">
-            <Sparkles size={10} className="inline mr-2 text-primary" /> 
-            Powered by XMOOD Cloud Intelligence
-          </p>
+          <div className="text-center mt-12 space-y-2 opacity-50">
+             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.8em]">
+               Precision Secure Access Engine
+             </p>
+             <p className="text-[8px] font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-3">
+               <Sparkles size={10} /> Powered by XMOOD Cloud Intelligence <Sparkles size={10} />
+             </p>
+          </div>
         </motion.div>
       </div>
     </main>

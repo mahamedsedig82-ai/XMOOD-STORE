@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useMemo } from "react";
@@ -30,7 +29,7 @@ export default function AdminProducts() {
 
   const productsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, "products"), orderBy("createdAt", "desc"));
+    return query(collection(db, "products"));
   }, [db]);
 
   const { data: products, loading } = useCollection(productsQuery);
@@ -86,7 +85,6 @@ export default function AdminProducts() {
     
     setIsProcessing(true);
     const codesList = form.shippingCodes.split('\n').filter(c => c.trim() !== "");
-    // مزامنة المخزون الرقمي مع عدد الأكواد إذا كانت موجودة
     const currentStock = codesList.length > 0 ? codesList.length : Number(form.stock);
     
     const data = { 
@@ -94,7 +92,8 @@ export default function AdminProducts() {
       price: Number(form.price), 
       stock: currentStock, 
       minStock: Number(form.minStock),
-      updatedAt: serverTimestamp() 
+      updatedAt: serverTimestamp(),
+      createdAt: form.createdAt || new Date().toISOString()
     };
 
     const action = editingId 
@@ -141,71 +140,85 @@ export default function AdminProducts() {
 
   const filtered = useMemo(() => {
     if (!products) return [];
-    return products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    return products
+      .filter(p => p.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
   }, [products, searchTerm]);
 
   return (
-    <div className="space-y-8 animate-fade-in" dir="rtl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-card p-6 rounded-[3rem] border shadow-xl">
+    <div className="space-y-12 animate-fade-in" dir="rtl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 bg-card p-10 rounded-[3rem] border shadow-2xl">
         <div>
-          <h1 className="text-4xl font-headline font-bold gold-text">المخزون والمنتجات</h1>
-          <p className="text-zinc-500 mt-2 font-bold uppercase tracking-widest text-[10px]">Digital Assets Management</p>
+          <h1 className="text-5xl font-headline font-black gold-text">المستودع المركزي</h1>
+          <p className="text-zinc-500 mt-2 font-bold uppercase tracking-[0.4em] text-[10px]">Strategic Asset Inventory</p>
         </div>
         <Dialog open={isOpen} onOpenChange={(val) => { setIsOpen(val); if (!val) resetForm(); }}>
           <DialogTrigger asChild>
-            <Button className="h-16 px-10 royal-button text-[10px] uppercase shadow-xl"><Plus className="ml-2" size={20} /> إضافة باقة جديدة</Button>
+            <Button className="h-18 px-12 royal-button text-base shadow-2xl hover:scale-105 transition-transform"><Plus className="ml-3" size={24} /> تأسيس باقة جديدة</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl bg-card border-none rounded-[3rem] p-10 shadow-2xl overflow-y-auto max-h-[90vh]">
-            <DialogHeader><DialogTitle className="text-3xl font-black gold-text flex items-center gap-4 uppercase"><Box size={28} className="text-primary" /> {editingId ? 'تعديل الباقة' : 'تأسيس باقة جديدة'}</DialogTitle></DialogHeader>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
-              <div className="space-y-2"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">اسم الباقة</label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="مثال: 8100 UC" /></div>
-              <div className="space-y-2"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">التصنيف</label><Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} placeholder="شحن ألعاب، بطاقات..." /></div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2 flex justify-between"><span>السعر (USD)</span><span className="text-primary">يقابل: {formatSDG(Number(form.price) || 0, config?.siteInfo?.usdRate || 5400)}</span></label>
-                <div className="relative"><DollarSign className="absolute right-4 top-1/2 -translate-y-1/2 text-primary" size={20} /><Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-14 pr-12 text-primary font-black border-2 border-primary/20" /></div>
+          <DialogContent className="max-w-4xl bg-card border-none rounded-[3.5rem] p-12 shadow-[0_50px_100px_rgba(0,0,0,0.5)] overflow-y-auto max-h-[90vh]">
+            <DialogHeader><DialogTitle className="text-4xl font-black gold-text flex items-center gap-4 uppercase"><Box size={32} className="text-primary" /> إرساء أصول رقمية</DialogTitle></DialogHeader>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12">
+              <div className="space-y-3"><label className="text-[10px] font-black text-primary uppercase pr-4 tracking-widest">اسم الباقة</label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="مثال: 8100 UC ELITE" /></div>
+              <div className="space-y-3"><label className="text-[10px] font-black text-primary uppercase pr-4 tracking-widest">التصنيف</label><Input value={form.category} onChange={e => setForm({...form, category: e.target.value})} placeholder="Gaming, Cards, Subscriptions..." /></div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-primary uppercase pr-4 flex justify-between"><span>القيمة (USD)</span><span className="text-zinc-400">≈ {formatSDG(Number(form.price) || 0, config?.siteInfo?.usdRate || 5400)}</span></label>
+                <div className="relative"><DollarSign className="absolute right-5 top-1/2 -translate-y-1/2 text-primary" size={24} /><Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-16 pr-14 text-2xl font-black text-primary gold-glow-border !bg-white/5" /></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-2"><label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">المخزون اليدوي</label><Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} className="border-2 border-primary/20" /></div>
-                 <div className="space-y-2"><label className="text-[10px] font-bold text-red-500 uppercase pr-2">الحد الأدنى</label><Input type="number" value={form.minStock} onChange={e => setForm({...form, minStock: e.target.value})} className="text-red-500 border-2 border-red-500/20" /></div>
+              <div className="grid grid-cols-2 gap-6">
+                 <div className="space-y-3"><label className="text-[10px] font-black text-zinc-500 uppercase pr-4">المخزون</label><Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} /></div>
+                 <div className="space-y-3"><label className="text-[10px] font-black text-red-500 uppercase pr-4">الحد الأدنى</label><Input type="number" value={form.minStock} onChange={e => setForm({...form, minStock: e.target.value})} className="!border-red-500/30" /></div>
               </div>
               <div className="col-span-full space-y-4">
-                 <label className="text-[10px] font-bold text-zinc-500 uppercase pr-2">صورة المنتج</label>
-                 <div onClick={() => fileInputRef.current?.click()} className="h-32 bg-muted/40 border-2 border-dashed border-primary/20 rounded-[2rem] flex items-center justify-center cursor-pointer overflow-hidden group hover:bg-primary/5 transition-all">
-                    {form.imageUrl ? <img src={form.imageUrl} className="h-full w-full object-cover" alt="" /> : <div className="text-center"><Upload className="text-primary mx-auto mb-2" /><p className="text-[10px] font-black opacity-30">اضغط للاختيار من الاستوديو</p></div>}
+                 <label className="text-[10px] font-black text-primary uppercase pr-4">صورة الهوية البصرية</label>
+                 <div onClick={() => fileInputRef.current?.click()} className="h-40 bg-muted/30 border-2 border-dashed border-primary/20 rounded-[2rem] flex items-center justify-center cursor-pointer overflow-hidden group hover:bg-primary/5 transition-all">
+                    {form.imageUrl ? <img src={form.imageUrl} className="h-full w-full object-cover transition-transform group-hover:scale-110" alt="" /> : <div className="text-center"><Upload className="text-primary mx-auto mb-3" size={32} /><p className="text-[10px] font-black uppercase tracking-widest opacity-40">رفع من الاستوديو</p></div>}
                     <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
                  </div>
               </div>
-              <div className="col-span-full space-y-2"><label className="text-[10px] font-bold text-primary uppercase pr-2">أكواد التسليم الفوري (كود في كل سطر)</label><Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="min-h-[150px] font-mono text-xs text-primary border-2 border-primary/30" placeholder="CODE-ABC-123..." /></div>
+              <div className="col-span-full space-y-3">
+                 <label className="text-[10px] font-black text-primary uppercase pr-4 tracking-[0.2em]">أكواد التسليم الآلي (كود في كل سطر)</label>
+                 <Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="min-h-[200px] font-mono text-sm text-primary bg-zinc-950 border-primary/20 leading-loose" placeholder="CODE-XM-8100-XXXXX..." />
+              </div>
             </div>
-            <DialogFooter className="mt-10"><Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-18 royal-button text-xl shadow-xl">{isProcessing ? <Loader2 className="animate-spin" /> : <><Zap size={20} className="ml-2" /> تأكيد ونشر الباقة</>}</Button></DialogFooter>
+            <DialogFooter className="mt-12"><Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-20 royal-button text-2xl shadow-2xl shadow-primary/30">{isProcessing ? <Loader2 className="animate-spin" /> : <><Zap size={24} className="ml-4" /> تأكيد ونشر الباقة في المستودع</>}</Button></DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Card className="luxury-card border-none shadow-2xl overflow-hidden bg-card/60 backdrop-blur-xl">
-        <CardHeader className="p-10 pb-0">
-          <div className="relative w-full md:max-w-xl"><Search className="absolute right-5 top-1/2 -translate-y-1/2 text-primary/40 w-5 h-5" /><Input placeholder="البحث في المستودع..." className="pr-14 h-14 bg-background border-none rounded-2xl text-lg shadow-inner border-2 border-primary/10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /></div>
+      <Card className="luxury-card border-none shadow-[0_50px_100px_rgba(0,0,0,0.1)] overflow-hidden bg-card/60 backdrop-blur-3xl">
+        <CardHeader className="p-10 border-b border-border/50">
+          <div className="relative w-full max-w-2xl group">
+             <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/40 group-focus-within:text-primary transition-all" size={24} />
+             <Input placeholder="بحث في الأصول المسجلة..." className="pr-16 h-16 bg-background rounded-2xl text-xl shadow-inner border-primary/10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+          </div>
         </CardHeader>
-        <CardContent className="p-0 mt-10 overflow-x-auto">
+        <CardContent className="p-0 overflow-x-auto">
           <Table className="responsive-table">
-            <TableHeader className="bg-muted/30"><TableRow><TableHead className="text-right py-8 pr-10 font-black text-[10px] uppercase text-zinc-500">الباقة</TableHead><TableHead className="text-right font-black text-[10px] uppercase text-zinc-500">القيمة</TableHead><TableHead className="text-right font-black text-[10px] uppercase text-zinc-500">المخزون</TableHead><TableHead className="text-center font-black text-[10px] uppercase text-zinc-500">التحكم</TableHead></TableRow></TableHeader>
+            <TableHeader className="bg-muted/30"><TableRow><TableHead className="text-right py-10 pr-12 font-black text-[11px] uppercase tracking-widest text-zinc-500">الباقة والأصل</TableHead><TableHead className="text-right font-black text-[11px] uppercase tracking-widest text-zinc-500">القيمة</TableHead><TableHead className="text-right font-black text-[11px] uppercase tracking-widest text-zinc-500">المخزون</TableHead><TableHead className="text-center font-black text-[11px] uppercase tracking-widest text-zinc-500">الإجراءات</TableHead></TableRow></TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-20"><Loader2 className="animate-spin text-primary mx-auto" size={50} /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-40"><Loader2 className="animate-spin text-primary mx-auto" size={80} /></TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-40 text-muted-foreground font-bold uppercase tracking-widest opacity-30">لم يتم العثور على أصول مطابقة</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-60 text-zinc-400 font-black uppercase tracking-[0.6em] opacity-30 italic">No Assets Found</TableCell></TableRow>
               ) : filtered.map((p) => (
-                <TableRow key={p.id} className="hover:bg-primary/5 border-b border-border/30 transition-all group">
-                  <TableCell className="py-8 pr-10" data-label="الباقة">
-                    <div className="flex items-center gap-4">
-                      <img src={p.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} className="w-16 h-16 rounded-[1.5rem] object-cover border shadow-md" alt="" />
-                      <div className="flex flex-col"><span className="font-black text-lg text-foreground group-hover:text-primary transition-colors">{p.name}</span><span className="text-[9px] text-primary font-black uppercase tracking-widest">{p.category}</span></div>
+                <TableRow key={p.id} className="hover:bg-primary/5 border-b border-border/30 transition-all group duration-500">
+                  <TableCell className="py-10 pr-12" data-label="الباقة">
+                    <div className="flex items-center gap-6">
+                      <div className="relative shrink-0">
+                         <img src={p.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} className="w-20 h-20 rounded-[1.75rem] object-cover border-2 border-primary/10 shadow-2xl group-hover:scale-110 transition-transform duration-700" alt="" />
+                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-4 border-background" />
+                      </div>
+                      <div className="flex flex-col"><span className="font-black text-xl text-foreground group-hover:gold-text transition-all leading-none mb-2">{p.name}</span><span className="text-[10px] text-primary font-black uppercase tracking-[0.2em]">{p.category}</span></div>
                     </div>
                   </TableCell>
-                  <TableCell data-label="القيمة" className="font-black text-primary text-2xl tracking-tighter">${p.price}</TableCell>
-                  <TableCell data-label="المخزون"><Badge variant="outline" className={`rounded-full px-4 py-1 text-[10px] font-black ${p.stock <= (p.minStock || 5) ? 'text-red-500 border-red-500/20 bg-red-500/5 animate-pulse' : 'text-green-500 border-green-500/20 bg-green-500/5'}`}>{p.stock} Unit</Badge></TableCell>
+                  <TableCell data-label="القيمة" className="font-black text-primary text-3xl tracking-tighter">${p.price}</TableCell>
+                  <TableCell data-label="المخزون"><Badge variant="outline" className={`rounded-full px-6 py-1.5 text-[11px] font-black uppercase tracking-widest ${p.stock <= (p.minStock || 5) ? 'text-red-500 border-red-500/20 bg-red-500/5 animate-pulse' : 'text-green-500 border-green-500/20 bg-green-500/5'}`}>{p.stock} Unit</Badge></TableCell>
                   <TableCell className="text-center" data-label="التحكم">
-                    <div className="flex justify-center gap-4"><Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-primary hover:bg-primary/10 shadow-sm border border-primary/10" onClick={() => startEdit(p)}><Edit2 size={18} /></Button><Button size="icon" variant="ghost" className="h-12 w-12 rounded-xl text-red-500 hover:bg-red-50 shadow-sm border border-red-500/10" onClick={() => handleDelete(p.id)}><Trash2 size={18} /></Button></div>
+                    <div className="flex justify-center gap-4">
+                       <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl text-primary hover:bg-primary/10 border border-primary/10" onClick={() => startEdit(p)}><Edit2 size={20} /></Button>
+                       <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl text-red-500 hover:bg-red-50 border border-red-500/10" onClick={() => handleDelete(p.id)}><Trash2 size={20} /></Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
