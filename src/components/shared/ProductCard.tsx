@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -26,7 +25,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const { data: config } = useDoc(settingsRef);
   const currentRate = config?.siteInfo?.usdRate || 5400;
 
-  // 🛡️ تحسين منطق التوفر: نعتمد على المخزون المسجل بدقة
   const isOutOfStock = product.status === 'out_of_stock' || (product.stock !== undefined && product.stock <= 0);
 
   const handleAddToCart = () => {
@@ -45,9 +43,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const officialPlaceholder = "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png";
 
   return (
-    <Card className={`luxury-card flex flex-col group h-full ${isOutOfStock ? 'opacity-70 grayscale' : ''}`}>
-      <CardHeader className="p-4 relative aspect-video bg-muted overflow-hidden">
-        <div className="relative w-full h-full overflow-hidden rounded-[1.5rem]">
+    <Card className={`luxury-card flex flex-col group h-full transition-all duration-500 ${isOutOfStock ? 'opacity-70 grayscale' : 'hover:border-primary/20'}`}>
+      <CardHeader className="p-3 md:p-4 relative aspect-video bg-muted overflow-hidden">
+        <div className="relative w-full h-full overflow-hidden rounded-2xl md:rounded-[1.5rem]">
           <Image 
             src={product.imageUrl || officialPlaceholder} 
             alt={product.name}
@@ -55,34 +53,34 @@ export function ProductCard({ product }: ProductCardProps) {
             className="object-cover transition-transform duration-700 group-hover:scale-110"
             unoptimized
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40 md:opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
         
-        <Badge className={`absolute top-6 right-6 font-black text-[8px] px-3 py-1 rounded-full border-none shadow-2xl uppercase tracking-widest ${isOutOfStock ? 'bg-zinc-600 text-white' : 'bg-primary text-black animate-pulse'}`}>
+        <Badge className={`absolute top-5 right-5 font-black text-[7px] md:text-[8px] px-2.5 py-1 rounded-full border-none shadow-xl uppercase tracking-widest ${isOutOfStock ? 'bg-zinc-600 text-white' : 'bg-primary text-black animate-pulse'}`}>
           {isOutOfStock ? 'نفد من المستودع' : 'شحن فوري متاح'}
         </Badge>
 
         {isAdmin && (
-          <Button asChild variant="secondary" className="absolute top-6 left-6 h-8 w-8 rounded-lg p-0 glass-morphism z-20">
-            <Link href={`/admin/products`}><Edit size={14} className="text-primary" /></Link>
+          <Button asChild variant="secondary" className="absolute top-5 left-5 h-7 w-7 md:h-8 md:w-8 rounded-lg p-0 bg-background/80 backdrop-blur-md z-20">
+            <Link href={`/admin/products`}><Edit size={12} className="text-primary" /></Link>
           </Button>
         )}
       </CardHeader>
       
-      <CardContent className="p-6 flex-1 flex flex-col">
+      <CardContent className="p-5 md:p-6 flex-1 flex flex-col">
         <div className="mb-4">
-          <span className="text-[8px] uppercase font-black text-muted-foreground tracking-[0.2em] block mb-1">{product.category}</span>
-          <CardTitle className="text-lg md:text-xl font-bold group-hover:gold-text transition-colors leading-tight line-clamp-2">
+          <span className="text-[7px] md:text-[8px] uppercase font-black text-primary/60 tracking-[0.2em] block mb-1.5">{product.category}</span>
+          <CardTitle className="text-base md:text-xl font-bold group-hover:gold-text transition-colors leading-tight line-clamp-2 min-h-[2.5rem] md:min-h-[3.2rem]">
             {product.name}
           </CardTitle>
         </div>
 
         {highlights.length > 0 && (
-          <div className="space-y-1.5 mb-6 bg-primary/5 p-3 rounded-xl border border-primary/10">
-             {highlights.slice(0, 3).map((h: string, i: number) => (
-               <div key={i} className="flex items-center gap-2 text-[9px] font-bold text-zinc-600 dark:text-zinc-400">
-                  <Star size={10} className="text-primary fill-primary" />
-                  <span>{h}</span>
+          <div className="space-y-1.5 mb-5 bg-primary/5 p-2.5 rounded-xl border border-primary/10">
+             {highlights.slice(0, 2).map((h: string, i: number) => (
+               <div key={i} className="flex items-center gap-2 text-[8px] md:text-[9px] font-bold text-muted-foreground">
+                  <Star size={10} className="text-primary fill-primary shrink-0" />
+                  <span className="truncate">{h}</span>
                </div>
              ))}
           </div>
@@ -90,20 +88,20 @@ export function ProductCard({ product }: ProductCardProps) {
         
         <div className="mt-auto pt-4 flex items-center justify-between border-t border-border/50">
           <div className="flex flex-col">
-            <span className="font-black text-xl text-primary tracking-tighter">{formatUSD(product.price)}</span>
-            <span className="text-[8px] text-muted-foreground font-black uppercase">{formatSDG(product.price, currentRate)}</span>
+            <span className="font-black text-lg md:text-xl text-primary tracking-tighter">{formatUSD(product.price)}</span>
+            <span className="text-[7px] md:text-[8px] text-muted-foreground font-black uppercase">{formatSDG(product.price, currentRate)}</span>
           </div>
-          <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all shadow-inner">
-             <Zap size={18} className={!isOutOfStock ? "animate-pulse" : ""} />
+          <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
+             <Zap size={16} className={!isOutOfStock ? "animate-pulse" : ""} />
           </div>
         </div>
       </CardContent>
 
-      <CardFooter className="p-6 pt-0 flex gap-2">
+      <CardFooter className="p-5 md:p-6 pt-0 flex gap-2">
         <Button 
           onClick={handleAddToCart}
           disabled={isOutOfStock}
-          className="royal-button flex-1 h-14"
+          className="royal-button flex-1 h-12 md:h-14 text-[9px] md:text-[10px]"
         >
           {isOutOfStock ? <><AlertCircle size={14} className="ml-2" /> بانتظار التزويد</> : <><Truck size={14} className="ml-2" /> اختيار للشحن ⚡</>}
         </Button>
