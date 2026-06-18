@@ -66,17 +66,9 @@
   line-height: 1.1;
 }
 
-.handwritten-logo span {
-  @apply ml-2;
-}
-
 .emerald-glass {
   @apply bg-zinc-950/85 backdrop-blur-[60px] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.9)];
   background-image: radial-gradient(circle at top right, rgba(212, 175, 55, 0.03), transparent 60%);
-}
-
-.gold-glow-border {
-  @apply border-2 border-primary/20 shadow-[0_0_30px_rgba(212,175,55,0.05)] focus-within:border-primary focus-within:shadow-[0_0_40px_rgba(212,175,55,0.15)] transition-all;
 }
 
 input, textarea, select {
@@ -108,17 +100,9 @@ input:focus, textarea:focus, select:focus {
 }
 
 @media (max-width: 768px) {
-  .responsive-table thead { @apply hidden; }
   .responsive-table tr { @apply block mb-12 bg-card rounded-[3rem] border-2 border-primary/5 p-8 shadow-2xl; }
   .responsive-table td { @apply block py-5 text-right flex justify-between items-center border-b border-border/50; }
   .responsive-table td::before { content: attr(data-label); @apply font-black text-[10px] uppercase text-muted-foreground ml-6 tracking-widest; }
-  .responsive-table td:last-child { @apply border-none bg-primary/10 justify-center py-8 rounded-[2rem] mt-6; }
-  
-  .luxury-card {
-    @apply rounded-[2.5rem];
-  }
-
-  .handwritten-logo {
-    letter-spacing: 0.1em;
-  }
+  .luxury-card { @apply rounded-[2.5rem]; }
+  .handwritten-logo { letter-spacing: 0.1em; }
 }

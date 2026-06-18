@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
@@ -76,9 +75,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarHeader className="p-8 border-b text-center flex flex-col items-center gap-6">
             <Link href="/" className="flex flex-col items-center group">
                {config?.appearance?.logoUrl ? (
-                 <img src={config.appearance.logoUrl} className="h-10 w-auto object-contain transition-transform group-hover:scale-105 rounded-xl shadow-md border border-primary/10" alt="Logo" />
+                 <img src={config.appearance.logoUrl} className="h-10 w-auto object-contain rounded-xl shadow-md border border-primary/10" alt="Logo" />
                ) : (
-                 <span className="handwritten-logo text-xl">XMOOD <span>STORE</span></span>
+                 <span className="handwritten-logo text-xl">XMOOD STORE</span>
                )}
             </Link>
             <Badge variant="outline" className="text-[8px] uppercase font-black border-primary/20 text-primary px-4 py-1 rounded-full tracking-widest bg-primary/5">
@@ -89,11 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              <SidebarMenu className="gap-3">
                {visibleSections.map((item) => (
                  <SidebarMenuItem key={item.href}>
-                   <SidebarMenuButton 
-                     asChild 
-                     isActive={pathname === item.href}
-                     className={`h-12 px-6 rounded-2xl transition-all duration-300 ${pathname === item.href ? 'bg-primary text-black shadow-lg scale-[1.02]' : 'hover:bg-primary/5 text-muted-foreground'}`}
-                   >
+                   <SidebarMenuButton asChild isActive={pathname === item.href} className={`h-12 px-6 rounded-2xl transition-all duration-300 ${pathname === item.href ? 'bg-primary text-black shadow-lg scale-[1.02]' : 'hover:bg-primary/5 text-muted-foreground'}`}>
                      <Link href={item.href} className="flex flex-row-reverse items-center gap-4 w-full">
                        <item.icon size={18} className={pathname === item.href ? 'text-black' : 'text-primary'} />
                        <span className="font-black text-[10px] uppercase tracking-widest">{item.label}</span>
@@ -133,13 +128,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <main className="flex-1 overflow-y-auto smooth-scroll custom-scrollbar px-4 md:px-12 py-10 pb-40 bg-background">
             <div className="max-w-6xl mx-auto text-right">
               <AnimatePresence mode="wait">
-                <motion.div
-                  key={pathname}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.4 }}
-                >
+                <motion.div key={pathname} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.4 }}>
                   {children}
                 </motion.div>
               </AnimatePresence>
