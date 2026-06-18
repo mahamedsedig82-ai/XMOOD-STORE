@@ -98,6 +98,7 @@ export function Navbar() {
             )}
           </Link>
 
+          {/* Desktop Navigation Links */}
           <div className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link 
@@ -121,6 +122,12 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-5">
+            {/* Theme Toggle (Desktop Only) */}
+            <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-xl h-10 w-10 bg-muted/50 border border-primary/5 hidden sm:flex">
+              {theme === 'dark' ? <Sun size={18} className="text-yellow-500" /> : <Moon size={18} className="text-primary" />}
+            </Button>
+
+            {/* Shopping Cart */}
             <Link href="/cart" className="relative p-2.5 bg-muted/50 hover:bg-primary/10 rounded-xl transition-all border border-primary/5">
               <ShoppingCart size={20} className="text-foreground" />
               {itemCount > 0 && (
@@ -130,12 +137,21 @@ export function Navbar() {
               )}
             </Link>
 
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-xl h-10 w-10 bg-muted/50 border border-primary/5 hidden sm:flex">
-              {theme === 'dark' ? <Sun size={18} className="text-yellow-500" /> : <Moon size={18} className="text-primary" />}
-            </Button>
+            {/* Logout (Desktop Only - Explicitly requested) */}
+            {user && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => logout()} 
+                className="rounded-xl h-10 w-10 bg-red-500/10 text-red-500 border border-red-500/20 hidden lg:flex"
+                title="تسجيل الخروج"
+              >
+                <LogOut size={18} />
+              </Button>
+            )}
 
             {user ? (
-              <Link href="/wallet">
+              <Link href="/wallet" className="shrink-0">
                 <Avatar className="h-10 w-10 md:h-12 md:w-12 border-2 border-primary/20 shadow-sm rounded-full overflow-hidden transition-transform hover:scale-105">
                   <AvatarImage src={profile?.photoURL} className="object-cover" />
                   <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">XM</AvatarFallback>
@@ -147,6 +163,7 @@ export function Navbar() {
               </Button>
             )}
 
+            {/* Mobile Menu Trigger */}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -159,7 +176,7 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay - Totally Redesigned for No Overlap & Visibility */}
+      {/* Mobile Menu Overlay - Redesigned for Maximum Clarity and Space */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -175,116 +192,119 @@ export function Navbar() {
               animate={{ x: 0 }} 
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 z-[500] h-full w-[85%] max-w-[340px] bg-background border-l-2 border-primary/20 shadow-2xl lg:hidden flex flex-col overflow-hidden"
+              className="fixed top-0 right-0 z-[500] h-full w-[88%] max-w-[360px] bg-background border-l-2 border-primary/20 shadow-2xl lg:hidden flex flex-col overflow-hidden"
               dir="rtl"
             >
               {/* Drawer Header - Static */}
-              <div className="flex-none p-6 border-b border-white/5 bg-muted/5 flex flex-col gap-6">
+              <div className="flex-none p-6 md:p-8 border-b border-white/5 bg-muted/5 flex flex-col gap-8">
                 <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 shadow-lg">
-                         <Sparkles size={24} className="text-primary" />
+                   <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 shadow-lg">
+                         <Sparkles size={28} className="text-primary" />
                       </div>
-                      <span className="font-black text-xs gold-text uppercase tracking-widest leading-none">XMOOD<br/>SYSTEM</span>
+                      <span className="font-black text-sm gold-text uppercase tracking-widest leading-tight">XMOOD<br/>SYSTEM</span>
                    </div>
-                   <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="rounded-full bg-white/5 h-10 w-10 text-white hover:bg-primary/20 transition-all">
-                      <X size={20} />
+                   <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="rounded-full bg-white/5 h-12 w-12 text-white hover:bg-primary/20 transition-all">
+                      <X size={24} />
                    </Button>
                 </div>
                 {user && (
-                   <Link href="/wallet" className="flex items-center gap-4 p-4 rounded-2xl bg-card border border-primary/10 shadow-inner">
-                      <Avatar className="w-12 h-12 border-2 border-primary/20">
+                   <Link href="/wallet" className="flex items-center gap-5 p-5 rounded-[1.75rem] bg-card border border-primary/15 shadow-inner">
+                      <Avatar className="w-14 h-14 border-2 border-primary/30">
                          <AvatarImage src={profile?.photoURL} />
                          <AvatarFallback className="bg-primary/5 text-primary font-bold">XM</AvatarFallback>
                       </Avatar>
                       <div className="overflow-hidden text-right">
-                         <p className="font-black text-sm text-foreground truncate">{profile?.displayName}</p>
-                         <p className="text-[9px] font-bold text-primary uppercase tracking-widest">{profile?.label || "عضو سيادي"}</p>
+                         <p className="font-black text-base text-foreground truncate">{profile?.displayName}</p>
+                         <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{profile?.label || "عضو سيادي"}</p>
                       </div>
                    </Link>
                 )}
               </div>
 
-              {/* Drawer Content - Scrollable Body */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-10">
+              {/* Drawer Content - Expanded Space */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-12">
                 
-                <div className="space-y-2">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] pr-4 mb-3 opacity-50">التنقل الرئيسي</p>
-                  <div className="grid gap-1">
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] pr-4 mb-4 opacity-50">التنقل الرئيسي</p>
+                  <div className="grid gap-2">
                     {navLinks.map((link) => (
                       <Link 
                         key={link.href} 
                         href={link.href} 
-                        className={`flex items-center justify-between p-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all ${pathname === link.href ? 'bg-primary text-black shadow-xl scale-[1.02]' : 'hover:bg-primary/10 text-foreground/80'}`}
+                        className={`flex items-center justify-between p-5 rounded-[1.25rem] font-black text-[12px] uppercase tracking-widest transition-all ${pathname === link.href ? 'bg-primary text-black shadow-xl scale-[1.02]' : 'hover:bg-primary/10 text-foreground/80 bg-muted/20'}`}
                       >
-                        <div className="flex items-center gap-4">
-                          <link.icon size={18} className={pathname === link.href ? 'text-black' : 'text-primary'} />
+                        <div className="flex items-center gap-5">
+                          <link.icon size={20} className={pathname === link.href ? 'text-black' : 'text-primary'} />
                           {link.label}
                         </div>
-                        <ChevronLeft size={14} className={pathname === link.href ? 'text-black' : 'opacity-20'} />
+                        <ChevronLeft size={16} className={pathname === link.href ? 'text-black' : 'opacity-20'} />
                       </Link>
                     ))}
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                   <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] pr-4 mb-3 opacity-50">الأصول الرقمية</p>
-                   <div className="grid grid-cols-1 gap-2">
+                <div className="space-y-6">
+                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] pr-4 mb-4 opacity-50">الأصول الرقمية</p>
+                   <div className="grid grid-cols-1 gap-3">
                       {categories.length > 0 ? categories.map((cat, i) => (
                          <Link 
                            key={i} 
                            href={`/store?category=${cat}`} 
-                           className="flex items-center gap-4 p-4 rounded-xl hover:bg-muted text-[10px] font-black text-foreground/70 border border-transparent hover:border-primary/10 transition-colors"
+                           className="flex items-center gap-5 p-5 rounded-2xl bg-muted/10 hover:bg-muted text-[11px] font-black text-foreground/80 border border-transparent hover:border-primary/15 transition-all"
                          >
-                            <LayoutGrid size={16} className="text-primary/30" />
+                            <LayoutGrid size={18} className="text-primary/40" />
                             {String(cat)}
                          </Link>
                       )) : (
-                        <div className="flex items-center gap-3 p-4 opacity-40">
-                           <Loader2 className="animate-spin" size={14} />
-                           <span className="text-[10px] font-bold">جاري تحميل الأقسام...</span>
+                        <div className="flex items-center gap-4 p-4 opacity-40">
+                           <Loader2 className="animate-spin" size={16} />
+                           <span className="text-[11px] font-bold">جاري تحميل الأقسام...</span>
                         </div>
                       )}
                    </div>
                 </div>
 
-                <div className="space-y-4 pb-4">
-                   <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] pr-4 mb-3 opacity-50">الأمان والضمان</p>
-                   <Link href="/middleman" className="flex items-center gap-4 p-5 rounded-3xl bg-primary/5 border border-primary/10 group shadow-inner">
-                      <ShieldCheck size={22} className="text-primary animate-pulse" />
+                <div className="space-y-4 pb-8">
+                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] pr-4 mb-4 opacity-50">الأمان والضمان</p>
+                   <Link href="/middleman" className="flex items-center gap-5 p-6 rounded-[2rem] bg-primary/5 border border-primary/15 group shadow-inner">
+                      <ShieldCheck size={26} className="text-primary animate-pulse" />
                       <div className="flex flex-col text-right">
-                         <span className="font-black text-[11px] text-foreground">الوسطاء المعتمدون</span>
-                         <span className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter mt-0.5">تأمين كامل لكافة صفقاتك</span>
+                         <span className="font-black text-[12px] text-foreground">الوسطاء المعتمدون</span>
+                         <span className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter mt-1">تأمين كامل لكافة صفقاتك</span>
                       </div>
                    </Link>
                    {isAdmin && (
                     <Link 
                       href="/admin" 
-                      className="flex items-center gap-4 p-5 rounded-3xl bg-blue-600/10 border border-blue-600/20 text-blue-500 shadow-inner"
+                      className="flex items-center gap-5 p-6 rounded-[2rem] bg-blue-600/10 border border-blue-600/20 text-blue-500 shadow-inner mt-4"
                     >
-                      <ShieldAlert size={22} />
-                      <span className="font-black text-[11px] uppercase tracking-widest">لوحة الإدارة السيادية</span>
+                      <ShieldAlert size={26} />
+                      <div className="flex flex-col text-right">
+                         <span className="font-black text-[12px] uppercase tracking-widest">لوحة الإدارة السيادية</span>
+                         <span className="text-[9px] opacity-60 font-black uppercase tracking-tighter mt-1">التحكم المركزي في النظام</span>
+                      </div>
                     </Link>
                    )}
                 </div>
               </div>
 
-              {/* Drawer Footer - Static */}
-              <div className="flex-none p-6 border-t border-white/5 bg-muted/10 space-y-4">
-                <div className="flex justify-between items-center bg-background/50 p-3 rounded-2xl border border-white/5 shadow-inner">
-                   <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest pr-2">الوضع المظلم</span>
-                   <div className="flex gap-4">
-                      <button onClick={toggleTheme} className={`transition-all ${theme === 'light' ? 'text-primary scale-125' : 'opacity-30'}`}><Sun size={20} /></button>
-                      <button onClick={toggleTheme} className={`transition-all ${theme === 'dark' ? 'text-primary scale-125' : 'opacity-30'}`}><Moon size={20} /></button>
+              {/* Drawer Footer - Fixed Bottom */}
+              <div className="flex-none p-6 md:p-8 border-t border-white/5 bg-muted/10 space-y-6">
+                <div className="flex justify-between items-center bg-background/50 p-4 rounded-2xl border border-white/5 shadow-inner">
+                   <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest pr-2">الوضع المظلم</span>
+                   <div className="flex gap-5">
+                      <button onClick={toggleTheme} className={`transition-all ${theme === 'light' ? 'text-primary scale-125' : 'opacity-30'}`}><Sun size={24} /></button>
+                      <button onClick={toggleTheme} className={`transition-all ${theme === 'dark' ? 'text-primary scale-125' : 'opacity-30'}`}><Moon size={24} /></button>
                    </div>
                 </div>
 
                 {user ? (
-                   <Button variant="ghost" onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full justify-center gap-3 h-16 rounded-2xl font-black text-[11px] text-red-500 bg-red-500/5 hover:bg-red-500 hover:text-white transition-all shadow-xl">
-                      <LogOut size={20} /> تسجيل الخروج الآمن
+                   <Button variant="ghost" onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full justify-center gap-4 h-16 md:h-18 rounded-[1.5rem] font-black text-[12px] text-red-500 bg-red-500/5 hover:bg-red-500 hover:text-white transition-all shadow-xl">
+                      <LogOut size={22} /> تسجيل الخروج الآمن
                    </Button>
                 ) : (
-                  <Button asChild className="royal-button w-full h-16 text-xs shadow-2xl">
+                  <Button asChild className="royal-button w-full h-16 md:h-18 text-xs shadow-2xl">
                     <Link href="/login">دخول عالم النخبة</Link>
                   </Button>
                 )}

@@ -79,7 +79,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
-        {/* Desktop Sidebar */}
+        {/* Desktop Sidebar - Ensured Visibility and Solid Layout */}
         <Sidebar className="border-l border-border bg-card/80 backdrop-blur-3xl hidden lg:flex shrink-0 shadow-2xl" side="right">
           <SidebarHeader className="p-10 border-b text-center flex flex-col items-center gap-6 bg-muted/10">
             <Link href="/" className="flex flex-col items-center transition-transform hover:scale-105">
@@ -143,10 +143,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                    <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">System Active</span>
                 </div>
                 <Badge variant="outline" className="border-border text-muted-foreground text-[9px] font-black px-4 py-1 rounded-full uppercase tracking-tighter">Verified Session</Badge>
+                {/* Immediate Logout for Admins on Desktop header too */}
+                <Button variant="ghost" size="icon" onClick={logout} className="h-10 w-10 text-red-500 hover:bg-red-500/10 rounded-xl">
+                   <LogOut size={18} />
+                </Button>
              </div>
           </header>
 
-          {/* Mobile Admin Menu Overlay - Rebuilt for Clean Layout */}
+          {/* Mobile Admin Menu Overlay */}
           <AnimatePresence>
             {isMobileNavOpen && (
                <>
