@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -7,7 +8,7 @@ import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/shared/ProductCard";
-import { ShoppingBag, Palette, Flame, Zap, Award, ShieldCheck, Sparkles } from "lucide-react";
+import { ShoppingBag, Palette, Flame, Zap, Award, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function HomePage() {
@@ -39,22 +40,25 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="space-y-6 md:space-y-10"
+            className="space-y-8 md:space-y-12"
           >
             <div className="inline-flex items-center gap-2 md:gap-4 px-5 md:px-8 py-2 md:py-2.5 bg-card border border-primary/15 rounded-full backdrop-blur-md shadow-sm">
                <Sparkles size={12} className="text-primary opacity-60" />
                <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-primary/80">
-                 {config?.siteInfo?.subtitle || "مركز الخدمات الرقمية المعتمدة"}
+                 Sovereign Experience Protocol
                </span>
             </div>
 
             <div className="relative inline-block max-w-full">
-               <h1 className="text-3xl md:text-5xl font-headline font-black leading-tight tracking-tighter text-foreground uppercase flex flex-col items-center">
-                 <span className="handwritten-logo text-3xl md:text-5xl drop-shadow-[0_0_15px_rgba(212,175,55,0.1)]">XMOOD STORE</span>
+               <h1 className="text-4xl md:text-6xl font-headline font-black leading-tight tracking-tighter text-foreground uppercase flex flex-col items-center">
+                 <span className="handwritten-logo drop-shadow-[0_0_15px_rgba(212,175,55,0.1)]">XMOOD STORE</span>
                </h1>
+               <h2 className="text-xl md:text-3xl font-handwriting text-primary mt-4 md:mt-6 opacity-90 animate-pulse">
+                 {config?.siteInfo?.subtitle || "مركز الخدمات الرقمية المعتمدة"}
+               </h2>
             </div>
 
-            <p className="text-sm md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed italic opacity-70 border-r-2 border-primary/20 pr-4 md:pr-8">
+            <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed italic opacity-70 border-r-2 border-primary/20 pr-4 md:pr-8">
               {config?.siteInfo?.description || "المستودع الرقمي الأول لإدارة وتوريد أصول النخبة من شحن الألعاب والخدمات التقنية المعتمدة سيادياً."}
             </p>
             
@@ -79,13 +83,13 @@ export default function HomePage() {
           <div className="container mx-auto px-6 relative z-10">
             <div className="flex flex-col md:flex-row items-center justify-between mb-12 md:mb-20 gap-6">
               <div className="text-center md:text-right">
-                <h2 className="text-3xl md:text-6xl font-headline font-black flex items-center justify-center md:justify-start gap-4 uppercase">
+                <h2 className="text-2xl md:text-5xl font-headline font-black flex items-center justify-center md:justify-start gap-4 uppercase">
                   باقات <span className="gold-text">النخبة</span>
                 </h2>
                 <p className="text-muted-foreground font-black text-[7px] md:text-[9px] uppercase tracking-[0.3em] mt-2 opacity-50">Elite Sovereign Selection</p>
               </div>
               <Button asChild variant="ghost" className="text-primary font-black uppercase text-[8px] md:text-[9px] tracking-[0.2em] hover:bg-primary/10 px-6 md:px-8 h-12 rounded-xl border border-primary/10">
-                <Link href="/store">كافة الأصول</Link>
+                <Link href="/store" className="flex items-center gap-2">كافة الأصول <ArrowRight size={14} className="rotate-180" /></Link>
               </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
@@ -101,7 +105,7 @@ export default function HomePage() {
       <section className="py-20 md:py-32 relative overflow-hidden bg-background">
         <div className="container mx-auto px-6">
            <div className="text-center mb-16 md:mb-20 space-y-2">
-              <h2 className="text-3xl md:text-5xl font-headline font-black uppercase tracking-tighter"><span className="gold-text">ما يميزنا</span></h2>
+              <h2 className="text-2xl md:text-4xl font-headline font-black uppercase tracking-tighter"><span className="gold-text">ما يميزنا</span></h2>
               <p className="text-muted-foreground uppercase font-black text-[7px] md:text-[9px] tracking-[0.4em] opacity-30">The Sovereign Excellence Protocol</p>
            </div>
            

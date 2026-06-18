@@ -1,8 +1,9 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Package, ClipboardList, Users, Wallet, ShieldAlert, Image as ImageIcon, Zap, Loader2, GitBranch, ShoppingCart, LayoutGrid, Briefcase, Megaphone
+  LogOut, ArrowRight, Terminal, BarChart3, ShieldCheck, Package, ClipboardList, Users, Wallet, ShieldAlert, ImageIcon, Zap, Loader2, GitBranch, ShoppingCart, LayoutGrid, Briefcase, Megaphone
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -104,10 +105,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </SidebarContent>
           <div className="p-6 border-t bg-muted/10 space-y-3">
             <Button asChild variant="outline" className="w-full h-11 rounded-xl text-[9px] font-black uppercase gap-3 border-primary/20">
-              <Link href="/"><ArrowLeft size={14} /> المتجر</Link>
+              <Link href="/"><ArrowRight size={14} /> العودة للمتجر</Link>
             </Button>
             <Button variant="ghost" onClick={() => handleSignOut()} className="w-full h-11 rounded-xl text-red-500 font-black text-[9px] uppercase gap-3 hover:bg-red-50">
-              <LogOut size={14} /> خروج
+              <LogOut size={14} /> تسجيل خروج
             </Button>
           </div>
         </Sidebar>
