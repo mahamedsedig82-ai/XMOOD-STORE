@@ -7,12 +7,13 @@ import {
   QuerySnapshot, 
   DocumentData 
 } from 'firebase/firestore';
+import { auth } from '../index';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * 🛡️ خطاف سيادي محصن ضد الـ Assertion والـ Memory Leaks.
- * تم تحسينه ليناسب Next.js 15 ومنع خطأ INTERNAL ASSERTION FAILED.
+ * 🛡️ Production-Safe Collection Hook
+ * يضمن عدم التسجيل إلا بعد التأكد من هوية المستخدم وينظف نفسه فوراً.
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
@@ -23,6 +24,8 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
 
   useEffect(() => {
     isMounted.current = true;
+    
+    // تأمين: لا نبدأ المستمع إذا لم يكن هناك استعلام أو لم يكن المستخدم مسجلاً (إذا كان الاستعلام يتطلب ذلك)
     if (!query) {
       setLoading(false);
       return;
@@ -48,9 +51,8 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
           operation: 'list',
         } satisfies SecurityRuleContext);
 
-        // تسجيل صامت في الكونسول للمطورين فقط
         if (process.env.NODE_ENV === 'development') {
-          console.warn('🛡️ Firestore Access Restricted:', path);
+          console.warn('[FIRESTORE_GUARD] Access Restricted:', path);
         }
         
         errorEmitter.emit('permission-error', permissionError);

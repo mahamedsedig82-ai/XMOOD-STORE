@@ -1,11 +1,14 @@
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore, initializeFirestore, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-// 🛡️ Singleton Pattern: التحقق من وجود نسخة نشطة لمنع خطأ Assertion Error
+/**
+ * 🛡️ Singleton Firebase Engine
+ * يضمن تهيئة واحدة فقط للتطبيق والخدمات لمنع خطأ INTERNAL ASSERTION FAILED.
+ */
 let app: FirebaseApp;
 let firestore: Firestore;
 let auth: Auth;
@@ -16,7 +19,7 @@ if (getApps().length > 0) {
   app = initializeApp(firebaseConfig);
 }
 
-// 🔐 تهيئة Firestore لمرة واحدة فقط بضبط مستقر
+// 🔐 تهيئة Firestore مرة واحدة فقط بضبط مستقر للإنتاج
 if (!firestore!) {
   try {
     firestore = getFirestore(app);

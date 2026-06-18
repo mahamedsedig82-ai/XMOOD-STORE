@@ -13,7 +13,7 @@ import { auth, firestore as db } from "@/firebase";
 
 /**
  * 🛡️ Profile Sync Service
- * Ensures the Firestore user profile is always consistent with the Auth state.
+ * يضمن مزامنة حالة المستخدم بين Auth و Firestore بدقة.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -42,13 +42,33 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
       await updateDoc(userRef, baseProfile);
     }
   } catch (error) {
-    console.error("Auth Sync Error:", error);
+    console.error("[AUTH_SYNC] Error:", error);
   }
 }
 
 /**
- * 🛡️ Reliable Verification Service
- * Sends email verification with a proper production-ready redirect link.
+ * 🛡️ Clean Logout Sequence
+ * تنفيذ تسلسل الخروج النظيف لضمان عزل الجلسة.
+ */
+export const logout = async () => {
+  if (!auth) return;
+  try {
+    // 1. تسجيل الخروج من Firebase سيتكفل به الـ useUser Hook لمسح الحالة
+    await signOut(auth);
+    
+    // 2. مسح أي بيانات كاش محلية يدوية إن وجدت
+    if (typeof window !== 'undefined') {
+      // لا نمسح السلة (Cart) بل فقط بيانات الجلسة الحساسة
+      sessionStorage.clear();
+    }
+  } catch (error) {
+    console.error("[AUTH_LOGOUT] Error:", error);
+    throw error;
+  }
+};
+
+/**
+ * 🛡️ Verification Service
  */
 export const sendAccountVerification = async (user: User) => {
   try {
@@ -58,7 +78,7 @@ export const sendAccountVerification = async (user: User) => {
       handleCodeInApp: true,
     });
   } catch (error) {
-    console.error("Verification Send Error:", error);
+    console.error("[AUTH_VERIFY] Send Error:", error);
     throw error;
   }
 };
@@ -70,4 +90,3 @@ export const registerEmail = async (email: string, pass: string, name: string) =
 };
 
 export const loginEmail = (e: string, p: string) => signInWithEmailAndPassword(auth, e.trim().toLowerCase(), p);
-export const logout = () => signOut(auth);

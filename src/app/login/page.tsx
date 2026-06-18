@@ -36,6 +36,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     setIsMounted(true);
+    // توجيه تلقائي إذا كان المستخدم مسجلاً بالفعل وجلسة العمل نشطة
     if (!userLoading && user) {
       if (isVerified) {
         router.replace("/wallet");
@@ -61,7 +62,7 @@ export default function LoginPage() {
         const res = await registerEmail(email, password, fullName);
         await syncUserProfile(res.user, { displayName: fullName, phoneNumber: phone });
         await sendAccountVerification(res.user);
-        toast({ title: "تم إنشاء العضوية", description: "يرجى مراجعة بريدك الإلكتروني (بما في ذلك مجلد Spam) لتفعيل الحساب." });
+        toast({ title: "تم إنشاء العضوية", description: "يرجى مراجعة بريدك الإلكتروني لتفعيل الحساب." });
         router.push("/verify-email?waiting=true");
       } else {
         const res = await loginEmail(email, password);
@@ -75,10 +76,10 @@ export default function LoginPage() {
         router.replace("/wallet");
       }
     } catch (error: any) {
-      console.error("Auth Error:", error);
+      console.error("[AUTH_UI] Error:", error);
       let msg = "فشل في عملية المصادقة. يرجى التأكد من البيانات.";
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
-      if (error.code === 'auth/wrong-password') msg = "كلمة المرور غير صحيحة.";
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') msg = "البريد أو كلمة المرور غير صحيحة.";
       toast({ variant: "destructive", title: "فشل العملية", description: msg });
     } finally {
       setLoading(false);
