@@ -1,4 +1,3 @@
-
 export type SecurityRuleContext = {
   path: string;
   operation: 'get' | 'list' | 'create' | 'update' | 'delete' | 'write';
@@ -12,13 +11,15 @@ export class FirestorePermissionError extends Error {
     super(`Missing or insufficient permissions: ${context.operation} at ${context.path}`);
     this.name = 'FirestorePermissionError';
     this.context = context;
-    // 🛡️ Ensure context is visible in logs and enumeration
+    
+    // 🛡️ جعل السياق مرئياً وقابلاً للقراءة في سجلات الـ Console
     Object.defineProperty(this, 'context', {
       enumerable: true,
       configurable: true,
       writable: true,
       value: context
     });
+    
     Object.setPrototypeOf(this, FirestorePermissionError.prototype);
   }
 }

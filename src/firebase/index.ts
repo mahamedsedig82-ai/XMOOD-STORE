@@ -5,7 +5,7 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-// 🛡️ توحيد التهيئة لضمان وجود نسخة واحدة فقط من الخدمات (Singleton Pattern)
+// 🛡️ Singleton Pattern: ضمان وجود نسخة واحدة فقط من Firebase لمنع INTERNAL ASSERTION FAILED
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const firestore = getFirestore(app);
 const auth = getAuth(app);

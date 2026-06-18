@@ -51,26 +51,18 @@
 
 @layer base {
   * { @apply border-border; }
-  html {
-    scroll-behavior: smooth;
-  }
   body { 
     @apply bg-background text-foreground antialiased transition-colors duration-300 font-body overflow-x-hidden;
-    -webkit-tap-highlight-color: transparent;
   }
 }
 
-/* 💎 SOVEREIGN INPUT STYLING - ULTRA-PROMINENT BORDERS AND CONTRAST */
+/* 💎 SOVEREIGN INPUT STYLING - حدود بارزة جداً وظلال ملكية */
 input, textarea, select {
-  @apply border-2 border-primary bg-white dark:bg-zinc-950 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/40 transition-all font-bold text-foreground outline-none shadow-[0_4px_15px_rgba(212,175,55,0.2)] !important;
+  @apply border-2 border-primary bg-white dark:bg-zinc-950 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/40 transition-all font-bold text-foreground outline-none shadow-[0_4px_20px_rgba(212,175,55,0.15)] !important;
 }
 
 .dark input, .dark textarea, .dark select {
-  @apply border-primary bg-zinc-950 shadow-[0_0_25px_rgba(212,175,55,0.3)] !important;
-}
-
-[data-radix-select-trigger] {
-  @apply border-2 border-primary bg-background shadow-lg !important;
+  @apply border-primary bg-zinc-950 shadow-[0_0_25px_rgba(212,175,55,0.25)] !important;
 }
 
 .luxury-card {
@@ -89,7 +81,7 @@ input, textarea, select {
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-black rounded-[1.25rem] md:rounded-[2rem] px-6 py-3 md:px-8 md:py-6 shadow-xl hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-sm uppercase tracking-[0.15em] flex items-center justify-center gap-2 md:gap-4 border-none disabled:opacity-50 disabled:grayscale cursor-pointer;
+  @apply bg-primary text-primary-foreground font-black rounded-[1.25rem] md:rounded-[2rem] px-6 py-3 md:px-8 md:py-6 shadow-xl hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-sm uppercase tracking-[0.15em] flex items-center justify-center gap-2 md:gap-4 border-none disabled:opacity-50 disabled:grayscale;
 }
 
 @media (max-width: 768px) {

@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -25,34 +24,10 @@
         "residence": { "type": "string" }
       },
       "required": ["uid", "email", "role"]
-    },
-    "GlobalSettings": {
-      "title": "Global Settings",
-      "description": "Central app configurations and labels",
-      "type": "object",
-      "properties": {
-        "siteInfo": { "type": "object" },
-        "appearance": { "type": "object" },
-        "navLabels": { "type": "object" },
-        "cartLabels": { "type": "object" }
-      }
-    },
-    "AuditLog": {
-      "title": "Audit Log",
-      "description": "Log of admin actions",
-      "type": "object",
-      "properties": {
-        "adminId": { "type": "string" },
-        "adminName": { "type": "string" },
-        "action": { "type": "string" },
-        "targetId": { "type": "string" },
-        "details": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      }
     }
   },
   "auth": {
-    "providers": ["password"]
+    "providers": ["password", "google.com"]
   },
   "firestore": {
     "/users/{userId}": {
@@ -60,7 +35,7 @@
       "description": "Sovereign user profiles"
     },
     "/settings/{id}": {
-      "schema": "GlobalSettings",
+      "schema": "object",
       "description": "Central app configurations"
     },
     "/products/{productId}": {
@@ -75,6 +50,18 @@
       "schema": "object",
       "description": "Financial ledger"
     },
+    "/site_branches/{id}": {
+      "schema": "object",
+      "description": "Site navigation branches"
+    },
+    "/categories/{id}": {
+      "schema": "object",
+      "description": "Product categories"
+    },
+    "/marketplace_listings/{id}": {
+      "schema": "object",
+      "description": "Open market listings"
+    },
     "/gallery/{id}": {
       "schema": "object",
       "description": "Design portfolio"
@@ -83,9 +70,25 @@
       "schema": "object",
       "description": "Professional services"
     },
+    "/security_logs/{id}": {
+      "schema": "object",
+      "description": "Security events and alerts"
+    },
     "/community_audit_logs/{logId}": {
-      "schema": "AuditLog",
+      "schema": "object",
       "description": "Administrative action logs"
+    },
+    "/agent_ratings/{id}": {
+      "schema": "object",
+      "description": "Customer feedback for agents"
+    },
+    "/design_requests/{id}": {
+      "schema": "object",
+      "description": "Customer design orders"
+    },
+    "/system_heartbeats/{userId}": {
+      "schema": "object",
+      "description": "User online status monitoring"
     }
   }
 }
