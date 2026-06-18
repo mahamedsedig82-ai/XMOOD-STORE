@@ -14,7 +14,6 @@ export function FirebaseErrorListener() {
 
   useEffect(() => {
     const handlePermissionError = (error: any) => {
-      // 🛡️ توثيق الخطأ في الكونسول للمطور مع التحقق من وجود سياق
       if (process.env.NODE_ENV === 'development') {
         const context = error.context || {};
         console.group('🛡️ XMOOD FIREWALL: ACCESS DENIED');

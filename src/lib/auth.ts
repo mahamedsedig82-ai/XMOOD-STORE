@@ -1,3 +1,4 @@
+
 "use client";
 
 import { 
@@ -29,6 +30,7 @@ export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'ac
 
 /**
  * مزامنة ملف المستخدم الشخصي مع قاعدة البيانات المركزية.
+ * تم تحصينها لمنع إنشاء بيانات تالفة وتوليد المحفظة تلقائياً.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -88,9 +90,6 @@ export const sendAccountVerification = async (user: User) => {
   }
 };
 
-/**
- * محرك إنشاء العضوية الجديد والمبسط.
- */
 export const registerEmail = async (email: string, pass: string, name: string) => {
   const res = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), pass);
   await updateProfile(res.user, { displayName: name });

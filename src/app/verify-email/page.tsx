@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
@@ -12,7 +13,8 @@ import { toast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/layout/Navbar";
 
 /**
- * 🛡️ محرك التحقق السيادي - تم تحصينه ضد أخطاء الـ SSR والـ Assertion.
+ * 🛡️ محرك التحقق السيادي (Instant Redirection Core).
+ * تم تغليفه بـ Suspense لمتطلبات Next.js 15 وتحصينه ضد أخطاء الـ SSR.
  */
 function VerifyEmailContent() {
   const [status, setStatus] = useState<'waiting' | 'verifying' | 'success' | 'error'>('waiting');
@@ -38,7 +40,7 @@ function VerifyEmailContent() {
           toast({ title: "تم التوثيق السيادي", description: "مرحباً بك في عالم XMOOD." });
           setTimeout(() => router.replace("/wallet"), 1500);
         } catch (e) {
-          console.error("[VERIFY_ERROR]", e);
+          console.error("[AUTH_VERIFY] Error:", e);
           setStatus('error');
         }
       }
@@ -46,7 +48,8 @@ function VerifyEmailContent() {
 
     handleVerification();
 
-    // 🛡️ نظام المراقبة اللحظي (Precision Auto-Polling Guard)
+    // 🛡️ نظام الرصد اللحظي (Precision Polling Guard)
+    // يقوم بفحص حالة البريد كل 3 ثوانٍ وتوجيه المستخدم فوراً
     const checkInterval = setInterval(async () => {
       if (auth.currentUser) {
         try {
@@ -57,9 +60,7 @@ function VerifyEmailContent() {
             setStatus('success');
             setTimeout(() => router.replace("/wallet"), 1000);
           }
-        } catch (e) {
-          // خطأ صامت في الخلفية لضمان استمرارية الرصد
-        }
+        } catch (e) {}
       }
     }, 3000);
 
@@ -79,7 +80,7 @@ function VerifyEmailContent() {
             <h2 className="text-3xl md:text-4xl font-black gold-text leading-tight">بانتظار تفعيل <br/> الهوية الرقمية</h2>
             <p className="text-muted-foreground font-medium text-lg leading-relaxed">
               أرسلنا رابط التفعيل لبريدك. <br/>
-              افتح الرابط في هاتفك الآن وسنقوم بنقلك للمحفظة تلقائياً.
+              افتح الرابط في هاتفك وسنقوم بنقلك للمحفظة تلقائياً.
             </p>
           </div>
           <div className="pt-10 border-t border-border/50 flex flex-col items-center gap-4">
@@ -131,7 +132,12 @@ export default function VerifyEmailPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
       <Navbar />
-      <Suspense fallback={<div className="flex flex-col items-center gap-6"><Loader2 className="animate-spin text-primary" size={60} /><p className="font-bold text-xs uppercase tracking-widest">جاري تأمين الاتصال السيادي...</p></div>}>
+      <Suspense fallback={
+        <div className="flex flex-col items-center gap-6">
+          <Loader2 className="animate-spin text-primary" size={60} />
+          <p className="font-bold text-xs uppercase tracking-widest">جاري تأمين الاتصال السيادي...</p>
+        </div>
+      }>
         <VerifyEmailContent />
       </Suspense>
     </div>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -5,7 +6,10 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-// 🛡️ Singleton Pattern: ضمان وجود نسخة واحدة فقط من Firebase لمنع INTERNAL ASSERTION FAILED
+/**
+ * 🛡️ Singleton Pattern: ضمان وجود نسخة واحدة فقط من Firebase.
+ * يحل مشكلة INTERNAL ASSERTION FAILED والانهيار الداخلي لـ Firestore.
+ */
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const firestore = getFirestore(app);
 const auth = getAuth(app);

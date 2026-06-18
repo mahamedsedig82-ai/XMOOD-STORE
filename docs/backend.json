@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -21,7 +22,8 @@
         "createdAt": { "type": "string", "format": "date-time" },
         "completedDeals": { "type": "number" },
         "phoneNumber": { "type": "string" },
-        "residence": { "type": "string" }
+        "residence": { "type": "string" },
+        "age": { "type": "number" }
       },
       "required": ["uid", "email", "role"]
     }
@@ -89,6 +91,10 @@
     "/system_heartbeats/{userId}": {
       "schema": "object",
       "description": "User online status monitoring"
+    },
+    "/shipping_methods/{id}": {
+      "schema": "object",
+      "description": "Delivery logistics methods"
     }
   }
 }

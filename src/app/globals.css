@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -56,7 +57,7 @@
   }
 }
 
-/* 💎 SOVEREIGN INPUT STYLING - حدود بارزة جداً وظلال ملكية */
+/* 💎 SOVEREIGN INPUT STYLING - فرض الحدود البارزة والظلال الذهبية */
 input, textarea, select {
   @apply border-2 border-primary bg-white dark:bg-zinc-950 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/40 transition-all font-bold text-foreground outline-none shadow-[0_4px_20px_rgba(212,175,55,0.15)] !important;
 }
@@ -71,13 +72,6 @@ input, textarea, select {
 
 .gold-text {
   @apply bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 bg-clip-text text-transparent font-black;
-}
-
-.handwritten-logo {
-  @apply font-handwriting font-bold tracking-tight;
-  background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .royal-button {

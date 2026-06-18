@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,12 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft, AlertCircle, ShoppingBag, PackageX, ShieldAlert } from "lucide-react";
+import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft, PackageX, ShieldAlert } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+/**
+ * 🛡️ صفحة الدفع والاستحواذ السيادي.
+ * تم تحصينها بدرع فحص المخزون (Anti-Zero Stock) ومنع التجاوزات المالية.
+ */
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const { profile, user, loading: userLoading, isVerified } = useUser();
@@ -25,22 +30,18 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedShipping, setSelectedShipping] = useState<any>(null);
   const [deliveryEmail, setDeliveryEmail] = useState("");
-  const [notes, setNotes] = useState("");
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
   const [stockCheckLoading, setStockCheckLoading] = useState(true);
   const [outOfStockItems, setOutOfStockItems] = useState<string[]>([]);
 
-  const settingsRef = useMemoFirebase(() => {
-    if (!db) return null;
-    return doc(db, "settings", "global");
-  }, [db]);
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
 
   useEffect(() => {
     if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
   }, [user, deliveryEmail]);
 
-  // 🛡️ درع فحص المخزون الفوري (Anti-Zero Stock Protection)
+  // 🛡️ درع فحص المخزون الفوري لمنع البيع عند نفاد الأكواد
   useEffect(() => {
     const checkStock = async () => {
       if (!db || items.length === 0) {
@@ -49,7 +50,6 @@ export default function CheckoutPage() {
       }
       setStockCheckLoading(true);
       const unavailable: string[] = [];
-      
       try {
         for (const item of items) {
           const pSnap = await getDoc(doc(db, "products", item.id));
@@ -64,7 +64,7 @@ export default function CheckoutPage() {
           }
         }
       } catch (e) {
-        console.error("Stock check failed:", e);
+        console.error("[STOCK_CHECK] Failed:", e);
       } finally {
         setOutOfStockItems(unavailable);
         setStockCheckLoading(false);
@@ -90,21 +90,9 @@ export default function CheckoutPage() {
   const hasEnoughBalance = walletBalance >= finalTotal;
   const isEverythingInStock = outOfStockItems.length === 0;
 
-  const canPay = items.length > 0 && 
-                 !!selectedShipping && 
-                 hasEnoughBalance && 
-                 isEverythingInStock &&
-                 isVerified &&
-                 !isProcessing && 
-                 !userLoading && 
-                 !stockCheckLoading &&
-                 deliveryEmail.includes("@");
-
   const handleCompleteOrder = async () => {
     if (!user || !profile || !db || !isVerified) return;
-    if (!selectedShipping) return toast({ variant: "destructive", title: "يرجى اختيار وسيلة تسليم" });
-    if (!hasEnoughBalance) return toast({ variant: "destructive", title: "الرصيد غير كافٍ" });
-    if (!isEverythingInStock) return toast({ variant: "destructive", title: "نقص في المخزون" });
+    if (!selectedShipping || !hasEnoughBalance || !isEverythingInStock) return;
 
     setIsProcessing(true);
     const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -123,23 +111,20 @@ export default function CheckoutPage() {
         for (const item of items) {
           const productRef = doc(db, "products", item.id);
           const productSnap = await transaction.get(productRef);
-          if (!productSnap.exists()) throw `Product ${item.name} not found`;
-          
           const pData = productSnap.data();
-          const codes = (pData.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
+          const codes = (pData?.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
           
-          if (codes.length < item.quantity) {
-             throw `عذراً، نفد مخزون ${item.name} أثناء المعالجة.`;
-          } else {
-             const extracted = codes.slice(0, item.quantity);
-             allDeliveredCodes.push(...extracted);
-             const remaining = codes.slice(item.quantity).join('\n');
-             transaction.update(productRef, {
-               shippingCodes: remaining,
-               stock: Math.max(0, (pData.stock || 0) - item.quantity),
-               updatedAt: serverTimestamp()
-             });
-          }
+          if (codes.length < item.quantity) throw `عذراً، نفد مخزون ${item.name} للتو.`;
+
+          const extracted = codes.slice(0, item.quantity);
+          allDeliveredCodes.push(...extracted);
+          const remaining = codes.slice(item.quantity).join('\n');
+          
+          transaction.update(productRef, {
+            shippingCodes: remaining,
+            stock: Math.max(0, (pData?.stock || 0) - item.quantity),
+            updatedAt: serverTimestamp()
+          });
         }
 
         const balanceAfter = currentBalance - finalTotal;
@@ -170,8 +155,8 @@ export default function CheckoutPage() {
           orderId,
           createdAt: new Date().toISOString()
         };
-        transaction.set(doc(collection(db, "users", user.uid, "transactions")), transData);
         transaction.set(doc(collection(db, "transactions")), transData);
+        transaction.set(doc(collection(db, "users", user.uid, "transactions")), transData);
       });
 
       clearCart();
@@ -226,28 +211,24 @@ export default function CheckoutPage() {
                     <PackageX size={48} className="text-red-500 shrink-0" />
                     <div>
                        <h3 className="text-2xl font-black text-red-500 mb-2">توقف إجباري: نفاد المخزون</h3>
-                       <p className="text-sm font-bold text-zinc-400">عذراً، المنتجات التالية نفدت حالياً: <span className="text-red-500 font-black">{outOfStockItems.join(", ")}</span></p>
+                       <p className="text-sm font-bold text-zinc-400">المنتجات التالية نفدت حالياً: <span className="text-red-500 font-black">{outOfStockItems.join(", ")}</span></p>
                     </div>
                  </div>
               )}
 
               <section className="space-y-8">
                  <h3 className="text-2xl md:text-3xl font-black flex items-center gap-4"><Truck size={24} className="text-primary" /> مسار التسليم المعتمد</h3>
-                 {shippingLoading ? (
-                   <Loader2 className="animate-spin text-primary" />
-                 ) : (
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {shippingMethods?.map((m: any) => (
-                        <div key={m.id} onClick={() => setSelectedShipping(m)} className={`p-8 rounded-[2rem] border-2 cursor-pointer transition-all ${selectedShipping?.id === m.id ? 'border-primary bg-primary/5 shadow-xl scale-[1.02]' : 'border-border bg-card'}`}>
-                           <h4 className="font-black text-2xl mb-1">{m.name}</h4>
-                           <div className="flex justify-between items-center pt-6 border-t border-primary/10">
-                              <span className="font-black text-2xl text-primary tracking-tighter">+{formatUSD(m.extraFee)}</span>
-                              <Badge variant="secondary" className="text-[9px] font-black uppercase px-4 py-1.5 rounded-full">{m.deliveryTime}</Badge>
-                           </div>
-                        </div>
-                      ))}
-                   </div>
-                 )}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {shippingMethods?.map((m: any) => (
+                      <div key={m.id} onClick={() => setSelectedShipping(m)} className={`p-8 rounded-[2rem] border-2 cursor-pointer transition-all ${selectedShipping?.id === m.id ? 'border-primary bg-primary/5 shadow-xl scale-[1.02]' : 'border-border bg-card'}`}>
+                         <h4 className="font-black text-2xl mb-1">{m.name}</h4>
+                         <div className="flex justify-between items-center pt-6 border-t border-primary/10">
+                            <span className="font-black text-2xl text-primary tracking-tighter">+{formatUSD(m.extraFee)}</span>
+                            <Badge variant="secondary" className="text-[9px] font-black uppercase px-4 py-1.5 rounded-full">{m.deliveryTime}</Badge>
+                         </div>
+                      </div>
+                    ))}
+                 </div>
               </section>
 
               <section className="space-y-8">
@@ -263,7 +244,7 @@ export default function CheckoutPage() {
 
            <aside>
               <Card className="luxury-card p-8 md:p-12 bg-primary/5 border-primary/20 sticky top-32 shadow-2xl">
-                 <h3 className="text-2xl font-black mb-10 border-b border-primary/10 pb-6 flex items-center gap-3"><Zap size={20} className="text-primary" /> ملخص الحساب</h3>
+                 <h3 className="text-2xl font-black mb-10 border-b border-primary/10 pb-6 flex items-center gap-3"><Zap size={20} className="text-primary animate-pulse" /> ملخص الحساب</h3>
                  <div className="space-y-8">
                     <div className="flex justify-between text-muted-foreground font-black text-xs uppercase tracking-widest"><span>قيمة الأصول</span><span>{formatUSD(total)}</span></div>
                     <div className="h-px bg-primary/10 my-4" />
@@ -276,8 +257,8 @@ export default function CheckoutPage() {
                        </div>
                     </div>
 
-                    <Button onClick={handleCompleteOrder} disabled={!canPay} className="royal-button w-full h-24 text-2xl shadow-primary/30 mt-10">
-                      {isProcessing ? <Loader2 className="animate-spin" /> : stockCheckLoading ? "فحص المخزون..." : "تأكيد الدفع السيادي"}
+                    <Button onClick={handleCompleteOrder} disabled={isProcessing || !items.length || !selectedShipping || !hasEnoughBalance || !isEverythingInStock || !isVerified} className="royal-button w-full h-24 text-2xl shadow-primary/30 mt-10">
+                      {isProcessing ? <Loader2 className="animate-spin" /> : "تأكيد الدفع السيادي"}
                     </Button>
                  </div>
               </Card>

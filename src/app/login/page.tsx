@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -10,19 +11,20 @@ import { Label } from "@/components/ui/label";
 import { loginEmail, registerEmail, syncUserProfile, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { 
-  Loader2, Mail, Lock, Shield, User, Phone, Calendar, ArrowLeft, CheckCircle2
+  Loader2, Mail, Lock, Shield, User, Phone, CheckCircle2
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 
+/**
+ * 🛡️ بوابة الدخول السيادية المحدثة.
+ * تم تبسيط التسجيل (حذف أسئلة الأمان) وتحصين مسار التوجيه اللحظي للمحفظة.
+ */
 export default function SecurityLoginPage() {
   const db = useFirestore();
-  const settingsRef = useMemoFirebase(() => {
-    if (!db) return null;
-    return doc(db, "settings", "global");
-  }, [db]);
+  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
   const { data: config } = useDoc(settingsRef);
 
   const [email, setEmail] = useState("");
@@ -34,7 +36,6 @@ export default function SecurityLoginPage() {
   const router = useRouter();
 
   const handleAuth = async (type: 'login' | 'signup') => {
-    // 🛡️ التحقق من صحة البيانات قبل الإرسال (Pre-flight Validation)
     if (!email || !password) {
       return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إكمال البريد وكلمة المرور." });
     }
@@ -44,53 +45,39 @@ export default function SecurityLoginPage() {
         return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إكمال الاسم، الهاتف، والعمر للتسجيل." });
       }
       if (password.length < 6) {
-        return toast({ variant: "destructive", title: "كلمة مرور ضعيفة", description: "يجب أن تكون كلمة المرور 6 أحرف على الأقل." });
+        return toast({ variant: "destructive", title: "كلمة مرور ضعيفة", description: "يجب أن تكون 6 أحرف على الأقل." });
       }
     }
 
     setLoading(true);
     try {
       if (type === 'signup') {
-        // 1. إنشاء الحساب في Auth
         const res = await registerEmail(email, password, fullName);
-        
-        // 2. إرسال رابط التفعيل فوراً
         await sendAccountVerification(res.user);
-
-        // 3. مزامنة الملف الشخصي
         await syncUserProfile(res.user, { 
           fullName, 
           displayName: fullName,
           phoneNumber: phone,
           age: Number(age)
         });
-        
         toast({ title: "تم إنشاء العضوية", description: "رابط التفعيل في طريقه لبريدك الآن." });
         router.push("/verify-email?waiting=true");
       } else {
-        // 1. محاولة الدخول
         const res = await loginEmail(email, password);
-        
-        // 2. التحقق من حالة التوثيق
         if (!res.user.emailVerified) {
-          toast({ variant: "destructive", title: "الحساب غير موثق", description: "يرجى تفعيل بريدك الإلكتروني للمتابعة." });
+          toast({ variant: "destructive", title: "الحساب غير موثق", description: "يرجى تفعيل بريدك للمتابعة." });
           router.push("/verify-email?waiting=true");
           return;
         }
-
-        // 3. مزامنة وقت الدخول
         await syncUserProfile(res.user);
         toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في وحدة التحكم." });
         router.replace("/wallet");
       }
     } catch (error: any) {
-      console.error("[AUTH_ERROR]", error.code);
       let msg = "حدث خطأ غير متوقع في معالجة البيانات.";
-      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً في النظام.";
+      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
       if (error.code === 'auth/wrong-password') msg = "كلمة المرور غير صحيحة.";
       if (error.code === 'auth/user-not-found') msg = "لا يوجد حساب بهذا البريد.";
-      if (error.code === 'auth/too-many-requests') msg = "محاولات كثيرة خاطئة. يرجى الانتظار قليلاً.";
-      
       toast({ variant: "destructive", title: "فشل المصادقة", description: msg });
     } finally {
       setLoading(false);
@@ -113,7 +100,6 @@ export default function SecurityLoginPage() {
 
           <Card className="luxury-card border-none bg-card/60 backdrop-blur-3xl shadow-2xl p-1 animate-fade-up">
              <div className="p-8 md:p-12 text-center border-b bg-muted/10 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full -mr-16 -mt-16" />
                 <Shield size={48} className="text-primary mx-auto mb-6 drop-shadow-xl" />
                 <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">{config?.loginPage?.cardTitle || "بوابة الوصول المعتمدة"}</h2>
                 <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-2">Certified Sovereign Identity</p>
@@ -132,14 +118,14 @@ export default function SecurityLoginPage() {
                             <Label className="text-[10px] font-black text-primary uppercase pr-4 tracking-widest">البريد الإلكتروني الموثق</Label>
                             <div className="relative">
                                <Mail className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/40" size={18} />
-                               <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="pr-14" />
+                               <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="pr-14 h-16" />
                             </div>
                          </div>
                          <div className="space-y-3">
                             <Label className="text-[10px] font-black text-primary uppercase pr-4 tracking-widest">كلمة المرور المشفرة</Label>
                             <div className="relative">
                                <Lock className="absolute right-6 top-1/2 -translate-y-1/2 text-primary/40" size={18} />
-                               <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="pr-14" />
+                               <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="pr-14 h-16" />
                             </div>
                          </div>
                       </div>
@@ -152,30 +138,30 @@ export default function SecurityLoginPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                          <div className="space-y-2">
                             <Label className="text-[10px] font-black text-primary uppercase pr-3 tracking-widest">الاسم الكامل</Label>
-                            <Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-14 md:h-16" placeholder="الاسم كما في الهوية" />
+                            <Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-16" placeholder="الاسم الحقيقي" />
                          </div>
                          <div className="space-y-2">
                             <Label className="text-[10px] font-black text-primary uppercase pr-3 tracking-widest">رقم الهاتف</Label>
-                            <Input value={phone} onChange={e => setPhone(e.target.value)} className="h-14 md:h-16" placeholder="+249..." />
+                            <Input value={phone} onChange={e => setPhone(e.target.value)} className="h-16" placeholder="+249..." />
                          </div>
                          <div className="space-y-2">
                             <Label className="text-[10px] font-black text-primary uppercase pr-3 tracking-widest">العمر</Label>
-                            <Input type="number" value={age} onChange={e => setAge(e.target.value)} className="h-14 md:h-16" placeholder="20" />
+                            <Input type="number" value={age} onChange={e => setAge(e.target.value)} className="h-16" placeholder="20" />
                          </div>
                          <div className="space-y-2">
                             <Label className="text-[10px] font-black text-primary uppercase pr-3 tracking-widest">البريد الإلكتروني</Label>
-                            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-14 md:h-16" placeholder="name@example.com" />
+                            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-16" placeholder="name@example.com" />
                          </div>
                          <div className="md:col-span-2 space-y-2">
                             <Label className="text-[10px] font-black text-primary uppercase pr-3 tracking-widest">كلمة مرور قوية</Label>
-                            <Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-14 md:h-16" placeholder="••••••••" />
+                            <Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-16" placeholder="••••••••" />
                          </div>
                       </div>
                       
                       <div className="p-6 bg-primary/5 rounded-2xl border border-primary/20 flex gap-4">
                          <Shield className="text-primary shrink-0" size={20} />
                          <p className="text-[10px] text-muted-foreground leading-relaxed font-bold">
-                            بإنشاء حساب، أنت توافق على بروتوكولات الخصوصية السيادية لمتجر XMOOD. سيتم إرسال رابط تفعيل لبريدك فوراً.
+                            بإنشاء حساب، أنت توافق على بروتوكولات الخصوصية السيادية لمتجر XMOOD.
                          </p>
                       </div>
 

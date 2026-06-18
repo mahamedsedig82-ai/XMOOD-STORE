@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -9,7 +10,7 @@ import { syncUserProfile } from '@/lib/auth';
 
 /**
  * خطاف مخصص لإدارة حالة المستخدم والتحقق السيادي.
- * تم تحصينه لمنع الأخطاء الداخلية وحلقات التكرار.
+ * تم تحصينه لمنع الأخطاء الداخلية وحلقات التكرار اللانهائية.
  */
 export function useUser() {
   const auth = useAuth();
@@ -22,7 +23,6 @@ export function useUser() {
 
   useEffect(() => {
     if (!auth) return;
-    
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       if (!firebaseUser) {
@@ -30,7 +30,6 @@ export function useUser() {
         setLoading(false);
       }
     });
-
     return () => unsubscribeAuth();
   }, [auth]);
 
