@@ -41,7 +41,7 @@ export default function CheckoutPage() {
     if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
   }, [user, deliveryEmail]);
 
-  // 🛡️ درع فحص المخزون الفوري والتحقق من الهوية
+  // 🛡️ درع فحص المخزون الفوري
   useEffect(() => {
     const checkStock = async () => {
       if (!db || items.length === 0) {
@@ -217,10 +217,6 @@ export default function CheckoutPage() {
       <Navbar />
       <div className="container mx-auto px-4 md:px-6 py-12 md:py-32 max-w-7xl">
         <header className="mb-12 md:mb-24 border-r-8 border-primary pr-10 text-right">
-           <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary"><ShoppingBag size={20} /></div>
-              <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase text-[10px] tracking-widest px-4 py-1 rounded-full">Sovereign Settlement Protocol</Badge>
-           </div>
            <h1 className="text-4xl md:text-7xl font-headline font-black gold-text leading-tight">{config?.cartLabels?.checkoutTitle || "تأكيد الاستحواذ"}</h1>
         </header>
 
@@ -262,10 +258,6 @@ export default function CheckoutPage() {
                        <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">بريد التسليم الرقمي</Label>
                        <Input value={deliveryEmail} onChange={e => setDeliveryEmail(e.target.value)} className="h-16 rounded-2xl" placeholder="name@example.com" />
                     </div>
-                    <div className="space-y-3">
-                       <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">ملاحظات إضافية</Label>
-                       <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="rounded-3xl min-h-[120px]" placeholder="أي تعليمات خاصة؟" />
-                    </div>
                  </Card>
               </section>
            </div>
@@ -275,7 +267,6 @@ export default function CheckoutPage() {
                  <h3 className="text-2xl font-black mb-10 border-b border-primary/10 pb-6 flex items-center gap-3"><Zap size={20} className="text-primary" /> ملخص الحساب</h3>
                  <div className="space-y-8">
                     <div className="flex justify-between text-muted-foreground font-black text-xs uppercase tracking-widest"><span>قيمة الأصول</span><span>{formatUSD(total)}</span></div>
-                    <div className="flex justify-between text-muted-foreground font-black text-xs uppercase tracking-widest"><span>لوجستيات الشحن</span><span>{formatUSD(selectedShipping?.extraFee || 0)}</span></div>
                     <div className="h-px bg-primary/10 my-4" />
                     <div className="flex justify-between items-end"><span className="font-black text-xs text-primary uppercase tracking-widest">الإجمالي النهائي</span><span className="text-4xl md:text-6xl font-black gold-text tracking-tighter">{formatUSD(finalTotal)}</span></div>
                     
@@ -289,13 +280,6 @@ export default function CheckoutPage() {
                     <Button onClick={handleCompleteOrder} disabled={!canPay} className="royal-button w-full h-24 text-2xl shadow-primary/30 mt-10">
                       {isProcessing ? <Loader2 className="animate-spin" /> : stockCheckLoading ? "فحص المخزون..." : "تأكيد الدفع السيادي"}
                     </Button>
-
-                    {!hasEnoughBalance && (
-                       <div className="flex items-center gap-3 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-2xl text-red-500 mt-6 text-right">
-                          <AlertCircle size={18} className="shrink-0" />
-                          <p className="text-[10px] font-black uppercase leading-tight">الرصيد غير كافٍ. يرجى الشحن عبر الوكلاء.</p>
-                       </div>
-                    )}
                  </div>
               </Card>
            </aside>

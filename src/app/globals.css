@@ -60,7 +60,7 @@
   }
 }
 
-/* 💎 SOVEREIGN INPUT STYLING - MAXIMUM CLARITY AND BOLD BORDERS */
+/* 💎 SOVEREIGN INPUT STYLING - ULTRA-PROMINENT BORDERS AND CONTRAST */
 input, textarea, select {
   @apply border-2 border-primary bg-white dark:bg-zinc-950 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/40 transition-all font-bold text-foreground outline-none shadow-[0_4px_15px_rgba(212,175,55,0.2)] !important;
 }
@@ -69,7 +69,6 @@ input, textarea, select {
   @apply border-primary bg-zinc-950 shadow-[0_0_25px_rgba(212,175,55,0.3)] !important;
 }
 
-/* 🛠️ ENFORCED BORDERS FOR RADIX SELECTS */
 [data-radix-select-trigger] {
   @apply border-2 border-primary bg-background shadow-lg !important;
 }

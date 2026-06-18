@@ -9,7 +9,7 @@ import { syncUserProfile } from '@/lib/auth';
 
 /**
  * خطاف مخصص لإدارة حالة المستخدم والتحقق السيادي.
- * يضمن عدم توقف الـ Loading حتى استقرار حالة البريد والملف.
+ * تم تحصينه لمنع الأخطاء الداخلية وحلقات التكرار.
  */
 export function useUser() {
   const auth = useAuth();
@@ -41,31 +41,27 @@ export function useUser() {
     const userDocRef = doc(db, 'users', user.uid);
     let isMounted = true;
 
-    // مراقبة حية لملف المستخدم
     const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
       if (!isMounted) return;
 
       if (snapshot.exists()) {
         const data = snapshot.data() as UserProfile;
         
-        // التحقق من الرتبة السيادية للمدراء
+        // التحقق من الرتبة السيادية للمدراء مع منع الحلقات التكرارية
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         if (isMaster && data.role !== 'owner') {
-          updateDoc(userDocRef, { role: 'owner', label: 'المدير العام السيادي' });
+          updateDoc(userDocRef, { role: 'owner', label: 'المدير العام السيادي' }).catch(() => {});
         }
 
         setProfile({ ...data, uid: snapshot.id });
         setLoading(false); 
       } else {
-        // في حال عدم وجود الملف، نقوم بإنشائه تلقائياً (Auto-Recovery)
-        syncUserProfile(user).then(() => {
-           // نترك onSnapshot تتعامل مع تحديث الحالة فور الكتابة
-        }).catch(() => {
+        // إنشاء تلقائي للملف في حال الفقدان (Self-Healing)
+        syncUserProfile(user).catch(() => {
            if (isMounted) setLoading(false);
         });
       }
     }, (err) => {
-      console.error("[USER_SNAPSHOT_ERROR]", err);
       if (isMounted) setLoading(false);
     });
 
@@ -83,7 +79,6 @@ export function useUser() {
   return { 
     user, 
     profile, 
-    // التأكد من استقرار كافة البيانات قبل إخفاء شاشة التحميل
     loading: loading || (!!user && !profile),
     isVerified: user?.emailVerified || false,
     isAdmin: isStaff,

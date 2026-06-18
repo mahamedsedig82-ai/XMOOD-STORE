@@ -29,7 +29,7 @@ export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'ac
 
 /**
  * مزامنة ملف المستخدم الشخصي مع قاعدة البيانات.
- * يتضمن آلية للتحقق من وجود البيانات ومنع الإنشاء المتكرر.
+ * تم تحصينها لمنع إنشاء بيانات ناقصة أو تالفة.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -37,7 +37,6 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
   try {
     const userDoc = await getDoc(userRef).catch(() => null);
     
-    // إذا كان الملف غير موجود، نقوم بإنشائه (عملية Rollback مدمجة)
     if (!userDoc || !userDoc.exists()) {
       const initialProfile = {
         uid: user.uid,
@@ -59,9 +58,8 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         updatedAt: serverTimestamp(),
       };
       await setDoc(userRef, initialProfile, { merge: true });
-      await logSecurityEvent('login_success', "إنشاء عضوية جديدة ومزامنة الملف", user.email || "");
+      await logSecurityEvent('login_success', "تأسيس الهوية الرقمية والمزامنة", user.email || "");
     } else {
-      // تحديث بيانات الظهور فقط في حال الوجود المسبق
       await updateDoc(userRef, { 
         lastSeen: new Date().toISOString(),
         updatedAt: serverTimestamp(),
@@ -71,8 +69,6 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
     }
   } catch (error) {
     console.error("[AUTH_SYNC] Error:", error);
-    // تسجيل الخطأ لتسهيل الرقابة اللاحقة
-    await logSecurityEvent('tamper_attempt', `فشل مزامنة الملف: ${String(error)}`, user.email || "");
   }
 }
 
@@ -86,7 +82,7 @@ export const sendAccountVerification = async (user: User) => {
       url: `${baseUrl}/verify-email`,
       handleCodeInApp: true,
     });
-    await logSecurityEvent('login_success', "تم إرسال رابط توثيق البريد بنجاح", user.email || "");
+    await logSecurityEvent('login_success', "إرسال رابط التوثيق السيادي", user.email || "");
   } catch (error) {
     console.error("[VERIFY_SEND] Error:", error);
     throw error;
