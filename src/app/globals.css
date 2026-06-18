@@ -122,8 +122,9 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Optimize Framer Motion on Mobile */
+/* 🛡️ Performance Shaders */
 .motion-safe {
   backface-visibility: hidden;
   perspective: 1000px;
+  will-change: transform, opacity;
 }

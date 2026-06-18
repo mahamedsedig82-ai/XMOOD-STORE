@@ -8,19 +8,26 @@ import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+/**
+ * 🛡️ GuidanceBot Pro 24.0 (Hydration-Safe)
+ * Client-only rendering with optimized motion transitions.
+ */
 export function GuidanceBot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const db = useFirestore();
-  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const settingsRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return doc(db, "settings", "global");
+  }, [db]);
   const { data: config } = useDoc(settingsRef);
   
   const [message, setMessage] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
     const timer = setTimeout(() => {
-      if (window.innerWidth > 768 && !isOpen) setIsOpen(true);
+      if (typeof window !== 'undefined' && window.innerWidth > 768 && !isOpen) setIsOpen(true);
     }, 4000);
     return () => clearTimeout(timer);
   }, []);
@@ -33,6 +40,7 @@ export function GuidanceBot() {
     }
   }, [config]);
 
+  // 🛡️ SSR Guard
   if (!isMounted) return null;
 
   const botColor = config?.bot?.primaryColor || "#d4af37";

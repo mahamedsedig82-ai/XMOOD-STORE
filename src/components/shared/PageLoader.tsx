@@ -3,14 +3,23 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
+/**
+ * 🛡️ PageLoader Pro 24.0 (Hydration-Safe)
+ * Strictly renders client-side to prevent hydration mismatch with Framer Motion.
+ */
 export function PageLoader() {
   const [isVisible, setIsVisible] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     // ⚡ تم تقليل الوقت لزيادة سرعة دخول المستخدم للموقع
     const timer = setTimeout(() => setIsVisible(false), 800);
     return () => clearTimeout(timer);
   }, []);
+
+  // 🛡️ SSR Guard: Never render on server
+  if (!isMounted) return null;
 
   return (
     <AnimatePresence>
@@ -19,7 +28,7 @@ export function PageLoader() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4, ease: "circOut" }}
-          className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background"
+          className="fixed inset-0 z-[250] flex flex-col items-center justify-center bg-background"
         >
           <div className="relative">
             {/* Golden Ripple Effect - High Performance */}
