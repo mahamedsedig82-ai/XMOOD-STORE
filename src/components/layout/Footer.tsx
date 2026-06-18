@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -20,7 +19,7 @@ export function Footer() {
         <div className="mb-12 flex flex-col items-center group">
           <Link href="/" className="flex flex-col items-center transition-transform hover:scale-105">
             {config?.appearance?.logoUrl ? (
-              <img src={config.appearance.logoUrl} className="h-16 md:h-20 w-auto object-contain mb-6 rounded-2xl border border-primary/10 shadow-xl" alt="Logo" />
+              <img src={config.appearance.logoUrl} className="h-20 w-20 md:h-28 md:w-28 rounded-full object-cover mb-6 border-2 border-primary/10 shadow-2xl" alt="Logo" />
             ) : (
               <div className="flex flex-col items-center">
                 <span className="handwritten-logo text-4xl md:text-6xl mb-2">XMOOD <span>STORE</span></span>

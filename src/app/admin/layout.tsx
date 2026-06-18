@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
@@ -83,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarHeader className="p-8 border-b text-center flex flex-col items-center gap-6">
             <Link href="/" className="flex flex-col items-center group">
                {config?.appearance?.logoUrl ? (
-                 <img src={config.appearance.logoUrl} className="h-12 w-auto object-contain rounded-xl shadow-md border border-primary/10" alt="Logo" />
+                 <img src={config.appearance.logoUrl} className="h-16 w-16 rounded-full object-cover shadow-md border-2 border-primary/10" alt="Logo" />
                ) : (
                  <span className="handwritten-logo text-xl" style={{ direction: 'ltr' }}>XMOOD STORE</span>
                )}

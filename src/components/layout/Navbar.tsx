@@ -72,7 +72,7 @@ export function Navbar() {
       <div className="container mx-auto px-6 h-full flex items-center justify-between">
         <Link href="/" className="flex items-center gap-4 group transition-all hover:scale-105">
           {config?.appearance?.logoUrl ? (
-            <img src={config.appearance.logoUrl} className="h-11 md:h-14 w-auto object-contain rounded-xl border border-primary/10 shadow-lg" alt="Logo" />
+            <img src={config.appearance.logoUrl} className="h-12 w-12 md:h-16 md:w-16 rounded-full object-cover border-2 border-primary/20 shadow-md" alt="Logo" />
           ) : (
             <div className="flex flex-col">
               <span className="handwritten-logo text-2xl md:text-3xl leading-none tracking-widest" style={{ direction: 'ltr' }}>XMOOD <span>STORE</span></span>
@@ -111,7 +111,7 @@ export function Navbar() {
           {user ? (
             <div className="flex items-center gap-4">
                <Link href="/wallet">
-                 <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-xl rounded-xl transition-transform hover:scale-110 overflow-hidden">
+                 <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-xl rounded-full transition-transform hover:scale-110 overflow-hidden">
                    <AvatarImage src={profile?.photoURL} className="object-cover" />
                    <AvatarFallback className="bg-primary/5 text-primary font-bold"><User size={18}/></AvatarFallback>
                  </Avatar>

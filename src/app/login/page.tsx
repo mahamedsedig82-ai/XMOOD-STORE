@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { loginEmail, registerEmail, syncUserProfile, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Loader2, UserPlus, Mail, Lock, ShieldCheck, Phone, Sparkles, AlertCircle, Info } from "lucide-react";
+import { Loader2, UserPlus, Mail, Lock, ShieldCheck, Phone, Sparkles, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -100,7 +100,7 @@ export default function LoginPage() {
             <div className="p-10 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-6">
                <div className="logo-glow-container">
                  {config?.appearance?.logoUrl ? (
-                   <img src={config.appearance.logoUrl} className="h-20 w-auto object-contain drop-shadow-xl" alt="XMOOD" />
+                   <img src={config.appearance.logoUrl} className="h-24 w-24 rounded-full object-cover border-2 border-primary/20 shadow-xl drop-shadow-xl" alt="XMOOD Logo" />
                  ) : (
                    <h2 className="handwritten-logo text-3xl md:text-5xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
                  )}

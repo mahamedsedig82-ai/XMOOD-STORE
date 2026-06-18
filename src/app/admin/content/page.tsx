@@ -81,11 +81,11 @@ export default function AdminContentManager() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                  <div className="space-y-8">
                     <div className="space-y-3">
-                       <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">رابط لوقو المتجر (يحل محل النص)</Label>
+                       <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">رابط لوقو المتجر (دائري إجباري)</Label>
                        <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} placeholder="https://..." className="h-14 font-mono text-xs" />
                        {form.appearance.logoUrl && (
                          <div className="mt-4 p-4 bg-muted/40 rounded-2xl flex items-center justify-center border border-dashed border-primary/20">
-                            <img src={form.appearance.logoUrl} className="h-16 w-auto object-contain" alt="Preview" />
+                            <img src={form.appearance.logoUrl} className="h-20 w-20 rounded-full object-cover border-2 border-primary/20 shadow-lg" alt="Preview" />
                          </div>
                        )}
                     </div>

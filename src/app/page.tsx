@@ -41,13 +41,18 @@ export default function HomePage() {
             <div className="flex flex-col items-center gap-8">
                <div className="logo-glow-container">
                   {config?.appearance?.logoUrl ? (
-                    <motion.img 
+                    <motion.div
                       initial={{ scale: 0.9, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      src={config.appearance.logoUrl} 
-                      className="h-36 md:h-64 w-auto object-contain drop-shadow-[0_0_30px_rgba(212,175,55,0.3)] hover:scale-105 transition-transform duration-700" 
-                      alt="XMOOD" 
-                    />
+                      className="relative"
+                    >
+                      <img 
+                        src={config.appearance.logoUrl} 
+                        className="h-36 w-36 md:h-64 md:w-64 rounded-full object-cover border-4 border-primary/20 shadow-[0_0_50px_rgba(212,175,55,0.3)] hover:scale-105 transition-transform duration-700" 
+                        alt="XMOOD Logo" 
+                      />
+                      <div className="absolute inset-0 rounded-full shadow-[inset_0_0_20px_rgba(0,0,0,0.2)] pointer-events-none" />
+                    </motion.div>
                   ) : (
                     <h1 className="handwritten-logo text-5xl md:text-8xl drop-shadow-2xl" style={{ direction: 'ltr' }}>XMOOD STORE</h1>
                   )}
