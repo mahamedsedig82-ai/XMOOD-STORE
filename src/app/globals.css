@@ -55,6 +55,7 @@
     @apply bg-background text-foreground antialiased font-body transition-colors duration-500 overflow-x-hidden; 
     text-rendering: optimizeLegibility;
     -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
   }
 }
 
@@ -109,3 +110,11 @@
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { @apply bg-primary/40; }
+
+.mobile-sidebar-shadow {
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
+}
+
+.smooth-transition {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}

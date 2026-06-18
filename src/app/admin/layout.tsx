@@ -2,7 +2,7 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowRight, Terminal, BarChart3, ShieldCheck, Package, ClipboardList, Users, Wallet, ShieldAlert, ImageIcon, Zap, Loader2, GitBranch, ShoppingCart, LayoutGrid, Briefcase, Megaphone
+  LogOut, ArrowRight, Terminal, BarChart3, ShieldCheck, Package, ClipboardList, Users, Wallet, ShieldAlert, ImageIcon, Zap, Loader2, GitBranch, ShoppingCart, LayoutGrid, Briefcase, Megaphone, Menu
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -21,6 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const [isClient, setIsMounted] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const settingsRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -86,7 +87,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
-        <Sidebar className="border-l border-border bg-card/80 backdrop-blur-3xl hidden lg:flex shrink-0 shadow-[20px_0_50px_rgba(0,0,0,0.1)]" side="right">
+        {/* Desktop Sidebar */}
+        <Sidebar className="border-l border-border bg-card/80 backdrop-blur-3xl hidden lg:flex shrink-0 shadow-2xl" side="right">
           <SidebarHeader className="p-10 border-b text-center flex flex-col items-center gap-6 bg-muted/10">
             <Link href="/" className="flex flex-col items-center group transition-transform hover:scale-105">
                {config?.appearance?.logoUrl ? (
@@ -95,7 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                  <span className="handwritten-logo text-2xl" style={{ direction: 'ltr' }}>XMOOD STORE</span>
                )}
             </Link>
-            <Badge variant="outline" className="text-[9px] uppercase font-black border-primary/30 text-primary px-6 py-1.5 rounded-full tracking-[0.2em] bg-primary/5 shadow-sm">
+            <Badge variant="outline" className="text-[9px] uppercase font-black border-primary/30 text-primary px-6 py-1.5 rounded-full tracking-widest bg-primary/5 shadow-sm">
               {profile?.label || "ADMIN ACCESS"}
             </Badge>
           </SidebarHeader>
@@ -103,7 +105,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              <SidebarMenu className="gap-4">
                {visibleSections.map((item) => (
                  <SidebarMenuItem key={item.href}>
-                   <SidebarMenuButton asChild isActive={pathname === item.href} className={`h-14 px-8 rounded-2xl transition-all duration-400 ${pathname === item.href ? 'bg-primary text-black shadow-2xl scale-[1.05] border border-white/20' : 'hover:bg-primary/10 text-foreground/70 hover:text-primary'}`}>
+                   <SidebarMenuButton asChild isActive={pathname === item.href} className={`h-14 px-8 rounded-2xl transition-all duration-400 ${pathname === item.href ? 'bg-primary text-black shadow-2xl scale-[1.05]' : 'hover:bg-primary/10 text-foreground/70'}`}>
                      <Link href={item.href} className="flex flex-row-reverse items-center gap-5 w-full">
                        <item.icon size={22} className={pathname === item.href ? 'text-black' : 'text-primary'} />
                        <span className="font-black text-[11px] uppercase tracking-widest">{item.label}</span>
@@ -123,25 +125,74 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </Sidebar>
 
+        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background overflow-hidden">
-          <header className="h-20 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-2xl z-[60] shrink-0 shadow-sm">
+          <header className="h-20 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-2xl z-[60] shrink-0">
              <div className="flex items-center gap-5">
                 <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20 shadow-inner">
                    <Terminal size={22} />
                 </div>
                 <div className="flex flex-col text-right">
                    <span className="text-sm font-black uppercase tracking-widest gold-text">وحدة التحكم السيادية</span>
-                   <span className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.3em] mt-0.5 opacity-60">Sovereign Core OS 8.0</span>
+                   <span className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.3em] mt-0.5 opacity-60">Sovereign Core OS 9.0</span>
                 </div>
              </div>
-             <div className="flex items-center gap-5">
-                <div className="hidden sm:flex items-center gap-3 px-6 py-2 bg-green-500/5 rounded-full border border-green-500/10">
+
+             {/* Mobile Admin Trigger */}
+             <div className="flex items-center gap-4 lg:hidden">
+                <Button variant="ghost" size="icon" onClick={() => setIsMobileNavOpen(!isMobileNavOpen)} className="rounded-xl bg-muted/50 border h-11 w-11">
+                   {isMobileNavOpen ? <X size={24} className="text-primary" /> : <Menu size={24} />}
+                </Button>
+             </div>
+
+             <div className="hidden lg:flex items-center gap-5">
+                <div className="flex items-center gap-3 px-6 py-2 bg-green-500/5 rounded-full border border-green-500/10">
                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" />
                    <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">System Active</span>
                 </div>
                 <Badge variant="outline" className="border-border text-muted-foreground text-[9px] font-black px-4 py-1 rounded-full uppercase tracking-tighter">Verified Session</Badge>
              </div>
           </header>
+
+          {/* Mobile Admin Menu Overlay */}
+          <AnimatePresence>
+            {isMobileNavOpen && (
+               <>
+                 <motion.div 
+                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                   onClick={() => setIsMobileNavOpen(false)}
+                   className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md lg:hidden"
+                 />
+                 <motion.div 
+                   initial={{ y: "-100%" }} animate={{ y: 0 }} exit={{ y: "-100%" }}
+                   transition={{ type: "spring", damping: 30, stiffness: 200 }}
+                   className="fixed top-20 right-0 z-[110] w-full max-h-[80vh] bg-background border-b-4 border-primary/30 lg:hidden overflow-y-auto p-8 shadow-2xl"
+                 >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       {visibleSections.map((item) => (
+                          <Link 
+                            key={item.href} 
+                            href={item.href} 
+                            onClick={() => setIsMobileNavOpen(false)}
+                            className={`flex items-center gap-5 p-5 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all ${pathname === item.href ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'bg-muted/40 text-foreground/70'}`}
+                          >
+                             <item.icon size={20} className={pathname === item.href ? 'text-black' : 'text-primary'} />
+                             {item.label}
+                          </Link>
+                       ))}
+                    </div>
+                    <div className="mt-8 pt-8 border-t flex flex-col gap-4">
+                       <Button asChild variant="outline" className="w-full h-14 rounded-2xl font-black text-[10px] uppercase gap-4 border-primary/30">
+                          <Link href="/"><ArrowRight size={18} /> العودة للمتجر</Link>
+                       </Button>
+                       <Button variant="ghost" onClick={handleSignOut} className="w-full h-14 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-4 bg-red-500/5">
+                          <LogOut size={18} /> تسجيل الخروج الإداري
+                       </Button>
+                    </div>
+                 </motion.div>
+               </>
+            )}
+          </AnimatePresence>
 
           <main className="flex-1 overflow-y-auto smooth-scroll custom-scrollbar px-4 md:px-16 py-12 pb-48 bg-background relative">
              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.03),transparent_40%)] pointer-events-none" />
