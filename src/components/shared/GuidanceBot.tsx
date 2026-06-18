@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { X, Heart, Bot, MessageCircle, Sparkles, Send, User } from "lucide-react";
+import { X, Heart, Bot, MessageCircle, Sparkles, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
@@ -9,8 +9,8 @@ import { doc } from "firebase/firestore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 /**
- * 🛡️ GuidanceBot Pro 24.0 (Hydration-Safe)
- * Client-only rendering with optimized motion transitions.
+ * 🛡️ GuidanceBot Pro 25.0 (Hydration-Safe)
+ * Client-only rendering with strict mounting guard.
  */
 export function GuidanceBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +40,7 @@ export function GuidanceBot() {
     }
   }, [config]);
 
-  // 🛡️ SSR Guard
+  // 🛡️ Mandatory SSR Guard to prevent Hydration Mismatch
   if (!isMounted) return null;
 
   const botColor = config?.bot?.primaryColor || "#d4af37";
@@ -55,7 +55,6 @@ export function GuidanceBot() {
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
             className="mb-3 w-[290px] md:w-[330px] luxury-card p-0 border-primary/10 shadow-2xl bg-card/98 backdrop-blur-2xl overflow-hidden rounded-[1.5rem]"
           >
-            {/* Compact Header */}
             <div className="p-3 bg-muted/5 border-b flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -75,7 +74,6 @@ export function GuidanceBot() {
               </button>
             </div>
 
-            {/* Compact Message Area */}
             <div className="p-4 space-y-4">
                <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
                   <p className="text-[11px] font-bold leading-relaxed text-foreground min-h-[2.5rem]">

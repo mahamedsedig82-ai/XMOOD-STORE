@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
   
   const router = useRouter();
-  const { user, profile, loading: authLoading, isVerified, authSettled } = useUser();
+  const { user, profile, loading: authLoading, isVerified } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -38,10 +38,6 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
-  /**
-   * 🛡️ SOVEREIGN REDIRECT GUARD 2.0
-   * Wait for COMPLETE state stabilization (User + Profile)
-   */
   useEffect(() => {
     if (isMounted && !authLoading && user && profile) {
       if (isVerified) {
@@ -69,7 +65,6 @@ export default function LoginPage() {
         await syncUserProfile(res.user, { displayName: fullName, phoneNumber: phone });
         await sendAccountVerification(res.user);
         toast({ title: "تم إنشاء العضوية بنجاح" });
-        // Redirect handled by useEffect once profile is synced
       } else {
         await loginEmail(email, password);
         toast({ title: "جاري تأمين الدخول..." });
@@ -82,11 +77,15 @@ export default function LoginPage() {
     }
   };
 
+  // 🛡️ Stable Loader to match SSR and initial client pass
   if (!isMounted || authLoading || (user && !profile)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <Loader2 className="animate-spin text-primary" size={60} />
-        <p className="text-[10px] font-black uppercase tracking-widest gold-text">Securing Entry Node...</p>
+        <div className="relative">
+          <Loader2 className="animate-spin text-primary" size={60} />
+          <div className="absolute inset-0 bg-primary/10 blur-xl rounded-full scale-150 animate-pulse" />
+        </div>
+        <p className="text-[10px] font-black uppercase tracking-widest gold-text animate-pulse">Securing Entry Node...</p>
       </div>
     );
   }
@@ -116,7 +115,7 @@ export default function LoginPage() {
                   <TabsTrigger value="signup" className="rounded-lg font-black text-[9px] uppercase">إنشاء حساب</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="login" className="space-y-4 animate-fade-in">
+                <TabsContent value="login" className="space-y-4">
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="user@xmood.pro" />
@@ -130,7 +129,7 @@ export default function LoginPage() {
                   </Button>
                 </TabsContent>
 
-                <TabsContent value="signup" className="space-y-4 animate-fade-in">
+                <TabsContent value="signup" className="space-y-4">
                    <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="عضو جديد" /></div>
                       <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">رقم الجوال</Label><Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." /></div>
