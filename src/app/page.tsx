@@ -37,29 +37,29 @@ export default function HomePage() {
         </div>
 
         <div className="container mx-auto px-6 relative z-10 text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="space-y-10">
-            <div className="flex flex-col items-center gap-8">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="space-y-8 md:space-y-12">
+            <div className="flex flex-col items-center gap-6 md:gap-10">
                {config?.appearance?.logoUrl ? (
                  <motion.img 
                    initial={{ scale: 0.9, opacity: 0 }}
                    animate={{ scale: 1, opacity: 1 }}
                    src={config.appearance.logoUrl} 
-                   className="h-32 md:h-52 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" 
-                   alt="XMOOD Logo" 
+                   className="h-32 md:h-56 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" 
+                   alt="Logo" 
                  />
                ) : (
-                 <h1 className="handwritten-logo text-4xl md:text-5xl drop-shadow-xl">XMOOD STORE</h1>
+                 <h1 className="handwritten-logo text-4xl md:text-6xl drop-shadow-xl">XMOOD STORE</h1>
                )}
                
                <div className="space-y-4">
-                  <h2 className="text-lg md:text-2xl font-handwriting text-primary opacity-90 tracking-wide leading-relaxed">
+                  <h2 className="text-xl md:text-3xl font-handwriting text-primary opacity-90 tracking-wide leading-relaxed">
                     {config?.siteInfo?.subtitle || "مركز الخدمات الرقمية المعتمدة"}
                   </h2>
                   <div className="h-1 w-20 bg-primary/20 mx-auto rounded-full" />
                </div>
             </div>
 
-            <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed italic opacity-60 px-4">
+            <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed italic opacity-60 px-4">
               {config?.siteInfo?.description || "المستودع الرقمي الأول لإدارة وتوريد أصول النخبة من شحن الألعاب والخدمات التقنية المعتمدة سيادياً."}
             </p>
             
@@ -97,7 +97,7 @@ export default function HomePage() {
       <section className="py-24 md:py-32 bg-background">
         <div className="container mx-auto px-6">
            <div className="text-center mb-20 space-y-3">
-              <h2 className="text-3xl md:text-4xl font-headline font-black uppercase tracking-tighter">ما <span className="gold-text">يميزنا</span></h2>
+              <h2 className="text-3xl md:text-5xl font-headline font-black uppercase tracking-tighter">ما <span className="gold-text">يميزنا</span></h2>
               <p className="text-muted-foreground uppercase font-black text-[10px] tracking-[0.5em] opacity-30">The Sovereign Excellence Protocol</p>
            </div>
            
