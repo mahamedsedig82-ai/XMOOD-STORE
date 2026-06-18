@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -36,31 +35,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [items]);
 
   const addItem = (item: CartItem) => {
-    let message = "";
     setItems(prev => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) {
-        message = "تم تحديث الكمية في السلة";
         return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      message = "تمت الإضافة للسلة السيادية";
       return [...prev, item];
     });
-    
-    // Call toast outside the state updater to avoid React warnings
-    if (message) toast({ title: message });
+    toast({ title: "تمت الإضافة للسلة" });
   };
 
   const removeItem = (id: string) => {
     setItems(prev => prev.filter(i => i.id !== id));
-    toast({ title: "تمت الإزالة من السلة" });
+    toast({ title: "تمت الإزالة" });
   };
 
   const updateQuantity = (id: string, delta: number) => {
     setItems(prev => prev.map(i => {
       if (i.id === id) {
-        const newQty = Math.max(1, i.quantity + delta);
-        return { ...i, quantity: newQty };
+        return { ...i, quantity: Math.max(1, i.quantity + delta) };
       }
       return i;
     }));

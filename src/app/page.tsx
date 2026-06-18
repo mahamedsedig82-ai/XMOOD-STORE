@@ -2,172 +2,85 @@
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
-import { useFirestore, useDoc, useMemoFirebase, useCollection } from "@/firebase";
-import { doc, collection, query, orderBy, limit } from "firebase/firestore";
-import { motion } from "framer-motion";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy, limit } from "firebase/firestore";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/shared/ProductCard";
-import { ShoppingBag, Palette, Megaphone, Zap, Award, Flame, MessageSquare, Mail, ChevronLeft, ExternalLink, Facebook, Instagram, Youtube, Send } from "lucide-react";
+import { ShoppingBag, Palette, Flame, Zap } from "lucide-react";
 
-export default function HomeElite() {
+export default function HomePage() {
   const db = useFirestore();
-  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
-  const { data: config } = useDoc(settingsRef);
-
-  const bestSellersQuery = useMemoFirebase(() => {
+  const productsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, "products"), orderBy("createdAt", "desc"), limit(8));
   }, [db]);
 
-  const { data: bestSellers } = useCollection(bestSellersQuery);
+  const { data: products } = useCollection(productsQuery);
+  const BRAND_LOGO = "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png";
 
   return (
-    <main className="min-h-screen bg-background text-foreground" dir="rtl">
+    <main className="min-h-screen bg-background" dir="rtl">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="relative pt-40 pb-20 md:pt-60 md:pb-40 overflow-hidden bg-muted/20">
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-             <pattern id="grid-modern" width="80" height="80" patternUnits="userSpaceOnUse">
-               <path d="M 80 0 L 0 0 0 80" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-             </pattern>
-             <rect width="100%" height="100%" fill="url(#grid-modern)" />
-          </svg>
-        </div>
-
-        <div className="container mx-auto px-6 relative z-10 text-center">
-           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-              <Badge className="mb-10 py-3 px-10 bg-primary/10 text-primary border-primary/20 rounded-full font-black text-[11px] tracking-[0.2em] uppercase shadow-sm">
-                {config?.siteInfo?.subtitle || "SOVEREIGN DIGITAL ASSETS v3"}
-              </Badge>
-              
-              <h1 className="text-5xl md:text-8xl mb-8 font-headline font-black leading-tight tracking-tighter max-w-6xl mx-auto">
-                 {config?.pageContent?.heroTitle || "تجربة رقمية نُخبوية وموثوقة"}
-              </h1>
-
-              <p className="text-lg md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-16 leading-relaxed font-medium">
-                {config?.pageContent?.heroDescription || "نقدم لك أرقى باقات شحن الألعاب، الهويات البصرية، والخدمات الاحترافية المعتمدة سيادياً."}
-              </p>
-              
-              <div className="flex flex-wrap justify-center gap-6">
-                <Button asChild className="royal-button h-16 md:h-20 px-10 md:px-16 text-lg md:text-xl shadow-primary/30">
-                  <Link href="/store"><ShoppingBag className="ml-3" size={24} /> استكشاف المتجر</Link>
-                </Button>
-                <Button asChild variant="outline" className="h-16 md:h-20 px-10 md:px-16 text-lg md:text-xl rounded-2xl font-black border-border hover:bg-muted">
-                  <Link href="/designs/gallery"><Palette className="ml-3" size={24} /> معرض الإبداع</Link>
-                </Button>
-              </div>
-           </motion.div>
+      <section className="pt-32 pb-20 bg-muted/20">
+        <div className="container mx-auto px-4 text-center">
+          <Badge className="mb-6 px-6 py-1 bg-primary/10 text-primary border-primary/20">المرجع الأول للخدمات الرقمية</Badge>
+          <h1 className="text-4xl md:text-7xl font-bold mb-6 leading-tight">
+            متجر <span className="gold-text">XMOOD</span> للخدمات الإلكترونية
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
+            أفضل باقات شحن الألعاب، الحسابات الرقمية، وحلول التصميم الاحترافية في منصة واحدة موثوقة.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button asChild className="royal-button h-14 px-10">
+              <Link href="/store"><ShoppingBag className="ml-2" /> المتجر</Link>
+            </Button>
+            <Button asChild variant="outline" className="h-14 px-10 rounded-xl">
+              <Link href="/designs/gallery"><Palette className="ml-2" /> معرض الأعمال</Link>
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Ad Banner */}
-      {config?.ads?.isActive && (
-        <section className="container mx-auto px-6 mb-24 animate-fade-up">
-           <div className="relative rounded-[3rem] overflow-hidden group shadow-2xl border-4 border-primary/20">
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-700 z-10" />
-              <img 
-                src={config.ads.headerBanner || "https://picsum.photos/seed/ad1/1200/400"} 
-                className="w-full h-[300px] md:h-[450px] object-cover transition-transform duration-1000 group-hover:scale-105" 
-                alt="XMOOD Promotion" 
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-20 p-8">
-                 <Badge className="bg-red-600 text-white mb-6 animate-bounce px-6 py-1.5 rounded-full font-black text-[10px] tracking-widest uppercase">
-                    عرض لفترة محدودة
-                 </Badge>
-                 <h2 className="text-3xl md:text-6xl font-black text-white mb-6 drop-shadow-2xl">
-                    {config.ads.promoText || "باقة النخبة متاحة الآن بخصم 20%"}
-                 </h2>
-                 <Button asChild className="royal-button h-14 px-12 text-sm bg-white text-black hover:bg-zinc-100 shadow-white/10">
-                    <Link href="/store">استفد من العرض الآن <ChevronLeft size={16} className="mr-2 rotate-180" /></Link>
-                 </Button>
-              </div>
-           </div>
+      {products && products.length > 0 && (
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-12">
+              <h2 className="text-3xl font-bold flex items-center gap-2">
+                <Flame className="text-red-500" /> باقات مختارة
+              </h2>
+              <Link href="/store" className="text-primary font-bold hover:underline">المزيد</Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {products.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
         </section>
       )}
 
-      {/* Featured Products */}
-      {bestSellers && bestSellers.length > 0 && (
-        <section className="py-24 relative">
-           <div className="container mx-auto px-6">
-              <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
-                 <div className="text-right border-r-4 border-primary pr-6">
-                    <h2 className="text-4xl md:text-5xl font-black flex items-center gap-4">
-                       <Flame className="text-red-500" size={36} /> إصدارات النخبة
-                    </h2>
-                    <p className="text-muted-foreground mt-1 font-bold uppercase tracking-widest text-[9px]">Exclusive Limited Time Assets</p>
-                 </div>
-                 <Button asChild variant="ghost" className="text-primary font-black uppercase text-[10px] tracking-[0.2em] hover:bg-primary/5">
-                    <Link href="/store" className="flex items-center gap-2">المستودع الكامل <ExternalLink size={14} /></Link>
-                 </Button>
+      <section className="py-20 bg-primary/5">
+        <div className="container mx-auto px-4 text-center">
+           <Zap className="mx-auto text-primary mb-6" size={48} />
+           <h2 className="text-3xl font-bold mb-4">لماذا تختار XMOOD؟</h2>
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+              <div className="p-6 bg-background rounded-2xl shadow-sm">
+                 <h4 className="font-bold text-xl mb-2">تسليم فوري</h4>
+                 <p className="text-muted-foreground text-sm">يتم معالجة كافة الطلبات بشكل آلي وسريع.</p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
-                 {bestSellers.map((product: any) => (
-                   <ProductCard key={product.id} product={product} />
-                 ))}
+              <div className="p-6 bg-background rounded-2xl shadow-sm">
+                 <h4 className="font-bold text-xl mb-2">أمان كامل</h4>
+                 <p className="text-muted-foreground text-sm">كافة المعاملات المالية محمية بنظام المحفظة الموثق.</p>
+              </div>
+              <div className="p-6 bg-background rounded-2xl shadow-sm">
+                 <h4 className="font-bold text-xl mb-2">دعم فني</h4>
+                 <p className="text-muted-foreground text-sm">فريق مختص متواجد لمساعدتك عبر الواتساب دائماً.</p>
               </div>
            </div>
-        </section>
-      )}
-
-      {/* Footer Sovereign */}
-      <footer className="py-24 bg-muted/10 border-t">
-        <div className="container mx-auto px-6 text-center">
-          <div className="mb-10 flex flex-col items-center">
-            {config?.appearance?.logoUrl ? (
-                <img src={config.appearance.logoUrl} alt={config?.siteInfo?.title || "XMOOD"} className="h-16 md:h-24 w-auto object-contain mb-4" />
-            ) : (
-                <div className="handwritten-logo text-6xl">{config?.siteInfo?.title || "XMOOD STORE"}</div>
-            )}
-          </div>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-16 text-lg md:text-xl leading-relaxed font-medium">
-            {config?.pageContent?.footerAbout || "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية المتكاملة."}
-          </p>
-          
-          <div className="flex flex-wrap justify-center gap-8 mb-12">
-             {config?.contact?.whatsapp && (
-               <a href={`https://wa.me/${config.contact.whatsapp.replace(/\+/g, '')}`} target="_blank" className="flex items-center gap-4 text-foreground hover:gold-text transition-all font-black text-xs bg-card px-10 py-5 rounded-2xl shadow-xl border">
-                  <MessageSquare size={24} className="text-green-500" /> الدعم التنفيذي
-               </a>
-             )}
-             {config?.contact?.email && (
-               <a href={`mailto:${config.contact.email}`} className="flex items-center gap-4 text-foreground hover:gold-text transition-all font-black text-xs bg-card px-10 py-5 rounded-2xl shadow-xl border">
-                  <Mail size={24} className="text-primary" /> التواصل الرسمي
-               </a>
-             )}
-          </div>
-
-          {/* Social Links Hub */}
-          <div className="flex justify-center gap-6 mb-16">
-             {config?.contact?.facebook && (
-               <a href={config.contact.facebook} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-blue-600 hover:scale-110 transition-all border shadow-sm">
-                 <Facebook size={24} />
-               </a>
-             )}
-             {config?.contact?.instagram && (
-               <a href={config.contact.instagram} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-pink-600 hover:scale-110 transition-all border shadow-sm">
-                 <Instagram size={24} />
-               </a>
-             )}
-             {config?.contact?.youtube && (
-               <a href={config.contact.youtube} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-red-600 hover:scale-110 transition-all border shadow-sm">
-                 <Youtube size={24} />
-               </a>
-             )}
-             {config?.contact?.telegram && (
-               <a href={`https://t.me/${config.contact.telegram}`} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-blue-400 hover:scale-110 transition-all border shadow-sm">
-                 <Send size={24} />
-               </a>
-             )}
-          </div>
-
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] opacity-40">
-            {config?.siteInfo?.copyright || "© 2025 XMOOD SOVEREIGN. ALL RIGHTS RESERVED."}
-          </p>
         </div>
-      </footer>
+      </section>
     </main>
   );
 }

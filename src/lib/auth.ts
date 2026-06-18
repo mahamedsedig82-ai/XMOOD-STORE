@@ -8,19 +8,15 @@ import {
   sendEmailVerification,
   updateProfile
 } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp, updateDoc, addDoc, collection } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { auth, firestore as db } from "@/firebase";
 
-/**
- * مزامنة ملف المستخدم الشخصي.
- */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
   const userRef = doc(db, "users", user.uid);
   try {
-    const userDoc = await getDoc(userRef).catch(() => null);
-    
-    if (!userDoc || !userDoc.exists()) {
+    const userDoc = await getDoc(userRef);
+    if (!userDoc.exists()) {
       const initialProfile = {
         uid: user.uid,
         displayName: additionalData.displayName || user.displayName || user.email?.split("@")[0] || "عضو",
@@ -33,6 +29,7 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         createdAt: new Date().toISOString(),
         isVerified: user.emailVerified || false,
         updatedAt: serverTimestamp(),
+        ...additionalData
       };
       await setDoc(userRef, initialProfile, { merge: true });
     } else {
@@ -43,13 +40,10 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
       });
     }
   } catch (error) {
-    console.error("[AUTH_SYNC] Error:", error);
+    console.error("Auth Sync Error:", error);
   }
 }
 
-/**
- * إرسال رابط توثيق الحساب.
- */
 export const sendAccountVerification = async (user: User) => {
   try {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://xmood-36c92.firebaseapp.com';
@@ -58,7 +52,7 @@ export const sendAccountVerification = async (user: User) => {
       handleCodeInApp: true,
     });
   } catch (error) {
-    console.error("[VERIFY_SEND] Error:", error);
+    console.error("Verification Send Error:", error);
     throw error;
   }
 };
@@ -70,5 +64,4 @@ export const registerEmail = async (email: string, pass: string, name: string) =
 };
 
 export const loginEmail = (e: string, p: string) => signInWithEmailAndPassword(auth, e.trim().toLowerCase(), p);
-
 export const logout = () => signOut(auth);

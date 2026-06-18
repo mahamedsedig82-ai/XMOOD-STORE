@@ -23,69 +23,49 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 43 70% 50%;
-    --radius: 1.5rem;
+    --radius: 1rem;
   }
 
   .dark {
-    --background: 240 10% 2%;
-    --foreground: 0 0% 95%;
-    --card: 240 10% 4%;
-    --card-foreground: 0 0% 95%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
     --primary: 43 70% 50%;
     --primary-foreground: 0 0% 100%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 12%;
-    --muted-foreground: 240 5% 60%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
     --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 12%;
-    --input: 240 3.7% 12%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
     --ring: 43 70% 50%;
   }
 }
 
 @layer base {
   * { @apply border-border; }
-  body { 
-    @apply bg-background text-foreground antialiased transition-colors duration-300 font-body overflow-x-hidden;
-  }
+  body { @apply bg-background text-foreground antialiased font-body; }
 }
 
-/* 💎 SOVEREIGN INPUT STYLING - فرض الحدود البارزة والظلال الذهبية */
 input, textarea, select {
-  @apply border-2 border-primary bg-white dark:bg-zinc-950 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/40 transition-all font-bold text-foreground outline-none shadow-[0_4px_20px_rgba(212,175,55,0.15)] !important;
-}
-
-.dark input, .dark textarea, .dark select {
-  @apply border-primary bg-zinc-950 shadow-[0_0_25px_rgba(212,175,55,0.25)] !important;
+  @apply border-2 border-primary/40 bg-white dark:bg-zinc-900 px-4 py-3 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold !important;
 }
 
 .luxury-card {
-  @apply rounded-[1.5rem] md:rounded-[2rem] border bg-card text-card-foreground shadow-sm transition-all duration-500 hover:shadow-xl hover:border-primary/30 overflow-hidden relative;
+  @apply rounded-2xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-300;
 }
 
 .gold-text {
-  @apply bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 bg-clip-text text-transparent font-black;
+  @apply bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-transparent font-bold;
 }
 
 .royal-button {
-  @apply bg-primary text-primary-foreground font-black rounded-[1.25rem] md:rounded-[2rem] px-6 py-3 md:px-8 md:py-6 shadow-xl hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-sm uppercase tracking-[0.15em] flex items-center justify-center gap-2 md:gap-4 border-none disabled:opacity-50 disabled:grayscale;
+  @apply bg-primary text-primary-foreground font-bold rounded-xl px-6 py-3 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2;
 }
-
-@media (max-width: 768px) {
-  .responsive-table thead { display: none; }
-  .responsive-table tr { @apply mb-4 border rounded-[1.5rem] p-4 bg-card shadow-md block; }
-  .responsive-table td { @apply flex justify-between items-center py-3 border-b border-border/50 last:border-0 text-right; }
-  .responsive-table td::before { content: attr(data-label); @apply font-black text-[8px] uppercase text-muted-foreground ml-4 text-left; }
-}
-
-.animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.animate-fade-up { animation: fadeUp 0.5s ease-out forwards; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
