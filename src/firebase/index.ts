@@ -1,11 +1,11 @@
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-// 🛡️ Singleton Pattern: Ensuring only one instance exists to prevent Assertion Errors
+// 🛡️ Singleton Pattern: التحقق من وجود نسخة نشطة لمنع خطأ Assertion Error
 let app: FirebaseApp;
 let firestore: Firestore;
 let auth: Auth;
@@ -16,14 +16,15 @@ if (getApps().length > 0) {
   app = initializeApp(firebaseConfig);
 }
 
-// 🔐 Secure Firestore Initialization
-try {
-  firestore = getFirestore(app);
-} catch (e) {
-  // If not initialized yet with custom settings, do it once
-  firestore = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-  });
+// 🔐 تهيئة Firestore لمرة واحدة فقط بضبط مستقر
+if (!firestore!) {
+  try {
+    firestore = getFirestore(app);
+  } catch (e) {
+    firestore = initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+    });
+  }
 }
 
 auth = getAuth(app);
