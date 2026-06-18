@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -81,7 +80,7 @@
 }
 
 input, textarea, select {
-  @apply bg-white dark:bg-zinc-900/60 px-8 py-5 rounded-[2rem] outline-none font-bold text-right w-full transition-all !important;
+  @apply bg-white dark:bg-zinc-900/60 px-6 py-4 rounded-[2rem] outline-none font-bold text-right w-full transition-all !important;
   border: 1.5px solid rgba(212, 175, 55, 0.15) !important;
 }
 

@@ -21,10 +21,12 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const { user, isVerified } = useUser();
 
   useEffect(() => {
+    setIsMounted(true);
     if (user && isVerified) {
       router.replace("/wallet");
     }
@@ -82,6 +84,8 @@ export default function LoginPage() {
     }
   };
 
+  if (!isMounted) return null;
+
   return (
     <main className="min-h-screen bg-[#020202] relative overflow-hidden" dir="rtl">
       <Navbar />
@@ -98,14 +102,14 @@ export default function LoginPage() {
           className="w-full max-w-xl"
         >
           <Card className="emerald-glass rounded-[2.5rem] md:rounded-[3rem] border-white/5 overflow-hidden shadow-2xl">
-            <div className="p-8 md:p-12 text-center border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
-               <h2 className="handwritten-logo text-2xl md:text-4xl mb-2 tracking-widest uppercase">XMOOD <span>STORE</span></h2>
-               <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.4em] opacity-60">Sovereign Identity Portal</p>
+            <div className="p-6 md:p-12 text-center border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
+               <h2 className="handwritten-logo text-2xl md:text-4xl mb-1 tracking-widest uppercase">XMOOD <span>STORE</span></h2>
+               <p className="text-[7px] font-black text-zinc-500 uppercase tracking-[0.4em] opacity-60">Sovereign Identity Portal</p>
             </div>
 
-            <CardContent className="p-6 md:p-10 space-y-8">
+            <CardContent className="p-6 md:p-10 space-y-6 md:space-y-8">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-8 md:mb-10 p-1 bg-black/40 rounded-xl md:rounded-2xl border border-white/10 h-14 md:h-18">
+                <TabsList className="grid w-full grid-cols-2 mb-6 md:mb-10 p-1 bg-black/40 rounded-xl md:rounded-2xl border border-white/10 h-14 md:h-18">
                   <TabsTrigger value="login" className="rounded-lg md:rounded-xl font-black text-[9px] md:text-[10px] uppercase py-2 md:py-3 data-[state=active]:bg-primary data-[state=active]:text-black transition-all shadow-lg">تسجيل الدخول</TabsTrigger>
                   <TabsTrigger value="signup" className="rounded-lg md:rounded-xl font-black text-[9px] md:text-[10px] uppercase py-2 md:py-3 data-[state=active]:bg-primary data-[state=active]:text-black transition-all shadow-lg">إنشاء حساب</TabsTrigger>
                 </TabsList>
@@ -117,10 +121,10 @@ export default function LoginPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.3 }}
-                    className="space-y-6"
+                    className="space-y-4 md:space-y-6"
                   >
                     {activeTab === 'login' ? (
-                      <div className="space-y-8">
+                      <div className="space-y-6 md:space-y-8">
                         <div className="space-y-4">
                            <div className="space-y-2">
                               <Label className="text-[9px] md:text-[10px] font-black uppercase text-primary/70 pr-4 tracking-widest flex items-center gap-2">
@@ -156,7 +160,7 @@ export default function LoginPage() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="space-y-5">
+                      <div className="space-y-4 md:space-y-5">
                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                <Label className="text-[8px] md:text-[9px] font-black text-primary/70 pr-4 uppercase">الاسم الكامل</Label>
@@ -176,9 +180,9 @@ export default function LoginPage() {
                             <Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-12 md:h-14 text-sm bg-zinc-950/50 border-primary/20" placeholder="••••••••" />
                          </div>
                          
-                         <div className="p-4 md:p-5 bg-primary/5 border border-primary/10 rounded-xl md:rounded-2xl flex gap-3 items-start">
-                            <AlertCircle size={16} className="text-primary shrink-0 mt-0.5" />
-                            <p className="text-[9px] font-bold text-zinc-400 leading-relaxed">
+                         <div className="p-4 bg-primary/5 border border-primary/10 rounded-xl flex gap-3 items-start">
+                            <AlertCircle size={14} className="text-primary shrink-0 mt-0.5" />
+                            <p className="text-[8px] md:text-[9px] font-bold text-zinc-400 leading-relaxed">
                                تنبيه: ستصلك رسالة تفعيل. إذا لم تجدها، تحقق فوراً من مجلد <b>Spam</b> أو <b>Junk</b>.
                             </p>
                          </div>
@@ -198,13 +202,13 @@ export default function LoginPage() {
             </CardContent>
           </Card>
           
-          <div className="text-center mt-8 space-y-2 opacity-40">
+          <div className="text-center mt-6 md:mt-8 space-y-2 opacity-40">
              <p className="text-[8px] md:text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em]">
                Precision Secure Access Engine
              </p>
-             <div className="text-[7px] md:text-[8px] font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
+             <p className="text-[7px] md:text-[8px] font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
                <Sparkles size={10} /> Powered by XMOOD Cloud Intelligence <Sparkles size={10} />
-             </div>
+             </p>
           </div>
         </motion.div>
       </div>
