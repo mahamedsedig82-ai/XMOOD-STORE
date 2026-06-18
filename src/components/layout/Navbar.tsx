@@ -8,7 +8,8 @@ import {
   Wallet, LayoutDashboard, LogOut, Briefcase, ShoppingCart, User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useUser, useAuth } from "@/firebase";
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatUSD } from "@/lib/currency";
@@ -17,12 +18,19 @@ import { useCart } from "@/context/CartContext";
 export function Navbar() {
   const { user, profile } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   const pathname = usePathname();
   const router = useRouter();
   const { itemCount } = useCart();
   
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isMounted, setIsMounted] = useState(false);
+
+  const settingsRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return doc(db, "settings", "global");
+  }, [db]);
+  const { data: config } = useDoc(settingsRef);
 
   useEffect(() => {
     setIsMounted(true);
@@ -61,10 +69,14 @@ export function Navbar() {
     <nav className="fixed top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl h-20">
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="flex flex-col items-center">
-            <span className="handwritten-logo text-3xl md:text-4xl leading-none">Xmood</span>
-            <span className="text-[7px] font-black tracking-[0.4em] uppercase text-primary -mt-1 opacity-80 group-hover:opacity-100 transition-opacity">Store</span>
-          </div>
+          {config?.appearance?.logoUrl ? (
+            <img src={config.appearance.logoUrl} className="h-10 md:h-12 w-auto object-contain transition-transform group-hover:scale-105" alt="Logo" />
+          ) : (
+            <div className="flex flex-col items-center">
+              <span className="handwritten-logo text-3xl md:text-4xl leading-none">XMOOD <span>Store</span></span>
+              <span className="text-[7px] font-black tracking-[0.4em] uppercase text-primary -mt-1 opacity-80 group-hover:opacity-100 transition-opacity">Sovereign Store</span>
+            </div>
+          )}
         </Link>
 
         <div className="hidden lg:flex items-center gap-8">

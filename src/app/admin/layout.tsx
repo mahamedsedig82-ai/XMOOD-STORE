@@ -2,7 +2,7 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Settings, Image as ImageIcon, Zap, Loader2, GitBranch, Layers, ShoppingCart
+  LogOut, ArrowLeft, Terminal, BarChart3, ShieldCheck, Briefcase, Package, ClipboardList, Users, Wallet, ShieldAlert, Settings, Image as ImageIcon, Zap, Loader2, GitBranch, Layers, ShoppingCart, LayoutGrid
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -26,6 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const allSections = useMemo(() => [
     { label: "نظرة عامة", icon: BarChart3, href: "/admin", roles: ['owner', 'admin', 'gm'] },
+    { label: "المحتوى والهوية", icon: LayoutGrid, href: "/admin/content", roles: ['owner', 'admin', 'gm'] },
     { label: "المخزون والمنتجات", icon: Package, href: "/admin/products", roles: ['owner', 'admin', 'gm', 'store_manager'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/operations-log", roles: ['owner', 'admin', 'gm', 'support'] },
     { label: "نظام السلة والدفع", icon: ShoppingCart, href: "/admin/cart-system", roles: ['owner', 'admin', 'gm'] },
@@ -35,7 +36,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "إدارة الفروع", icon: GitBranch, href: "/admin/branches", roles: ['owner', 'admin', 'gm'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
     { label: "المالية والبنك", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'gm', 'accountant'] },
-    { label: "الإعدادات الشاملة", icon: Settings, href: "/admin/settings", roles: ['owner', 'admin', 'gm'] },
     { label: "مركز الأمان", icon: ShieldAlert, href: "/admin/security", roles: ['owner', 'admin', 'gm'] },
     { label: "المساعد الإداري AI", icon: Zap, href: "/admin/ai", roles: ['owner', 'admin', 'gm'] },
   ], []);
@@ -65,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
         <Sidebar className="border-l border-border bg-card hidden lg:flex shrink-0 shadow-2xl" side="right">
           <SidebarHeader className="p-10 border-b text-center">
-            <span className="handwritten-logo block mb-4 text-4xl">XMOOD</span>
+            <span className="handwritten-logo block mb-4 text-4xl">XMOOD <span>PRO</span></span>
             <Badge variant="outline" className="text-[9px] uppercase font-black border-primary/30 text-primary px-5 py-1 rounded-full">
               {profile?.label || "ADMIN ACCESS"}
             </Badge>
