@@ -1,4 +1,3 @@
-
 "use client";
 
 import { 
@@ -95,13 +94,15 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
  */
 export const sendAccountVerification = async (user: User) => {
   try {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://xmood-36c92.firebaseapp.com';
     await sendEmailVerification(user, {
-      url: `${window.location.origin}/verify-email`,
+      url: `${baseUrl}/verify-email`,
       handleCodeInApp: true,
     });
     logSecurityEvent('login_success', "تم إرسال رابط توثيق البريد", user.email || "");
   } catch (error) {
     console.error("Verification Email Error:", error);
+    throw error;
   }
 };
 
@@ -110,8 +111,9 @@ export const sendAccountVerification = async (user: User) => {
  */
 export const sendMagicLink = async (email: string) => {
   const cleanEmail = email.trim().toLowerCase();
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://xmood-36c92.firebaseapp.com';
   const actionCodeSettings = {
-    url: `${window.location.origin}/verify-email`,
+    url: `${baseUrl}/verify-email`,
     handleCodeInApp: true,
   };
   try {

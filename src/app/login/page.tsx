@@ -88,6 +88,7 @@ export default function SecurityLoginPage() {
         });
         await sendAccountVerification(res.user);
         setIsWaitingVerification(true);
+        toast({ title: "تم إنشاء الحساب", description: "يرجى التحقق من بريدك الإلكتروني لتنشيط العضوية." });
       } else {
         const res = await loginEmail(cleanEmail, password);
         if (!res.user.emailVerified) {
@@ -100,7 +101,10 @@ export default function SecurityLoginPage() {
         router.replace("/wallet");
       }
     } catch (error: any) {
-      toast({ variant: "destructive", title: "خطأ في المصادقة", description: "يرجى التحقق من صحة البيانات." });
+      let msg = "يرجى التحقق من صحة البيانات.";
+      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
+      if (error.code === 'auth/wrong-password') msg = "كلمة المرور غير صحيحة.";
+      toast({ variant: "destructive", title: "خطأ في المصادقة", description: msg });
     } finally {
       if (!isWaitingVerification) setLoading(false);
     }
@@ -113,8 +117,9 @@ export default function SecurityLoginPage() {
     try {
       await sendMagicLink(cleanEmail);
       setIsWaitingVerification(true);
+      toast({ title: "تم الإرسال", description: "افحص بريدك الإلكتروني لتسجيل الدخول الفوري." });
     } catch (error) {
-      toast({ variant: "destructive", title: "فشل الإرسال" });
+      toast({ variant: "destructive", title: "فشل الإرسال", description: "تأكد من صحة البريد والمحاولة لاحقاً." });
     } finally {
       setLoading(false);
     }
@@ -133,9 +138,10 @@ export default function SecurityLoginPage() {
               <div className="space-y-4">
                  <h2 className="text-3xl md:text-5xl font-black gold-text leading-tight">بانتظار توثيق الهوية</h2>
                  <p className="text-muted-foreground font-medium text-lg leading-relaxed">أرسلنا رابط التحقق إلى بريدك: <span className="text-primary font-bold">{email}</span></p>
-                 <p className="text-sm font-bold text-muted-foreground">افحص صندوق الوارد (أو مجلد الـ Spam) واضغط على الرابط.</p>
+                 <p className="text-sm font-bold text-muted-foreground">افحص صندوق الوارد (أو مجلد الـ Spam) واضغط على الرابط لتفعيل حسابك فوراً.</p>
               </div>
-              <Button onClick={() => window.location.reload()} className="royal-button w-full h-16 text-lg">لقد قمت بالتحقق، سجل الدخول</Button>
+              <Button onClick={() => window.location.reload()} className="royal-button w-full h-16 text-lg">لقد قمت بالتحقق، سجل الدخول الآن</Button>
+              <Button variant="ghost" onClick={() => setIsWaitingVerification(false)} className="text-xs font-bold text-muted-foreground uppercase tracking-widest">العودة لتعديل البيانات</Button>
            </div>
         </Card>
       </main>
@@ -192,14 +198,14 @@ export default function SecurityLoginPage() {
                          <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">البريد الإلكتروني</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-12" /></div>
                          <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">كلمة المرور</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-12" /></div>
                          
-                         {/* Security Question Section */}
+                         {/* 🛡️ استعادة سؤال الأمان السيادي */}
                          <div className="md:col-span-2 space-y-2">
                             <Label className="text-[9px] font-black text-primary uppercase pr-3 flex items-center gap-2"><HelpCircle size={10}/> اختر سؤال أمان (للطوارئ)</Label>
-                            <Select onValueChange={setSecurityQuestion}>
+                            <Select onValueChange={setSecurityQuestion} required>
                                <SelectTrigger className="h-12 border-2 border-primary bg-background rounded-xl">
                                   <SelectValue placeholder="اختر سؤال الأمان..." />
                                </SelectTrigger>
-                               <SelectContent className="bg-card border-2 border-primary">
+                               <SelectContent className="bg-card border-2 border-primary z-[100]">
                                   <SelectItem value="q1">ما هو اسم أول مدرسة التحقت بها؟</SelectItem>
                                   <SelectItem value="q2">ما هو اسم حيوانك الأليف الأول؟</SelectItem>
                                   <SelectItem value="q3">ما هو اسم مدينتك المفضلة؟</SelectItem>
@@ -209,7 +215,7 @@ export default function SecurityLoginPage() {
                          </div>
                          <div className="md:col-span-2 space-y-2">
                             <Label className="text-[9px] font-black text-primary uppercase pr-3">إجابة سؤال الأمان</Label>
-                            <Input value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} className="h-12" placeholder="أدخل إجابتك السرية هنا..." />
+                            <Input value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} className="h-12" placeholder="أدخل إجابتك السرية هنا..." required />
                          </div>
                       </div>
 

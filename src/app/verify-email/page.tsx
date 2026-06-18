@@ -28,27 +28,35 @@ export default function VerifyEmailPage() {
         // 1. بروتوكول توثيق الرابط التقليدي (Email Verification)
         if (oobCode && mode === 'verifyEmail') {
            await applyActionCode(auth, oobCode);
+           // في حال كان المستخدم مسجلاً دخوله مسبقاً، نحدث حالته
            if (auth.currentUser) {
               await auth.currentUser.reload();
               await syncUserProfile(auth.currentUser);
               setStatus('success');
               toast({ title: "تم توثيق الهوية السيادية" });
-              // توجيه تلقائي وفوري ومباشر للمحفظة
-              setTimeout(() => router.replace("/wallet"), 500);
+              setTimeout(() => router.replace("/wallet"), 1000);
+              return;
+           } else {
+              // إذا لم يكن مسجلاً دخوله، نطلب منه تسجيل الدخول الآن بعد التوثيق
+              setStatus('success');
+              toast({ title: "تم التوثيق، يمكنك تسجيل الدخول الآن" });
+              setTimeout(() => router.replace("/login"), 2000);
               return;
            }
         }
 
         // 2. بروتوكول الرابط السحري (Magic Link)
-        const userFromMagic = await completeMagicLinkSignIn();
-        if (userFromMagic) {
-          setStatus('success');
-          toast({ title: "تم الدخول بنجاح" });
-          setTimeout(() => router.replace("/wallet"), 500);
-          return;
+        if (isSignInWithEmailLink(auth, window.location.href)) {
+          const userFromMagic = await completeMagicLinkSignIn();
+          if (userFromMagic) {
+            setStatus('success');
+            toast({ title: "تم الدخول بنجاح" });
+            setTimeout(() => router.replace("/wallet"), 1000);
+            return;
+          }
         }
 
-        // 3. مراقب الحالة النشط (في حال تم التحقق في نافذة أخرى)
+        // 3. مراقب الحالة النشط (في حال تم التحقق في نافذة أخرى أو إعادة التحميل)
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await firebaseUser.reload();
@@ -60,10 +68,12 @@ export default function VerifyEmailPage() {
           }
         });
         
-        // مهلة زمنية للفشل إذا لم يتم رصد كود
+        // مهلة زمنية للفشل إذا لم يتم رصد أي معلمات صالحة
         const timeout = setTimeout(() => {
-           if (status === 'verifying' && !oobCode) setStatus('error');
-        }, 15000);
+           if (status === 'verifying' && !oobCode && !isSignInWithEmailLink(auth, window.location.href)) {
+              setStatus('error');
+           }
+        }, 30000);
 
         return () => {
           unsubscribe();
@@ -76,7 +86,13 @@ export default function VerifyEmailPage() {
       }
     };
     verify();
-  }, [auth, router, status]);
+  }, [auth, router]);
+
+  // دالة مساعدة للتحقق من رابط الدخول (لأنها مفقودة في النطاق الحالي)
+  function isSignInWithEmailLink(auth: any, href: string) {
+    const { isSignInWithEmailLink } = require("firebase/auth");
+    return isSignInWithEmailLink(auth, href);
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
@@ -91,7 +107,7 @@ export default function VerifyEmailPage() {
             </div>
             <div className="space-y-3">
               <h2 className="text-3xl font-black gold-text uppercase tracking-tighter">جاري التوثيق السيادي</h2>
-              <p className="text-muted-foreground font-medium text-sm">يتم الآن تأمين وصولك المباشر للمحفظة الرقمية...</p>
+              <p className="text-muted-foreground font-medium text-sm">يتم الآن تأمين وصولك المباشر للمنصة الرقمية...</p>
             </div>
           </div>
         )}
@@ -103,7 +119,7 @@ export default function VerifyEmailPage() {
             </div>
             <div className="space-y-3">
               <h2 className="text-4xl font-black gold-text">تم التوثيق بنجاح!</h2>
-              <p className="text-muted-foreground font-bold">مرحباً بك في عالم XMOOD. جاري توجيهك لمحفظتك...</p>
+              <p className="text-muted-foreground font-bold">مرحباً بك في عالم XMOOD. جاري توجيهك فوراً...</p>
             </div>
           </div>
         )}
@@ -114,7 +130,7 @@ export default function VerifyEmailPage() {
                <XCircle className="w-14 h-14" />
             </div>
             <h2 className="text-3xl font-black text-red-500">فشل في توثيق الرابط</h2>
-            <p className="text-muted-foreground text-sm font-medium">ربما انتهت صلاحية الرابط أو تم استخدامه مسبقاً.</p>
+            <p className="text-muted-foreground text-sm font-medium">ربما انتهت صلاحية الرابط أو تم استخدامه مسبقاً. يرجى طلب رابط جديد.</p>
             <div className="pt-8 flex flex-col gap-4">
                <Button asChild className="royal-button w-full h-16"><a href="/login">العودة لصفحة الدخول</a></Button>
                <Button asChild variant="ghost" className="w-full h-14"><a href="/"><Home className="ml-2" size={16} /> الرئيسية</a></Button>
