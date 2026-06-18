@@ -15,8 +15,8 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Profile Sync Service 7.0 (Atomic Integrity)
- * Ensures user document existence without overwriting critical financial/role data.
+ * 🛡️ Profile Sync Service 8.0 (Atomic Integrity)
+ * Ensures user document existence without overwriting critical data.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -33,7 +33,6 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
     };
 
     if (!userDoc.exists()) {
-      // 🛡️ INITIAL CREATION: Safe defaults
       await setDoc(userRef, {
         ...baseProfile,
         walletBalance: 0,
@@ -43,26 +42,22 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         createdAt: new Date().toISOString(),
       }, { merge: true });
     } else {
-      // 🛡️ INCREMENTAL UPDATE: Only sync changes (like verification status)
       const existing = userDoc.data();
-      const needsUpdate = existing.isVerified !== user.emailVerified || 
-                          (additionalData.displayName && existing.displayName !== additionalData.displayName);
-
-      if (needsUpdate) {
+      // Only update if status changed to avoid loops
+      if (existing.isVerified !== user.emailVerified) {
         await updateDoc(userRef, { 
           isVerified: user.emailVerified,
-          displayName: additionalData.displayName || existing.displayName,
           updatedAt: serverTimestamp() 
         });
       }
     }
   } catch (error) {
-    console.error("[AUTH_SYNC] Profile stabilization failed:", error);
+    console.error("[AUTH_SYNC] Profile stabilization failure:", error);
   }
 }
 
 /**
- * 🛡️ Sovereign Wipe Logout (STRICT ATOMIC ORDER)
+ * 🛡️ Sovereign Wipe Logout
  */
 export const logout = async () => {
   if (!auth) return;
@@ -98,7 +93,7 @@ export const loginWithGoogle = async () => {
 };
 
 /**
- * 🛡️ Verification Service (Strict Config)
+ * 🛡️ Verification Service
  */
 export const sendAccountVerification = async (user: User) => {
   if (!user) return;
@@ -109,7 +104,7 @@ export const sendAccountVerification = async (user: User) => {
     };
     await sendEmailVerification(user, actionCodeSettings);
   } catch (error: any) {
-    console.error("[AUTH_VERIFY] Link dispatch failure:", error.message);
+    console.error("[AUTH_VERIFY] Dispatch failure:", error.message);
     throw error;
   }
 };
@@ -117,6 +112,8 @@ export const sendAccountVerification = async (user: User) => {
 export const registerEmail = async (email: string, pass: string, name: string) => {
   const res = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), pass);
   await updateProfile(res.user, { displayName: name });
+  // Initial sync
+  await syncUserProfile(res.user, { displayName: name });
   return res;
 };
 

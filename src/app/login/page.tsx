@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
   
   const router = useRouter();
-  const { user, profile, loading: authLoading, isVerified } = useUser();
+  const { user, profile, loading: authLoading, isVerified, authSettled } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -38,15 +38,16 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
+  // 🛡️ Atomic Redirect Guard: Wait for both auth AND profile to be ready
   useEffect(() => {
-    if (isMounted && !authLoading && user && profile) {
-      if (isVerified) {
+    if (isMounted && !authLoading && authSettled && user && profile) {
+      if (user.emailVerified || profile.isVerified) {
         router.replace("/wallet");
       } else {
         router.replace("/verify-email?waiting=true");
       }
     }
-  }, [user, profile, authLoading, isVerified, router, isMounted]);
+  }, [user, profile, authLoading, isMounted, router, authSettled]);
 
   const handleAuth = async (type: 'login' | 'signup') => {
     if (!email || !password) {
@@ -77,14 +78,10 @@ export default function LoginPage() {
     }
   };
 
-  // 🛡️ Stable Loader to match SSR and initial client pass
   if (!isMounted || authLoading || (user && !profile)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <div className="relative">
-          <Loader2 className="animate-spin text-primary" size={60} />
-          <div className="absolute inset-0 bg-primary/10 blur-xl rounded-full scale-150 animate-pulse" />
-        </div>
+        <Loader2 className="animate-spin text-primary" size={60} />
         <p className="text-[10px] font-black uppercase tracking-widest gold-text animate-pulse">Securing Entry Node...</p>
       </div>
     );

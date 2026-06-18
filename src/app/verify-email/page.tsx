@@ -34,7 +34,7 @@ function VerifyEmailContent() {
         .then(async () => {
           if (auth.currentUser) {
             await auth.currentUser.reload();
-            // 🛡️ CRITICAL SYNC: Ensure Firestore knows user is now verified
+            // 🛡️ CRITICAL ATOMIC SYNC
             await syncUserProfile(auth.currentUser);
           }
           setStatus('success');
@@ -52,7 +52,7 @@ function VerifyEmailContent() {
         await auth.currentUser.reload();
         if (auth.currentUser.emailVerified) {
           clearInterval(interval);
-          // 🛡️ CRITICAL SYNC: Force Firestore update before redirecting
+          // 🛡️ CRITICAL SYNC: Ensure Firestore profile matches Auth status
           await syncUserProfile(auth.currentUser);
           setStatus('success');
           setTimeout(() => router.replace("/wallet"), 2500);

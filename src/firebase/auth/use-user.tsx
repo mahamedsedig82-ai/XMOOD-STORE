@@ -8,7 +8,7 @@ import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
 /**
- * 🛡️ Sovereign Identity Manager 23.0 (Atomic Sync)
+ * 🛡️ Sovereign Identity Manager 26.0 (Atomic Sync)
  * Orchestrates Auth and Firestore profile loading in a strict sequence.
  * Ensures 'loading' only resolves when BOTH auth and profile are ready.
  */
@@ -41,7 +41,7 @@ export function useUser() {
         return;
       }
 
-      // 2. Set user and begin profile stabilization
+      // 2. Set user and start profile sync
       setUser(firebaseUser);
       setLoading(true);
 
@@ -51,25 +51,21 @@ export function useUser() {
 
       const userDocRef = doc(db, 'users', firebaseUser.uid);
       
+      // Establish real-time profile listener
       profileUnsubscribeRef.current = onSnapshot(userDocRef, (snapshot) => {
-        if (!auth.currentUser) return; // Prevent state update after logout
+        if (!auth.currentUser) return;
 
         if (snapshot.exists()) {
           setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
-          // 🛡️ LOADING RESOLVED: Data is fully confirmed in Firestore
           setLoading(false);
           setAuthSettled(true);
         } else {
-          // Idempotent sync: create if missing. 
-          // We DON'T set loading=false here; we wait for the next snapshot trigger.
-          syncUserProfile(firebaseUser).catch(() => {
-            // Fallback if sync fails to prevent permanent loading screen
-            setLoading(false);
-            setAuthSettled(true);
-          });
+          // If profile missing, trigger idempotent sync
+          // snapshot will refire once created
+          syncUserProfile(firebaseUser);
         }
       }, (err) => {
-        console.warn("[IDENTITY_SYNC] Connection error:", err.message);
+        console.warn("[IDENTITY_SYNC] Profile stream error:", err.message);
         setLoading(false);
         setAuthSettled(true);
       });
@@ -85,12 +81,12 @@ export function useUser() {
   }, []);
 
   const isAdmin = !!(user && profile && ['owner', 'admin', 'gm'].includes(profile.role));
-  const isVerified = user?.emailVerified || false;
+  const isVerified = user?.emailVerified || profile?.isVerified || false;
   
   return { 
     user, 
     profile, 
-    loading, // Combined state: true until auth + profile are confirmed
+    loading, 
     isVerified,
     isAdmin,
     authSettled
