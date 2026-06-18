@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -11,7 +12,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * خطاف سيادي لمراقبة المجموعات مع نظام معالجة أخطاء متقدم.
+ * خطاف سيادي لمراقبة المجموعات مع نظام معالجة أخطاء متقدم وتحصين ضد الـ Assertion.
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
@@ -19,6 +20,7 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     if (!query) {
       setLoading(false);
       return;
@@ -27,6 +29,7 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
     const unsubscribe = onSnapshot(
       query, 
       (snapshot: QuerySnapshot<T>) => {
+        if (!isMounted) return;
         const items = snapshot.docs.map(doc => ({
           ...doc.data(),
           id: doc.id
@@ -34,10 +37,13 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         setData(items);
         setLoading(false);
       }, 
-      async (serverError) => {
-        // 🛡️ إنشاء خطأ سياقي غني عند فشل الصلاحيات
+      (serverError) => {
+        if (!isMounted) return;
+        // 🛡️ استخراج المسار بشكل آمن للخطأ
+        const path = (query as any)._query?.path?.toString() || 'collection';
+        
         const permissionError = new FirestorePermissionError({
-          path: (query as any)._query?.path?.toString() || 'collection',
+          path,
           operation: 'list',
         } satisfies SecurityRuleContext);
 
@@ -47,7 +53,10 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [query]);
 
   return { data, loading, error };

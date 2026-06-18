@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -11,7 +12,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * خطاف سيادي لمراقبة الوثائق الفردية مع نظام معالجة أخطاء متقدم.
+ * خطاف سيادي لمراقبة الوثائق الفردية مع نظام معالجة أخطاء متقدم وتحصين ضد الـ Assertion.
  */
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
@@ -19,6 +20,7 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     if (!docRef) {
       setLoading(false);
       return;
@@ -27,10 +29,12 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
     const unsubscribe = onSnapshot(
       docRef, 
       (snapshot: DocumentSnapshot<T>) => {
+        if (!isMounted) return;
         setData(snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } as T : null);
         setLoading(false);
       }, 
-      async (serverError) => {
+      (serverError) => {
+        if (!isMounted) return;
         // 🛡️ إنشاء خطأ سياقي غني عند فشل الصلاحيات
         const permissionError = new FirestorePermissionError({
           path: docRef.path,
@@ -43,7 +47,10 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [docRef]);
 
   return { data, loading, error };

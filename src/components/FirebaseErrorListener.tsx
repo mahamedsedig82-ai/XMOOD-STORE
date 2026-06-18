@@ -5,21 +5,29 @@ import { useEffect } from 'react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { useToast } from '@/hooks/use-toast';
 
+/**
+ * مراقب أخطاء Firebase المركزي.
+ * يقوم برصد وعرض تفاصيل أخطاء الصلاحيات والـ Assertion بشكل احترافي.
+ */
 export function FirebaseErrorListener() {
   const { toast } = useToast();
 
   useEffect(() => {
     const handlePermissionError = (error: any) => {
-      // In development, Next.js will catch uncaught errors and show the overlay.
-      // We throw it here so the developer sees the rich context if available.
+      // 🛡️ توثيق الخطأ في الكونسول للمطور مع التحقق من وجود سياق
       if (process.env.NODE_ENV === 'development') {
-        console.error('Firestore Permission Error Context:', error.context);
+        const context = error.context || {};
+        console.group('🛡️ XMOOD FIREWALL: ACCESS DENIED');
+        console.error('Path:', context.path || 'Unknown');
+        console.error('Operation:', context.operation || 'Unknown');
+        console.error('Full Error Object:', error);
+        console.groupEnd();
       }
 
       toast({
         variant: 'destructive',
-        title: 'خطأ في الصلاحيات',
-        description: 'ليس لديك الإذن الكافي لإتمام هذه العملية. يرجى التواصل مع الإدارة إذا كنت تعتقد أن هذا خطأ.',
+        title: 'بروتوكول الأمان: وصول مقيد',
+        description: 'عذراً سيادة المدير/العضو، ليس لديك الإذن الكافي لإجراء هذه العملية. تم تسجيل هذا الحدث في سجلات الأمان.',
       });
     };
 

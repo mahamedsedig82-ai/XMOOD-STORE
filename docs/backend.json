@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -25,6 +26,17 @@
       },
       "required": ["uid", "email", "role"]
     },
+    "GlobalSettings": {
+      "title": "Global Settings",
+      "description": "Central app configurations and labels",
+      "type": "object",
+      "properties": {
+        "siteInfo": { "type": "object" },
+        "appearance": { "type": "object" },
+        "navLabels": { "type": "object" },
+        "cartLabels": { "type": "object" }
+      }
+    },
     "AuditLog": {
       "title": "Audit Log",
       "description": "Log of admin actions",
@@ -46,6 +58,30 @@
     "/users/{userId}": {
       "schema": "UserProfile",
       "description": "Sovereign user profiles"
+    },
+    "/settings/{id}": {
+      "schema": "GlobalSettings",
+      "description": "Central app configurations"
+    },
+    "/products/{productId}": {
+      "schema": "object",
+      "description": "Store items and stock"
+    },
+    "/orders/{orderId}": {
+      "schema": "object",
+      "description": "Sales records"
+    },
+    "/transactions/{id}": {
+      "schema": "object",
+      "description": "Financial ledger"
+    },
+    "/gallery/{id}": {
+      "schema": "object",
+      "description": "Design portfolio"
+    },
+    "/other_services/{id}": {
+      "schema": "object",
+      "description": "Professional services"
     },
     "/community_audit_logs/{logId}": {
       "schema": "AuditLog",
