@@ -6,7 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShoppingCart, Loader2, ShieldCheck, Zap } from "lucide-react";
+import { ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShoppingCart, Loader2, ShieldCheck, Zap, Truck } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,15 +23,15 @@ export default function CartPage() {
   const { data: config, loading: configLoading } = useDoc(settingsRef);
 
   const labels = config?.cartLabels || {
-    cartTitle: "سلة المقتنيات",
-    emptyCartMsg: "السلة السيادية فارغة حالياً",
-    summaryTitle: "ملخص الاستحواذ"
+    cartTitle: "تجهيز الشحن الفوري",
+    emptyCartMsg: "لم يتم تحديد أي باقات للشحن حالياً",
+    summaryTitle: "ملخص أمر الشحن"
   };
 
   if (configLoading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
        <Loader2 className="animate-spin text-primary" size={60} />
-       <p className="text-[10px] font-black uppercase tracking-widest gold-text">Initializing Sovereign Cart...</p>
+       <p className="text-[10px] font-black uppercase tracking-widest gold-text">Initializing Dispatch Tool...</p>
     </div>
   );
 
@@ -42,20 +42,20 @@ export default function CartPage() {
         <header className="mb-10 md:mb-24 text-center lg:text-right lg:border-r-8 border-primary lg:pr-10">
            <div className="flex items-center justify-center lg:justify-start gap-4 mb-4 md:mb-6">
               <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-inner">
-                 <ShoppingCart size={20} />
+                 <Truck size={20} />
               </div>
-              <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase text-[10px] tracking-widest px-6 py-1.5 rounded-full">Sovereign Asset Collection</Badge>
+              <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase text-[10px] tracking-widest px-6 py-1.5 rounded-full">Automated Dispatch System</Badge>
            </div>
            <h1 className="text-4xl md:text-8xl font-headline font-black gold-text leading-tight">{labels.cartTitle}</h1>
-           <p className="text-muted-foreground font-bold uppercase tracking-widest text-[8px] md:text-sm mt-2 md:mt-3 italic opacity-60">Professional Digital Asset Management Center</p>
+           <p className="text-muted-foreground font-bold uppercase tracking-widest text-[8px] md:text-sm mt-2 md:mt-3 italic opacity-60">تجهيز الأصول الرقمية للنقل الفوري إلى حسابك</p>
         </header>
 
         {items.length === 0 ? (
           <div className="py-20 md:py-48 text-center luxury-card border-dashed border-primary/20 bg-primary/5 opacity-50 flex flex-col items-center group hover:opacity-100 transition-opacity">
-             <ShoppingBag size={80} className="md:w-32 md:h-32 text-muted-foreground mb-8 group-hover:scale-110 transition-transform duration-700" />
+             <Zap size={80} className="md:w-32 md:h-32 text-muted-foreground mb-8 group-hover:scale-110 transition-transform duration-700" />
              <h2 className="text-xl md:text-4xl font-black uppercase tracking-widest gold-text">{labels.emptyCartMsg}</h2>
              <Button asChild className="royal-button mt-10 h-14 md:h-20 px-10 md:px-16 text-sm md:text-xl shadow-2xl">
-                <Link href="/store">استكشاف المستودع <ArrowRight className="mr-3" /></Link>
+                <Link href="/store">اختيار باقات للشحن <ArrowRight className="mr-3" /></Link>
              </Button>
           </div>
         ) : (
@@ -104,12 +104,12 @@ export default function CartPage() {
                   </h3>
                   <div className="space-y-6 md:space-y-8">
                      <div className="flex justify-between font-black text-muted-foreground text-[10px] md:text-sm uppercase tracking-widest">
-                        <span>إجمالي المقتنيات ({itemCount})</span>
+                        <span>إجمالي الباقات ({itemCount})</span>
                         <span className="text-foreground">{formatUSD(total)}</span>
                      </div>
                      <div className="flex justify-between font-black text-muted-foreground text-[10px] md:text-sm uppercase tracking-widest">
                         <span>الضرائب والرسوم</span>
-                        <span className="text-green-500">بروتوكول حماية</span>
+                        <span className="text-green-500">معفى سيادياً</span>
                      </div>
                      <div className="h-px bg-primary/10 my-4 md:my-8" />
                      <div className="flex justify-between items-end">
@@ -122,12 +122,12 @@ export default function CartPage() {
                      <div className="pt-8 md:pt-12 space-y-4 md:space-y-6">
                         <Button asChild className="royal-button w-full h-16 md:h-24 text-base md:text-2xl shadow-primary/30 group">
                            <Link href="/checkout" className="flex items-center justify-center gap-3">
-                              إتمام البروتوكول المالي 
+                              الانتقال لتأكيد الشحن 
                               <ArrowRight className="mr-2 rotate-180 group-hover:translate-x-[-10px] transition-transform" />
                            </Link>
                         </Button>
                         <div className="flex items-center justify-center gap-2 md:gap-3 text-[7px] md:text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
-                           <ShieldCheck size={12} className="text-green-500" /> تأمين مالي سيادي مشفر 100%
+                           <ShieldCheck size={12} className="text-green-500" /> تأمين فوري للأصول الرقمية
                         </div>
                      </div>
                   </div>

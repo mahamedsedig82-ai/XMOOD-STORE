@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useMemo } from "react";
@@ -85,13 +86,15 @@ export default function AdminProducts() {
     
     setIsProcessing(true);
     const codesList = form.shippingCodes.split('\n').filter(c => c.trim() !== "");
-    const currentStock = codesList.length > 0 ? codesList.length : Number(form.stock);
+    // 🛡️ مزامنة المخزون إجبارياً مع عدد الأكواد لمنع خطأ "غير متوفر"
+    const currentStock = codesList.length > 0 ? codesList.length : 0;
     
     const data = { 
       ...form, 
       price: Number(form.price), 
       stock: currentStock, 
       minStock: Number(form.minStock),
+      status: currentStock > 0 ? 'active' : 'out_of_stock',
       updatedAt: serverTimestamp(),
       createdAt: form.createdAt || new Date().toISOString()
     };
@@ -130,7 +133,7 @@ export default function AdminProducts() {
     setForm({ 
       ...p, 
       price: p.price.toString(), 
-      stock: p.stock.toString(), 
+      stock: (p.stock || 0).toString(), 
       minStock: (p.minStock || 5).toString(),
       shippingCodes: p.shippingCodes || ""
     });
@@ -166,8 +169,8 @@ export default function AdminProducts() {
                 <div className="relative"><DollarSign className="absolute right-5 top-1/2 -translate-y-1/2 text-primary" size={24} /><Input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} className="h-16 pr-14 text-2xl font-black text-primary gold-glow-border !bg-white/5" /></div>
               </div>
               <div className="grid grid-cols-2 gap-6">
-                 <div className="space-y-3"><label className="text-[10px] font-black text-zinc-500 uppercase pr-4">المخزون</label><Input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} /></div>
-                 <div className="space-y-3"><label className="text-[10px] font-black text-red-500 uppercase pr-4">الحد الأدنى</label><Input type="number" value={form.minStock} onChange={e => setForm({...form, minStock: e.target.value})} className="!border-red-500/30" /></div>
+                 <div className="space-y-3"><label className="text-[10px] font-black text-zinc-500 uppercase pr-4">المخزون المتوفر</label><Input type="number" value={form.stock} readOnly className="opacity-50 cursor-not-allowed bg-muted" /></div>
+                 <div className="space-y-3"><label className="text-[10px] font-black text-red-500 uppercase pr-4">تنبيه النقص</label><Input type="number" value={form.minStock} onChange={e => setForm({...form, minStock: e.target.value})} className="!border-red-500/30" /></div>
               </div>
               <div className="col-span-full space-y-4">
                  <label className="text-[10px] font-black text-primary uppercase pr-4">صورة الهوية البصرية</label>
@@ -179,6 +182,7 @@ export default function AdminProducts() {
               <div className="col-span-full space-y-3">
                  <label className="text-[10px] font-black text-primary uppercase pr-4 tracking-[0.2em]">أكواد التسليم الآلي (كود في كل سطر)</label>
                  <Textarea value={form.shippingCodes} onChange={e => setForm({...form, shippingCodes: e.target.value})} className="min-h-[200px] font-mono text-sm text-primary bg-zinc-950 border-primary/20 leading-loose" placeholder="CODE-XM-8100-XXXXX..." />
+                 <p className="text-[9px] text-zinc-500 font-bold">سيتم احتساب المخزون آلياً بناءً على عدد الأكواد أعلاه.</p>
               </div>
             </div>
             <DialogFooter className="mt-12"><Button onClick={handleSubmit} disabled={isProcessing} className="w-full h-20 royal-button text-2xl shadow-2xl shadow-primary/30">{isProcessing ? <Loader2 className="animate-spin" /> : <><Zap size={24} className="ml-4" /> تأكيد ونشر الباقة في المستودع</>}</Button></DialogFooter>
@@ -207,13 +211,13 @@ export default function AdminProducts() {
                     <div className="flex items-center gap-6">
                       <div className="relative shrink-0">
                          <img src={p.imageUrl || "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png"} className="w-20 h-20 rounded-[1.75rem] object-cover border-2 border-primary/10 shadow-2xl group-hover:scale-110 transition-transform duration-700" alt="" />
-                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-4 border-background" />
+                         <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-4 border-background ${p.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
                       </div>
                       <div className="flex flex-col"><span className="font-black text-xl text-foreground group-hover:gold-text transition-all leading-none mb-2">{p.name}</span><span className="text-[10px] text-primary font-black uppercase tracking-[0.2em]">{p.category}</span></div>
                     </div>
                   </TableCell>
                   <TableCell data-label="القيمة" className="font-black text-primary text-3xl tracking-tighter">${p.price}</TableCell>
-                  <TableCell data-label="المخزون"><Badge variant="outline" className={`rounded-full px-6 py-1.5 text-[11px] font-black uppercase tracking-widest ${p.stock <= (p.minStock || 5) ? 'text-red-500 border-red-500/20 bg-red-500/5 animate-pulse' : 'text-green-500 border-green-500/20 bg-green-500/5'}`}>{p.stock} Unit</Badge></TableCell>
+                  <TableCell data-label="المخزون"><Badge variant="outline" className={`rounded-full px-6 py-1.5 text-[11px] font-black uppercase tracking-widest ${p.stock <= (p.minStock || 5) ? 'text-red-500 border-red-500/20 bg-red-500/5 animate-pulse' : 'text-green-500 border-green-500/20 bg-green-500/5'}`}>{p.stock || 0} Unit</Badge></TableCell>
                   <TableCell className="text-center" data-label="التحكم">
                     <div className="flex justify-center gap-4">
                        <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl text-primary hover:bg-primary/10 border border-primary/10" onClick={() => startEdit(p)}><Edit2 size={20} /></Button>

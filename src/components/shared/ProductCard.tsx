@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Zap, AlertCircle, Edit, Star, ShoppingBag } from "lucide-react";
+import { ShoppingCart, Zap, AlertCircle, Edit, Star, ShoppingBag, Truck } from "lucide-react";
 import { formatUSD, formatSDG } from "@/lib/currency";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -26,7 +26,8 @@ export function ProductCard({ product }: ProductCardProps) {
   const { data: config } = useDoc(settingsRef);
   const currentRate = config?.siteInfo?.usdRate || 5400;
 
-  const isOutOfStock = product.status === 'out_of_stock' || product.stock <= 0;
+  // 🛡️ تحسين منطق التوفر: نعتمد على المخزون المسجل بدقة
+  const isOutOfStock = product.status === 'out_of_stock' || (product.stock !== undefined && product.stock <= 0);
 
   const handleAddToCart = () => {
     addItem({
@@ -57,8 +58,8 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
         
-        <Badge className={`absolute top-6 right-6 font-black text-[8px] px-3 py-1 rounded-full border-none shadow-2xl uppercase tracking-widest ${isOutOfStock ? 'bg-zinc-600 text-white' : 'bg-primary text-black'}`}>
-          {isOutOfStock ? 'نفد المخزون' : 'باقة معتمدة'}
+        <Badge className={`absolute top-6 right-6 font-black text-[8px] px-3 py-1 rounded-full border-none shadow-2xl uppercase tracking-widest ${isOutOfStock ? 'bg-zinc-600 text-white' : 'bg-primary text-black animate-pulse'}`}>
+          {isOutOfStock ? 'نفد من المستودع' : 'شحن فوري متاح'}
         </Badge>
 
         {isAdmin && (
@@ -104,10 +105,7 @@ export function ProductCard({ product }: ProductCardProps) {
           disabled={isOutOfStock}
           className="royal-button flex-1 h-14"
         >
-          {isOutOfStock ? <><AlertCircle size={14} className="ml-2" /> غير متوفر</> : <><ShoppingCart size={14} className="ml-2" /> أضف للسلة</>}
-        </Button>
-        <Button asChild variant="outline" className="h-14 w-14 rounded-2xl border-primary/20 hover:bg-primary/5">
-           <Link href="/cart"><ShoppingBag size={18} className="text-primary" /></Link>
+          {isOutOfStock ? <><AlertCircle size={14} className="ml-2" /> بانتظار التزويد</> : <><Truck size={14} className="ml-2" /> اختيار للشحن ⚡</>}
         </Button>
       </CardFooter>
     </Card>
