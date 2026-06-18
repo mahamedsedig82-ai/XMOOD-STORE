@@ -16,10 +16,11 @@ if (getApps().length > 0) {
   app = initializeApp(firebaseConfig);
 }
 
+// 🔐 Secure Firestore Initialization
 try {
-  // Try to get existing firestore instance, or initialize if needed
   firestore = getFirestore(app);
 } catch (e) {
+  // If not initialized yet with custom settings, do it once
   firestore = initializeFirestore(app, {
     experimentalForceLongPolling: true,
   });

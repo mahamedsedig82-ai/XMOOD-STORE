@@ -61,7 +61,7 @@ export default function LoginPage() {
         const res = await registerEmail(email, password, fullName);
         await syncUserProfile(res.user, { displayName: fullName, phoneNumber: phone });
         await sendAccountVerification(res.user);
-        toast({ title: "تم إنشاء العضوية"، description: "يرجى مراجعة بريدك الإلكتروني (بما في ذلك مجلد Spam) لتفعيل الحساب." });
+        toast({ title: "تم إنشاء العضوية", description: "يرجى مراجعة بريدك الإلكتروني (بما في ذلك مجلد Spam) لتفعيل الحساب." });
         router.push("/verify-email?waiting=true");
       } else {
         const res = await loginEmail(email, password);
