@@ -73,12 +73,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarHeader className="p-8 border-b text-center flex flex-col items-center gap-6">
             <Link href="/" className="flex flex-col items-center group">
                {config?.appearance?.logoUrl ? (
-                 <img src={config.appearance.logoUrl} className="h-14 w-auto object-contain transition-transform group-hover:scale-105 rounded-full shadow-lg border border-primary/20" alt="Logo" />
+                 <img src={config.appearance.logoUrl} className="h-10 w-auto object-contain transition-transform group-hover:scale-105 rounded-xl shadow-md border border-primary/10" alt="Logo" />
                ) : (
-                 <span className="handwritten-logo text-3xl">Xmood <span>Store</span></span>
+                 <span className="handwritten-logo text-xl">XMOOD <span>STORE</span></span>
                )}
             </Link>
-            <Badge variant="outline" className="text-[9px] uppercase font-black border-primary/30 text-primary px-5 py-1 rounded-full tracking-widest bg-primary/5">
+            <Badge variant="outline" className="text-[8px] uppercase font-black border-primary/20 text-primary px-4 py-1 rounded-full tracking-widest bg-primary/5">
               {profile?.label || "ADMIN ACCESS"}
             </Badge>
           </SidebarHeader>
@@ -89,53 +89,53 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                    <SidebarMenuButton 
                      asChild 
                      isActive={pathname === item.href}
-                     className={`h-14 px-6 rounded-2xl transition-all duration-500 ${pathname === item.href ? 'bg-primary text-black shadow-2xl shadow-primary/20 scale-[1.02]' : 'hover:bg-primary/5 text-muted-foreground'}`}
+                     className={`h-12 px-6 rounded-2xl transition-all duration-300 ${pathname === item.href ? 'bg-primary text-black shadow-lg scale-[1.02]' : 'hover:bg-primary/5 text-muted-foreground'}`}
                    >
                      <Link href={item.href} className="flex flex-row-reverse items-center gap-4 w-full">
-                       <item.icon size={20} className={pathname === item.href ? 'text-black' : 'text-primary'} />
-                       <span className="font-black text-[11px] uppercase tracking-widest">{item.label}</span>
+                       <item.icon size={18} className={pathname === item.href ? 'text-black' : 'text-primary'} />
+                       <span className="font-black text-[10px] uppercase tracking-widest">{item.label}</span>
                      </Link>
                    </SidebarMenuButton>
                  </SidebarMenuItem>
                ))}
              </SidebarMenu>
           </SidebarContent>
-          <div className="p-8 border-t bg-muted/20 space-y-4">
-            <Button asChild variant="outline" className="w-full h-12 rounded-2xl text-[10px] font-black uppercase gap-3 border-primary/20 shadow-sm">
-              <Link href="/"><ArrowLeft size={16} /> المتجر الرئيسي</Link>
+          <div className="p-6 border-t bg-muted/10 space-y-3">
+            <Button asChild variant="outline" className="w-full h-11 rounded-xl text-[9px] font-black uppercase gap-3 border-primary/20">
+              <Link href="/"><ArrowLeft size={14} /> المتجر</Link>
             </Button>
-            <Button variant="ghost" onClick={() => handleSignOut()} className="w-full h-12 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-3 hover:bg-red-50">
-              <LogOut size={16} /> خروج سيادي
+            <Button variant="ghost" onClick={() => handleSignOut()} className="w-full h-11 rounded-xl text-red-500 font-black text-[9px] uppercase gap-3 hover:bg-red-50">
+              <LogOut size={14} /> خروج
             </Button>
           </div>
         </Sidebar>
 
         <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background overflow-hidden">
-          <header className="h-24 border-b flex items-center justify-between px-10 bg-background/90 backdrop-blur-3xl z-[60] shrink-0">
-             <div className="flex items-center gap-5">
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20 shadow-inner">
-                   <Terminal size={24} />
+          <header className="h-20 border-b flex items-center justify-between px-10 bg-background/80 backdrop-blur-xl z-[60] shrink-0">
+             <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center text-primary border border-primary/10">
+                   <Terminal size={20} />
                 </div>
                 <div className="flex flex-col text-right">
-                   <span className="text-sm font-black uppercase tracking-widest gold-text">وحدة التحكم المركزية</span>
-                   <span className="text-[8px] text-muted-foreground uppercase font-bold tracking-[0.4em] opacity-80 mt-1">Sovereign Management Engine</span>
+                   <span className="text-xs font-black uppercase tracking-widest gold-text">وحدة التحكم</span>
+                   <span className="text-[7px] text-muted-foreground uppercase font-bold tracking-[0.3em] mt-0.5">Sovereign Engine</span>
                 </div>
              </div>
-             <div className="flex items-center gap-6">
-                <Badge className="bg-green-500/10 text-green-600 border-none text-[9px] font-black px-6 py-2 rounded-full uppercase shadow-sm tracking-widest">Quantum Encryption Active</Badge>
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_15px_#22c55e]" />
+             <div className="flex items-center gap-4">
+                <Badge className="bg-green-500/5 text-green-600 border-none text-[8px] font-black px-4 py-1.5 rounded-full uppercase shadow-sm">Identity Verified</Badge>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
              </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto smooth-scroll custom-scrollbar px-6 md:px-16 py-12 pb-48 bg-background">
-            <div className="max-w-7xl mx-auto text-right">
+          <main className="flex-1 overflow-y-auto smooth-scroll custom-scrollbar px-6 md:px-12 py-10 pb-40 bg-background">
+            <div className="max-w-6xl mx-auto text-right">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -30 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.4 }}
                 >
                   {children}
                 </motion.div>
