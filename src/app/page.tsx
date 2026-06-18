@@ -17,7 +17,7 @@ export default function HomePage() {
     if (!db) return null;
     return doc(db, "settings", "global");
   }, [db]);
-  const { data: config, loading: configLoading } = useDoc(settingsRef);
+  const { data: config } = useDoc(settingsRef);
 
   const productsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -36,10 +36,10 @@ export default function HomePage() {
         </div>
 
         <div className="container mx-auto px-6 relative z-10 text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="space-y-12 md:space-y-16">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className="space-y-12">
             
             <div className="flex flex-col items-center gap-10">
-               <div className="logo-glow-container">
+               <div className="logo-glow-container relative">
                   {config?.appearance?.logoUrl ? (
                     <motion.div
                       initial={{ scale: 0.9, opacity: 0 }}

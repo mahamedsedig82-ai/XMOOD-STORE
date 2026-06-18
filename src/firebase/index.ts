@@ -1,11 +1,11 @@
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore, enableIndexedDbPersistence, terminate } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-// 🛡️ Singleton Pattern with Immunity Shield V10.0
+// 🛡️ Singleton Pattern with Immunity Shield V11.0
 let app: FirebaseApp;
 let firestore: Firestore;
 let auth: Auth;
@@ -18,14 +18,16 @@ if (getApps().length > 0) {
 
 /**
  * تحصين Firestore ضد أخطاء Assertion المزدوجة.
- * يتم استخدام try-catch لضمان عدم تهيئة المحرك مرتين في بيئة Next.js.
+ * نستخدم try-catch مع فحص الحالة لضمان تهيئة واحدة مستقرة.
  */
 try {
+  // محاولة الوصول للنسخة الحالية أولاً
+  firestore = getFirestore(app);
+} catch (e) {
+  // إذا لم تكن موجودة، نقوم بتهيئتها بخصائص محسنة
   firestore = initializeFirestore(app, {
     experimentalForceLongPolling: true,
   });
-} catch (e) {
-  firestore = getFirestore(app);
 }
 
 auth = getAuth(app);
