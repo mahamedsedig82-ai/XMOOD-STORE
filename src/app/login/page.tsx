@@ -38,11 +38,8 @@ export default function LoginPage() {
   useEffect(() => {
     setIsMounted(true);
     if (!userLoading && user) {
-      if (isVerified) {
-        router.replace("/wallet");
-      } else {
-        router.replace("/verify-email?waiting=true");
-      }
+      if (isVerified) router.replace("/wallet");
+      else router.replace("/verify-email?waiting=true");
     }
   }, [user, userLoading, isVerified, router]);
 
@@ -55,7 +52,7 @@ export default function LoginPage() {
     try {
       if (type === 'signup') {
         if (!fullName || !phone) {
-          toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى ملء كافة الخانات المطلوبة." });
+          toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى ملء كافة الخانات." });
           setLoading(false);
           return;
         }
@@ -76,85 +73,82 @@ export default function LoginPage() {
         router.replace("/wallet");
       }
     } catch (error: any) {
-      let msg = "فشل في عملية المصادقة. يرجى التأكد من البيانات.";
+      let msg = "فشل في عملية المصادقة. تأكد من البيانات.";
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') msg = "البريد أو كلمة المرور غير صحيحة.";
       toast({ variant: "destructive", title: "فشل العملية", description: msg });
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isMounted || userLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <Loader2 className="animate-spin text-primary" size={60} />
-        <p className="text-[10px] font-black uppercase tracking-widest gold-text">Securing Connection...</p>
-      </div>
-    );
-  }
+  if (!isMounted || userLoading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+      <Loader2 className="animate-spin text-primary" size={60} />
+      <p className="text-[10px] font-black uppercase tracking-widest gold-text">Securing Connection...</p>
+    </div>
+  );
 
   return (
-    <main className="min-h-screen bg-background relative overflow-hidden px-4" dir="rtl">
+    <main className="min-h-screen bg-background relative overflow-hidden" dir="rtl">
       <Navbar />
-      <div className="container mx-auto min-h-screen flex items-center justify-center pt-24 pb-16 relative z-10">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-          <Card className="luxury-card border-none overflow-hidden bg-card/60 backdrop-blur-3xl shadow-2xl">
-            <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-6">
+      <div className="container min-h-screen flex items-center justify-center pt-24 pb-12 relative z-10 px-6">
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
+          <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl shadow-2xl">
+            <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-5">
                <div className="relative inline-block">
-                  <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 opacity-40" />
+                  <div className="absolute inset-0 bg-primary/20 blur-[20px] rounded-full scale-125 opacity-30" />
                   {config?.appearance?.logoUrl ? (
                     <img 
                       src={config.appearance.logoUrl} 
-                      className="h-24 w-24 md:h-28 md:w-28 rounded-full object-cover border-4 border-primary/20 shadow-2xl relative z-10" 
+                      className="h-20 w-20 md:h-28 md:w-28 rounded-full object-cover border-2 border-primary/20 shadow-xl relative z-10" 
                       alt="XMOOD" 
                     />
                   ) : (
-                    <h2 className="handwritten-logo text-3xl mb-1 relative z-10" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
+                    <h2 className="handwritten-logo !text-2xl mb-1 relative z-10" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
                   )}
                </div>
-               <Badge variant="outline" className="text-[8px] md:text-[9px] font-black text-primary border-primary/20 uppercase tracking-[0.3em] px-5 py-1.5 rounded-full bg-primary/5">
+               <Badge variant="outline" className="text-[8px] font-black text-primary border-primary/20 uppercase tracking-widest px-4 py-1 rounded-full bg-primary/5">
                  Sovereign Identity Access
                </Badge>
             </div>
 
             <CardContent className="p-6 md:p-10">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-8 p-1 bg-muted/50 rounded-2xl h-12 md:h-14 border">
-                  <TabsTrigger value="login" className="rounded-xl font-black text-[9px] md:text-[10px] uppercase transition-all">تسجيل الدخول</TabsTrigger>
-                  <TabsTrigger value="signup" className="rounded-xl font-black text-[9px] md:text-[10px] uppercase transition-all">إنشاء حساب</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 mb-8 p-1 bg-muted/40 rounded-xl h-12 border">
+                  <TabsTrigger value="login" className="rounded-lg font-black text-[9px] uppercase">تسجيل الدخول</TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-lg font-black text-[9px] uppercase">إنشاء حساب</TabsTrigger>
                 </TabsList>
 
                 <AnimatePresence mode="wait">
-                  <motion.div key={activeTab} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-6">
+                  <motion.div key={activeTab} initial={{ opacity: 0, x: 5 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -5 }} className="space-y-5">
                     {activeTab === 'login' ? (
-                      <div className="space-y-5">
-                         <div className="space-y-2">
+                      <div className="space-y-4">
+                         <div className="space-y-1.5">
                             <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
-                            <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="user@xmood.pro" className="h-12 md:h-14" />
+                            <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="user@xmood.pro" className="h-12 text-sm" />
                          </div>
-                         <div className="space-y-2">
+                         <div className="space-y-1.5">
                             <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">مفتاح المرور</Label>
-                            <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-12 md:h-14" />
+                            <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-12 text-sm" />
                          </div>
-                        <Button onClick={() => handleAuth('login')} disabled={loading} className="royal-button w-full h-14 md:h-18 text-xs md:text-sm mt-4">
-                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={20} className="ml-2" /> تأمين الدخول الملكي</>}
+                        <Button onClick={() => handleAuth('login')} disabled={loading} className="royal-button w-full h-14 text-[10px] mt-4">
+                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={18} className="ml-2" /> تأمين الدخول</>}
                         </Button>
                       </div>
                     ) : (
-                      <div className="space-y-5">
+                      <div className="space-y-4">
                          <div className="grid grid-cols-1 gap-4">
-                            <div className="space-y-2"><Label className="text-[10px] font-black text-primary/80 pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12 md:h-14" placeholder="عضو النخبة الجديد" /></div>
-                            <div className="space-y-2"><Label className="text-[10px] font-black text-primary/80 pr-3">رقم الجوال</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12 md:h-14" placeholder="+966..." /></div>
+                            <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12 text-sm" placeholder="عضو جديد" /></div>
+                            <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">رقم الجوال</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12 text-sm" placeholder="+966..." /></div>
                          </div>
-                         <div className="space-y-2"><Label className="text-[10px] font-black text-primary/80 pr-3">البريد الإلكتروني</Label><Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-12 md:h-14" /></div>
-                         <div className="space-y-2"><Label className="text-[10px] font-black text-primary/80 pr-3">كلمة المرور</Label><Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-12 md:h-14" /></div>
-                         <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl flex gap-3">
-                            <AlertCircle size={16} className="text-amber-500 shrink-0 mt-0.5" />
-                            <p className="text-[9px] md:text-[10px] font-bold text-zinc-400 leading-relaxed">يرجى فحص مجلد <b>Spam</b> بعد التسجيل لتفعيل عضويتك فوراً.</p>
+                         <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">البريد الإلكتروني</Label><Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-12 text-sm" /></div>
+                         <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">كلمة المرور</Label><Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-12 text-sm" /></div>
+                         <div className="p-4 bg-amber-500/5 border border-amber-500/15 rounded-xl flex gap-3">
+                            <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                            <p className="text-[9px] font-bold text-zinc-400 leading-relaxed">يرجى التحقق من <b>Spam</b> بعد التسجيل لتفعيل الحساب.</p>
                          </div>
-                         <Button onClick={() => handleAuth('signup')} disabled={loading} className="royal-button w-full h-14 md:h-18 text-xs md:text-sm mt-2">
-                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={20} className="ml-2" /> إنشاء عضوية سيادية</>}
+                         <Button onClick={() => handleAuth('signup')} disabled={loading} className="royal-button w-full h-14 text-[10px] mt-2">
+                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={18} className="ml-2" /> إنشاء العضوية</>}
                          </Button>
                       </div>
                     )}
