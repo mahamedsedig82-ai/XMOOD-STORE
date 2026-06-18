@@ -1,19 +1,22 @@
+
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, Mail, ShieldCheck, XCircle, ArrowRight, Zap, CheckCircle } from "lucide-react";
+import { Loader2, Mail, ShieldCheck, XCircle, Zap, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/firebase";
-import { applyActionCode } from "firebase/auth";
+import { applyActionCode, sendEmailVerification } from "firebase/auth";
 import { toast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/layout/Navbar";
 import { syncUserProfile } from "@/lib/auth";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 function VerifyEmailContent() {
   const [status, setStatus] = useState<'waiting' | 'verifying' | 'success' | 'error'>('waiting');
+  const [isResending, setIsResending] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -33,7 +36,7 @@ function VerifyEmailContent() {
           }
           setStatus('success');
           toast({ title: "تم تفعيل حسابك بنجاح" });
-          setTimeout(() => router.replace("/wallet"), 1500);
+          setTimeout(() => router.replace("/wallet"), 2000);
         })
         .catch((err) => {
           console.error("Verification Error:", err);
@@ -41,6 +44,7 @@ function VerifyEmailContent() {
         });
     }
 
+    // المراقب اللحظي للحالة
     const interval = setInterval(async () => {
       if (auth.currentUser) {
         await auth.currentUser.reload();
@@ -48,7 +52,7 @@ function VerifyEmailContent() {
           clearInterval(interval);
           await syncUserProfile(auth.currentUser);
           setStatus('success');
-          setTimeout(() => router.replace("/wallet"), 1000);
+          setTimeout(() => router.replace("/wallet"), 1500);
         }
       }
     }, 3000);
@@ -56,22 +60,58 @@ function VerifyEmailContent() {
     return () => clearInterval(interval);
   }, [router, searchParams]);
 
+  const handleResend = async () => {
+    if (!auth.currentUser) return;
+    setIsResending(true);
+    try {
+      await sendEmailVerification(auth.currentUser);
+      toast({ title: "تم إعادة إرسال الرابط", description: "تأكد من فحص مجلد Spam." });
+    } catch (e) {
+      toast({ variant: "destructive", title: "فشل الإرسال", description: "يرجى المحاولة بعد قليل." });
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   return (
-    <Card className="w-full max-w-xl p-12 md:p-20 text-center luxury-card border-none shadow-2xl relative overflow-hidden">
+    <Card className="w-full max-w-xl p-10 md:p-16 text-center luxury-card border-none shadow-2xl relative overflow-hidden bg-card/60 backdrop-blur-3xl">
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -mr-16 -mt-16" />
       
       {status === 'waiting' && (
         <div className="space-y-10 animate-fade-in relative z-10">
-          <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-inner border border-primary/20">
-             <Mail className="w-12 h-12 text-primary animate-pulse" />
+          <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto shadow-inner border border-primary/20">
+             <Mail className="w-10 h-10 text-primary animate-pulse" />
           </div>
           <div className="space-y-4">
-             <h2 className="text-4xl font-headline font-black gold-text">بانتظار التوثيق</h2>
-             <p className="text-muted-foreground text-lg font-medium leading-relaxed">أرسلنا رابط التفعيل لبريدك الإلكتروني، يرجى النقر عليه لتنشيط حسابك.</p>
+             <h2 className="text-3xl md:text-4xl font-headline font-black gold-text">بانتظار التوثيق</h2>
+             <p className="text-muted-foreground text-base md:text-lg font-medium leading-relaxed px-4">
+               لقد أرسلنا رابط التفعيل إلى بريدك الإلكتروني. يرجى النقر عليه لتنشيط عضويتك السيادية.
+             </p>
           </div>
-          <div className="p-6 bg-muted/30 rounded-2xl flex items-center justify-center gap-4 border border-primary/10">
-             <Loader2 className="animate-spin text-primary" size={24} />
-             <span className="text-[10px] font-black uppercase tracking-widest opacity-60">جاري فحص الحالة لحظياً...</span>
+
+          <div className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex flex-col gap-3">
+             <div className="flex items-center gap-3 justify-center text-amber-500 font-black text-xs uppercase tracking-widest">
+                <AlertCircle size={16} /> تنبيه هام جداً
+             </div>
+             <p className="text-xs text-zinc-400 font-bold leading-relaxed">
+               إذا لم تجد الرسالة في صندوق الوارد، يرجى التحقق فوراً من مجلد <b>الرسائل غير المرغوب فيها (Spam)</b> أو <b>Junk</b>.
+             </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-muted/30 rounded-xl flex items-center justify-center gap-4 border border-primary/5">
+               <Loader2 className="animate-spin text-primary" size={20} />
+               <span className="text-[10px] font-black uppercase tracking-widest opacity-60">جاري فحص الحالة لحظياً...</span>
+            </div>
+            
+            <Button 
+              variant="ghost" 
+              onClick={handleResend} 
+              disabled={isResending}
+              className="text-[10px] font-black text-primary uppercase tracking-widest hover:bg-primary/5"
+            >
+              {isResending ? <RefreshCw className="animate-spin mr-2" size={14} /> : "لم تصلك الرسالة؟ إعادة الإرسال"}
+            </Button>
           </div>
         </div>
       )}
@@ -84,7 +124,7 @@ function VerifyEmailContent() {
                  <Zap className="text-white fill-white" size={40} />
               </div>
            </div>
-           <p className="text-3xl font-black gold-text">جاري توثيق الهوية...</p>
+           <p className="text-3xl font-black gold-text">جاري توثيق الهوية السيادية...</p>
         </div>
       )}
 
@@ -94,7 +134,7 @@ function VerifyEmailContent() {
              <CheckCircle className="w-14 h-14 text-white" />
           </div>
           <div className="space-y-4">
-             <h2 className="text-4xl font-headline font-black text-green-500 uppercase">تم التوثيق</h2>
+             <h2 className="text-4xl font-headline font-black text-green-500 uppercase">تم التوثيق بنجاح</h2>
              <p className="text-lg font-bold text-muted-foreground">جاري تحضير محفظتك الرقمية الآن...</p>
           </div>
         </div>
@@ -118,9 +158,9 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
+    <div className="min-h-screen bg-[#020202] flex items-center justify-center p-6" dir="rtl">
       <Navbar />
-      <Suspense fallback={<div className="flex flex-col items-center gap-6"><Loader2 className="animate-spin text-primary" size={64} /><p className="font-black text-xs uppercase tracking-widest gold-text">Loading...</p></div>}>
+      <Suspense fallback={<div className="flex flex-col items-center gap-6"><Loader2 className="animate-spin text-primary" size={64} /><p className="font-black text-xs uppercase tracking-widest gold-text">Loading Sovereign Portal...</p></div>}>
         <VerifyEmailContent />
       </Suspense>
     </div>
