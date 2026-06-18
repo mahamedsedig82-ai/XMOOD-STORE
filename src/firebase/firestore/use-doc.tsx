@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -26,32 +25,41 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
       return;
     }
 
-    const unsubscribe = onSnapshot(
-      docRef, 
-      (snapshot: DocumentSnapshot<T>) => {
-        if (!isMounted) return;
-        setData(snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } as T : null);
-        setLoading(false);
-      }, 
-      (serverError) => {
-        if (!isMounted) return;
-        // 🛡️ إنشاء خطأ سياقي غني عند فشل الصلاحيات
-        const permissionError = new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'get',
-        } satisfies SecurityRuleContext);
+    // Use a try-catch to avoid internal assertion failures during listener setup
+    try {
+      const unsubscribe = onSnapshot(
+        docRef, 
+        (snapshot: DocumentSnapshot<T>) => {
+          if (!isMounted) return;
+          setData(snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } as T : null);
+          setLoading(false);
+        }, 
+        (serverError) => {
+          if (!isMounted) return;
+          
+          // Emit contextual error
+          const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'get',
+          } satisfies SecurityRuleContext);
 
-        errorEmitter.emit('permission-error', permissionError);
-        setError(serverError);
+          errorEmitter.emit('permission-error', permissionError);
+          setError(serverError);
+          setLoading(false);
+        }
+      );
+
+      return () => {
+        isMounted = false;
+        unsubscribe();
+      };
+    } catch (e: any) {
+      if (isMounted) {
+        console.error("[useDoc] Listener Setup Failed:", e);
         setLoading(false);
       }
-    );
-
-    return () => {
-      isMounted = false;
-      unsubscribe();
-    };
-  }, [docRef]);
+    }
+  }, [docRef?.path]); // Depend on path string to stabilize
 
   return { data, loading, error };
 }

@@ -12,9 +12,20 @@
         "role": { "type": "string" },
         "isVerified": { "type": "boolean" },
         "phoneNumber": { "type": "string" },
-        "createdAt": { "type": "string" }
+        "createdAt": { "type": "string" },
+        "lastSeen": { "type": "string" }
       },
       "required": ["uid", "email", "role"]
+    },
+    "GlobalSettings": {
+      "title": "Global Settings",
+      "description": "App configuration and branding",
+      "type": "object",
+      "properties": {
+        "appearance": { "type": "object" },
+        "siteInfo": { "type": "object" },
+        "cartLabels": { "type": "object" }
+      }
     }
   },
   "auth": {
@@ -25,6 +36,10 @@
       "schema": "UserProfile",
       "description": "User profiles"
     },
+    "/settings/{id}": {
+      "schema": "GlobalSettings",
+      "description": "Global configs"
+    },
     "/products/{productId}": {
       "schema": "object",
       "description": "Store items"
@@ -33,10 +48,6 @@
       "schema": "object",
       "description": "Sales records"
     },
-    "/settings/{id}": {
-      "schema": "object",
-      "description": "Global configs"
-    },
     "/transactions/{id}": {
       "schema": "object",
       "description": "Financial ledger"
@@ -44,6 +55,26 @@
     "/site_branches/{id}": {
       "schema": "object",
       "description": "Navigation links"
+    },
+    "/other_services/{id}": {
+      "schema": "object",
+      "description": "Marketplace services"
+    },
+    "/gallery/{id}": {
+      "schema": "object",
+      "description": "Creative portfolio items"
+    },
+    "/marketplace_listings/{id}": {
+      "schema": "object",
+      "description": "Community market posts"
+    },
+    "/community_reports/{id}": {
+      "schema": "object",
+      "description": "User reports"
+    },
+    "/community_audit_logs/{id}": {
+      "schema": "object",
+      "description": "Administrative audit logs"
     }
   }
 }

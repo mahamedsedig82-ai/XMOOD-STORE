@@ -64,8 +64,20 @@ export default function CheckoutPage() {
   const hasEnoughBalance = walletBalance >= finalTotal;
 
   const handleCompleteOrder = async () => {
-    if (!user || !profile || !db || !isVerified) return;
-    if (!selectedShipping || !hasEnoughBalance || outOfStockItems.length > 0) return;
+    if (!user || !profile || !db || !isVerified) {
+      toast({ variant: "destructive", title: "وصول مقيد", description: "يرجى تسجيل الدخول وتوثيق البريد أولاً." });
+      return;
+    }
+    
+    if (outOfStockItems.length > 0) {
+      toast({ variant: "destructive", title: "نفد المخزون", description: "بعض المنتجات لم تعد متوفرة حالياً." });
+      return;
+    }
+
+    if (!hasEnoughBalance) {
+      toast({ variant: "destructive", title: "رصيد غير كافٍ", description: "يرجى شحن محفظتك للمتابعة." });
+      return;
+    }
 
     setIsProcessing(true);
     const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -133,7 +145,7 @@ export default function CheckoutPage() {
           <CheckCircle2 size={80} className="text-green-500 mx-auto mb-8 animate-bounce" />
           <h2 className="text-4xl font-headline font-black mb-4">تمت العملية بنجاح</h2>
           <p className="text-muted-foreground mb-10 font-medium">تم خصم المبلغ وتجهيز القسيمة الرقمية الخاصة بك.</p>
-          <Button asChild className="royal-button w-full h-16 text-lg"><Link href={`/orders/${successOrderId}`}>عرض القسيمة الرسمية</Link></Button>
+          <Button asChild className="royal-button w-full h-16 text-lg"><Link href={`/orders/${successOrderId}`}>عرض القسيمة</Link></Button>
        </Card>
     </main>
   );
@@ -143,7 +155,7 @@ export default function CheckoutPage() {
       <Navbar />
       <div className="container mx-auto px-4 py-32 max-w-6xl">
         <header className="mb-16">
-          <Badge className="bg-primary/10 text-primary mb-4 px-6 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">Sovereign Payment Gateway</Badge>
+          <Badge className="bg-primary/10 text-primary mb-4 px-6 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">Sovereign Gateway</Badge>
           <h1 className="text-5xl md:text-7xl font-headline font-black gold-text tracking-tighter">إتمام الطلب</h1>
         </header>
 
@@ -175,12 +187,12 @@ export default function CheckoutPage() {
               </section>
 
               <section className="space-y-8">
-                 <h3 className="text-2xl font-black flex items-center gap-4 border-r-4 border-primary pr-6">بريد التسليم المعتمد</h3>
+                 <h3 className="text-2xl font-black flex items-center gap-4 border-r-4 border-primary pr-6">بريد التسليم</h3>
                  <Input 
                    value={deliveryEmail} 
                    onChange={e => setDeliveryEmail(e.target.value)} 
                    placeholder="أدخل البريد لاستقبال الكود..." 
-                   className="h-18 rounded-[1.5rem] bg-muted/30 border-primary/20 text-lg"
+                   className="h-18 rounded-3xl"
                  />
               </section>
            </div>
