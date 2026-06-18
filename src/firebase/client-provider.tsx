@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useEffect } from 'react';
@@ -8,10 +7,6 @@ import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth'
 import { firebaseConfig } from './config';
 import { FirebaseProvider } from './provider';
 
-/**
- * Initializes Firebase services with a singleton pattern.
- * Persistence is managed inside an effect to prevent SSR crashes.
- */
 export function initializeFirebase() {
   const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   const firestore = getFirestore(firebaseApp);
@@ -25,7 +20,6 @@ export const FirebaseClientProvider: React.FC<{
   const services = useMemo(() => initializeFirebase(), []);
 
   useEffect(() => {
-    // نضبط Persistence فقط في العميل (Client-side) لتجنب أخطاء Hydration
     if (services.auth) {
       setPersistence(services.auth, browserLocalPersistence)
         .catch((err) => console.error("[AUTH] Persistence Error:", err));

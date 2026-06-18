@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,11 +15,8 @@ import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import Link from "next/link"; // تأكيد استيراد Link لمنع ReferenceError
+import Link from "next/link";
 
-/**
- * صفحة الدفع السيادية: تضمن حماية المخزون بنسبة 100% وتمنع البيع عند النفاد.
- */
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const { profile, user, loading: userLoading } = useUser();
@@ -249,7 +245,7 @@ export default function CheckoutPage() {
 
               <section className="space-y-8">
                  <h3 className="text-2xl md:text-3xl font-black flex items-center gap-4"><Mail size={24} className="text-primary" /> بروتوكول الاستقبال</h3>
-                 <Card className="luxury-card p-6 md:p-12 border-none bg-card/60 backdrop-blur-xl space-y-8">
+                 <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl space-y-8">
                     <div className="space-y-3">
                        <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">بريد التسليم الرقمي (إلزامي)</Label>
                        <Input value={deliveryEmail} onChange={e => setDeliveryEmail(e.target.value)} className="h-16 rounded-2xl" placeholder="name@example.com" />

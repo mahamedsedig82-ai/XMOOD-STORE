@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,17 +10,12 @@ import { useAuth } from "@/firebase";
 import { onAuthStateChanged, applyActionCode } from "firebase/auth";
 import { toast } from "@/hooks/use-toast";
 
-/**
- * صفحة التحقق السيادية: تقوم بتوثيق الهوية ونقل المستخدم تلقائياً للمحفظة.
- * تم تحصينها ضد أخطاء SSR عبر تغليف الوصول لـ window داخل useEffect.
- */
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const router = useRouter();
   const auth = useAuth();
 
   useEffect(() => {
-    // نضمن أن الكود يعمل فقط في المتصفح
     if (typeof window === 'undefined' || !auth) return;
 
     const verify = async () => {
@@ -30,7 +24,6 @@ export default function VerifyEmailPage() {
       const mode = urlParams.get('mode');
 
       try {
-        // 1. التعامل مع رابط توثيق البريد التقليدي
         if (oobCode && mode === 'verifyEmail') {
            await applyActionCode(auth, oobCode);
            if (auth.currentUser) {
@@ -38,21 +31,19 @@ export default function VerifyEmailPage() {
               await syncUserProfile(auth.currentUser);
               setStatus('success');
               toast({ title: "تم توثيق الهوية السيادية" });
-              setTimeout(() => router.replace("/wallet"), 1000);
+              router.replace("/wallet");
               return;
            }
         }
 
-        // 2. التعامل مع الرابط السحري (Magic Link)
         const userFromMagic = await completeMagicLinkSignIn();
         if (userFromMagic) {
           setStatus('success');
           toast({ title: "تم الدخول بنجاح" });
-          setTimeout(() => router.replace("/wallet"), 1000);
+          router.replace("/wallet");
           return;
         }
 
-        // 3. مراقبة حالة المصادقة لضمان التوجيه التلقائي
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await firebaseUser.reload();
@@ -64,7 +55,6 @@ export default function VerifyEmailPage() {
           }
         });
         
-        // مهلة أمان إذا لم يتم التعرف على الكود
         const timeout = setTimeout(() => {
            if (status === 'verifying' && !oobCode) setStatus('error');
         }, 8000);

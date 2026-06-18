@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,7 +60,7 @@
   }
 }
 
-/* 💎 SOVEREIGN INPUT STYLING - FORCED PROMINENT BORDERS & HIGH VISIBILITY */
+/* 💎 SOVEREIGN INPUT STYLING - FORCED PROMINENT BORDERS */
 input, textarea, select {
   @apply border-2 border-primary bg-white dark:bg-zinc-950 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/40 transition-all font-bold text-foreground outline-none shadow-[0_4px_15px_rgba(0,0,0,0.1)] !important;
 }
@@ -89,30 +88,11 @@ input, textarea, select {
   @apply bg-primary text-primary-foreground font-black rounded-[1.25rem] md:rounded-[2rem] px-6 py-3 md:px-8 md:py-6 shadow-xl hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-sm uppercase tracking-[0.15em] flex items-center justify-center gap-2 md:gap-4 border-none disabled:opacity-50 disabled:grayscale cursor-pointer;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-primary/10 rounded-full hover:bg-primary/20 transition-colors;
-}
-
 @media (max-width: 768px) {
-  .responsive-table thead {
-    display: none;
-  }
-  .responsive-table tr {
-    @apply mb-4 border rounded-[1.5rem] p-4 bg-card shadow-md block;
-  }
-  .responsive-table td {
-    @apply flex justify-between items-center py-3 border-b border-border/50 last:border-0 text-right;
-  }
-  .responsive-table td::before {
-    content: attr(data-label);
-    @apply font-black text-[8px] uppercase text-muted-foreground ml-4 text-left;
-  }
+  .responsive-table thead { display: none; }
+  .responsive-table tr { @apply mb-4 border rounded-[1.5rem] p-4 bg-card shadow-md block; }
+  .responsive-table td { @apply flex justify-between items-center py-3 border-b border-border/50 last:border-0 text-right; }
+  .responsive-table td::before { content: attr(data-label); @apply font-black text-[8px] uppercase text-muted-foreground ml-4 text-left; }
 }
 
 .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
