@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -205,7 +204,7 @@ export default function SecurityLoginPage() {
                                   <SelectItem value="q2">ما هو اسم حيوانك الأليف الأول؟</SelectItem>
                                   <SelectItem value="q3">ما هو اسم مدينتك المفضلة؟</SelectItem>
                                   <SelectItem value="q4">ما هو لقب العائلة القديم؟</SelectItem>
-                               </SelectContent>
+                                </SelectContent>
                             </Select>
                          </div>
                          <div className="md:col-span-2 space-y-2">

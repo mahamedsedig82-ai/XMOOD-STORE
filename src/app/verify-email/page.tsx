@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -17,6 +16,7 @@ export default function VerifyEmailPage() {
   const auth = useAuth();
 
   useEffect(() => {
+    // 🛡️ التحصين ضد أخطاء SSR: استخدام واجهات المتصفح فقط بداخل useEffect
     if (typeof window === 'undefined' || !auth) return;
 
     const verify = async () => {
@@ -28,14 +28,13 @@ export default function VerifyEmailPage() {
         // 1. بروتوكول توثيق الرابط التقليدي (Email Verification)
         if (oobCode && mode === 'verifyEmail') {
            await applyActionCode(auth, oobCode);
-           // إعادة تحميل المستخدم للتأكد من تحديث حالة التحقق
            if (auth.currentUser) {
               await auth.currentUser.reload();
               await syncUserProfile(auth.currentUser);
               setStatus('success');
               toast({ title: "تم توثيق الهوية السيادية" });
-              // توجيه تلقائي وفوري
-              setTimeout(() => router.replace("/wallet"), 1000);
+              // توجيه تلقائي وفوري ومباشر للمحفظة
+              setTimeout(() => router.replace("/wallet"), 500);
               return;
            }
         }
@@ -45,11 +44,11 @@ export default function VerifyEmailPage() {
         if (userFromMagic) {
           setStatus('success');
           toast({ title: "تم الدخول بنجاح" });
-          setTimeout(() => router.replace("/wallet"), 1000);
+          setTimeout(() => router.replace("/wallet"), 500);
           return;
         }
 
-        // 3. مراقب الحالة النشط
+        // 3. مراقب الحالة النشط (في حال تم التحقق في نافذة أخرى)
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await firebaseUser.reload();
@@ -61,10 +60,10 @@ export default function VerifyEmailPage() {
           }
         });
         
-        // مهلة زمنية للفشل
+        // مهلة زمنية للفشل إذا لم يتم رصد كود
         const timeout = setTimeout(() => {
            if (status === 'verifying' && !oobCode) setStatus('error');
-        }, 10000);
+        }, 15000);
 
         return () => {
           unsubscribe();
@@ -77,7 +76,7 @@ export default function VerifyEmailPage() {
       }
     };
     verify();
-  }, [auth, router]);
+  }, [auth, router, status]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
