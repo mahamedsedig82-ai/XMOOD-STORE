@@ -152,7 +152,7 @@ export default function LoginPage() {
                           disabled={loading} 
                           className="w-full h-16 md:h-18 rounded-xl md:rounded-2xl bg-primary text-black font-black text-base md:text-lg shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all"
                         >
-                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={20} className="md:size-24 ml-3" /> تأمين الدخول</>}
+                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={20} className="ml-3" /> تأمين الدخول</>}
                         </Button>
                       </div>
                     ) : (
@@ -177,7 +177,7 @@ export default function LoginPage() {
                          </div>
                          
                          <div className="p-4 md:p-5 bg-primary/5 border border-primary/10 rounded-xl md:rounded-2xl flex gap-3 md:gap-4 items-start">
-                            <AlertCircle size={16} className="text-primary shrink-0 mt-0.5 md:size-18" />
+                            <AlertCircle size={16} className="text-primary shrink-0 mt-0.5" />
                             <p className="text-[9px] md:text-[10px] font-bold text-zinc-400 leading-relaxed">
                                تنبيه: ستصلك رسالة تفعيل. إذا لم تجدها، تحقق فوراً من مجلد <b>Spam</b> أو <b>Junk</b>.
                             </p>
@@ -188,7 +188,7 @@ export default function LoginPage() {
                            disabled={loading} 
                            className="w-full h-16 md:h-18 rounded-xl md:rounded-2xl bg-primary text-black font-black text-base md:text-lg mt-2 md:mt-4 shadow-xl shadow-primary/10"
                          >
-                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={20} className="md:size-24 ml-3" /> إنشاء عضوية</>}
+                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={20} className="ml-3" /> إنشاء عضوية</>}
                          </Button>
                       </div>
                     )}
@@ -203,7 +203,7 @@ export default function LoginPage() {
                Precision Secure Access Engine
              </p>
              <p className="text-[7px] md:text-[8px] font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
-               <Sparkles size={8} md:size={10} /> Powered by XMOOD Cloud Intelligence <Sparkles size={8} md:size={10} />
+               <Sparkles size={10} /> Powered by XMOOD Cloud Intelligence <Sparkles size={10} />
              </p>
           </div>
         </motion.div>

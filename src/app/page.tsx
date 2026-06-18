@@ -27,7 +27,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-background" dir="rtl">
       <Navbar />
       
-      {/* 🌌 Hero Section - Improved Mobile Flexibility */}
+      {/* 🌌 Hero Section - Improved Mobile Flexibility & Scaled Name */}
       <section className="relative pt-40 pb-20 md:pt-64 md:pb-48 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-1/4 right-0 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-primary/5 blur-[100px] md:blur-[150px] rounded-full" />
@@ -49,8 +49,8 @@ export default function HomePage() {
             </div>
 
             <div className="relative inline-block max-w-full">
-               <h1 className="text-4xl md:text-6xl font-headline font-black leading-tight tracking-tighter text-foreground uppercase flex flex-col items-center">
-                 <span className="handwritten-logo text-5xl md:text-7xl drop-shadow-[0_0_15px_rgba(212,175,55,0.1)]">XMOOD STORE</span>
+               <h1 className="text-3xl md:text-5xl font-headline font-black leading-tight tracking-tighter text-foreground uppercase flex flex-col items-center">
+                 <span className="handwritten-logo text-4xl md:text-6xl drop-shadow-[0_0_15px_rgba(212,175,55,0.1)]">XMOOD STORE</span>
                </h1>
             </div>
 
@@ -97,7 +97,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 🏆 ما يميزنا Section - Replaced Why XMOOD */}
+      {/* 🏆 ما يميزنا Section */}
       <section className="py-24 md:py-48 relative overflow-hidden bg-background">
         <div className="container mx-auto px-6">
            <div className="text-center mb-16 md:mb-24 space-y-2 md:space-y-4">
@@ -117,7 +117,7 @@ export default function HomePage() {
                   className="p-8 md:p-12 luxury-card bg-card/40 border-primary/10 hover:border-primary/25 shadow-xl text-center flex flex-col items-center group transition-all duration-500"
                 >
                    <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/5 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center text-primary mb-6 md:mb-10 shadow-inner group-hover:bg-primary group-hover:text-black transition-all duration-500">
-                      <item.icon size={28} className="md:size-32" />
+                      <item.icon size={28} />
                    </div>
                    <h4 className="font-black text-xl md:text-2xl mb-3 md:mb-4 group-hover:gold-text transition-all uppercase tracking-tighter">{item.title}</h4>
                    <p className="text-muted-foreground leading-relaxed font-medium text-base md:text-lg">{item.desc}</p>

@@ -60,19 +60,19 @@
   background: linear-gradient(135deg, #b8860b 0%, #f9d976 50%, #b8860b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.1));
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.15));
   transition: all 0.5s ease;
-  letter-spacing: 0.05em; /* تم زيادة التباعد لمنع التداخل */
+  letter-spacing: 0.15em; /* زيادة التباعد لمنع التداخل نهائياً */
   font-weight: 900;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 .handwritten-logo span {
-  @apply ml-2;
+  @apply ml-3;
 }
 
 .handwritten-logo:hover {
-  filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.25));
+  filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
 }
 
 .emerald-glass {
@@ -122,5 +122,9 @@ input:focus, textarea:focus, select:focus {
   
   .luxury-card {
     @apply rounded-[2.5rem];
+  }
+
+  .handwritten-logo {
+    letter-spacing: 0.1em;
   }
 }
