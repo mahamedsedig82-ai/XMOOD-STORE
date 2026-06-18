@@ -12,7 +12,8 @@ import { useRouter } from "next/navigation";
 import { Loader2, UserPlus, Mail, Lock, ShieldCheck, Phone, Sparkles, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,6 +25,13 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const { user, isVerified } = useUser();
+  const db = useFirestore();
+
+  const settingsRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return doc(db, "settings", "global");
+  }, [db]);
+  const { data: config } = useDoc(settingsRef);
 
   useEffect(() => {
     setIsMounted(true);
@@ -92,52 +100,56 @@ export default function LoginPage() {
       <div className="container mx-auto px-4 min-h-screen flex items-center justify-center pt-24 pb-12 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
           <Card className="emerald-glass rounded-[2.5rem] border-white/5 overflow-hidden shadow-2xl">
-            <div className="p-8 text-center border-b border-white/5">
-               <h2 className="handwritten-logo text-2xl md:text-3xl mb-1">XMOOD STORE</h2>
+            <div className="p-8 text-center border-b border-white/5 flex flex-col items-center">
+               {config?.appearance?.logoUrl ? (
+                 <img src={config.appearance.logoUrl} className="h-16 w-auto object-contain mb-2" alt="Logo" />
+               ) : (
+                 <h2 className="handwritten-logo text-2xl md:text-3xl mb-1">XMOOD STORE</h2>
+               )}
                <p className="text-[7px] font-black text-zinc-500 uppercase tracking-[0.4em]">Sovereign Identity Portal</p>
             </div>
 
-            <CardContent className="p-6 md:p-10 space-y-6">
+            <CardContent className="p-6 md:p-10 space-y-8">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-8 p-1 bg-black/40 rounded-2xl border border-white/10 h-14">
+                <TabsList className="grid w-full grid-cols-2 mb-10 p-1 bg-black/40 rounded-2xl border border-white/10 h-14">
                   <TabsTrigger value="login" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-black">تسجيل الدخول</TabsTrigger>
                   <TabsTrigger value="signup" className="rounded-xl font-black text-[10px] uppercase data-[state=active]:bg-primary data-[state=active]:text-black">إنشاء حساب</TabsTrigger>
                 </TabsList>
 
                 <AnimatePresence mode="wait">
-                  <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+                  <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
                     {activeTab === 'login' ? (
-                      <div className="space-y-6">
-                        <div className="space-y-4">
-                           <div className="space-y-1.5">
+                      <div className="space-y-8">
+                        <div className="space-y-6">
+                           <div className="space-y-2">
                               <Label className="text-[9px] font-black uppercase text-primary/70 pr-4 flex items-center gap-2"><Mail size={12} /> البريد الإلكتروني</Label>
-                              <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="user@xmood.pro" className="h-14 bg-zinc-950/50 border-primary/20 text-center" />
+                              <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="user@xmood.pro" className="h-16 bg-zinc-950/50 border-primary/20 text-center text-lg" />
                            </div>
-                           <div className="space-y-1.5">
+                           <div className="space-y-2">
                               <Label className="text-[9px] font-black uppercase text-primary/70 pr-4 flex items-center gap-2"><Lock size={12} /> كلمة المرور</Label>
-                              <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-14 bg-zinc-950/50 border-primary/20 text-center" />
+                              <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-16 bg-zinc-950/50 border-primary/20 text-center text-lg" />
                            </div>
                         </div>
-                        <Button onClick={() => handleAuth('login')} disabled={loading} className="w-full h-16 royal-button text-base shadow-xl">
-                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={20} className="ml-3" /> تأمين الدخول</>}
+                        <Button onClick={() => handleAuth('login')} disabled={loading} className="w-full h-18 royal-button text-lg shadow-xl shadow-primary/10">
+                          {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={22} className="ml-3" /> تأمين الدخول الملكي</>}
                         </Button>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1.5"><Label className="text-[8px] font-black text-primary/70 pr-4">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12 bg-zinc-950/50" /></div>
-                            <div className="space-y-1.5"><Label className="text-[8px] font-black text-primary/70 pr-4">رقم الهاتف</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12 bg-zinc-950/50" /></div>
+                      <div className="space-y-6">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="space-y-2"><Label className="text-[8px] font-black text-primary/70 pr-4">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-14 bg-zinc-950/50" /></div>
+                            <div className="space-y-2"><Label className="text-[8px] font-black text-primary/70 pr-4">رقم الهاتف</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-14 bg-zinc-950/50" /></div>
                          </div>
-                         <div className="space-y-1.5"><Label className="text-[8px] font-black text-primary/70 pr-4">البريد الإلكتروني</Label><Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-12 bg-zinc-950/50" /></div>
-                         <div className="space-y-1.5"><Label className="text-[8px] font-black text-primary/70 pr-4">كلمة المرور</Label><Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-12 bg-zinc-950/50" /></div>
+                         <div className="space-y-2"><Label className="text-[8px] font-black text-primary/70 pr-4">البريد الإلكتروني</Label><Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-14 bg-zinc-950/50" /></div>
+                         <div className="space-y-2"><Label className="text-[8px] font-black text-primary/70 pr-4">كلمة المرور</Label><Input value={password} onChange={e => setPassword(e.target.value)} type="password" className="h-14 bg-zinc-950/50" /></div>
                          
-                         <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl flex gap-3">
-                            <AlertCircle size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                            <p className="text-[8px] font-bold text-zinc-400">تنبيه: ستصلك رسالة تفعيل. إذا لم تجدها، تحقق من مجلد <b>Spam</b> فوراً.</p>
+                         <div className="p-5 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex gap-4">
+                            <AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+                            <p className="text-[9px] font-bold text-zinc-400 leading-relaxed">تنبيه: ستصلك رسالة تفعيل فوراً. إذا لم تجدها، تحقق من مجلد <b>Spam</b> أو <b>Junk</b> في بريدك.</p>
                          </div>
 
-                         <Button onClick={() => handleAuth('signup')} disabled={loading} className="w-full h-16 royal-button text-base mt-2 shadow-xl">
-                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={20} className="ml-3" /> إنشاء عضوية</>}
+                         <Button onClick={() => handleAuth('signup')} disabled={loading} className="w-full h-18 royal-button text-lg mt-4 shadow-xl shadow-primary/10">
+                           {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={22} className="ml-3" /> إنشاء عضوية سيادية</>}
                          </Button>
                       </div>
                     )}
@@ -147,11 +159,11 @@ export default function LoginPage() {
             </CardContent>
           </Card>
           
-          <div className="text-center mt-8 space-y-2 opacity-30">
-             <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.4em]">Precision Secure Access Engine</p>
-             <div className="text-[7px] font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
-               Powered by XMOOD Cloud Intelligence
-             </div>
+          <div className="text-center mt-10 space-y-3 opacity-40">
+             <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.5em]">Precision Secure Access Engine</p>
+             <p className="text-[8px] font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
+               <Sparkles size={10} /> Powered by XMOOD Cloud Intelligence <Sparkles size={10} />
+             </p>
           </div>
         </motion.div>
       </div>

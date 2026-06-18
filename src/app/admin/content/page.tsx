@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label";
 
 export default function AdminContentManager() {
   const db = useFirestore();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const settingsRef = useMemoFirebase(() => {
     if (!db) return null;
@@ -60,7 +59,7 @@ export default function AdminContentManager() {
     <div className="space-y-10 animate-fade-in pb-40 text-right" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 border-b pb-10">
         <div>
-          <h1 className="text-4xl md:text-5xl font-headline font-black gold-text">إدارة المحتوى السيادي</h1>
+          <h1 className="text-4xl md:text-5xl font-headline font-black gold-text">إدارة المحتوى واللوقو</h1>
           <p className="text-muted-foreground mt-2 font-bold uppercase tracking-widest text-[9px] opacity-60">Universal Content Controller</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg">
@@ -70,7 +69,7 @@ export default function AdminContentManager() {
 
       <Tabs defaultValue="site" className="w-full">
         <TabsList className="bg-card p-1.5 rounded-2xl h-auto border mb-10 flex flex-wrap gap-2 justify-center shadow-lg">
-          <TabsTrigger value="site" className="flex-1 rounded-xl font-black text-[9px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">البيانات والهوية</TabsTrigger>
+          <TabsTrigger value="site" className="flex-1 rounded-xl font-black text-[9px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">اللوقو والهوية</TabsTrigger>
           <TabsTrigger value="nav" className="flex-1 rounded-xl font-black text-[9px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">القوائم</TabsTrigger>
           <TabsTrigger value="sections" className="flex-1 rounded-xl font-black text-[9px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">الأقسام</TabsTrigger>
           <TabsTrigger value="bot" className="flex-1 rounded-xl font-black text-[9px] uppercase py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">المساعد الذكي</TabsTrigger>
@@ -82,12 +81,17 @@ export default function AdminContentManager() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                  <div className="space-y-8">
                     <div className="space-y-3">
-                       <Label className="text-[10px] font-black uppercase text-primary pr-3">لوقو الموقع الرئيسي</Label>
-                       <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} placeholder="رابط صورة اللوقو..." />
+                       <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">رابط لوقو المتجر (يحل محل النص)</Label>
+                       <Input value={form.appearance.logoUrl} onChange={e => setForm({...form, appearance: {...form.appearance, logoUrl: e.target.value}})} placeholder="https://..." className="h-14 font-mono text-xs" />
+                       {form.appearance.logoUrl && (
+                         <div className="mt-4 p-4 bg-muted/40 rounded-2xl flex items-center justify-center border border-dashed border-primary/20">
+                            <img src={form.appearance.logoUrl} className="h-16 w-auto object-contain" alt="Preview" />
+                         </div>
+                       )}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div className="space-y-2"><Label className="text-[10px] font-black text-primary/70 pr-3">عنوان الموقع</Label><Input value={form.siteInfo.title} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, title: e.target.value}})} className="h-14 font-black" /></div>
-                       <div className="space-y-2"><Label className="text-[10px] font-black text-primary/70 pr-3">العنوان الفرعي</Label><Input value={form.siteInfo.subtitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, subtitle: e.target.value}})} className="h-14 font-bold" /></div>
+                       <div className="space-y-2"><Label className="text-[10px] font-black text-primary/70 pr-3">اسم المتجر ( fallback )</Label><Input value={form.siteInfo.title} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, title: e.target.value}})} className="h-14 font-black" /></div>
+                       <div className="space-y-2"><Label className="text-[10px] font-black text-primary/70 pr-3">العنوان الفرعي (Subtitle)</Label><Input value={form.siteInfo.subtitle} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, subtitle: e.target.value}})} className="h-14 font-bold" /></div>
                     </div>
                  </div>
                  <div className="p-8 bg-zinc-950/60 rounded-[2.5rem] border border-white/5 flex flex-col items-center justify-center text-center shadow-2xl space-y-8">
@@ -97,7 +101,7 @@ export default function AdminContentManager() {
                     </div>
                  </div>
               </div>
-              <div className="space-y-3 mt-8"><Label className="text-[10px] font-black text-primary/70 pr-3">وصف المتجر العام</Label><Textarea value={form.siteInfo.description} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, description: e.target.value}})} className="min-h-[120px]" /></div>
+              <div className="space-y-3 mt-8"><Label className="text-[10px] font-black text-primary/70 pr-3">وصف المتجر العام (SEO)</Label><Textarea value={form.siteInfo.description} onChange={e => setForm({...form, siteInfo: {...form.siteInfo, description: e.target.value}})} className="min-h-[120px]" /></div>
            </Card>
         </TabsContent>
 

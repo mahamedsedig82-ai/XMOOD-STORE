@@ -13,7 +13,10 @@ import { motion } from "framer-motion";
 export default function HomePage() {
   const db = useFirestore();
   
-  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const settingsRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return doc(db, "settings", "global");
+  }, [db]);
   const { data: config } = useDoc(settingsRef);
 
   const productsQuery = useMemoFirebase(() => {
@@ -39,8 +42,19 @@ export default function HomePage() {
             </div>
 
             <div className="flex flex-col items-center">
-               <h1 className="handwritten-logo text-5xl md:text-8xl drop-shadow-xl">XMOOD STORE</h1>
-               <h2 className="text-lg md:text-2xl font-handwriting text-primary mt-4 opacity-90 animate-pulse">
+               {config?.appearance?.logoUrl ? (
+                 <motion.img 
+                   initial={{ scale: 0.9, opacity: 0 }}
+                   animate={{ scale: 1, opacity: 1 }}
+                   src={config.appearance.logoUrl} 
+                   className="h-24 md:h-44 w-auto object-contain mb-6 drop-shadow-2xl" 
+                   alt="Logo" 
+                 />
+               ) : (
+                 <h1 className="handwritten-logo text-5xl md:text-8xl drop-shadow-xl">XMOOD STORE</h1>
+               )}
+               
+               <h2 className="text-xl md:text-3xl font-handwriting text-primary mt-4 opacity-90 animate-pulse tracking-wide">
                  {config?.siteInfo?.subtitle || "مركز الخدمات الرقمية المعتمدة"}
                </h2>
             </div>
@@ -83,7 +97,7 @@ export default function HomePage() {
       <section className="py-20 md:py-32 bg-background">
         <div className="container mx-auto px-6">
            <div className="text-center mb-16 space-y-2">
-              <h2 className="text-2xl md:text-4xl font-headline font-black uppercase">مـا <span className="gold-text">يمـيـزنـا</span></h2>
+              <h2 className="text-2xl md:text-4xl font-headline font-black uppercase">ما <span className="gold-text">يميزنا</span></h2>
               <p className="text-muted-foreground uppercase font-black text-[9px] tracking-[0.4em] opacity-30">The Sovereign Excellence Protocol</p>
            </div>
            
