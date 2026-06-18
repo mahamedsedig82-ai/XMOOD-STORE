@@ -11,6 +11,9 @@ import { useAuth } from "@/firebase";
 import { onAuthStateChanged, applyActionCode } from "firebase/auth";
 import { toast } from "@/hooks/use-toast";
 
+/**
+ * صفحة التحقق السيادي: تقوم بتوثيق الهوية ونقل المستخدم تلقائياً للمحفظة.
+ */
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const router = useRouter();
@@ -28,14 +31,12 @@ export default function VerifyEmailPage() {
         // 1. التعامل مع رابط توثيق البريد التقليدي
         if (oobCode && mode === 'verifyEmail') {
            await applyActionCode(auth, oobCode);
-           // بعد التطبيق، نحتاج لإعادة تحميل المستخدم
            if (auth.currentUser) {
               await auth.currentUser.reload();
               await syncUserProfile(auth.currentUser);
               setStatus('success');
               toast({ title: "تم توثيق الهوية السيادية" });
-              // توجيه تلقائي لحظي
-              setTimeout(() => router.replace("/wallet"), 1500);
+              setTimeout(() => router.replace("/wallet"), 1000);
               return;
            }
         }
@@ -49,7 +50,7 @@ export default function VerifyEmailPage() {
           return;
         }
 
-        // 3. مراقبة حالة المصادقة لضمان التوجيه التلقائي اللحظي في حالات التعليق
+        // 3. مراقبة حالة المصادقة لضمان التوجيه التلقائي
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await firebaseUser.reload();
@@ -61,10 +62,10 @@ export default function VerifyEmailPage() {
           }
         });
         
-        // إذا لم يوجد كود أو وضع توثيق، ننتظر قليلاً ثم نظهر خطأ إذا لم يحدث شيء
+        // مهلة أمان إذا لم يتم التعرف على الكود
         const timeout = setTimeout(() => {
            if (status === 'verifying' && !oobCode) setStatus('error');
-        }, 5000);
+        }, 8000);
 
         return () => {
           unsubscribe();
@@ -74,7 +75,6 @@ export default function VerifyEmailPage() {
       } catch (e: any) {
         console.error("Verification Error:", e);
         setStatus('error');
-        toast({ variant: "destructive", title: "فشل التوثيق", description: "الرابط قديم أو غير صالح." });
       }
     };
     verify();
@@ -118,8 +118,8 @@ export default function VerifyEmailPage() {
             <h2 className="text-3xl font-black text-red-500">فشل في توثيق الرابط</h2>
             <p className="text-muted-foreground text-sm font-medium">ربما انتهت صلاحية الرابط أو تم استخدامه مسبقاً.</p>
             <div className="pt-8 flex flex-col gap-4">
-               <Button asChild className="royal-button w-full h-16"><Link href="/login">العودة لصفحة الدخول</Link></Button>
-               <Button asChild variant="ghost" className="w-full h-14"><Link href="/"><Home className="ml-2" size={16} /> الرئيسية</Link></Button>
+               <Button asChild className="royal-button w-full h-16"><a href="/login">العودة لصفحة الدخول</a></Button>
+               <Button asChild variant="ghost" className="w-full h-14"><a href="/"><Home className="ml-2" size={16} /> الرئيسية</a></Button>
             </div>
           </div>
         )}

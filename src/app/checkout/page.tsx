@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { useCart } from "@/context/CartContext";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
@@ -18,6 +18,9 @@ import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+/**
+ * صفحة الدفع السيادية: تضمن حماية المخزون بنسبة 100% وتمنع البيع عند النفاد.
+ */
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const { profile, user, loading: userLoading } = useUser();
@@ -42,7 +45,7 @@ export default function CheckoutPage() {
     if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
   }, [user, deliveryEmail]);
 
-  // التحقق اللحظي والقاسي من المخزون قبل السماح بالدفع
+  // 🛡️ درع فحص المخزون الصارم
   useEffect(() => {
     const checkStock = async () => {
       if (!db || items.length === 0) {
@@ -58,10 +61,11 @@ export default function CheckoutPage() {
           if (pSnap.exists()) {
             const data = pSnap.data();
             const codes = (data.shippingCodes || "").split('\n').filter((c: string) => c.trim() !== "");
-            // إذا كان عدد الأكواد أقل من الكمية المطلوبة أو المخزون المكتوب 0
             if (codes.length < item.quantity || (data.stock || 0) < item.quantity) {
               unavailable.push(item.name);
             }
+          } else {
+            unavailable.push(item.name);
           }
         }
       } catch (e) {

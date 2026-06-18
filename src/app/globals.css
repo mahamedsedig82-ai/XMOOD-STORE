@@ -61,6 +61,15 @@
   }
 }
 
+/* 💎 SOVEREIGN INPUT STYLING - FORCED PROMINENT BORDERS */
+input, textarea, select {
+  @apply border-2 border-primary bg-white dark:bg-zinc-950 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/40 transition-all font-bold text-foreground outline-none shadow-[0_4px_10px_rgba(0,0,0,0.1)] !important;
+}
+
+.dark input, .dark textarea, .dark select {
+  @apply border-primary bg-zinc-950 shadow-[0_0_20px_rgba(212,175,55,0.2)] !important;
+}
+
 .luxury-card {
   @apply rounded-[1.5rem] md:rounded-[2rem] border bg-card text-card-foreground shadow-sm transition-all duration-500 hover:shadow-xl hover:border-primary/30 overflow-hidden relative;
 }
@@ -78,15 +87,6 @@
 
 .royal-button {
   @apply bg-primary text-primary-foreground font-black rounded-[1.25rem] md:rounded-[2rem] px-6 py-3 md:px-8 md:py-6 shadow-xl hover:opacity-90 active:scale-95 transition-all text-[10px] md:text-sm uppercase tracking-[0.15em] flex items-center justify-center gap-2 md:gap-4 border-none disabled:opacity-50 disabled:grayscale cursor-pointer;
-}
-
-/* 💎 SOVEREIGN INPUT STYLING - ULTRA PROMINENT BORDERS */
-input, textarea, select {
-  @apply border-2 border-primary bg-white dark:bg-zinc-950 px-6 py-4 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/40 transition-all font-bold text-foreground outline-none shadow-[0_4px_10px_rgba(0,0,0,0.1)] !important;
-}
-
-.dark input, .dark textarea, .dark select {
-  @apply border-primary bg-zinc-950 shadow-[0_0_20px_rgba(212,175,55,0.2)] !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
