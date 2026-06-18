@@ -34,7 +34,10 @@ function VerifyEmailContent() {
             await syncUserProfile(auth.currentUser);
           }
           setStatus('success');
-          toast({ title: "ممتاز تم التحقق" });
+          // 🛡️ Immediate Sovereign Redirect after 2s
+          setTimeout(() => {
+            router.replace("/store");
+          }, 2000);
         })
         .catch((err) => {
           console.error("Verification Error:", err);
@@ -49,6 +52,7 @@ function VerifyEmailContent() {
           clearInterval(interval);
           await syncUserProfile(auth.currentUser);
           setStatus('success');
+          setTimeout(() => router.replace("/store"), 2000);
         }
       }
     }, 3000);
@@ -65,7 +69,7 @@ function VerifyEmailContent() {
     try {
       const { sendAccountVerification } = await import("@/lib/auth");
       await sendAccountVerification(auth.currentUser);
-      toast({ title: "تم إرسال الرابط", description: "تفقد البريد الوارد ومجلد السبام." });
+      toast({ title: "تم إرسال الرابط بنجاح" });
     } catch (e: any) {
       toast({ variant: "destructive", title: "تنبيه", description: "يرجى المحاولة بعد قليل." });
     } finally {
@@ -151,11 +155,11 @@ function VerifyEmailContent() {
                 <CheckCircle className="w-12 h-12 text-white" />
               </div>
               <div className="space-y-3">
-                <h2 className="text-3xl font-black text-green-500">ممتاز تم التحقق</h2>
-                <p className="text-muted-foreground font-bold text-lg">عد للمتجر للاستمتاع بخدماتنا</p>
+                <h2 className="text-3xl font-black text-green-500 leading-tight">ممتاز تم التحقق<br/>عد للمتجر للاستمتاع بخدماتنا</h2>
+                <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest animate-pulse mt-4">جاري توجيهك الآن...</p>
               </div>
               <Button asChild className="royal-button w-full h-16 shadow-xl mt-4">
-                <Link href="/store"><ShoppingBag size={20} className="ml-2" /> الذهاب للمتجر الآن</Link>
+                <Link href="/store"><ShoppingBag size={20} className="ml-2" /> الذهاب للمتجر يدوياً</Link>
               </Button>
             </motion.div>
           )}
@@ -181,12 +185,6 @@ function VerifyEmailContent() {
           )}
         </AnimatePresence>
       </Card>
-      
-      <div className="mt-8 text-center no-print">
-         <Link href="/login" className="text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-[0.3em] flex items-center justify-center gap-2 transition-all">
-            <ArrowRight size={14} className="rotate-180" /> العودة للدخول
-         </Link>
-      </div>
     </div>
   );
 }

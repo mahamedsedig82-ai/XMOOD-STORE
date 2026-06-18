@@ -12,8 +12,8 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Profile Sync Service 4.0
- * ضمان وجود ملف شخصي لكل مستخدم مع حماية ضد التكرار.
+ * 🛡️ Profile Sync Service 5.0
+ * Purely idempotent sync function to prevent recursive writes and loops.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -39,14 +39,17 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         createdAt: new Date().toISOString(),
       }, { merge: true });
     } else {
-      // تحديث البيانات المتغيرة فقط لتجنب Loops
       const existing = userDoc.data();
+      // Only update if verification state has actually changed to avoid cycles
       if (existing.isVerified !== user.emailVerified) {
-        await updateDoc(userRef, { isVerified: user.emailVerified });
+        await updateDoc(userRef, { 
+          isVerified: user.emailVerified,
+          updatedAt: serverTimestamp() 
+        });
       }
     }
   } catch (error) {
-    console.error("[AUTH_SYNC] Error:", error);
+    console.error("[AUTH_SYNC] Error suppressed to ensure stability");
   }
 }
 
@@ -63,7 +66,6 @@ export const logout = async () => {
     await signOut(auth);
     window.location.href = '/login';
   } catch (error) {
-    console.error("[AUTH_LOGOUT] Error:", error);
     window.location.href = '/login';
   }
 };
@@ -80,7 +82,7 @@ export const sendAccountVerification = async (user: User) => {
     };
     await sendEmailVerification(user, actionCodeSettings);
   } catch (error: any) {
-    console.error("[AUTH_VERIFY] Send Error:", error.code);
+    console.error("[AUTH_VERIFY] Failed to send link");
     throw error;
   }
 };

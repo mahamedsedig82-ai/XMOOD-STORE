@@ -1,13 +1,13 @@
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore, terminate } from 'firebase/firestore';
+import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
 /**
- * 🛡️ Singleton Firebase Engine 3.0
- * يضمن تهيئة واحدة فقط لمنع خطأ INTERNAL ASSERTION FAILED.
+ * 🛡️ Firebase Sovereign Engine 4.0
+ * Singleton pattern ensuring zero duplicate initializations.
  */
 let app: FirebaseApp;
 let firestore: Firestore;
@@ -19,7 +19,6 @@ if (getApps().length > 0) {
   app = initializeApp(firebaseConfig);
 }
 
-// 🔐 تهيئة الخدمات بنظام الـ Singleton المستقر
 firestore = getFirestore(app);
 auth = getAuth(app);
 
