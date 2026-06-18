@@ -3,22 +3,21 @@
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-  sendSignInLinkToEmail,
-  isSignInWithEmailLink,
-  signInWithEmailLink,
   signOut,
   User,
-  sendPasswordResetEmail,
   sendEmailVerification,
   updateProfile
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc, addDoc, collection } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
+/**
+ * تسجيل الأحداث الأمنية لضمان التتبع والتحليل.
+ */
 export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'access_denied' | 'tamper_attempt', description: string, userEmail?: string) {
   if (!db) return;
   try {
-    addDoc(collection(db, "security_logs"), {
+    await addDoc(collection(db, "security_logs"), {
       type,
       description,
       userEmail: userEmail || "UNKNOWN",
@@ -28,16 +27,22 @@ export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'ac
   } catch (e) {}
 }
 
+/**
+ * مزامنة ملف المستخدم الشخصي مع قاعدة البيانات.
+ * يتضمن آلية للتحقق من وجود البيانات ومنع الإنشاء المتكرر.
+ */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
   const userRef = doc(db, "users", user.uid);
   try {
     const userDoc = await getDoc(userRef).catch(() => null);
+    
+    // إذا كان الملف غير موجود، نقوم بإنشائه (عملية Rollback مدمجة)
     if (!userDoc || !userDoc.exists()) {
       const initialProfile = {
         uid: user.uid,
         displayName: additionalData.displayName || user.displayName || user.email?.split("@")[0] || "عضو",
-        fullName: additionalData.fullName || "",
+        fullName: additionalData.fullName || additionalData.displayName || "",
         email: user.email?.toLowerCase(),
         phoneNumber: additionalData.phoneNumber || "",
         age: Number(additionalData.age) || 0,
@@ -51,13 +56,12 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         lastSeen: new Date().toISOString(),
         isVerified: user.emailVerified || false,
         affinityPoints: 50,
-        securityQuestion: additionalData.securityQuestion || "",
-        securityAnswer: additionalData.securityAnswer || "",
         updatedAt: serverTimestamp(),
       };
       await setDoc(userRef, initialProfile, { merge: true });
-      logSecurityEvent('login_success', "إنشاء عضوية جديدة ومزامنة الملف", user.email || "");
+      await logSecurityEvent('login_success', "إنشاء عضوية جديدة ومزامنة الملف", user.email || "");
     } else {
+      // تحديث بيانات الظهور فقط في حال الوجود المسبق
       await updateDoc(userRef, { 
         lastSeen: new Date().toISOString(),
         updatedAt: serverTimestamp(),
@@ -66,10 +70,15 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
       });
     }
   } catch (error) {
-    console.error("Profile Sync Error:", error);
+    console.error("[AUTH_SYNC] Error:", error);
+    // تسجيل الخطأ لتسهيل الرقابة اللاحقة
+    await logSecurityEvent('tamper_attempt', `فشل مزامنة الملف: ${String(error)}`, user.email || "");
   }
 }
 
+/**
+ * إرسال رابط توثيق الحساب مع تحصين مسار العودة.
+ */
 export const sendAccountVerification = async (user: User) => {
   try {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://xmood-36c92.firebaseapp.com';
@@ -77,13 +86,16 @@ export const sendAccountVerification = async (user: User) => {
       url: `${baseUrl}/verify-email`,
       handleCodeInApp: true,
     });
-    logSecurityEvent('login_success', "تم إرسال رابط توثيق البريد", user.email || "");
+    await logSecurityEvent('login_success', "تم إرسال رابط توثيق البريد بنجاح", user.email || "");
   } catch (error) {
-    console.error("Verification Email Error:", error);
+    console.error("[VERIFY_SEND] Error:", error);
     throw error;
   }
 };
 
+/**
+ * محرك إنشاء العضوية الجديد والمبسط.
+ */
 export const registerEmail = async (email: string, pass: string, name: string) => {
   const res = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), pass);
   await updateProfile(res.user, { displayName: name });
@@ -91,7 +103,9 @@ export const registerEmail = async (email: string, pass: string, name: string) =
 };
 
 export const loginEmail = (e: string, p: string) => signInWithEmailAndPassword(auth, e.trim().toLowerCase(), p);
-export const logout = () => {
-  if (auth.currentUser) logSecurityEvent('login_success', "خروج آمن من النظام", auth.currentUser.email || "");
+
+export const logout = async () => {
+  const currentUser = auth.currentUser;
+  if (currentUser) await logSecurityEvent('login_success', "خروج آمن من النظام", currentUser.email || "");
   return signOut(auth);
 };
