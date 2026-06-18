@@ -24,6 +24,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
   const [isMounted, setIsMounted] = useState(false);
+  
   const router = useRouter();
   const { user, loading: userLoading, isVerified } = useUser();
   const db = useFirestore();
@@ -36,7 +37,6 @@ export default function LoginPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    // توجيه تلقائي إذا كان المستخدم مسجلاً بالفعل وجلسة العمل نشطة
     if (!userLoading && user) {
       if (isVerified) {
         router.replace("/wallet");
@@ -86,7 +86,14 @@ export default function LoginPage() {
     }
   };
 
-  if (!isMounted) return null;
+  if (!isMounted || userLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <Loader2 className="animate-spin text-primary" size={60} />
+        <p className="text-[10px] font-black uppercase tracking-widest gold-text">Securing Connection...</p>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background relative overflow-hidden" dir="rtl">
@@ -96,16 +103,16 @@ export default function LoginPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
           <Card className="luxury-card border-none overflow-hidden bg-card/60 backdrop-blur-3xl shadow-2xl">
             <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-6">
-               <div className="logo-glow-container">
-                 {config?.appearance?.logoUrl ? (
-                   <img 
-                    src={config.appearance.logoUrl} 
-                    className="h-24 w-24 rounded-full object-cover border-4 border-primary/20 shadow-2xl relative z-10" 
-                    alt="Logo" 
-                   />
-                 ) : (
-                   <h2 className="handwritten-logo text-3xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
-                 )}
+               <div className="logo-glow-container relative">
+                  {config?.appearance?.logoUrl ? (
+                    <img 
+                      src={config.appearance.logoUrl} 
+                      className="h-24 w-24 rounded-full object-cover border-4 border-primary/20 shadow-2xl relative z-10" 
+                      alt="Logo" 
+                    />
+                  ) : (
+                    <h2 className="handwritten-logo text-3xl mb-1" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
+                  )}
                </div>
                <Badge variant="outline" className="text-[9px] font-black text-primary border-primary/30 uppercase tracking-[0.4em] px-5 py-1 rounded-full bg-primary/5">
                  Sovereign Identity Portal

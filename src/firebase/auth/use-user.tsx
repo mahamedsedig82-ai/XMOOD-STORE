@@ -8,48 +8,49 @@ import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
 /**
- * 🛡️ Clean Auth State Hook
- * يضمن عزل الجلسات تماماً وتنظيف كافة المستمعات عند تسجيل الخروج.
+ * 🛡️ Robust Auth State Hook
+ * يضمن عزل الجلسات تماماً وتنظيف كافة المستمعات عند تسجيل الخروج لمنع تسرب الذاكرة.
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // مرجع لتتبع مستمع البروفايل لضمان تنظيفه
   const unsubscribeProfileRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
-    if (!auth) return;
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
 
-    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      // 1. تنظيف أي مستمع قديم فوراً عند تغيير حالة المستخدم
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      // 1. تنظيف أي مستمع قديم فوراً
       if (unsubscribeProfileRef.current) {
         unsubscribeProfileRef.current();
         unsubscribeProfileRef.current = null;
       }
 
       if (!firebaseUser) {
-        // 2. مسح الحالة تماماً عند الخروج (Isolation)
         setUser(null);
         setProfile(null);
         setLoading(false);
       } else {
-        // 3. تحديث المستخدم والبدء في جلب البروفايل الطازج
         setUser(firebaseUser);
         
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         
+        // 2. بدء مستمع البروفايل مع معالجة الأخطاء
         unsubscribeProfileRef.current = onSnapshot(userDocRef, (snapshot) => {
           if (snapshot.exists()) {
             setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
             setLoading(false);
           } else {
-            // مزامنة أولية إذا كان الحساب جديداً
-            syncUserProfile(firebaseUser).catch(() => setLoading(false));
+            // مزامنة أولية للحسابات الجديدة
+            syncUserProfile(firebaseUser).finally(() => setLoading(false));
           }
         }, (err) => {
-          console.error("[AUTH_GUARD] Profile Access Denied", err);
+          console.error("[AUTH_GUARD] Profile Access Restricted:", err);
           setLoading(false);
         });
       }

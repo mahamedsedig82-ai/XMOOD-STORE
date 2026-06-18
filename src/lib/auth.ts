@@ -13,7 +13,6 @@ import { auth, firestore as db } from "@/firebase";
 
 /**
  * 🛡️ Profile Sync Service
- * يضمن مزامنة حالة المستخدم بين Auth و Firestore بدقة.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -48,19 +47,22 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 
 /**
  * 🛡️ Clean Logout Sequence
- * تنفيذ تسلسل الخروج النظيف لضمان عزل الجلسة.
+ * تنفيذ تسلسل الخروج النظيف لضمان عزل الجلسة تماماً.
  */
 export const logout = async () => {
   if (!auth) return;
   try {
-    // 1. تسجيل الخروج من Firebase سيتكفل به الـ useUser Hook لمسح الحالة
+    // 1. مسح البيانات المحلية والاشتراكات في المتصفح أولاً
+    if (typeof window !== 'undefined') {
+      sessionStorage.clear();
+      // يمكن إضافة localStorage.removeItem إذا كان هناك بيانات جلسة محددة
+    }
+    
+    // 2. تسجيل الخروج من Firebase
     await signOut(auth);
     
-    // 2. مسح أي بيانات كاش محلية يدوية إن وجدت
-    if (typeof window !== 'undefined') {
-      // لا نمسح السلة (Cart) بل فقط بيانات الجلسة الحساسة
-      sessionStorage.clear();
-    }
+    // 3. إعادة تحميل الصفحة لضمان تصفير حالة React تماماً
+    window.location.href = '/login';
   } catch (error) {
     console.error("[AUTH_LOGOUT] Error:", error);
     throw error;

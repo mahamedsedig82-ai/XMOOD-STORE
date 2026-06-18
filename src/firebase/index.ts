@@ -1,7 +1,7 @@
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
+import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
@@ -20,14 +20,11 @@ if (getApps().length > 0) {
 }
 
 // 🔐 تهيئة Firestore مرة واحدة فقط بضبط مستقر للإنتاج
-if (!firestore!) {
-  try {
-    firestore = getFirestore(app);
-  } catch (e) {
-    firestore = initializeFirestore(app, {
-      experimentalForceLongPolling: true,
-    });
-  }
+try {
+  firestore = getFirestore(app);
+} catch (e) {
+  console.warn("Firestore already initialized or error occurred:", e);
+  firestore = getFirestore(app);
 }
 
 auth = getAuth(app);

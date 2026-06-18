@@ -11,8 +11,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * 🛡️ Production-Safe Document Hook
- * يراقب الوثائق بصمت مع ضمان التنظيف الكامل عند الخروج.
+ * 🛡️ Safety-Enhanced Document Hook
  */
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
