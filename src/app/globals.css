@@ -54,9 +54,33 @@
   body { @apply bg-background text-foreground antialiased font-body transition-colors duration-500; }
 }
 
-/* 🛡️ ULTRA-VISIBLE LUXURY INPUTS - PROMINENT GOLDEN BORDERS */
+/* 🏆 THE LEGENDARY SIGNATURE LOGO */
+.handwritten-logo {
+  @apply font-headline text-foreground select-none cursor-default inline-block py-2 relative;
+  background: linear-gradient(135deg, #8b6e00 0%, #d4af37 40%, #f9d976 50%, #d4af37 60%, #8b6e00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(212, 175, 55, 0.3));
+  letter-spacing: -0.02em;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.handwritten-logo span {
+  @apply font-handwriting;
+  -webkit-text-fill-color: hsl(var(--primary));
+  font-size: 1.25em;
+  margin-right: -4px;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4));
+}
+
+.handwritten-logo:hover {
+  transform: scale(1.02);
+  filter: drop-shadow(0 4px 15px rgba(212, 175, 55, 0.5));
+}
+
+/* 🛡️ ULTRA-VISIBLE LUXURY INPUTS */
 input, textarea, select {
-  @apply border-2 border-primary/60 bg-white dark:bg-zinc-950 px-6 py-4 rounded-[1.5rem] focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold shadow-xl text-right !important;
+  @apply border-2 border-primary/40 bg-white dark:bg-zinc-950 px-6 py-4 rounded-[1.5rem] focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold shadow-xl text-right !important;
 }
 
 .luxury-card {
@@ -69,22 +93,6 @@ input, textarea, select {
 
 .royal-button {
   @apply bg-primary text-primary-foreground font-black rounded-2xl px-10 py-5 hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-3 shadow-2xl shadow-primary/30 uppercase text-[10px] tracking-widest;
-}
-
-/* ✍️ REFINED SIGNATURE LOGO */
-.handwritten-logo {
-  @apply font-headline text-foreground transition-all duration-500 select-none cursor-default inline-block py-2;
-  background: linear-gradient(135deg, #b8860b 0%, #d4af37 50%, #b8860b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-}
-
-.handwritten-logo span {
-  @apply font-handwriting text-primary;
-  -webkit-text-fill-color: hsl(var(--primary));
-  font-size: 1.2em;
-  margin-right: -2px;
 }
 
 .smooth-scroll {

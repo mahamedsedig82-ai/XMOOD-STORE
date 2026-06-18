@@ -1,7 +1,7 @@
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore, initializeFirestore, persistentLocalCache, _InMemoryCache } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
@@ -16,8 +16,10 @@ if (getApps().length > 0) {
   app = initializeApp(firebaseConfig);
 }
 
-// تحصين Firestore ضد الانهيارات المتكررة وتهيئة الاتصال المستقر
-// experimentalForceLongPolling يضمن الاتصال في البيئات المقيدة
+/**
+ * تحصين Firestore ضد الانهيارات المتكررة وتهيئة الاتصال المستقر.
+ * experimentalForceLongPolling يضمن الاتصال في البيئات المقيدة والشبكات الضعيفة.
+ */
 firestore = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 });

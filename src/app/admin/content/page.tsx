@@ -121,7 +121,7 @@ export default function AdminContentManager() {
           <h1 className="text-4xl md:text-5xl font-headline font-black gold-text">مركز التحكم بالهوية والمحتوى</h1>
           <p className="text-muted-foreground mt-3 font-bold uppercase tracking-widest text-[10px]">Universal Identity & Content Controller</p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg w-full md:w-auto">
+        <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-16 text-lg w-full md:w-auto shadow-primary/20">
           {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ التغييرات الشاملة</>}
         </Button>
       </header>
@@ -140,13 +140,13 @@ export default function AdminContentManager() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                  <div className="space-y-8">
                     <div className="space-y-4">
-                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو الموقع (حواف دائرية ناعمة)</Label>
+                       <Label className="text-[10px] font-black uppercase text-muted-foreground pr-4">لوقو الموقع (حواف ناعمة)</Label>
                        <div 
                          onClick={() => fileInputRef.current?.click()}
                          className="h-48 bg-muted/40 border-2 border-dashed border-primary/20 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-all overflow-hidden relative group shadow-inner"
                        >
                           {form.appearance.logoUrl ? (
-                            <img src={form.appearance.logoUrl} className="h-full w-full object-contain p-6" alt="Logo Preview" />
+                            <img src={form.appearance.logoUrl} className="h-full w-full object-contain p-6" style={{ borderRadius: '2rem' }} alt="Logo Preview" />
                           ) : (
                             <div className="text-center space-y-3">
                                <Upload className="text-primary mx-auto" size={36} />
@@ -169,7 +169,7 @@ export default function AdminContentManager() {
                     <div className="p-12 bg-card rounded-[2.5rem] shadow-2xl border flex flex-col items-center gap-6 min-w-[280px]">
                        <div className="h-20 w-auto flex items-center justify-center">
                           {form.appearance.logoUrl ? (
-                            <img src={form.appearance.logoUrl} className="h-full w-auto object-contain rounded-[1.5rem]" alt="" />
+                            <img src={form.appearance.logoUrl} className="h-full w-auto object-contain" style={{ borderRadius: '1.5rem' }} alt="" />
                           ) : (
                             <span className="handwritten-logo text-4xl">XMOOD <span>Store</span></span>
                           )}

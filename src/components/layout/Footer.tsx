@@ -18,11 +18,11 @@ export function Footer() {
         <div className="mb-10 flex flex-col items-center group">
           <Link href="/" className="flex flex-col items-center">
             {config?.appearance?.logoUrl ? (
-              <img src={config.appearance.logoUrl} className="h-16 md:h-20 w-auto object-contain mb-4" alt="Logo" />
+              <img src={config.appearance.logoUrl} className="h-16 md:h-24 w-auto object-contain mb-4" style={{ borderRadius: '2rem' }} alt="Logo" />
             ) : (
               <>
-                <span className="handwritten-logo text-6xl md:text-8xl mb-2">Xmood <span>Store</span></span>
-                <span className="text-[10px] md:text-xs font-black tracking-[1em] uppercase text-primary opacity-60 group-hover:opacity-100 transition-opacity">Sovereign Marketplace</span>
+                <span className="handwritten-logo text-6xl md:text-9xl mb-2">XMOOD <span>Store</span></span>
+                <span className="text-[10px] md:text-xs font-black tracking-[1em] uppercase text-primary opacity-60 group-hover:opacity-100 transition-opacity">Legendary Marketplace</span>
               </>
             )}
           </Link>
@@ -32,7 +32,7 @@ export function Footer() {
           {config?.footer?.aboutText || "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية المتكاملة عبر منصة XMOOD المتطورة."}
         </p>
         
-        {config?.footer?.showAddress && config?.footer?.address && (
+        {config?.footer?.address && (
            <div className="flex items-center justify-center gap-2 mb-12 text-muted-foreground font-bold text-xs uppercase tracking-widest">
               <MapPin size={16} className="text-primary" />
               <span>{config.footer.address}</span>
@@ -52,30 +52,28 @@ export function Footer() {
            )}
         </div>
 
-        {config?.footer?.showSocial !== false && (
-           <div className="flex justify-center gap-6 mb-16">
-              {config?.contact?.facebook && (
-                <a href={config.contact.facebook} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-blue-600 hover:scale-110 transition-all border shadow-sm">
-                  <Facebook size={24} />
-                </a>
-              )}
-              {config?.contact?.instagram && (
-                <a href={config.contact.instagram} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-pink-600 hover:scale-110 transition-all border shadow-sm">
-                  <Instagram size={24} />
-                </a>
-              )}
-              {config?.contact?.youtube && (
-                <a href={config.contact.youtube} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-red-600 hover:scale-110 transition-all border shadow-sm">
-                  <Youtube size={24} />
-                </a>
-              )}
-              {config?.contact?.telegram && (
-                <a href={`https://t.me/${config.contact.telegram}`} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-blue-400 hover:scale-110 transition-all border shadow-sm">
-                  <Send size={24} />
-                </a>
-              )}
-           </div>
-        )}
+        <div className="flex justify-center gap-6 mb-16">
+          {config?.contact?.facebook && (
+            <a href={config.contact.facebook} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-blue-600 hover:scale-110 transition-all border shadow-sm">
+              <Facebook size={24} />
+            </a>
+          )}
+          {config?.contact?.instagram && (
+            <a href={config.contact.instagram} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-pink-600 hover:scale-110 transition-all border shadow-sm">
+              <Instagram size={24} />
+            </a>
+          )}
+          {config?.contact?.youtube && (
+            <a href={config.contact.youtube} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-red-600 hover:scale-110 transition-all border shadow-sm">
+              <Youtube size={24} />
+            </a>
+          )}
+          {config?.contact?.telegram && (
+            <a href={`https://t.me/${config.contact.telegram}`} target="_blank" className="w-12 h-12 bg-card rounded-xl flex items-center justify-center text-muted-foreground hover:text-blue-400 hover:scale-110 transition-all border shadow-sm">
+              <Send size={24} />
+            </a>
+          )}
+        </div>
 
         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] opacity-40">
           {config?.footer?.copyright || "© 2025 XMOOD SOVEREIGN. ALL RIGHTS RESERVED."}
