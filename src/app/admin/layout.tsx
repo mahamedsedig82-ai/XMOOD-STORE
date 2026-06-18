@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
@@ -104,7 +105,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </SidebarContent>
           <div className="p-6 border-t bg-muted/10 space-y-3">
             <Button asChild variant="outline" className="w-full h-11 rounded-xl text-[9px] font-black uppercase gap-3 border-primary/20">
-              <Link href="/"><ArrowRight size={14} className="ml-1" /> العودة للمتجر</Link>
+              <Link href="/"><ArrowRight size={14} /> العودة للمتجر</Link>
             </Button>
             <Button variant="ghost" onClick={() => handleSignOut()} className="w-full h-11 rounded-xl text-red-500 font-black text-[9px] uppercase gap-3 hover:bg-red-50">
               <LogOut size={14} /> تسجيل خروج
