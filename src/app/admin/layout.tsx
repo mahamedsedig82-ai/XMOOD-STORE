@@ -2,13 +2,13 @@
 
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
-  LogOut, ArrowRight, Terminal, BarChart3, ShieldCheck, Package, ClipboardList, Users, Wallet, ShieldAlert, ImageIcon, Zap, Loader2, GitBranch, ShoppingCart, LayoutGrid, Briefcase, Megaphone, Menu
+  LogOut, ArrowRight, Terminal, BarChart3, ShieldCheck, Package, ClipboardList, Users, Wallet, ShieldAlert, ImageIcon, Zap, Loader2, GitBranch, ShoppingCart, LayoutGrid, Briefcase, Megaphone, Menu, X
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { useEffect, useState, useMemo } from "react";
-import { signOut } from "firebase/auth";
+import { logout } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,7 +16,6 @@ import { doc } from "firebase/firestore";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { profile, loading, user, isAdmin } = useUser();
-  const auth = useAuth();
   const db = useFirestore();
   const pathname = usePathname();
   const router = useRouter();
@@ -77,20 +76,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!user || !isAdmin || !profile) return null;
 
-  async function handleSignOut() {
-    if (auth) {
-      await signOut(auth);
-      router.replace("/");
-    }
-  }
-
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
         {/* Desktop Sidebar */}
         <Sidebar className="border-l border-border bg-card/80 backdrop-blur-3xl hidden lg:flex shrink-0 shadow-2xl" side="right">
           <SidebarHeader className="p-10 border-b text-center flex flex-col items-center gap-6 bg-muted/10">
-            <Link href="/" className="flex flex-col items-center group transition-transform hover:scale-105">
+            <Link href="/" className="flex flex-col items-center transition-transform hover:scale-105">
                {config?.appearance?.logoUrl ? (
                  <img src={config.appearance.logoUrl} className="h-20 w-20 rounded-full object-cover shadow-xl border-4 border-primary/20" alt="Logo" />
                ) : (
@@ -119,7 +111,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Button asChild variant="outline" className="w-full h-12 rounded-2xl text-[10px] font-black uppercase gap-4 border-primary/30 hover:bg-primary hover:text-black transition-all shadow-sm">
               <Link href="/"><ArrowRight size={16} className="rotate-0" /> العودة للمتجر</Link>
             </Button>
-            <Button variant="ghost" onClick={handleSignOut} className="w-full h-12 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-4 hover:bg-red-500 hover:text-white transition-all">
+            <Button variant="ghost" onClick={logout} className="w-full h-12 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-4 hover:bg-red-500 hover:text-white transition-all">
               <LogOut size={16} /> تسجيل الخروج
             </Button>
           </div>
@@ -127,14 +119,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background overflow-hidden">
-          <header className="h-20 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-2xl z-[60] shrink-0">
+          <header className="h-20 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-2xl z-[150] shrink-0">
              <div className="flex items-center gap-5">
                 <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20 shadow-inner">
                    <Terminal size={22} />
                 </div>
                 <div className="flex flex-col text-right">
                    <span className="text-sm font-black uppercase tracking-widest gold-text">وحدة التحكم السيادية</span>
-                   <span className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.3em] mt-0.5 opacity-60">Sovereign Core OS 9.0</span>
+                   <span className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.3em] mt-0.5 opacity-60">Sovereign Core OS 10.0</span>
                 </div>
              </div>
 
@@ -154,38 +146,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          {/* Mobile Admin Menu Overlay */}
+          {/* Mobile Admin Menu Overlay - Rebuilt for Clean Layout */}
           <AnimatePresence>
             {isMobileNavOpen && (
                <>
                  <motion.div 
                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                    onClick={() => setIsMobileNavOpen(false)}
-                   className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md lg:hidden"
+                   className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md lg:hidden"
                  />
                  <motion.div 
                    initial={{ y: "-100%" }} animate={{ y: 0 }} exit={{ y: "-100%" }}
                    transition={{ type: "spring", damping: 30, stiffness: 200 }}
-                   className="fixed top-20 right-0 z-[110] w-full max-h-[80vh] bg-background border-b-4 border-primary/30 lg:hidden overflow-y-auto p-8 shadow-2xl"
+                   className="fixed top-20 right-0 z-[210] w-full h-[calc(100vh-80px)] bg-background border-b-4 border-primary/30 lg:hidden flex flex-col shadow-2xl overflow-hidden"
                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       {visibleSections.map((item) => (
-                          <Link 
-                            key={item.href} 
-                            href={item.href} 
-                            onClick={() => setIsMobileNavOpen(false)}
-                            className={`flex items-center gap-5 p-5 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all ${pathname === item.href ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'bg-muted/40 text-foreground/70'}`}
-                          >
-                             <item.icon size={20} className={pathname === item.href ? 'text-black' : 'text-primary'} />
-                             {item.label}
-                          </Link>
-                       ))}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                       <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] pr-4 mb-4 opacity-50">الأدوات الإدارية</p>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {visibleSections.map((item) => (
+                             <Link 
+                               key={item.href} 
+                               href={item.href} 
+                               onClick={() => setIsMobileNavOpen(false)}
+                               className={`flex items-center gap-4 p-4 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${pathname === item.href ? 'bg-primary text-black shadow-lg' : 'bg-muted/40 text-foreground/70'}`}
+                             >
+                                <item.icon size={18} className={pathname === item.href ? 'text-black' : 'text-primary'} />
+                                {item.label}
+                             </Link>
+                          ))}
+                       </div>
                     </div>
-                    <div className="mt-8 pt-8 border-t flex flex-col gap-4">
-                       <Button asChild variant="outline" className="w-full h-14 rounded-2xl font-black text-[10px] uppercase gap-4 border-primary/30">
+                    <div className="flex-none p-8 border-t bg-muted/20 flex flex-col gap-4">
+                       <Button asChild variant="outline" className="w-full h-14 rounded-xl font-black text-[10px] uppercase gap-4 border-primary/30">
                           <Link href="/"><ArrowRight size={18} /> العودة للمتجر</Link>
                        </Button>
-                       <Button variant="ghost" onClick={handleSignOut} className="w-full h-14 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-4 bg-red-500/5">
+                       <Button variant="ghost" onClick={() => { logout(); setIsMobileNavOpen(false); }} className="w-full h-14 rounded-xl text-red-500 font-black text-[10px] uppercase gap-4 bg-red-500/5">
                           <LogOut size={18} /> تسجيل الخروج الإداري
                        </Button>
                     </div>

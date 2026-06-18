@@ -13,7 +13,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * 🛡️ Safety-Enhanced Document Hook 3.0
+ * 🛡️ Safety-Enhanced Document Hook 4.0
  */
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
@@ -28,8 +28,7 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
       unsubscribeRef.current = null;
     }
 
-    // 🛡️ Guard: منع الاستعلام بدون مستخدم
-    if (!docRef || !auth.currentUser) {
+    if (!docRef) {
       setLoading(false);
       setData(null);
       return;
@@ -42,17 +41,16 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
         setLoading(false);
       }, 
       (serverError) => {
-        if (!auth.currentUser) {
-          setLoading(false);
-          return;
+        if (serverError.code === 'permission-denied') {
+          console.warn(`[FIRESTORE_GUARD] Access denied to doc: ${docRef.path}`);
+        } else {
+          const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'get',
+          } satisfies SecurityRuleContext);
+          errorEmitter.emit('permission-error', permissionError);
         }
         
-        const permissionError = new FirestorePermissionError({
-          path: docRef.path,
-          operation: 'get',
-        } satisfies SecurityRuleContext);
-
-        errorEmitter.emit('permission-error', permissionError);
         setError(serverError);
         setLoading(false);
       }

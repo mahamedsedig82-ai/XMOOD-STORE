@@ -13,8 +13,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * 🛡️ Safety-Enhanced Collection Hook 3.0
- * تم تزويده بحواجز أمان تمنع تشغيل المستمعات بدون مستخدم نشط.
+ * 🛡️ Safety-Enhanced Collection Hook 4.0
+ * تم السماح بالاستماع للبيانات العامة حتى بدون مستخدم مسجل.
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
@@ -24,14 +24,13 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
-    // 1. تنظيف استباقي لأي مستمع نشط
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
     }
 
-    // 🛡️ Guard: لا يسمح بتشغيل المستمع إذا لم يكن هناك مستخدم مسجل (إصلاح b815/ca9)
-    if (!query || !auth.currentUser) {
+    // 🛡️ Guard: فقط نمنع إذا لم يوجد استعلام أصلاً
+    if (!query) {
       setLoading(false);
       setData([]);
       return;
@@ -49,19 +48,19 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
           setLoading(false);
         }, 
         (serverError) => {
-          // 🛡️ إذا فقد المستخدم هويته أثناء الاستماع، نتوقف صمتاً
-          if (!auth.currentUser) {
-            setLoading(false);
-            return;
-          }
-
+          // 🛡️ معالجة هادئة لأخطاء الصلاحيات (خاصة عند Logout)
           const path = (query as any)._query?.path?.toString() || 'collection';
-          const permissionError = new FirestorePermissionError({
-            path,
-            operation: 'list',
-          } satisfies SecurityRuleContext);
           
-          errorEmitter.emit('permission-error', permissionError);
+          if (serverError.code === 'permission-denied') {
+            console.warn(`[FIRESTORE_GUARD] Access denied to path: ${path}`);
+          } else {
+             const permissionError = new FirestorePermissionError({
+              path,
+              operation: 'list',
+            } satisfies SecurityRuleContext);
+            errorEmitter.emit('permission-error', permissionError);
+          }
+          
           setError(serverError);
           setLoading(false);
         }
@@ -76,10 +75,9 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
-        unsubscribeRef.current = null;
       }
     };
-  }, [query, auth.currentUser?.uid]); // الربط بـ UID لضمان التحديث عند تغير الجلسة
+  }, [query, auth.currentUser?.uid]); 
 
   return { data, loading, error };
 }
