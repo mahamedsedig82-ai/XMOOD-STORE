@@ -32,62 +32,55 @@ export interface UserProfile {
   }
 }
 
-export interface ShippingMethod {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl?: string;
-  extraFee: number;
-  deliveryTime: string;
-  badge?: string;
-  icon?: string;
-  color?: string;
-  isActive: boolean;
-}
-
-export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  imageUrl?: string;
-  category?: string;
-}
-
-export interface Order {
-  id: string;
-  userId: string;
-  userEmail: string;
-  userName: string;
-  items: CartItem[];
-  totalAmount: number;
-  subtotal: number;
-  shippingFee: number;
-  shippingMethodName: string;
-  deliveryEmail?: string;
-  notes?: string;
-  status: 'completed' | 'failed' | 'pending_stock' | 'cancelled' | 'refunded';
-  deliveryStatus: 'delivered' | 'preparing' | 'failed';
-  shippingCodeSent?: string;
-  balanceBefore?: number;
-  balanceAfter?: number;
-  createdAt: string;
-  updatedAt?: string;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  stock: number;
-  minStock: number;
-  imageUrl: string;
-  description: string;
-  highlights: string;
-  shippingCodes: string;
-  status: 'active' | 'out_of_stock' | 'low_stock' | 'paused';
-  isVisible: boolean;
-  createdAt: string;
-  updatedAt: string;
+export interface SiteSettings {
+  appearance?: {
+    primaryColor?: string;
+    logoUrl?: string;
+    faviconUrl?: string;
+    logoRounded?: boolean;
+  };
+  siteInfo?: {
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    copyright?: string;
+    usdRate?: number;
+  };
+  navLabels?: {
+    home: string;
+    store: string;
+    services: string;
+    gallery: string;
+    agents: string;
+  };
+  cartLabels?: {
+    cartTitle: string;
+    emptyCartMsg: string;
+    checkoutTitle: string;
+    successMsg: string;
+  };
+  gallerySettings?: {
+    title: string;
+    subtitle: string;
+    buttonText: string;
+  };
+  agentSettings?: {
+    title: string;
+    subtitle: string;
+    badge: string;
+  };
+  contact?: {
+    whatsapp: string;
+    email: string;
+    telegram: string;
+    facebook: string;
+    instagram: string;
+    youtube: string;
+  };
+  footer?: {
+    isActive: boolean;
+    aboutText: string;
+    address: string;
+    copyright: string;
+  };
 }

@@ -4,7 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Wallet, ShieldCheck, History, Copy, Loader2, Zap, 
-  Smartphone, Settings, Mail, ShieldAlert, ArrowRight
+  Smartphone, Settings, Mail, ShieldAlert, ArrowRight, UserCircle, Edit
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,7 +23,10 @@ export default function ProfessionalWalletPage() {
   const { profile, user, loading: userLoading, isVerified } = useUser();
   const db = useFirestore();
   
-  const settingsRef = useMemoFirebase(() => doc(db, "settings", "global"), [db]);
+  const settingsRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return doc(db, "settings", "global");
+  }, [db]);
   const { data: config } = useDoc(settingsRef);
 
   const transactionsQuery = useMemoFirebase(() => {
@@ -61,14 +64,19 @@ export default function ProfessionalWalletPage() {
   return (
     <main className="min-h-screen bg-background text-foreground pb-20" dir="rtl">
       <Navbar />
-      <div className="container mx-auto px-4 md:px-6 py-32 max-w-5xl animate-fade-in">
+      <div className="container mx-auto px-4 md:px-6 py-32 max-w-5xl animate-fade-in text-right">
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <Card className="luxury-card border-none p-8 lg:col-span-2 bg-white dark:bg-zinc-900 flex flex-col md:flex-row items-center gap-8 shadow-xl">
-            <Avatar className="w-24 h-24 md:w-32 md:h-32 rounded-[2rem] border-4 border-primary/10 shadow-xl">
-                <AvatarImage src={profile?.photoURL} className="object-cover" />
-                <AvatarFallback className="bg-muted text-primary text-2xl font-bold">{profile?.displayName?.charAt(0)}</AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+               <Avatar className="w-24 h-24 md:w-32 md:h-32 rounded-[2.5rem] border-4 border-primary/10 shadow-xl overflow-hidden">
+                   <AvatarImage src={profile?.photoURL} className="object-cover" />
+                   <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">{profile?.displayName?.charAt(0)}</AvatarFallback>
+               </Avatar>
+               <Link href="/profile/settings" className="absolute -bottom-2 -right-2 bg-primary text-black p-2.5 rounded-xl shadow-xl hover:scale-110 transition-all border-4 border-background">
+                  <Edit size={16} />
+               </Link>
+            </div>
             <div className="flex-1 text-center md:text-right">
                 <h1 className="text-3xl font-black mb-2">{config?.walletPage?.title || "المحفظة السيادية"}</h1>
                 <Badge className="bg-primary/10 text-primary border-none px-4 py-1 font-black uppercase text-[10px]">{profile?.label || "عضو موثق"}</Badge>
@@ -77,20 +85,21 @@ export default function ProfessionalWalletPage() {
                    <span className="flex items-center gap-2"><Smartphone size={14} className="text-primary" /> {profile?.phoneNumber || "---"}</span>
                 </div>
             </div>
-            <Button asChild className="royal-button h-14 px-10 text-xs shadow-primary/20"><Link href="/wallet/transfer">تحويل رصيد</Link></Button>
+            <Button asChild className="royal-button h-14 px-10 text-[10px] shadow-primary/20"><Link href="/wallet/transfer">تحويل فوري</Link></Button>
           </Card>
 
-          <Card className="luxury-card border-none p-8 bg-zinc-950 text-white flex flex-col justify-center text-center shadow-2xl border-primary/20">
+          <Card className="luxury-card border-none p-8 bg-zinc-950 text-white flex flex-col justify-center text-center shadow-2xl border-primary/20 relative">
+            <div className="absolute top-4 left-4 opacity-10"><Wallet size={48} /></div>
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-4">الرصيد المتاح</p>
             <div className="text-4xl md:text-5xl font-black mb-2 tracking-tighter text-primary">{formatUSD(profile?.walletBalance || 0)}</div>
-            <div className="text-[10px] font-black text-zinc-600 opacity-60 uppercase">{formatSDG(profile?.walletBalance || 0)}</div>
+            <div className="text-[10px] font-black text-zinc-600 opacity-60 uppercase">{formatSDG(profile?.walletBalance || 0, config?.siteInfo?.usdRate)}</div>
           </Card>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
            <Card className="luxury-card p-10 border-none bg-card/60 backdrop-blur-xl shadow-xl">
               <h3 className="text-xl font-black mb-4 flex items-center gap-3"><Zap size={20} className="text-primary animate-pulse" /> {config?.walletPage?.uidTitle || "بروتوكول الإيداع"}</h3>
-              <p className="text-sm text-zinc-500 mb-8 leading-relaxed">{config?.walletPage?.uidDesc || "استخدم معرفك (UID) الموحد للشحن عبر الوكلاء المعتمدين."}</p>
+              <p className="text-sm text-zinc-500 mb-8 leading-relaxed font-medium">{config?.walletPage?.uidDesc || "استخدم معرفك (UID) الموحد للشحن عبر الوكلاء المعتمدين."}</p>
               <div className="bg-muted/40 p-6 rounded-2xl border-2 border-dashed border-primary/30 flex items-center justify-between cursor-pointer group" onClick={() => copyToClipboard(user?.uid || "")}>
                  <span className="font-mono font-black text-sm md:text-lg truncate">{user?.uid}</span>
                  <Copy size={20} className="text-zinc-400 group-hover:text-primary transition-colors" />
@@ -98,7 +107,7 @@ export default function ProfessionalWalletPage() {
            </Card>
 
            <Card className="luxury-card p-10 flex items-center gap-8 border-none bg-primary/5 shadow-xl">
-              <div className="w-24 h-24 bg-background rounded-[2.5rem] flex items-center justify-center border-4 border-primary/20 shadow-inner">
+              <div className="w-24 h-24 bg-card rounded-[2.5rem] flex items-center justify-center border-4 border-primary/10 shadow-inner">
                  <ShieldCheck className="w-12 h-12 text-green-500" />
               </div>
               <div>
@@ -109,8 +118,9 @@ export default function ProfessionalWalletPage() {
         </div>
 
         <Card className="luxury-card border-none overflow-hidden bg-card/60 shadow-2xl">
-          <CardHeader className="p-8 border-b flex flex-row items-center justify-between bg-muted/10">
-            <CardTitle className="text-xl font-black flex items-center gap-3"><History size={24} className="text-primary" /> {config?.walletPage?.ledgerTitle || "سجل التدفقات المالية"}</CardTitle>
+          <CardHeader className="p-8 border-b flex flex-row-reverse items-center justify-between bg-muted/10">
+            <CardTitle className="text-xl font-black flex flex-row-reverse items-center gap-3"><History size={24} className="text-primary" /> {config?.walletPage?.ledgerTitle || "سجل التدفقات المالية"}</CardTitle>
+            <Badge variant="outline" className="text-[8px] font-black uppercase border-primary/20 text-primary">Master Ledger</Badge>
           </CardHeader>
           <CardContent className="p-0">
             <ScrollArea className="max-h-[600px] responsive-table">
@@ -131,7 +141,7 @@ export default function ProfessionalWalletPage() {
                   ) : transactions?.map((t: any) => (
                     <TableRow key={t.id} className="hover:bg-primary/5 transition-all">
                       <TableCell className="py-6 pr-10 font-bold text-sm">{t.description}</TableCell>
-                      <TableCell><Badge variant="outline" className="text-[8px] font-black uppercase">{t.type}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="text-[8px] font-black uppercase rounded-lg border-primary/10">{t.type}</Badge></TableCell>
                       <TableCell className={`font-black text-xl tracking-tighter ${t.type === 'deposit' || t.type === 'transfer_receive' ? 'text-green-500' : 'text-red-500'}`}>{formatUSD(t.amount)}</TableCell>
                       <TableCell className="text-center text-[10px] font-black text-muted-foreground uppercase">{new Date(t.createdAt).toLocaleDateString('ar-EG')}</TableCell>
                     </TableRow>

@@ -12,13 +12,13 @@ import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/e
 
 /**
  * 🛡️ خطاف سيادي محصن ضد الـ Assertion والـ Memory Leaks.
+ * تم تحسينه ليناسب Next.js 15 ومنع خطأ INTERNAL ASSERTION FAILED.
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   
-  // تتبع المرجع لمنع التحديث بعد الـ Unmount
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -48,6 +48,11 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
           operation: 'list',
         } satisfies SecurityRuleContext);
 
+        // تسجيل صامت في الكونسول للمطورين فقط
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('🛡️ Firestore Access Restricted:', path);
+        }
+        
         errorEmitter.emit('permission-error', permissionError);
         setError(serverError);
         setLoading(false);
