@@ -72,11 +72,11 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
           {config?.appearance?.logoUrl ? (
-            <img src={config.appearance.logoUrl} className="h-10 md:h-12 w-auto object-contain transition-transform group-hover:scale-105" style={{ borderRadius: '1rem' }} alt="Logo" />
+            <img src={config.appearance.logoUrl} className="h-10 md:h-12 w-auto object-contain transition-transform group-hover:scale-105 rounded-xl border border-primary/10 shadow-sm" alt="Logo" />
           ) : (
             <div className="flex flex-col items-center">
-              <span className="handwritten-logo text-3xl md:text-5xl leading-none">XMOOD <span>Store</span></span>
-              <span className="text-[7px] font-black tracking-[0.4em] uppercase text-primary -mt-1 opacity-80 group-hover:opacity-100 transition-opacity">Elite Marketplace</span>
+              <span className="handwritten-logo text-3xl md:text-4xl leading-none">XMOOD <span>Store</span></span>
+              <span className="text-[7px] font-black tracking-[0.3em] uppercase text-primary -mt-0.5 opacity-60">Elite Marketplace</span>
             </div>
           )}
         </Link>
@@ -97,7 +97,7 @@ export function Navbar() {
           <Link href="/cart" className="relative p-3 bg-muted/50 hover:bg-primary/10 rounded-xl transition-all border border-transparent hover:border-primary/20">
             <ShoppingCart size={18} />
             {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-black text-[10px] font-black rounded-full flex items-center justify-center shadow-lg">
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-black text-[10px] font-black rounded-full flex items-center justify-center shadow-lg animate-pulse">
                 {itemCount}
               </span>
             )}
@@ -110,21 +110,20 @@ export function Navbar() {
           {user ? (
             <div className="flex items-center gap-3">
                <div className="hidden sm:flex flex-col text-left items-end">
-                  <span className="text-[8px] font-black text-muted-foreground uppercase opacity-60">Balance</span>
                   <p className="text-[11px] font-black text-primary tracking-tighter leading-none">{formatUSD(profile?.walletBalance || 0)}</p>
                </div>
                <Link href="/wallet">
-                 <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-xl rounded-xl transition-transform hover:scale-105 overflow-hidden">
+                 <Avatar className="h-10 w-10 border-2 border-primary/20 shadow-lg rounded-xl transition-transform hover:scale-105 overflow-hidden">
                    <AvatarImage src={profile?.photoURL} className="object-cover" />
-                   <AvatarFallback className="bg-primary/10 text-primary font-black"><User size={20}/></AvatarFallback>
+                   <AvatarFallback className="bg-primary/10 text-primary font-black"><User size={18}/></AvatarFallback>
                  </Avatar>
                </Link>
                {isAdmin && (
                  <Link href="/admin">
-                   <Button variant="ghost" size="icon" className="text-primary h-11 w-11 rounded-xl bg-primary/5 border border-primary/10"><LayoutDashboard size={20} /></Button>
+                   <Button variant="ghost" size="icon" className="text-primary h-10 w-10 rounded-xl bg-primary/5 border border-primary/10"><LayoutDashboard size={18} /></Button>
                  </Link>
                )}
-               <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-500 h-11 w-11 rounded-xl bg-red-500/5 border border-red-500/10"><LogOut size={20} /></Button>
+               <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-500 h-10 w-10 rounded-xl bg-red-500/5 border border-red-500/10"><LogOut size={18} /></Button>
             </div>
           ) : (
             <Button asChild className="royal-button h-11 px-8">

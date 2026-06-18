@@ -85,7 +85,7 @@ export default function AdminContentManager() {
       try {
         const b64 = await compressImage(file);
         setForm(prev => ({ ...prev, appearance: { ...prev.appearance, logoUrl: b64 } }));
-        toast({ title: "تم تجهيز اللوقو بنعومة، يرجى حفظ التغييرات" });
+        toast({ title: "تم تجهيز اللوقو، يرجى حفظ التغييرات" });
       } catch (err) {
         toast({ variant: "destructive", title: "فشل معالجة الصورة" });
       } finally {
@@ -121,13 +121,13 @@ export default function AdminContentManager() {
           <h1 className="text-4xl md:text-5xl font-headline font-black gold-text leading-tight">مركز التحكم بالهوية</h1>
           <p className="text-muted-foreground mt-2 font-bold uppercase tracking-widest text-[10px]">Universal Identity & Content Controller</p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-12 text-lg shadow-primary/20">
+        <Button onClick={handleSave} disabled={isSaving} className="royal-button h-16 px-12 text-lg">
           {isSaving ? <Loader2 className="animate-spin" /> : <><Save size={24} className="ml-3" /> حفظ التغييرات</>}
         </Button>
       </header>
 
       <Tabs defaultValue="visual" className="w-full">
-        <TabsList className="bg-card p-1.5 rounded-2xl h-auto border mb-10 flex flex-wrap gap-2 justify-center shadow-xl">
+        <TabsList className="bg-card p-1.5 rounded-2xl h-auto border mb-10 flex flex-wrap gap-2 justify-center shadow-lg">
           <TabsTrigger value="visual" className="flex-1 min-w-[140px] rounded-xl font-black text-[9px] uppercase tracking-widest py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">الهوية واللوقو</TabsTrigger>
           <TabsTrigger value="site" className="flex-1 min-w-[140px] rounded-xl font-black text-[9px] uppercase tracking-widest py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">بيانات الموقع</TabsTrigger>
           <TabsTrigger value="sections" className="flex-1 min-w-[140px] rounded-xl font-black text-[9px] uppercase tracking-widest py-4 data-[state=active]:bg-primary data-[state=active]:text-black transition-all">نصوص الأقسام</TabsTrigger>
@@ -142,14 +142,14 @@ export default function AdminContentManager() {
                        <Label className="text-[10px] font-black uppercase text-primary pr-4 tracking-widest">لوقو الموقع الرسمي</Label>
                        <div 
                          onClick={() => fileInputRef.current?.click()}
-                         className="h-64 bg-muted/40 border-2 border-dashed border-primary/20 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-all overflow-hidden relative group shadow-inner"
+                         className="h-64 bg-muted/40 border-2 border-dashed border-primary/20 rounded-[2.5rem] flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-all overflow-hidden relative"
                        >
                           {form.appearance.logoUrl ? (
-                            <img src={form.appearance.logoUrl} className="h-full w-full object-contain p-8" style={{ borderRadius: '2rem' }} alt="Logo Preview" />
+                            <img src={form.appearance.logoUrl} className="h-full w-full object-contain p-8 rounded-[2rem]" alt="Logo Preview" />
                           ) : (
-                            <div className="text-center space-y-4">
-                               <Upload className="text-primary mx-auto" size={48} />
-                               <p className="text-[10px] font-black uppercase text-muted-foreground opacity-50 tracking-widest">رفع صورة من الاستوديو</p>
+                            <div className="text-center space-y-4 opacity-40">
+                               <Upload className="mx-auto" size={48} />
+                               <p className="text-[10px] font-black uppercase tracking-widest">رفع صورة من الاستوديو</p>
                             </div>
                           )}
                           <input type="file" ref={fileInputRef} onChange={handleLogoUpload} className="hidden" accept="image/*" />
@@ -158,7 +158,7 @@ export default function AdminContentManager() {
                     <div className="space-y-3">
                        <Label className="text-[10px] font-black uppercase text-primary pr-4 tracking-widest">لون الهوية الأساسي</Label>
                        <div className="flex gap-4">
-                          <Input type="color" value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-16 w-24 bg-muted/40 border-none rounded-2xl cursor-pointer p-1" />
+                          <Input type="color" value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-16 w-24 bg-muted/40 border-none rounded-2xl cursor-pointer p-1 shadow-inner" />
                           <Input value={form.appearance.primaryColor} onChange={e => setForm({...form, appearance: {...form.appearance, primaryColor: e.target.value}})} className="h-16 flex-1 bg-muted/40 border-none rounded-2xl text-center font-mono font-black text-xl" />
                        </div>
                     </div>
@@ -168,7 +168,7 @@ export default function AdminContentManager() {
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary opacity-60">معاينة العلامة التجارية</p>
                     <div className="p-10 bg-card rounded-[2rem] border border-primary/10 w-full flex items-center justify-center">
                        {form.appearance.logoUrl ? (
-                         <img src={form.appearance.logoUrl} className="h-16 w-auto object-contain" style={{ borderRadius: '1rem' }} alt="" />
+                         <img src={form.appearance.logoUrl} className="h-16 w-auto object-contain rounded-xl" alt="" />
                        ) : (
                          <span className="handwritten-logo text-4xl">XMOOD <span>Store</span></span>
                        )}
@@ -204,18 +204,18 @@ export default function AdminContentManager() {
 
         <TabsContent value="sections">
            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Card className="luxury-card p-8 space-y-8 bg-primary/5">
+              <Card className="luxury-card p-8 space-y-8 bg-primary/5 border-none">
                  <h3 className="text-2xl font-black flex items-center gap-3 text-primary"><LayoutGrid size={24} /> نصوص المعرض</h3>
-                 <div className="space-y-4">
-                    <div className="space-y-1"><Label className="text-[9px] font-black uppercase opacity-60 pr-3">العنوان</Label><Input value={form.gallerySettings.title} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, title: e.target.value}})} /></div>
-                    <div className="space-y-1"><Label className="text-[9px] font-black uppercase opacity-60 pr-3">الوصف</Label><Textarea value={form.gallerySettings.subtitle} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, subtitle: e.target.value}})} className="min-h-[100px]" /></div>
+                 <div className="space-y-6">
+                    <div className="space-y-1.5"><Label className="text-[9px] font-black uppercase opacity-60 pr-3">العنوان الرئيسي</Label><Input value={form.gallerySettings.title} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, title: e.target.value}})} /></div>
+                    <div className="space-y-1.5"><Label className="text-[9px] font-black uppercase opacity-60 pr-3">الوصف التعريفي</Label><Textarea value={form.gallerySettings.subtitle} onChange={e => setForm({...form, gallerySettings: {...form.gallerySettings, subtitle: e.target.value}})} className="min-h-[100px]" /></div>
                  </div>
               </Card>
-              <Card className="luxury-card p-8 space-y-8 bg-zinc-950/60 text-white">
+              <Card className="luxury-card p-8 space-y-8 bg-zinc-950/60 text-white border-none">
                  <h3 className="text-2xl font-black flex items-center gap-3 gold-text"><ShoppingCart size={24} /> نصوص السلة</h3>
-                 <div className="space-y-4">
-                    <div className="space-y-1"><Label className="text-[9px] font-black uppercase text-primary pr-3">عنوان السلة</Label><Input value={form.cartLabels.cartTitle} onChange={e => setForm({...form, cartLabels: {...form.cartLabels, cartTitle: e.target.value}})} className="bg-white/5 border-primary/20" /></div>
-                    <div className="space-y-1"><Label className="text-[9px] font-black uppercase text-primary pr-3">رسالة النجاح</Label><Input value={form.cartLabels.successMsg} onChange={e => setForm({...form, cartLabels: {...form.cartLabels, successMsg: e.target.value}})} className="bg-white/5 border-primary/20" /></div>
+                 <div className="space-y-6">
+                    <div className="space-y-1.5"><Label className="text-[9px] font-black uppercase text-primary pr-3">عنوان السلة</Label><Input value={form.cartLabels.cartTitle} onChange={e => setForm({...form, cartLabels: {...form.cartLabels, cartTitle: e.target.value}})} className="bg-white/5 border-primary/20" /></div>
+                    <div className="space-y-1.5"><Label className="text-[9px] font-black uppercase text-primary pr-3">رسالة النجاح</Label><Input value={form.cartLabels.successMsg} onChange={e => setForm({...form, cartLabels: {...form.cartLabels, successMsg: e.target.value}})} className="bg-white/5 border-primary/20" /></div>
                  </div>
               </Card>
            </div>
