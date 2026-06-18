@@ -5,36 +5,47 @@ import {
   DocumentReference, 
   onSnapshot, 
   DocumentSnapshot, 
-  DocumentData 
+  DocumentData,
+  Unsubscribe
 } from 'firebase/firestore';
+import { auth } from '../index';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * 🛡️ Safety-Enhanced Document Hook
+ * 🛡️ Safety-Enhanced Document Hook 3.0
  */
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const isMounted = useRef(true);
+  
+  const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
-    isMounted.current = true;
-    if (!docRef) {
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
+    }
+
+    // 🛡️ Guard: منع الاستعلام بدون مستخدم
+    if (!docRef || !auth.currentUser) {
       setLoading(false);
+      setData(null);
       return;
     }
 
     const unsubscribe = onSnapshot(
       docRef, 
       (snapshot: DocumentSnapshot<T>) => {
-        if (!isMounted.current) return;
         setData(snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } as T : null);
         setLoading(false);
       }, 
       (serverError) => {
-        if (!isMounted.current) return;
+        if (!auth.currentUser) {
+          setLoading(false);
+          return;
+        }
         
         const permissionError = new FirestorePermissionError({
           path: docRef.path,
@@ -47,11 +58,14 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
       }
     );
 
+    unsubscribeRef.current = unsubscribe;
+
     return () => {
-      isMounted.current = false;
-      unsubscribe();
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
     };
-  }, [docRef?.path]);
+  }, [docRef?.path, auth.currentUser?.uid]);
 
   return { data, loading, error };
 }

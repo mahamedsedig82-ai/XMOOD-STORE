@@ -13,8 +13,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * 🛡️ Safety-Enhanced Collection Hook
- * تم تزويده بحواجز أمان تمنع تسرب المستمعات بعد خروج المستخدم، مما يحل مشكلة تراكم الأخطاء.
+ * 🛡️ Safety-Enhanced Collection Hook 3.0
+ * تم تزويده بحواجز أمان تمنع تشغيل المستمعات بدون مستخدم نشط.
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
@@ -30,42 +30,48 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
       unsubscribeRef.current = null;
     }
 
-    if (!query) {
+    // 🛡️ Guard: لا يسمح بتشغيل المستمع إذا لم يكن هناك مستخدم مسجل (إصلاح b815/ca9)
+    if (!query || !auth.currentUser) {
       setLoading(false);
+      setData([]);
       return;
     }
 
-    // 2. بدء المستمع مع آلية تنظيف صارمة
-    const unsubscribe = onSnapshot(
-      query, 
-      (snapshot: QuerySnapshot<T>) => {
-        const items = snapshot.docs.map(doc => ({
-          ...doc.data(),
-          id: doc.id
-        }));
-        setData(items);
-        setLoading(false);
-      }, 
-      (serverError) => {
-        // 🛡️ إذا فقد المستخدم هويته، نتوقف صمتاً لتجنب إزعاج الواجهة
-        if (!auth.currentUser) {
+    try {
+      const unsubscribe = onSnapshot(
+        query, 
+        (snapshot: QuerySnapshot<T>) => {
+          const items = snapshot.docs.map(doc => ({
+            ...doc.data(),
+            id: doc.id
+          } as T));
+          setData(items);
           setLoading(false);
-          return;
+        }, 
+        (serverError) => {
+          // 🛡️ إذا فقد المستخدم هويته أثناء الاستماع، نتوقف صمتاً
+          if (!auth.currentUser) {
+            setLoading(false);
+            return;
+          }
+
+          const path = (query as any)._query?.path?.toString() || 'collection';
+          const permissionError = new FirestorePermissionError({
+            path,
+            operation: 'list',
+          } satisfies SecurityRuleContext);
+          
+          errorEmitter.emit('permission-error', permissionError);
+          setError(serverError);
+          setLoading(false);
         }
+      );
 
-        const path = (query as any)._query?.path?.toString() || 'collection';
-        const permissionError = new FirestorePermissionError({
-          path,
-          operation: 'list',
-        } satisfies SecurityRuleContext);
-        
-        errorEmitter.emit('permission-error', permissionError);
-        setError(serverError);
-        setLoading(false);
-      }
-    );
-
-    unsubscribeRef.current = unsubscribe;
+      unsubscribeRef.current = unsubscribe;
+    } catch (e) {
+      console.error("[FIRESTORE_HOOK] Runtime Guard:", e);
+      setLoading(false);
+    }
 
     return () => {
       if (unsubscribeRef.current) {
@@ -73,7 +79,7 @@ export function useCollection<T = DocumentData>(query: Query<T> | null) {
         unsubscribeRef.current = null;
       }
     };
-  }, [query]); 
+  }, [query, auth.currentUser?.uid]); // الربط بـ UID لضمان التحديث عند تغير الجلسة
 
   return { data, loading, error };
 }

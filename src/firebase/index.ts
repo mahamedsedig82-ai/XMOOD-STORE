@@ -1,13 +1,13 @@
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFirestore, Firestore, terminate } from 'firebase/firestore';
 import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
 /**
- * 🛡️ Singleton Firebase Engine
- * يضمن تهيئة واحدة فقط للتطبيق والخدمات لمنع خطأ INTERNAL ASSERTION FAILED.
+ * 🛡️ Singleton Firebase Engine 3.0
+ * يضمن تهيئة واحدة فقط لمنع خطأ INTERNAL ASSERTION FAILED.
  */
 let app: FirebaseApp;
 let firestore: Firestore;

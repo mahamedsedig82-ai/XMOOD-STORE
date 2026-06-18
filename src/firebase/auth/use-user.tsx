@@ -25,7 +25,7 @@ export function useUser() {
     }
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-      // 1. تنظيف أي مستمع قديم فوراً عند تغير حالة المستخدم
+      // 1. تنظيف أي مستمع قديم فوراً عند تغير حالة المستخدم (Critical for Logout Fix)
       if (unsubscribeProfileRef.current) {
         unsubscribeProfileRef.current();
         unsubscribeProfileRef.current = null;
@@ -38,22 +38,23 @@ export function useUser() {
       } else {
         setUser(firebaseUser);
         
+        // 🛡️ حماية: لا تبدأ الاستماع إذا لم تكن الهوية جاهزة
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         
-        // 2. بدء مستمع البروفايل مع حماية ضد الانهيارات
         try {
           unsubscribeProfileRef.current = onSnapshot(userDocRef, (snapshot) => {
             if (snapshot.exists()) {
               setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
               setLoading(false);
             } else {
-              // مزامنة أولية للحسابات الجديدة إذا لم يوجد بروفايل
+              // مزامنة أولية فقط إذا لم يوجد بروفايل
               syncUserProfile(firebaseUser).finally(() => {
                 if (firebaseUser.uid === auth.currentUser?.uid) setLoading(false);
               });
             }
           }, (err) => {
-            console.warn("[AUTH_GUARD] Profile Snapshot Restricted:", err.message);
+            console.warn("[AUTH_GUARD] Profile Stream Halted:", err.message);
+            // عند حدوث خطأ صلاحيات (غالباً بسبب Logout)، نقوم بالتنظيف
             setLoading(false);
           });
         } catch (e) {
