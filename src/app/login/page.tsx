@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -50,7 +51,6 @@ export default function LoginPage() {
         router.replace("/wallet");
       }
     } catch (error: any) {
-      console.error("Auth Error:", error);
       let msg = "تأكد من صحة البيانات والمحاولة مجدداً.";
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
       if (error.code === 'auth/wrong-password') msg = "كلمة المرور غير صحيحة.";
@@ -88,13 +88,17 @@ export default function LoginPage() {
               </TabsList>
 
               <TabsContent value="login" className="space-y-8 animate-fade-in">
-                <div className="space-y-6">
+                <div className="space-y-6 text-right">
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-primary pr-4 flex items-center gap-2"><Mail size={12}/> البريد الإلكتروني</Label>
+                    <Label className="text-[11px] font-black uppercase text-primary pr-2 flex items-center gap-2">
+                       <Mail size={14} className="text-primary" /> البريد الإلكتروني
+                    </Label>
                     <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="name@example.com" className="h-16" />
                   </div>
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-primary pr-4 flex items-center gap-2"><Lock size={12}/> كلمة المرور</Label>
+                    <Label className="text-[11px] font-black uppercase text-primary pr-2 flex items-center gap-2">
+                       <Lock size={14} className="text-primary" /> كلمة المرور
+                    </Label>
                     <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-16" />
                   </div>
                 </div>
@@ -104,25 +108,35 @@ export default function LoginPage() {
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-8 animate-fade-in">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-right">
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-primary pr-4 flex items-center gap-2"><User size={12}/> الاسم الكامل</Label>
+                    <Label className="text-[11px] font-black uppercase text-primary pr-2 flex items-center gap-2">
+                       <User size={14} className="text-primary" /> الاسم الكامل
+                    </Label>
                     <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="اسمك..." className="h-14" />
                   </div>
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-primary pr-4 flex items-center gap-2"><Phone size={12}/> رقم الهاتف</Label>
+                    <Label className="text-[11px] font-black uppercase text-primary pr-2 flex items-center gap-2">
+                       <Phone size={14} className="text-primary" /> رقم الهاتف
+                    </Label>
                     <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." className="h-14" />
                   </div>
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-primary pr-4 flex items-center gap-2"><Mail size={12}/> البريد الإلكتروني</Label>
+                    <Label className="text-[11px] font-black uppercase text-primary pr-2 flex items-center gap-2">
+                       <Mail size={14} className="text-primary" /> البريد الإلكتروني
+                    </Label>
                     <Input value={email} onChange={e => setEmail(e.target.value)} type="email" className="h-14" />
                   </div>
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-primary pr-4 flex items-center gap-2"><Calendar size={12}/> العمر</Label>
+                    <Label className="text-[11px] font-black uppercase text-primary pr-2 flex items-center gap-2">
+                       <Calendar size={14} className="text-primary" /> العمر
+                    </Label>
                     <Input value={age} onChange={e => setAge(e.target.value)} type="number" className="h-14" />
                   </div>
                   <div className="col-span-full space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-primary pr-4 flex items-center gap-2"><Lock size={12}/> كلمة المرور</Label>
+                    <Label className="text-[11px] font-black uppercase text-primary pr-2 flex items-center gap-2">
+                       <Lock size={14} className="text-primary" /> كلمة المرور
+                    </Label>
                     <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" className="h-14" />
                   </div>
                 </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -76,7 +77,7 @@ export function Navbar() {
           ) : (
             <div className="flex flex-col items-center">
               <span className="handwritten-logo text-3xl md:text-4xl leading-none">XMOOD <span>Store</span></span>
-              <span className="text-[7px] font-black tracking-[0.4em] uppercase text-primary -mt-1 opacity-80 group-hover:opacity-100 transition-opacity">Sovereign Excellence</span>
+              <span className="text-[7px] font-black tracking-[0.4em] uppercase text-primary -mt-1 opacity-80 group-hover:opacity-100 transition-opacity">Elite Marketplace</span>
             </div>
           )}
         </Link>

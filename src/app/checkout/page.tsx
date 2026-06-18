@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -188,12 +189,15 @@ export default function CheckoutPage() {
 
               <section className="space-y-8">
                  <h3 className="text-2xl font-black flex items-center gap-4 border-r-4 border-primary pr-6">بريد التسليم</h3>
-                 <Input 
-                   value={deliveryEmail} 
-                   onChange={e => setDeliveryEmail(e.target.value)} 
-                   placeholder="أدخل البريد لاستقبال الكود..." 
-                   className="h-18 rounded-3xl shadow-xl"
-                 />
+                 <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase text-primary pr-4">سيتم إرسال الأكواد لهذا البريد</Label>
+                    <Input 
+                      value={deliveryEmail} 
+                      onChange={e => setDeliveryEmail(e.target.value)} 
+                      placeholder="أدخل البريد لاستقبال الكود..." 
+                      className="h-18 rounded-3xl shadow-xl"
+                    />
+                 </div>
               </section>
            </div>
 
