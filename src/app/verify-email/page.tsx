@@ -2,11 +2,11 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, Mail, ShieldCheck, XCircle, Zap, CheckCircle, AlertCircle, RefreshCw, ArrowRight } from "lucide-react";
+import { Loader2, Mail, ShieldCheck, XCircle, Zap, CheckCircle, AlertCircle, RefreshCw, ArrowRight, ShoppingBag } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/firebase";
-import { applyActionCode, sendEmailVerification } from "firebase/auth";
+import { applyActionCode } from "firebase/auth";
 import { toast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/layout/Navbar";
 import { syncUserProfile } from "@/lib/auth";
@@ -34,8 +34,7 @@ function VerifyEmailContent() {
             await syncUserProfile(auth.currentUser);
           }
           setStatus('success');
-          toast({ title: "تم تفعيل الحساب السيادي" });
-          setTimeout(() => router.replace("/wallet"), 2000);
+          toast({ title: "ممتاز تم التحقق" });
         })
         .catch((err) => {
           console.error("Verification Error:", err);
@@ -44,19 +43,18 @@ function VerifyEmailContent() {
     }
 
     const interval = setInterval(async () => {
-      if (auth.currentUser) {
+      if (auth.currentUser && status === 'waiting') {
         await auth.currentUser.reload();
         if (auth.currentUser.emailVerified) {
           clearInterval(interval);
           await syncUserProfile(auth.currentUser);
           setStatus('success');
-          setTimeout(() => router.replace("/wallet"), 1500);
         }
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [router, searchParams]);
+  }, [router, searchParams, status]);
 
   const handleResend = async () => {
     if (!auth.currentUser) {
@@ -65,7 +63,6 @@ function VerifyEmailContent() {
     }
     setIsResending(true);
     try {
-      // Re-import because of function scoping
       const { sendAccountVerification } = await import("@/lib/auth");
       await sendAccountVerification(auth.currentUser);
       toast({ title: "تم إرسال الرابط", description: "تفقد البريد الوارد ومجلد السبام." });
@@ -153,10 +150,13 @@ function VerifyEmailContent() {
               <div className="w-24 h-24 bg-green-500 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl shadow-green-500/20 animate-bounce">
                 <CheckCircle className="w-12 h-12 text-white" />
               </div>
-              <div className="space-y-2">
-                <h2 className="text-3xl font-black text-green-500">تم التوثيق بنجاح</h2>
-                <p className="text-muted-foreground font-bold">جاري فتح بوابتك الرقمية الآن..</p>
+              <div className="space-y-3">
+                <h2 className="text-3xl font-black text-green-500">ممتاز تم التحقق</h2>
+                <p className="text-muted-foreground font-bold text-lg">عد للمتجر للاستمتاع بخدماتنا</p>
               </div>
+              <Button asChild className="royal-button w-full h-16 shadow-xl mt-4">
+                <Link href="/store"><ShoppingBag size={20} className="ml-2" /> الذهاب للمتجر الآن</Link>
+              </Button>
             </motion.div>
           )}
 
@@ -182,7 +182,7 @@ function VerifyEmailContent() {
         </AnimatePresence>
       </Card>
       
-      <div className="mt-8 text-center">
+      <div className="mt-8 text-center no-print">
          <Link href="/login" className="text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-[0.3em] flex items-center justify-center gap-2 transition-all">
             <ArrowRight size={14} className="rotate-180" /> العودة للدخول
          </Link>
