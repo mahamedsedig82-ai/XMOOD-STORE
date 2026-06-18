@@ -135,12 +135,23 @@ export function Navbar() {
             </Link>
 
             {user ? (
-              <Link href="/wallet" className="shrink-0">
-                <Avatar className="h-10 w-10 border-2 border-primary/20 shadow-sm rounded-full overflow-hidden transition-transform hover:scale-105">
-                  <AvatarImage src={profile?.photoURL} className="object-cover" />
-                  <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">XM</AvatarFallback>
-                </Avatar>
-              </Link>
+              <div className="flex items-center gap-2 md:gap-3">
+                <Link href="/wallet" className="shrink-0">
+                  <Avatar className="h-10 w-10 border-2 border-primary/20 shadow-sm rounded-full overflow-hidden transition-transform hover:scale-105">
+                    <AvatarImage src={profile?.photoURL} className="object-cover" />
+                    <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">XM</AvatarFallback>
+                  </Avatar>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={logout} 
+                  className="hidden md:flex rounded-xl h-10 w-10 bg-red-500/5 text-red-500 border border-red-500/10 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                  title="تسجيل الخروج"
+                >
+                  <LogOut size={18} />
+                </Button>
+              </div>
             ) : (
               <Button asChild className="royal-button h-10 px-6 rounded-xl text-[9px]">
                 <Link href="/login">دخول</Link>
@@ -174,7 +185,7 @@ export function Navbar() {
               animate={{ x: 0 }} 
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 35, stiffness: 400 }}
-              className="fixed top-0 right-0 z-[500] h-full w-[85%] max-w-[320px] bg-background border-l border-white/10 shadow-2xl lg:hidden flex flex-col overflow-hidden"
+              className="fixed top-0 right-0 z-[500] h-full w-[85%] max-w-[340px] bg-background border-l border-white/10 shadow-2xl lg:hidden flex flex-col overflow-hidden"
               dir="rtl"
             >
               {/* Pro Compact Header */}
