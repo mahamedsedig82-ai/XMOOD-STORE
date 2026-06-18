@@ -8,11 +8,12 @@ import {
   DocumentData,
   Unsubscribe
 } from 'firebase/firestore';
+import { auth } from '../index';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * 🛡️ Sovereign Document Hook 21.0 (Assertion-Proof)
+ * 🛡️ Sovereign Document Hook 22.0 (Assertion-Proof)
  * Strictly manages individual document listeners with mandatory physical cleanup.
  */
 export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
@@ -23,13 +24,14 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
-    // 🛡️ Ensure previous listener is dead
+    // 1. Pre-Flight Cleanup
     if (unsubscribeRef.current) {
       unsubscribeRef.current();
       unsubscribeRef.current = null;
     }
 
-    if (!docRef) {
+    // 2. Security Guard
+    if (!docRef || !auth.currentUser) {
       setData(null);
       setLoading(false);
       return;
@@ -41,6 +43,9 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
       const unsubscribe = onSnapshot(
         docRef, 
         (snapshot: DocumentSnapshot<T>) => {
+          // Prevent processing data if auth was lost during transit
+          if (!auth.currentUser) return;
+
           setData(snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } as T : null);
           setLoading(false);
           setError(null);
@@ -66,7 +71,7 @@ export function useDoc<T = DocumentData>(docRef: DocumentReference<T> | null) {
         unsubscribeRef.current = null;
       }
     };
-  }, [docRef?.path]);
+  }, [docRef?.path]); // Depend on path to avoid re-subscribing on reference changes
 
   return { data, loading, error };
 }

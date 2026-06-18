@@ -6,14 +6,16 @@ import {
   signOut,
   User,
   sendEmailVerification,
-  updateProfile
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Profile Sync Service 5.0
- * Purely idempotent sync function to prevent recursive writes and loops.
+ * 🛡️ Profile Sync Service 6.0 (Race-Condition Guarded)
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -40,7 +42,6 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
       }, { merge: true });
     } else {
       const existing = userDoc.data();
-      // Only update if verification state has actually changed to avoid cycles
       if (existing.isVerified !== user.emailVerified) {
         await updateDoc(userRef, { 
           isVerified: user.emailVerified,
@@ -49,24 +50,51 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
       }
     }
   } catch (error) {
-    console.error("[AUTH_SYNC] Error suppressed to ensure stability");
+    // Silent catch for background syncs to prevent crashing the UI
   }
 }
 
 /**
- * 🛡️ Sovereign Wipe Logout
+ * 🛡️ Sovereign Wipe Logout (STRICT ATOMIC ORDER)
+ * 1. Clear State (Implicit via useUser effect)
+ * 2. Wipe Local Cache
+ * 3. Await SignOut
+ * 4. Hard Redirect
  */
 export const logout = async () => {
   if (!auth) return;
   try {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('xmood-cart');
+      localStorage.removeItem('xmood-theme');
       sessionStorage.clear();
     }
+    
+    // The useUser hook's useEffect will catch the auth change and kill listeners.
     await signOut(auth);
+    
+    // Final hard reset to ensure no corrupted state remains
     window.location.href = '/login';
   } catch (error) {
     window.location.href = '/login';
+  }
+};
+
+/**
+ * 🛡️ Google Auth Bridge
+ */
+export const loginWithGoogle = async () => {
+  if (!auth) return;
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    await syncUserProfile(result.user);
+    return result.user;
+  } catch (error: any) {
+    if (error.code === 'auth/popup-blocked') {
+      return signInWithRedirect(auth, provider);
+    }
+    throw error;
   }
 };
 

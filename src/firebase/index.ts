@@ -6,8 +6,8 @@ import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
 /**
- * 🛡️ Firebase Sovereign Singleton Engine 21.0
- * Strictly prevents multiple initializations and stabilizes service instances.
+ * 🛡️ Firebase Sovereign Singleton Engine 22.0
+ * strictly prevents multiple initializations even during Turbopack hot reloads.
  */
 let app: FirebaseApp;
 let firestore: Firestore;

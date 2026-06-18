@@ -8,8 +8,8 @@ import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
 /**
- * 🛡️ Sovereign Identity Manager 21.0 (State Orchestrator)
- * Orchestrates Auth and Profile states with strict lifecycle management.
+ * 🛡️ Sovereign Identity Manager 22.0 (Strict Lifecycle Orchestrator)
+ * Manages Auth and Profile state with absolute synchronization and cleanup.
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -17,7 +17,8 @@ export function useUser() {
   const [loading, setLoading] = useState(true);
   const [authSettled, setAuthSettled] = useState(false);
   
-  const unsubscribeRef = useRef<Unsubscribe | null>(null);
+  // Strict physical reference to profile listener for immediate kill on logout
+  const profileUnsubscribeRef = useRef<Unsubscribe | null>(null);
 
   useEffect(() => {
     if (!auth) {
@@ -27,41 +28,48 @@ export function useUser() {
     }
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-      // 1. Clear previous profile listener instantly to avoid collisions
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-        unsubscribeRef.current = null;
+      // 1. Critical Sequence: If user becomes null, KILL profile listener IMMEDIATELY
+      if (!firebaseUser) {
+        if (profileUnsubscribeRef.current) {
+          profileUnsubscribeRef.current();
+          profileUnsubscribeRef.current = null;
+        }
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+        setAuthSettled(true);
+        return;
       }
 
+      // 2. If user exists, update state and start/restart profile listener
       setUser(firebaseUser);
 
-      if (firebaseUser) {
-        try {
-          const userDocRef = doc(db, 'users', firebaseUser.uid);
-          
-          unsubscribeRef.current = onSnapshot(userDocRef, (snapshot) => {
-            if (snapshot.exists()) {
-              setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
-              setLoading(false);
-              setAuthSettled(true);
-            } else {
-              // Idempotent sync if profile doesn't exist
-              syncUserProfile(firebaseUser).catch(() => {
-                setLoading(false);
-                setAuthSettled(true);
-              });
-            }
-          }, (err) => {
-            console.warn("[IDENTITY_GUARD] Firestore connection interrupted:", err.message);
+      // Kill any previous profile listener before starting a new one for a new user
+      if (profileUnsubscribeRef.current) {
+        profileUnsubscribeRef.current();
+      }
+
+      try {
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        
+        profileUnsubscribeRef.current = onSnapshot(userDocRef, (snapshot) => {
+          if (snapshot.exists()) {
+            setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
             setLoading(false);
             setAuthSettled(true);
-          });
-        } catch (e) {
+          } else {
+            // Idempotent sync to create profile if missing
+            syncUserProfile(firebaseUser).catch(() => {
+              setLoading(false);
+              setAuthSettled(true);
+            });
+          }
+        }, (err) => {
+          console.warn("[IDENTITY_GUARD] Firestore connection interrupted:", err.message);
           setLoading(false);
           setAuthSettled(true);
-        }
-      } else {
-        setProfile(null);
+        });
+      } catch (e) {
         setLoading(false);
         setAuthSettled(true);
       }
@@ -69,9 +77,9 @@ export function useUser() {
 
     return () => {
       unsubscribeAuth();
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-        unsubscribeRef.current = null;
+      if (profileUnsubscribeRef.current) {
+        profileUnsubscribeRef.current();
+        profileUnsubscribeRef.current = null;
       }
     };
   }, []);
