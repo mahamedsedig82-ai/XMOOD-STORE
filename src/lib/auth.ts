@@ -15,21 +15,6 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc, addDoc, collection } f
 import { auth, db } from "./firebase";
 
 /**
- * خوارزمية رصد التلاعب: تكتشف الرموز الضخمة والكلمات المشبوهة
- */
-export function isSuspiciousInput(text: string): { isSuspicious: boolean; reason: string } {
-  if (!text) return { isSuspicious: false, reason: "" };
-  if (text.length > 1000) return { isSuspicious: true, reason: "كتلة نصية ضخمة بشكل مريب" };
-  const symbolPattern = /[^\w\s]{20,}/g;
-  if (symbolPattern.test(text)) return { isSuspicious: true, reason: "استخدام رموز متكررة لمحاولة الحقن" };
-  const maliciousKeywords = ["<script", "javascript:", "eval(", "onload=", "onerror=", "select * from", "drop table", "union select", "insert into"];
-  const lowerText = text.toLowerCase();
-  const foundKeyword = maliciousKeywords.find(key => lowerText.includes(key));
-  if (foundKeyword) return { isSuspicious: true, reason: `محاولة حقن كود: ${foundKeyword}` };
-  return { isSuspicious: false, reason: "" };
-}
-
-/**
  * تسجيل الأحداث الأمنية لضمان "التتبع" في لوحة الإدارة.
  */
 export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'access_denied' | 'tamper_attempt', description: string, userEmail?: string) {
@@ -149,3 +134,13 @@ export const logout = () => {
   if (auth.currentUser) logSecurityEvent('login_success', "خروج آمن من النظام", auth.currentUser.email || "");
   return signOut(auth);
 };
+
+export function isSuspiciousInput(text: string): { isSuspicious: boolean; reason: string } {
+  if (!text) return { isSuspicious: false, reason: "" };
+  if (text.length > 1000) return { isSuspicious: true, reason: "كتلة نصية ضخمة بشكل مريب" };
+  const MaliciousKeywords = ["<script", "javascript:", "eval(", "onload=", "onerror=", "select * from", "drop table"];
+  const lowerText = text.toLowerCase();
+  const found = MaliciousKeywords.find(key => lowerText.includes(key));
+  if (found) return { isSuspicious: true, reason: `محاولة حقن كود: ${found}` };
+  return { isSuspicious: false, reason: "" };
+}

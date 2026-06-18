@@ -7,7 +7,7 @@ import { Loader2, ShieldCheck, XCircle, Home, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/firebase";
-import { onAuthStateChanged, applyActionCode } from "firebase/auth";
+import { onAuthStateChanged, applyActionCode, isSignInWithEmailLink } from "firebase/auth";
 import { toast } from "@/hooks/use-toast";
 
 export default function VerifyEmailPage() {
@@ -28,21 +28,14 @@ export default function VerifyEmailPage() {
         // 1. بروتوكول توثيق الرابط التقليدي (Email Verification)
         if (oobCode && mode === 'verifyEmail') {
            await applyActionCode(auth, oobCode);
-           // في حال كان المستخدم مسجلاً دخوله مسبقاً، نحدث حالته
            if (auth.currentUser) {
               await auth.currentUser.reload();
               await syncUserProfile(auth.currentUser);
-              setStatus('success');
-              toast({ title: "تم توثيق الهوية السيادية" });
-              setTimeout(() => router.replace("/wallet"), 1000);
-              return;
-           } else {
-              // إذا لم يكن مسجلاً دخوله، نطلب منه تسجيل الدخول الآن بعد التوثيق
-              setStatus('success');
-              toast({ title: "تم التوثيق، يمكنك تسجيل الدخول الآن" });
-              setTimeout(() => router.replace("/login"), 2000);
-              return;
            }
+           setStatus('success');
+           toast({ title: "تم توثيق الهوية السيادية" });
+           setTimeout(() => router.replace("/wallet"), 1500);
+           return;
         }
 
         // 2. بروتوكول الرابط السحري (Magic Link)
@@ -51,12 +44,12 @@ export default function VerifyEmailPage() {
           if (userFromMagic) {
             setStatus('success');
             toast({ title: "تم الدخول بنجاح" });
-            setTimeout(() => router.replace("/wallet"), 1000);
+            setTimeout(() => router.replace("/wallet"), 1500);
             return;
           }
         }
 
-        // 3. مراقب الحالة النشط (في حال تم التحقق في نافذة أخرى أو إعادة التحميل)
+        // 3. مراقب الحالة اللحظي
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await firebaseUser.reload();
@@ -68,12 +61,12 @@ export default function VerifyEmailPage() {
           }
         });
         
-        // مهلة زمنية للفشل إذا لم يتم رصد أي معلمات صالحة
+        // مهلة زمنية للفشل
         const timeout = setTimeout(() => {
            if (status === 'verifying' && !oobCode && !isSignInWithEmailLink(auth, window.location.href)) {
               setStatus('error');
            }
-        }, 30000);
+        }, 20000);
 
         return () => {
           unsubscribe();
@@ -87,12 +80,6 @@ export default function VerifyEmailPage() {
     };
     verify();
   }, [auth, router]);
-
-  // دالة مساعدة للتحقق من رابط الدخول (لأنها مفقودة في النطاق الحالي)
-  function isSignInWithEmailLink(auth: any, href: string) {
-    const { isSignInWithEmailLink } = require("firebase/auth");
-    return isSignInWithEmailLink(auth, href);
-  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">

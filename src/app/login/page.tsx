@@ -47,21 +47,9 @@ export default function SecurityLoginPage() {
     setCaptchaInput("");
   };
 
-  const checkSecurity = (text: string) => {
-     const check = isSuspiciousInput(text);
-     if (check.isSuspicious) {
-        logSecurityEvent('tamper_attempt', `رصد تلاعب في حقل الإدخال: ${check.reason}`, email);
-        toast({ variant: "destructive", title: "تنبيه أمني", description: "تم رصد محاولة إدخل رموز غير صالحة." });
-        return true;
-     }
-     return false;
-  };
-
   const handleEmailAuth = async (type: 'login' | 'signup') => {
     const cleanEmail = email.trim().toLowerCase();
     
-    if (checkSecurity(email) || checkSecurity(password)) return;
-
     if (!cleanEmail || !password) return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى ملء كافة الحقول الإلزامية." });
     
     if (type === 'signup') {
@@ -119,7 +107,7 @@ export default function SecurityLoginPage() {
       setIsWaitingVerification(true);
       toast({ title: "تم الإرسال", description: "افحص بريدك الإلكتروني لتسجيل الدخول الفوري." });
     } catch (error) {
-      toast({ variant: "destructive", title: "فشل الإرسال", description: "تأكد من صحة البريد والمحاولة لاحقاً." });
+      toast({ variant: "destructive", title: "فشل الإرسال" });
     } finally {
       setLoading(false);
     }
@@ -198,9 +186,8 @@ export default function SecurityLoginPage() {
                          <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">البريد الإلكتروني</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-12" /></div>
                          <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">كلمة المرور</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-12" /></div>
                          
-                         {/* 🛡️ استعادة سؤال الأمان السيادي */}
                          <div className="md:col-span-2 space-y-2">
-                            <Label className="text-[9px] font-black text-primary uppercase pr-3 flex items-center gap-2"><HelpCircle size={10}/> اختر سؤال أمان (للطوارئ)</Label>
+                            <Label className="text-[9px] font-black text-primary uppercase pr-3 flex items-center gap-2"><HelpCircle size={10}/> سؤال الأمان (للطوارئ)</Label>
                             <Select onValueChange={setSecurityQuestion} required>
                                <SelectTrigger className="h-12 border-2 border-primary bg-background rounded-xl">
                                   <SelectValue placeholder="اختر سؤال الأمان..." />
