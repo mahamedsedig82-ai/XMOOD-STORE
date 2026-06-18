@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft, AlertCircle, ShoppingBag, PackageX } from "lucide-react";
+import { Loader2, ShieldCheck, Truck, CheckCircle2, Wallet, Mail, Zap, ArrowLeft, AlertCircle, ShoppingBag, PackageX, ShieldAlert } from "lucide-react";
 import { formatUSD } from "@/lib/currency";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ import Link from "next/link";
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
-  const { profile, user, loading: userLoading } = useUser();
+  const { profile, user, loading: userLoading, isVerified } = useUser();
   const db = useFirestore();
   const router = useRouter();
   
@@ -41,7 +41,7 @@ export default function CheckoutPage() {
     if (user?.email && !deliveryEmail) setDeliveryEmail(user.email);
   }, [user, deliveryEmail]);
 
-  // 🛡️ درع فحص المخزون الفوري
+  // 🛡️ درع فحص المخزون الفوري والتحقق من الهوية
   useEffect(() => {
     const checkStock = async () => {
       if (!db || items.length === 0) {
@@ -95,16 +95,17 @@ export default function CheckoutPage() {
                  !!selectedShipping && 
                  hasEnoughBalance && 
                  isEverythingInStock &&
+                 isVerified &&
                  !isProcessing && 
                  !userLoading && 
                  !stockCheckLoading &&
                  deliveryEmail.includes("@");
 
   const handleCompleteOrder = async () => {
-    if (!user || !profile || !db) return;
+    if (!user || !profile || !db || !isVerified) return;
     if (!selectedShipping) return toast({ variant: "destructive", title: "يرجى اختيار وسيلة تسليم" });
     if (!hasEnoughBalance) return toast({ variant: "destructive", title: "الرصيد غير كافٍ" });
-    if (!isEverythingInStock) return toast({ variant: "destructive", title: "نقص في المخزون", description: "بعض الباقات نفدت حالياً من المستودع." });
+    if (!isEverythingInStock) return toast({ variant: "destructive", title: "نقص في المخزون" });
 
     setIsProcessing(true);
     const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -184,6 +185,20 @@ export default function CheckoutPage() {
     }
   };
 
+  if (user && !isVerified) {
+     return (
+        <main className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
+           <Navbar />
+           <Card className="max-w-lg w-full p-16 text-center luxury-card border-none bg-card shadow-2xl">
+              <ShieldAlert className="w-20 h-20 text-red-500 mx-auto mb-8" />
+              <h2 className="text-3xl font-black mb-4">التوثيق مطلوب</h2>
+              <p className="text-muted-foreground mb-10">لا يمكنك إتمام عملية الشراء قبل توثيق هويتك البريدية.</p>
+              <Button asChild className="royal-button w-full h-16"><Link href="/verify-email?waiting=true">تفعيل الحساب الآن</Link></Button>
+           </Card>
+        </main>
+     );
+  }
+
   if (successOrderId) return (
     <main className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
        <Card className="max-w-lg w-full p-8 md:p-16 text-center luxury-card border-none bg-card shadow-2xl">
@@ -207,7 +222,6 @@ export default function CheckoutPage() {
               <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase text-[10px] tracking-widest px-4 py-1 rounded-full">Sovereign Settlement Protocol</Badge>
            </div>
            <h1 className="text-4xl md:text-7xl font-headline font-black gold-text leading-tight">{config?.cartLabels?.checkoutTitle || "تأكيد الاستحواذ"}</h1>
-           <p className="text-muted-foreground uppercase tracking-widest text-[9px] md:text-sm mt-2 opacity-60">Automated Secure Financial Execution</p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -217,9 +231,7 @@ export default function CheckoutPage() {
                     <PackageX size={48} className="text-red-500 shrink-0" />
                     <div>
                        <h3 className="text-2xl font-black text-red-500 mb-2">توقف إجباري: نفاد المخزون</h3>
-                       <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                         عذراً سيادة العميل، المنتجات التالية نفدت حالياً من مستودعاتنا: <span className="text-red-500 font-black">{outOfStockItems.join(", ")}</span>. يرجى إزالتها من السلة أو الانتظار حتى يتم تزويد المخزون.
-                       </p>
+                       <p className="text-sm font-bold text-zinc-400">عذراً، المنتجات التالية نفدت حالياً: <span className="text-red-500 font-black">{outOfStockItems.join(", ")}</span></p>
                     </div>
                  </div>
               )}
@@ -233,7 +245,6 @@ export default function CheckoutPage() {
                       {shippingMethods?.map((m: any) => (
                         <div key={m.id} onClick={() => setSelectedShipping(m)} className={`p-8 rounded-[2rem] border-2 cursor-pointer transition-all ${selectedShipping?.id === m.id ? 'border-primary bg-primary/5 shadow-xl scale-[1.02]' : 'border-border bg-card'}`}>
                            <h4 className="font-black text-2xl mb-1">{m.name}</h4>
-                           <p className="text-xs text-muted-foreground mb-6 leading-relaxed">{m.description}</p>
                            <div className="flex justify-between items-center pt-6 border-t border-primary/10">
                               <span className="font-black text-2xl text-primary tracking-tighter">+{formatUSD(m.extraFee)}</span>
                               <Badge variant="secondary" className="text-[9px] font-black uppercase px-4 py-1.5 rounded-full">{m.deliveryTime}</Badge>
@@ -248,12 +259,12 @@ export default function CheckoutPage() {
                  <h3 className="text-2xl md:text-3xl font-black flex items-center gap-4"><Mail size={24} className="text-primary" /> بروتوكول الاستقبال</h3>
                  <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl space-y-8">
                     <div className="space-y-3">
-                       <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">بريد التسليم الرقمي (إلزامي)</Label>
+                       <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">بريد التسليم الرقمي</Label>
                        <Input value={deliveryEmail} onChange={e => setDeliveryEmail(e.target.value)} className="h-16 rounded-2xl" placeholder="name@example.com" />
                     </div>
                     <div className="space-y-3">
-                       <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">ملاحظات إضافية للمنفذ</Label>
-                       <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="rounded-3xl min-h-[120px]" placeholder="أي تعليمات خاصة لضمان نجاح التسليم؟" />
+                       <Label className="text-[10px] font-black uppercase text-primary pr-3 tracking-widest">ملاحظات إضافية</Label>
+                       <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="rounded-3xl min-h-[120px]" placeholder="أي تعليمات خاصة؟" />
                     </div>
                  </Card>
               </section>
@@ -268,7 +279,7 @@ export default function CheckoutPage() {
                     <div className="h-px bg-primary/10 my-4" />
                     <div className="flex justify-between items-end"><span className="font-black text-xs text-primary uppercase tracking-widest">الإجمالي النهائي</span><span className="text-4xl md:text-6xl font-black gold-text tracking-tighter">{formatUSD(finalTotal)}</span></div>
                     
-                    <div className="p-8 bg-zinc-900 rounded-[2.5rem] text-white mt-10 border-2 border-primary/30 shadow-inner">
+                    <div className="p-8 bg-zinc-950 rounded-[2.5rem] mt-10 border-2 border-primary/30 shadow-inner">
                        <div className="flex items-center gap-5">
                           <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary"><Wallet size={28} /></div>
                           <div><p className="text-[9px] text-zinc-500 uppercase font-black tracking-widest mb-1">رصيدك المتوفر</p><p className={`font-black text-2xl tracking-tighter ${hasEnoughBalance ? 'text-white' : 'text-red-500'}`}>{formatUSD(walletBalance)}</p></div>
@@ -276,13 +287,13 @@ export default function CheckoutPage() {
                     </div>
 
                     <Button onClick={handleCompleteOrder} disabled={!canPay} className="royal-button w-full h-24 text-2xl shadow-primary/30 mt-10">
-                      {isProcessing ? <Loader2 className="animate-spin" /> : stockCheckLoading ? "جاري فحص المخزون..." : "تأكيد الدفع السيادي"}
+                      {isProcessing ? <Loader2 className="animate-spin" /> : stockCheckLoading ? "فحص المخزون..." : "تأكيد الدفع السيادي"}
                     </Button>
 
                     {!hasEnoughBalance && (
-                       <div className="flex items-center gap-3 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-2xl text-red-500 mt-6">
+                       <div className="flex items-center gap-3 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-2xl text-red-500 mt-6 text-right">
                           <AlertCircle size={18} className="shrink-0" />
-                          <p className="text-[10px] font-black uppercase leading-tight">عذراً، الرصيد غير كافٍ. يرجى الشحن عبر الوكلاء المعتمدين.</p>
+                          <p className="text-[10px] font-black uppercase leading-tight">الرصيد غير كافٍ. يرجى الشحن عبر الوكلاء.</p>
                        </div>
                     )}
                  </div>

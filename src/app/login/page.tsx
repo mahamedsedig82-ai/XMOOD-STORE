@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { loginEmail, registerEmail, sendMagicLink, syncUserProfile, sendAccountVerification } from "@/lib/auth";
+import { loginEmail, registerEmail, syncUserProfile, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { 
-  Loader2, Mail, Lock, Shield, HelpCircle
+  Loader2, Mail, Lock, Shield, HelpCircle, User, Phone, Calendar
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -27,197 +27,118 @@ export default function SecurityLoginPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [age, setAge] = useState("");
   const [securityQuestion, setSecurityQuestion] = useState("");
   const [securityAnswer, setSecurityAnswer] = useState("");
-  const [captchaInput, setCaptchaInput] = useState("");
-  const [captchaChallenge, setCaptchaChallenge] = useState({ a: 0, b: 0 });
   const [loading, setLoading] = useState(false);
-  const [isWaitingVerification, setIsWaitingVerification] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    generateCaptcha();
-  }, []);
-
-  const generateCaptcha = () => {
-    setCaptchaChallenge({
-      a: Math.floor(Math.random() * 10) + 1,
-      b: Math.floor(Math.random() * 10) + 1
-    });
-    setCaptchaInput("");
-  };
-
-  const handleEmailAuth = async (type: 'login' | 'signup') => {
-    const cleanEmail = email.trim().toLowerCase();
-    
-    if (!cleanEmail || !password) {
-      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى ملء البريد الإلكتروني وكلمة المرور." });
+  const handleAuth = async (type: 'login' | 'signup') => {
+    if (!email || !password) {
+      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إكمال البريد وكلمة المرور." });
     }
-    
+
     if (type === 'signup') {
-      if (!fullName || !phone || !securityQuestion || !securityAnswer) {
-        return toast({ variant: "destructive", title: "بروتوكول الأمان", description: "يرجى ملء كافة بيانات التسجيل المطلوبة." });
-      }
-      if (Number(captchaInput) !== captchaChallenge.a + captchaChallenge.b) {
-        toast({ variant: "destructive", title: "فشل التحقق البشري", description: "ناتج العملية الحسابية غير صحيح." });
-        generateCaptcha();
-        return;
+      if (!fullName || !phone || !age || !securityQuestion || !securityAnswer) {
+        return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إكمال كافة بيانات التسجيل الإلزامية." });
       }
     }
 
     setLoading(true);
     try {
       if (type === 'signup') {
-        const res = await registerEmail(cleanEmail, password);
+        const res = await registerEmail(email, password, fullName);
         await syncUserProfile(res.user, { 
           fullName, 
-          displayName: fullName.split(" ")[0] || "عضو",
+          displayName: fullName.split(" ")[0],
           phoneNumber: phone,
+          age: Number(age),
           securityQuestion,
           securityAnswer
         });
         await sendAccountVerification(res.user);
-        setIsWaitingVerification(true);
-        toast({ title: "تم إنشاء الحساب بنجاح", description: "افحص بريدك الإلكتروني لتنشيط العضوية السيادية." });
+        toast({ title: "تم إنشاء الحساب", description: "افحص بريدك الإلكتروني لتنشيط العضوية." });
+        router.push("/verify-email?waiting=true");
       } else {
-        const res = await loginEmail(cleanEmail, password);
+        const res = await loginEmail(email, password);
         if (!res.user.emailVerified) {
-          setIsWaitingVerification(true);
-          toast({ variant: "destructive", title: "الحساب غير موثق", description: "يجب توثيق بريدك الإلكتروني قبل الدخول للمحفظة." });
-          setLoading(false);
+          toast({ variant: "destructive", title: "الحساب غير موثق", description: "يرجى توثيق البريد أولاً." });
+          router.push("/verify-email?waiting=true");
           return;
         }
-        // مزامنة صامتة للملف الشخصي وتوجيه فوري
-        syncUserProfile(res.user).catch(() => {});
-        toast({ title: "تم تأكيد الهوية", description: "مرحباً بك مجدداً في نظام XMOOD." });
+        await syncUserProfile(res.user);
+        toast({ title: "مرحباً بك", description: "تم تأكيد الهوية بنجاح." });
         router.replace("/wallet");
       }
     } catch (error: any) {
-      console.error("Auth Error:", error);
-      let msg = "حدث خطأ غير متوقع. يرجى مراجعة البيانات.";
-      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً في النظام.";
-      if (error.code === 'auth/wrong-password') msg = "كلمة المرور غير صحيحة.";
-      if (error.code === 'auth/user-not-found') msg = "لا يوجد حساب مسجل بهذا البريد.";
-      if (error.code === 'auth/invalid-credential') msg = "خطأ في بيانات الاعتماد. تأكد من البريد وكلمة المرور.";
+      let msg = "خطأ في البيانات أو الحساب.";
+      if (error.code === 'auth/email-already-in-use') msg = "البريد مسجل مسبقاً.";
+      if (error.code === 'auth/wrong-password') msg = "كلمة المرور خاطئة.";
       toast({ variant: "destructive", title: "فشل المصادقة", description: msg });
-    } finally {
-      if (!isWaitingVerification) setLoading(false);
-    }
-  };
-
-  const handleMagicLink = async () => {
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail) return toast({ variant: "destructive", title: "تنبيه", description: "أدخل بريدك الإلكتروني أولاً." });
-    setLoading(true);
-    try {
-      await sendMagicLink(cleanEmail);
-      setIsWaitingVerification(true);
-      toast({ title: "تم إرسال الرابط السحري", description: "افحص بريدك الإلكتروني للدخول الفوري." });
-    } catch (error) {
-      toast({ variant: "destructive", title: "فشل الإرسال" });
     } finally {
       setLoading(false);
     }
   };
 
-  if (isWaitingVerification) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
-        <Navbar />
-        <Card className="max-w-lg w-full p-10 md:p-16 text-center luxury-card border-none bg-card shadow-2xl relative overflow-hidden">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -mr-16 -mt-16" />
-           <div className="relative z-10 space-y-8">
-              <div className="w-24 h-24 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto border-2 border-primary/20 animate-pulse">
-                 <Mail className="w-12 h-12 text-primary" />
-              </div>
-              <div className="space-y-4">
-                 <h2 className="text-3xl md:text-5xl font-black gold-text leading-tight">بانتظار توثيق الهوية</h2>
-                 <p className="text-muted-foreground font-medium text-lg leading-relaxed">أرسلنا رابط التحقق إلى بريدك: <span className="text-primary font-bold">{email}</span></p>
-                 <p className="text-sm font-bold text-muted-foreground">افحص صندوق الوارد (أو مجلد الـ Spam) واضغط على الرابط لتفعيل حسابك فوراً.</p>
-              </div>
-              <Button onClick={() => window.location.reload()} className="royal-button w-full h-16 text-lg">لقد قمت بالتحقق، سجل الدخول الآن</Button>
-              <Button variant="ghost" onClick={() => setIsWaitingVerification(false)} className="text-xs font-bold text-muted-foreground uppercase tracking-widest">العودة لتعديل البيانات</Button>
-           </div>
-        </Card>
-      </main>
-    );
-  }
-
   return (
-    <main className="min-h-screen bg-background pt-32 pb-20 overflow-x-hidden" dir="rtl">
+    <main className="min-h-screen bg-background pt-32 pb-20" dir="rtl">
       <Navbar />
       <div className="container mx-auto px-4 flex justify-center items-center">
-        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           
-          <div className="hidden lg:flex flex-col space-y-10 animate-fade-up">
-             <div className="space-y-6">
-                <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">XMOOD SOVEREIGN ACCESS</Badge>
-                <h1 className="text-6xl font-headline font-black leading-tight gold-text">{config?.loginPage?.title || "تأمين الهوية الرقمية"}</h1>
-                <p className="text-lg text-muted-foreground font-medium leading-relaxed max-w-lg">{config?.loginPage?.subtitle || "انضم لنخبة متداولي الخدمات الرقمية عبر نظام دخول مشفر يضمن حماية بياناتك."}</p>
-             </div>
+          <div className="hidden lg:flex flex-col space-y-6">
+             <Badge className="w-fit bg-primary/10 text-primary border-primary/20 px-6 py-2 rounded-full font-black text-[10px] uppercase">XMOOD SOVEREIGN ACCESS</Badge>
+             <h1 className="text-6xl font-headline font-black leading-tight gold-text">{config?.loginPage?.title || "تأمين الهوية الرقمية"}</h1>
+             <p className="text-lg text-muted-foreground font-medium leading-relaxed">{config?.loginPage?.subtitle || "انضم لنخبة متداولي الخدمات الرقمية عبر نظام دخول مشفر يضمن حماية بياناتك."}</p>
           </div>
 
-          <Card className="luxury-card border-none bg-card/60 backdrop-blur-2xl shadow-2xl overflow-hidden p-1">
+          <Card className="luxury-card border-none bg-card/60 backdrop-blur-2xl shadow-2xl p-1">
              <div className="p-8 text-center border-b bg-muted/10">
-                <Shield size={48} className="text-primary mx-auto mb-4" />
+                <Shield size={40} className="text-primary mx-auto mb-4" />
                 <h2 className="text-2xl font-black uppercase tracking-tighter">{config?.loginPage?.cardTitle || "بوابة الوصول المعتمدة"}</h2>
-                <p className="text-[8px] text-muted-foreground font-black uppercase mt-1 tracking-[0.4em] opacity-60">{config?.loginPage?.cardSubtitle || "Identity & Trust Management"}</p>
              </div>
              
              <CardContent className="p-6 md:p-10">
                 <Tabs defaultValue="login" className="w-full">
-                   <TabsList className="grid w-full grid-cols-2 mb-10 bg-muted/50 rounded-2xl p-1.5 h-14 border">
-                      <TabsTrigger value="login" className="rounded-xl font-black text-[10px] uppercase tracking-widest">الدخول الآمن</TabsTrigger>
-                      <TabsTrigger value="signup" className="rounded-xl font-black text-[10px] uppercase tracking-widest">عضوية جديدة</TabsTrigger>
+                   <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50 rounded-2xl p-1.5 h-14 border">
+                      <TabsTrigger value="login" className="rounded-xl font-black text-[10px] uppercase">الدخول</TabsTrigger>
+                      <TabsTrigger value="signup" className="rounded-xl font-black text-[10px] uppercase">عضوية جديدة</TabsTrigger>
                    </TabsList>
 
                    <TabsContent value="login" className="space-y-6">
                       <div className="space-y-4">
-                         <div className="space-y-2">
-                            <Label className="text-[9px] font-black text-primary uppercase pr-4">البريد الإلكتروني المعتمد</Label>
-                            <Input placeholder="name@example.com" className="h-14" value={email} onChange={e => setEmail(e.target.value)} />
-                         </div>
-                         <div className="space-y-2">
-                            <Label className="text-[9px] font-black text-primary uppercase pr-4">كلمة المرور المشفرة</Label>
-                            <Input type="password" placeholder="••••••••" className="h-14" value={password} onChange={e => setPassword(e.target.value)} />
-                         </div>
+                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-4">البريد الإلكتروني</Label><Input value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" /></div>
+                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-4">كلمة المرور</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" /></div>
                       </div>
-                      <Button onClick={() => handleEmailAuth('login')} disabled={loading} className="w-full royal-button h-16 text-lg">دخول سيادي للمحفظة</Button>
-                      <Button onClick={handleMagicLink} variant="outline" className="w-full h-14 rounded-2xl border-primary/20 font-black text-[10px] uppercase">دخول عبر الرابط السحري</Button>
+                      <Button onClick={() => handleAuth('login')} disabled={loading} className="w-full royal-button h-16 text-lg">
+                        {loading ? <Loader2 className="animate-spin" /> : "دخول سيادي للمحفظة"}
+                      </Button>
                    </TabsContent>
 
                    <TabsContent value="signup" className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12" placeholder="الاسم كما في الهوية" /></div>
-                         <div className="space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">الهاتف الدولي</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12" placeholder="+249..." /></div>
-                         <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">البريد الإلكتروني</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-12" placeholder="name@example.com" /></div>
-                         <div className="md:col-span-2 space-y-2"><Label className="text-[9px] font-black text-primary uppercase pr-3">كلمة المرور</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-12" placeholder="أدخل كلمة مرور قوية" /></div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div className="space-y-1"><Label className="text-[9px] font-black text-primary uppercase pr-2">الاسم</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} className="h-12" placeholder="الاسم كما في الهوية" /></div>
+                         <div className="space-y-1"><Label className="text-[9px] font-black text-primary uppercase pr-2">الهاتف</Label><Input value={phone} onChange={e => setPhone(e.target.value)} className="h-12" placeholder="+249..." /></div>
+                         <div className="space-y-1"><Label className="text-[9px] font-black text-primary uppercase pr-2">العمر</Label><Input type="number" value={age} onChange={e => setAge(e.target.value)} className="h-12" placeholder="20" /></div>
+                         <div className="space-y-1"><Label className="text-[9px] font-black text-primary uppercase pr-2">البريد</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-12" placeholder="name@example.com" /></div>
+                         <div className="md:col-span-2 space-y-1"><Label className="text-[9px] font-black text-primary uppercase pr-2">كلمة المرور</Label><Input type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-12" placeholder="••••••••" /></div>
                          
-                         <div className="md:col-span-2 space-y-2">
-                            <Label className="text-[9px] font-black text-primary uppercase pr-3 flex items-center gap-2"><HelpCircle size={10}/> سؤال الأمان (للطوارئ)</Label>
-                            <Select onValueChange={setSecurityQuestion} required>
-                               <SelectTrigger className="h-12 border-2 border-primary bg-background rounded-xl">
-                                  <SelectValue placeholder="اختر سؤال الأمان..." />
-                               </SelectTrigger>
-                               <SelectContent className="bg-card border-2 border-primary z-[100]">
-                                  <SelectItem value="q1">ما هو اسم أول مدرسة التحقت بها؟</SelectItem>
-                                  <SelectItem value="q2">ما هو اسم حيوانك الأليف الأول؟</SelectItem>
-                                  <SelectItem value="q3">ما هو اسم مدينتك المفضلة؟</SelectItem>
-                                  <SelectItem value="q4">ما هو لقب العائلة القديم؟</SelectItem>
+                         <div className="md:col-span-2 space-y-1">
+                            <Label className="text-[9px] font-black text-primary uppercase pr-2">سؤال الأمان للطوارئ</Label>
+                            <Select onValueChange={setSecurityQuestion}>
+                               <SelectTrigger className="h-12 border-primary/20"><SelectValue placeholder="اختر سؤالاً..." /></SelectTrigger>
+                               <SelectContent className="z-[100]">
+                                  <SelectItem value="q1">اسم أول مدرسة؟</SelectItem>
+                                  <SelectItem value="q2">اسم حيوانك المفضل؟</SelectItem>
+                                  <SelectItem value="q3">مدينتك المفضلة؟</SelectItem>
                                 </SelectContent>
                             </Select>
                          </div>
-                         <div className="md:col-span-2 space-y-2">
-                            <Label className="text-[9px] font-black text-primary uppercase pr-3">إجابة سؤال الأمان</Label>
-                            <Input value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} className="h-12" placeholder="أدخل إجابتك السرية هنا..." required />
-                         </div>
+                         <div className="md:col-span-2 space-y-1"><Label className="text-[9px] font-black text-primary uppercase pr-2">إجابة سؤال الأمان</Label><Input value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} className="h-12" placeholder="الإجابة السرية..." /></div>
                       </div>
-
-                      <div className="p-6 bg-primary/5 rounded-[2rem] border-2 border-primary/30 space-y-4 shadow-inner">
-                         <div className="flex items-center justify-between"><Label className="text-xs font-black text-primary">تحقق CAPTCHA الذكي</Label><Badge variant="outline" className="text-sm font-black px-4 py-1.5 border-primary">{captchaChallenge.a} + {captchaChallenge.b} = ؟</Badge></div>
-                         <Input placeholder="أدخل الناتج..." className="h-14 text-center font-black text-xl text-primary" value={captchaInput} onChange={e => setCaptchaInput(e.target.value)} />
-                      </div>
-                      <Button onClick={() => handleEmailAuth('signup')} disabled={loading} className="w-full royal-button h-16 text-lg">إنشاء العضوية السيادية</Button>
+                      <Button onClick={() => handleAuth('signup')} disabled={loading} className="w-full royal-button h-16 text-lg">
+                         {loading ? <Loader2 className="animate-spin" /> : "إنشاء العضوية السيادية"}
+                      </Button>
                    </TabsContent>
                 </Tabs>
              </CardContent>

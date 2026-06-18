@@ -9,14 +9,12 @@ import {
   signOut,
   User,
   sendPasswordResetEmail,
-  sendEmailVerification
+  sendEmailVerification,
+  updateProfile
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc, addDoc, collection } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
-/**
- * تسجيل الأحداث الأمنية لضمان "التتبع" في لوحة الإدارة.
- */
 export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'access_denied' | 'tamper_attempt', description: string, userEmail?: string) {
   if (!db) return;
   try {
@@ -30,9 +28,6 @@ export async function logSecurityEvent(type: 'login_success' | 'auth_fail' | 'ac
   } catch (e) {}
 }
 
-/**
- * Sovereign Identity Sync: Ensures user profile exists in Firestore.
- */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
   const userRef = doc(db, "users", user.uid);
@@ -45,6 +40,7 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         fullName: additionalData.fullName || "",
         email: user.email?.toLowerCase(),
         phoneNumber: additionalData.phoneNumber || "",
+        age: Number(additionalData.age) || 0,
         walletBalance: 0,
         role: 'user',
         label: 'عضو بريميوم',
@@ -74,9 +70,6 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
   }
 }
 
-/**
- * ارسال رابط التحقق للحساب.
- */
 export const sendAccountVerification = async (user: User) => {
   try {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://xmood-36c92.firebaseapp.com';
@@ -91,56 +84,14 @@ export const sendAccountVerification = async (user: User) => {
   }
 };
 
-/**
- * Improved Magic Link Delivery.
- */
-export const sendMagicLink = async (email: string) => {
-  const cleanEmail = email.trim().toLowerCase();
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://xmood-36c92.firebaseapp.com';
-  const actionCodeSettings = {
-    url: `${baseUrl}/verify-email`,
-    handleCodeInApp: true,
-  };
-  try {
-    await sendSignInLinkToEmail(auth, cleanEmail, actionCodeSettings);
-    window.localStorage.setItem('emailForSignIn', cleanEmail);
-    logSecurityEvent('login_success', "طلب إرسال رابط سحري للدخول", cleanEmail);
-  } catch (error) {
-    logSecurityEvent('auth_fail', "فشل إرسال رابط سحري", cleanEmail);
-    throw error;
-  }
-};
-
-export const completeMagicLinkSignIn = async () => {
-  if (isSignInWithEmailLink(auth, window.location.href)) {
-    let email = window.localStorage.getItem('emailForSignIn');
-    if (!email) {
-      email = window.prompt('يرجى تأكيد بريدك الإلكتروني لإتمام الدخول:');
-    }
-    if (email) {
-      const result = await signInWithEmailLink(auth, email, window.location.href);
-      window.localStorage.removeItem('emailForSignIn');
-      await syncUserProfile(result.user);
-      return result.user;
-    }
-  }
-  return null;
+export const registerEmail = async (email: string, pass: string, name: string) => {
+  const res = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), pass);
+  await updateProfile(res.user, { displayName: name });
+  return res;
 };
 
 export const loginEmail = (e: string, p: string) => signInWithEmailAndPassword(auth, e.trim().toLowerCase(), p);
-export const registerEmail = (e: string, p: string) => createUserWithEmailAndPassword(auth, e.trim().toLowerCase(), p);
-export const resetPassword = (e: string) => sendPasswordResetEmail(auth, e.trim().toLowerCase());
 export const logout = () => {
   if (auth.currentUser) logSecurityEvent('login_success', "خروج آمن من النظام", auth.currentUser.email || "");
   return signOut(auth);
 };
-
-export function isSuspiciousInput(text: string): { isSuspicious: boolean; reason: string } {
-  if (!text) return { isSuspicious: false, reason: "" };
-  if (text.length > 1000) return { isSuspicious: true, reason: "كتلة نصية ضخمة بشكل مريب" };
-  const MaliciousKeywords = ["<script", "javascript:", "eval(", "onload=", "onerror=", "select * from", "drop table"];
-  const lowerText = text.toLowerCase();
-  const found = MaliciousKeywords.find(key => lowerText.includes(key));
-  if (found) return { isSuspicious: true, reason: `محاولة حقن كود: ${found}` };
-  return { isSuspicious: false, reason: "" };
-}

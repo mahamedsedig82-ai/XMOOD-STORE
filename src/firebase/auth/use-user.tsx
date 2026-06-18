@@ -1,16 +1,12 @@
-
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { doc, onSnapshot, updateDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
-/**
- * خطاف الهوية السيادي المطور: يدير الجلسة والتحقق الأمني.
- */
 export function useUser() {
   const auth = useAuth();
   const db = useFirestore();
@@ -37,11 +33,6 @@ export function useUser() {
   useEffect(() => {
     if (!user || !db) return;
 
-    // منع التداخل أثناء التواجد في صفحة الدخول (تتم المزامنة هناك يدوياً)
-    if (typeof window !== 'undefined' && window.location.pathname === '/login') {
-       return;
-    }
-
     setLoading(true);
     const userDocRef = doc(db, 'users', user.uid);
     let isMounted = true;
@@ -52,7 +43,6 @@ export function useUser() {
       if (snapshot.exists()) {
         const data = snapshot.data() as UserProfile;
         
-        // ترقية تلقائية للمدراء الأساسيين (غير معطلة للأداء)
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         if (isMaster && data.role !== 'owner') {
           updateDoc(userDocRef, { role: 'owner', label: 'المدير العام السيادي' });
@@ -61,11 +51,11 @@ export function useUser() {
         setProfile({ ...data, uid: snapshot.id });
         setLoading(false); 
       } else {
-        // إنشاء ملف أولي إذا كان مفقوداً (للحماية)
-        syncUserProfile(user);
+        syncUserProfile(user).then(() => {
+           if (isMounted) setLoading(false);
+        });
       }
     }, (err) => {
-      // Handle offline mode or missing permissions gracefully
       if (isMounted) setLoading(false);
     });
 
