@@ -8,7 +8,7 @@ import { collection, query, orderBy, limit, doc } from "firebase/firestore";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/shared/ProductCard";
-import { ShoppingBag, Palette, Flame, Zap, Award, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
+import { ShoppingBag, Palette, Flame, Zap, Award, ShieldCheck, Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function HomePage() {
@@ -18,7 +18,7 @@ export default function HomePage() {
     if (!db) return null;
     return doc(db, "settings", "global");
   }, [db]);
-  const { data: config } = useDoc(settingsRef);
+  const { data: config, loading: configLoading } = useDoc(settingsRef);
 
   const productsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -44,7 +44,7 @@ export default function HomePage() {
                    initial={{ scale: 0.9, opacity: 0 }}
                    animate={{ scale: 1, opacity: 1 }}
                    src={config.appearance.logoUrl} 
-                   className="h-32 md:h-56 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" 
+                   className="h-32 md:h-64 w-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" 
                    alt="Logo" 
                  />
                ) : (
@@ -80,7 +80,7 @@ export default function HomePage() {
           <div className="container mx-auto px-6">
             <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-8">
               <div className="text-center md:text-right">
-                <h2 className="text-2xl md:text-4xl font-headline font-black uppercase">باقات <span className="gold-text">النخبة</span></h2>
+                <h2 className="text-2xl md:text-4xl font-headline font-black uppercase tracking-tight">ما <span className="gold-text">يميزنا</span></h2>
                 <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.4em] mt-3 opacity-40">Elite Sovereign Selection</p>
               </div>
               <Button asChild variant="ghost" className="text-primary font-black uppercase text-[10px] tracking-widest hover:bg-primary/10 px-10 h-14 rounded-xl border border-primary/10">
@@ -97,7 +97,7 @@ export default function HomePage() {
       <section className="py-24 md:py-32 bg-background">
         <div className="container mx-auto px-6">
            <div className="text-center mb-20 space-y-3">
-              <h2 className="text-3xl md:text-5xl font-headline font-black uppercase tracking-tighter">ما <span className="gold-text">يميزنا</span></h2>
+              <h2 className="text-3xl md:text-5xl font-headline font-black uppercase tracking-tighter">لماذا <span className="gold-text">تختارنا؟</span></h2>
               <p className="text-muted-foreground uppercase font-black text-[10px] tracking-[0.5em] opacity-30">The Sovereign Excellence Protocol</p>
            </div>
            
