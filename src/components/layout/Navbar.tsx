@@ -56,14 +56,15 @@ export function Navbar() {
   if (!isMounted) return null;
 
   const isAdmin = ['owner', 'admin', 'gm'].includes(profile?.role || '');
-  const BRAND_LOGO = "https://aboutmsr.com/wp-content/uploads/2025/02/766f8e72-20c2-4824-814c-1d90f5080e77.png";
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl h-20">
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <img src={BRAND_LOGO} alt="XMOOD" className="h-10 w-auto rounded-xl shadow-lg border border-primary/20" />
-          <span className="font-headline font-black text-xl hidden lg:block tracking-tighter">XMOOD STORE</span>
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="flex flex-col items-center">
+            <span className="handwritten-logo text-3xl md:text-4xl leading-none">Xmood</span>
+            <span className="text-[7px] font-black tracking-[0.4em] uppercase text-primary -mt-1 opacity-80 group-hover:opacity-100 transition-opacity">Store</span>
+          </div>
         </Link>
 
         <div className="hidden lg:flex items-center gap-8">

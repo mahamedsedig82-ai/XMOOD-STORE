@@ -15,18 +15,15 @@ export function Footer() {
   return (
     <footer className="py-24 bg-muted/10 border-t" dir="rtl">
       <div className="container mx-auto px-6 text-center">
-        <div className="mb-10 flex flex-col items-center">
-          {config?.footer?.logoUrl ? (
-              <img src={config.footer.logoUrl} alt="XMOOD" className="h-16 md:h-24 w-auto object-contain mb-4 luxury-image border-none shadow-none rounded-[1rem] md:rounded-[1.5rem]" />
-          ) : config?.appearance?.logoUrl ? (
-              <img src={config.appearance.logoUrl} alt="XMOOD" className="h-16 md:h-24 w-auto object-contain mb-4 luxury-image border-none shadow-none rounded-[1rem] md:rounded-[1.5rem]" />
-          ) : (
-              <div className="handwritten-logo text-6xl">{config?.siteInfo?.title || "XMOOD STORE"}</div>
-          )}
+        <div className="mb-10 flex flex-col items-center group">
+          <Link href="/" className="flex flex-col items-center">
+            <span className="handwritten-logo text-6xl md:text-8xl mb-2">Xmood</span>
+            <span className="text-[10px] md:text-xs font-black tracking-[1em] uppercase text-primary opacity-60 group-hover:opacity-100 transition-opacity">Sovereign Store</span>
+          </Link>
         </div>
         
         <p className="text-muted-foreground max-w-2xl mx-auto mb-16 text-lg md:text-xl leading-relaxed font-medium">
-          {config?.footer?.aboutText || config?.pageContent?.footerAbout || "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية المتكاملة."}
+          {config?.footer?.aboutText || config?.pageContent?.footerAbout || "المرجع الأول والأكثر موثوقية في تقديم الخدمات الرقمية والحلول الإبداعية المتكاملة عبر منصة XMOOD المتطورة."}
         </p>
         
         {config?.footer?.showAddress && config?.footer?.address && (
