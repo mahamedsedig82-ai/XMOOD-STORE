@@ -1,43 +1,39 @@
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Navbar } from "@/components/layout/Navbar";
-import { useFirestore } from "@/firebase";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
 import { ProductCard } from "@/components/shared/ProductCard";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Loader2, Zap, ArrowDownWideNarrow } from "lucide-react";
+import { Search, Loader2, Zap, ArrowDownWideNarrow } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 export default function StorePage() {
   const db = useFirestore();
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!db) return;
-    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      // ترتيب المنتجات حسب السعر (من الأقل للأعلى)
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const sortedData = [...data].sort((a: any, b: any) => a.price - b.price);
-      setProducts(sortedData);
-      setLoading(false);
-    });
-    return () => unsubscribe();
+  const productsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, "products"), orderBy("price", "asc"));
   }, [db]);
 
-  const categories = Array.from(new Set(products.map(p => p.category))).filter(Boolean);
+  const { data: rawProducts, loading } = useCollection(productsQuery);
+
+  const categories = useMemo(() => {
+    if (!rawProducts) return [];
+    return Array.from(new Set(rawProducts.map(p => p.category))).filter(Boolean);
+  }, [rawProducts]);
   
-  const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory ? p.category === selectedCategory : true;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredProducts = useMemo(() => {
+    if (!rawProducts) return [];
+    return rawProducts.filter(p => {
+      const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory ? p.category === selectedCategory : true;
+      return matchesSearch && matchesCategory;
+    });
+  }, [rawProducts, searchTerm, selectedCategory]);
 
   return (
     <main className="min-h-screen bg-background">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { 
   Query, 
   onSnapshot, 
@@ -11,60 +11,54 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 /**
- * خطاف سيادي لمراقبة المجموعات مع نظام معالجة أخطاء متقدم وتحصين ضد الـ Assertion.
+ * 🛡️ خطاف سيادي محصن ضد الـ Assertion والـ Memory Leaks.
  */
 export function useCollection<T = DocumentData>(query: Query<T> | null) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  
+  // تتبع المرجع لمنع التحديث بعد الـ Unmount
+  const isMounted = useRef(true);
 
   useEffect(() => {
-    let isMounted = true;
+    isMounted.current = true;
     if (!query) {
       setLoading(false);
       return;
     }
 
-    try {
-      const unsubscribe = onSnapshot(
-        query, 
-        (snapshot: QuerySnapshot<T>) => {
-          if (!isMounted) return;
-          const items = snapshot.docs.map(doc => ({
-            ...doc.data(),
-            id: doc.id
-          }));
-          setData(items);
-          setLoading(false);
-        }, 
-        (serverError) => {
-          if (!isMounted) return;
-          
-          // Safe path extraction
-          const path = (query as any)._query?.path?.toString() || 'collection';
-          
-          const permissionError = new FirestorePermissionError({
-            path,
-            operation: 'list',
-          } satisfies SecurityRuleContext);
+    const unsubscribe = onSnapshot(
+      query, 
+      (snapshot: QuerySnapshot<T>) => {
+        if (!isMounted.current) return;
+        const items = snapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        }));
+        setData(items);
+        setLoading(false);
+      }, 
+      (serverError) => {
+        if (!isMounted.current) return;
+        
+        const path = (query as any)._query?.path?.toString() || 'collection';
+        const permissionError = new FirestorePermissionError({
+          path,
+          operation: 'list',
+        } satisfies SecurityRuleContext);
 
-          errorEmitter.emit('permission-error', permissionError);
-          setError(serverError);
-          setLoading(false);
-        }
-      );
-
-      return () => {
-        isMounted = false;
-        unsubscribe();
-      };
-    } catch (e: any) {
-      if (isMounted) {
-        console.error("[useCollection] Listener Setup Failed:", e);
+        errorEmitter.emit('permission-error', permissionError);
+        setError(serverError);
         setLoading(false);
       }
-    }
-  }, [query]); // Note: query stability is managed by useMemoFirebase in components
+    );
+
+    return () => {
+      isMounted.current = false;
+      unsubscribe();
+    };
+  }, [query]); 
 
   return { data, loading, error };
 }

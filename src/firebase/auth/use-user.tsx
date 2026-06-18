@@ -1,34 +1,34 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '../provider';
 import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
-/**
- * خطاف مخصص لإدارة حالة المستخدم والتحقق السيادي.
- */
 export function useUser() {
   const auth = useAuth();
   const db = useFirestore();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const isMounted = useRef(true);
   
   const MASTER_ADMINS = ["MAHAMEDFK3@GMAIL.COM", "XMOODSTORE.SUPPORT@GMAIL.COM"];
 
   useEffect(() => {
+    isMounted.current = true;
     if (!auth) return;
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      if (!isMounted.current) return;
       setUser(firebaseUser);
       if (!firebaseUser) {
         setProfile(null);
         setLoading(false);
       }
     });
-    return () => unsubscribeAuth();
+    return () => { isMounted.current = false; unsubscribeAuth(); };
   }, [auth]);
 
   useEffect(() => {
@@ -36,15 +36,14 @@ export function useUser() {
 
     setLoading(true);
     const userDocRef = doc(db, 'users', user.uid);
-    let isMounted = true;
 
     const unsubscribeProfile = onSnapshot(userDocRef, (snapshot) => {
-      if (!isMounted) return;
+      if (!isMounted.current) return;
 
       if (snapshot.exists()) {
         const data = snapshot.data() as UserProfile;
         
-        // التحقق السيادي للمدراء
+        // التحقق السيادي الصامت للمدراء
         const isMaster = MASTER_ADMINS.includes(user.email?.toUpperCase() || "");
         if (isMaster && data.role !== 'owner') {
           updateDoc(userDocRef, { role: 'owner', label: 'المدير العام' }).catch(() => {});
@@ -53,21 +52,18 @@ export function useUser() {
         setProfile({ ...data, uid: snapshot.id });
         setLoading(false); 
       } else {
-        syncUserProfile(user).catch(() => { if (isMounted) setLoading(false); });
+        syncUserProfile(user).catch(() => { if (isMounted.current) setLoading(false); });
       }
-    }, (err) => {
-      if (isMounted) setLoading(false);
+    }, () => {
+      if (isMounted.current) setLoading(false);
     });
 
-    return () => {
-      isMounted = false;
-      unsubscribeProfile();
-    };
+    return () => unsubscribeProfile();
   }, [user, db]);
 
-  const isStaff = !!(user && (
+  const isAdmin = !!(user && (
     MASTER_ADMINS.includes(user.email?.toUpperCase() || "") || 
-    ['owner', 'admin', 'gm', 'store_manager'].includes(profile?.role || '')
+    ['owner', 'admin', 'gm'].includes(profile?.role || '')
   ));
   
   return { 
@@ -75,6 +71,6 @@ export function useUser() {
     profile, 
     loading: loading || (!!user && !profile),
     isVerified: user?.emailVerified || false,
-    isAdmin: isStaff
+    isAdmin
   };
 }

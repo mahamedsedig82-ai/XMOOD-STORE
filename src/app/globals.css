@@ -88,11 +88,6 @@ input, textarea, select {
   margin-right: -4px;
 }
 
-.handwritten-logo:hover {
-  transform: scale(1.05);
-  filter: drop-shadow(0 4px 8px rgba(212, 175, 55, 0.4));
-}
-
 .smooth-scroll {
   scroll-behavior: smooth;
 }
@@ -100,8 +95,3 @@ input, textarea, select {
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { @apply bg-transparent; }
 ::-webkit-scrollbar-thumb { @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-all; }
-
-@media (max-width: 768px) {
-  .luxury-card { @apply rounded-[2rem] p-6; }
-  .royal-button { @apply px-8 py-4; }
-}
