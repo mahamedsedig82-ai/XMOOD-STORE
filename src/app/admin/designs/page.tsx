@@ -91,7 +91,6 @@ export default function DesignerPortfolioAdmin() {
       timestamp: serverTimestamp()
     };
 
-    // ATOMIC NON-BLOCKING ADD
     addDoc(collection(db, "gallery"), data)
       .then(() => {
         setIsGalleryOpen(false);
@@ -110,11 +109,9 @@ export default function DesignerPortfolioAdmin() {
 
   const handleDeleteItem = (docId: string) => {
     if (!docId || !db) return;
-    if (!window.confirm("⚠️ هل أنت متأكد من حذف هذا العمل نهائياً من الأرشيف؟")) return;
+    if (!window.confirm("⚠️ هل أنت متأكد من حذف هذا العمل نهائياً؟")) return;
     
-    // ATOMIC NON-BLOCKING DELETE FOR INSTANT MOBILE RESPONSE
     const docRef = doc(db, "gallery", docId);
-    
     deleteDoc(docRef)
       .then(() => toast({ title: "تم الحذف بنجاح" }))
       .catch(async (serverError) => {
@@ -126,21 +123,21 @@ export default function DesignerPortfolioAdmin() {
   };
 
   return (
-    <div className="space-y-12 animate-fade-in pb-40" dir="rtl">
-      <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border shadow-2xl">
+    <div className="space-y-8 md:space-y-12 animate-fade-in pb-40" dir="rtl">
+      <header className="flex flex-col md:flex-row justify-between items-center gap-6 bg-card p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border shadow-xl">
         <div className="text-right">
-           <h1 className="text-3xl md:text-4xl font-black gold-text leading-tight">إدارة أرشيف الأعمال</h1>
-           <p className="text-[9px] md:text-[11px] font-black uppercase text-muted-foreground tracking-[0.3em] mt-2">Elite Design Control Panel</p>
+           <h1 className="text-3xl md:text-4xl font-black gold-text leading-tight">إدارة المعرض</h1>
+           <p className="text-[9px] md:text-[11px] font-black uppercase text-muted-foreground tracking-widest mt-2">Design Control Hub</p>
         </div>
         <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
           <DialogTrigger asChild>
-            <Button className="royal-button h-14 md:h-18 px-8 md:px-12 text-sm md:text-base shadow-2xl"><Plus size={24} className="ml-3" /> نشر عمل جديد</Button>
+            <Button className="royal-button h-14 md:h-18 px-8 md:px-12 text-sm md:text-base"><Plus size={24} className="ml-3" /> نشر عمل جديد</Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border-none rounded-[2.5rem] md:rounded-[3.5rem] p-6 md:p-12 max-w-2xl overflow-y-auto max-h-[90vh] shadow-2xl">
+          <DialogContent className="bg-card border-none rounded-[2.5rem] p-6 md:p-12 max-w-2xl overflow-y-auto max-h-[90vh] shadow-2xl">
             <DialogHeader>
               <DialogTitle className="text-2xl md:text-3xl font-black gold-text flex items-center gap-4"><ImageIcon size={32} /> إضافة للرواد</DialogTitle>
             </DialogHeader>
-            <div className="space-y-6 md:space-y-8 mt-6 md:mt-10">
+            <div className="space-y-6 mt-6 md:mt-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-primary uppercase pr-4">عنوان العمل</label>
@@ -153,7 +150,7 @@ export default function DesignerPortfolioAdmin() {
               </div>
               <div className="space-y-4">
                  <label className="text-[10px] font-black text-primary uppercase pr-4">الصورة الفنية</label>
-                 <div onClick={() => fileInputRef.current?.click()} className="h-40 md:h-48 bg-muted/30 border-2 border-dashed border-primary/20 rounded-[1.5rem] md:rounded-[2.5rem] flex items-center justify-center cursor-pointer overflow-hidden group">
+                 <div onClick={() => fileInputRef.current?.click()} className="h-40 md:h-48 bg-muted/30 border-2 border-dashed border-primary/20 rounded-[1.5rem] flex items-center justify-center cursor-pointer overflow-hidden group">
                     {newDesign.imageUrl ? (
                       <img src={newDesign.imageUrl} className="h-full w-full object-cover" alt="" />
                     ) : (
@@ -166,12 +163,12 @@ export default function DesignerPortfolioAdmin() {
                  </div>
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-black text-primary uppercase pr-4">شرح الرؤية الإبداعية</label>
+                 <label className="text-[10px] font-black text-primary uppercase pr-4">شرح الرؤية</label>
                  <Textarea value={newDesign.description} onChange={e => setNewDesign({...newDesign, description: e.target.value})} placeholder="صف العمل..." className="min-h-[100px]" />
               </div>
             </div>
             <DialogFooter className="mt-8">
-               <Button onClick={handleAddToGallery} disabled={isProcessing} className="royal-button w-full h-16 md:h-20 text-lg md:text-2xl">
+               <Button onClick={handleAddToGallery} disabled={isProcessing} className="royal-button w-full h-16 text-lg">
                  {isProcessing ? <Loader2 className="animate-spin" /> : "تأكيد النشر الفوري"}
                </Button>
             </DialogFooter>
@@ -183,16 +180,20 @@ export default function DesignerPortfolioAdmin() {
         {loading ? (
           <div className="col-span-full py-40 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={60} /></div>
         ) : galleryItems.length === 0 ? (
-          <div className="col-span-full py-40 text-center opacity-30 italic font-black uppercase tracking-[0.3em]">الأرشيف فارغ حالياً</div>
+          <div className="col-span-full py-40 text-center opacity-30 italic font-black uppercase tracking-widest">الأرشيف فارغ</div>
         ) : galleryItems.map((item: any) => (
-          <Card key={item.id} className="luxury-card border-none flex flex-col group h-full shadow-lg overflow-visible bg-card">
-             {/* SOVEREIGN ADMIN BAR - FORCED VISIBILITY ON MOBILE */}
-             <div className="p-3 bg-zinc-950 border-b border-primary/10 flex items-center justify-between rounded-t-[2rem] md:rounded-t-[3.5rem] relative z-[100]">
+          <Card key={item.id} className="luxury-card border-none flex flex-col group h-full shadow-lg bg-card overflow-visible">
+             {/* 🛡️ MOBILE-FIRST ADMIN BAR: High priority z-index and touch area */}
+             <div className="p-3 bg-zinc-950 border-b border-primary/10 flex items-center justify-between rounded-t-[2rem] md:rounded-t-[3.5rem] relative z-[150]">
                 <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[7px] px-3 py-1 uppercase tracking-tighter">{item.category}</Badge>
                 <button 
-                  onClick={() => handleDeleteItem(item.id)}
-                  className="h-10 w-10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/60 border border-red-500/20 cursor-pointer active:scale-90 touch-none"
-                  style={{ touchAction: 'manipulation' }}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDeleteItem(item.id);
+                  }}
+                  className="h-10 w-10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/80 border border-red-500/30 cursor-pointer active:scale-90 touch-auto"
                   title="حذف نهائي"
                 >
                    <Trash2 size={20} />
@@ -203,8 +204,8 @@ export default function DesignerPortfolioAdmin() {
                 <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-105" alt="" />
              </div>
 
-             <CardContent className="p-6 md:p-8 flex-1 flex flex-col bg-card">
-                <h4 className="font-black text-xl md:text-2xl line-clamp-1 mb-2 gold-text tracking-tighter">{item.title}</h4>
+             <CardContent className="p-6 md:p-8 flex-1 flex flex-col">
+                <h4 className="font-black text-xl md:text-2xl line-clamp-1 mb-2 gold-text">{item.title}</h4>
                 <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 leading-relaxed mb-6 flex-1">{item.description}</p>
                 <div className="pt-4 border-t border-border/40 flex items-center justify-between opacity-60">
                    <div className="flex items-center gap-2">
