@@ -39,7 +39,6 @@ export default function LoginPage() {
   }, []);
 
   // 🛡️ Atomic Redirect Guard 2.0
-  // Ensures we only redirect when Auth IS SETTLED and Profile IS LOADED.
   useEffect(() => {
     if (isMounted && !authLoading && authSettled && user && profile) {
       if (user.emailVerified || profile.isVerified) {
@@ -50,23 +49,33 @@ export default function LoginPage() {
     }
   }, [user, profile, authLoading, isMounted, router, authSettled]);
 
+  const validateEmail = (emailStr: string) => {
+    return String(emailStr)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+  };
+
   const handleAuth = async (type: 'login' | 'signup') => {
-    if (!email || !password) {
+    if (!email.trim() || !password) {
       return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة كافة الحقول." });
+    }
+
+    if (!validateEmail(email.trim())) {
+      return toast({ variant: "destructive", title: "تنسيق خاطئ", description: "يرجى إدخال بريد إلكتروني صالح." });
     }
 
     setLoading(true);
     try {
       if (type === 'signup') {
-        if (!fullName || !phone) {
+        if (!fullName.trim() || !phone.trim()) {
           toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة الاسم ورقم الجوال." });
           setLoading(false);
           return;
         }
         
-        // 🏗️ Sequential Registration (Wait for full completion)
         const res = await registerEmail(email, password, fullName);
-        // Additional phone sync if needed
         const { syncUserProfile } = await import("@/lib/auth");
         await syncUserProfile(res.user, { phoneNumber: phone });
         
@@ -79,6 +88,8 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error("[AUTH_UI_FAILURE]", error);
       let msg = "فشل في المصادقة. تأكد من صحة البيانات.";
+      
+      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني غير صالح.";
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً لدينا.";
       if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') msg = "البريد أو كلمة المرور غير صحيحة.";
       if (error.code === 'auth/network-request-failed') msg = "حدث خطأ في الاتصال بالشبكة.";

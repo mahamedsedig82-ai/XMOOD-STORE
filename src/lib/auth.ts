@@ -120,8 +120,14 @@ export const sendAccountVerification = async (user: User) => {
 };
 
 export const registerEmail = async (email: string, pass: string, name: string) => {
+  const cleanEmail = email.trim().toLowerCase();
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log("[AUTH_DEBUG] Registering email:", cleanEmail);
+  }
+
   // 1. Create Auth User
-  const res = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), pass);
+  const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
   
   // 2. Set Profile Display Name in Auth
   await updateProfile(res.user, { displayName: name });
@@ -132,4 +138,7 @@ export const registerEmail = async (email: string, pass: string, name: string) =
   return res;
 };
 
-export const loginEmail = (e: string, p: string) => signInWithEmailAndPassword(auth, e.trim().toLowerCase(), p);
+export const loginEmail = (e: string, p: string) => {
+  const cleanEmail = e.trim().toLowerCase();
+  return signInWithEmailAndPassword(auth, cleanEmail, p);
+};
