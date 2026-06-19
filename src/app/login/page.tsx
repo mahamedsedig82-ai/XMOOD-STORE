@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -55,9 +54,10 @@ export default function LoginPage() {
     }
   }, [user, profile, authLoading, authSettled, isMounted, router]);
 
-  // 🛡️ Simplified Validation for maximum compatibility
+  // 🛡️ Enhanced Validation for maximum compatibility
   const isBasicEmail = (email: string) => {
-    return email.includes('@') && email.includes('.') && email.length > 5;
+    const clean = email.replace(/\s/g, '');
+    return clean.length > 5 && clean.includes('@') && clean.includes('.');
   };
 
   const handleLogin = async () => {
@@ -73,7 +73,7 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error("[LOGIN_ERROR]", error);
       let msg = "بيانات الدخول غير صحيحة.";
-      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد غير مقبول.";
+      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني غير صالح.";
       if (error.code === 'auth/user-not-found') msg = "المستخدم غير موجود.";
       if (error.code === 'auth/wrong-password') msg = "كلمة المرور غير صحيحة.";
       
@@ -83,7 +83,7 @@ export default function LoginPage() {
   };
 
   const handleSignup = async () => {
-    const email = signupEmailVal.trim();
+    const email = signupEmailVal.replace(/\s/g, ''); // Remove all spaces immediately
     const pass = signupPassVal;
     const name = fullName.trim();
     const ph = phone.trim();
@@ -93,26 +93,26 @@ export default function LoginPage() {
     }
 
     if (!isBasicEmail(email)) {
-      return toast({ variant: "destructive", title: "تنسيق خاطئ", description: "يرجى التأكد من كتابة البريد الإلكتروني بشكل صحيح." });
+      return toast({ variant: "destructive", title: "تنسيق غير مقبول", description: "يرجى التأكد من كتابة البريد الإلكتروني بشكل صحيح (مثال: user@domain.com)." });
     }
 
     setLoading(true);
     try {
-      // 1. Create Auth & Sync Profile (Internal Logic)
-      const res = await registerEmail(email, pass, name);
+      // 1. Create Auth & Sync Profile
+      await registerEmail(email, pass, name);
       
-      // 2. Extra sync for specific fields if needed
-      await syncUserProfile(res.user, { phoneNumber: ph });
+      // 2. Extra sync for phone
+      if (auth.currentUser) {
+        await syncUserProfile(auth.currentUser, { phoneNumber: ph });
+        await sendAccountVerification(auth.currentUser);
+      }
       
-      // 3. Dispatch verification
-      await sendAccountVerification(res.user);
-      
-      toast({ title: "تم إنشاء العضوية", description: "تفضل بتفعيل بريدك الآن لتتمكن من الشراء." });
+      toast({ title: "تم إنشاء العضوية بنجاح", description: "يرجى تفعيل بريدك الإلكتروني الآن." });
     } catch (error: any) {
       console.error("[SIGNUP_ERROR]", error);
       let msg = "فشل إنشاء الحساب.";
-      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً في النظام.";
-      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني غير مقبول.";
+      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً لدينا.";
+      if (error.code === 'auth/invalid-email') msg = "Firebase: تنسيق البريد الإلكتروني المرفوع غير صالح.";
       if (error.code === 'auth/weak-password') msg = "كلمة المرور ضعيفة جداً (6 رموز كحد أدنى).";
       
       toast({ variant: "destructive", title: "تنبيه", description: msg });
@@ -158,6 +158,8 @@ export default function LoginPage() {
                       <Input 
                         id="login-email-field"
                         name="login-email"
+                        autoComplete="email"
+                        spellCheck={false}
                         value={loginEmailVal} 
                         onChange={e => setLoginEmailVal(e.target.value)} 
                         type="email" 
@@ -169,6 +171,7 @@ export default function LoginPage() {
                       <Input 
                         id="login-pass-field"
                         name="login-password"
+                        autoComplete="current-password"
                         value={loginPassVal} 
                         onChange={e => setLoginPassVal(e.target.value)} 
                         type="password" 
@@ -196,6 +199,8 @@ export default function LoginPage() {
                       <Input 
                         id="signup-email-field"
                         name="signup-email"
+                        autoComplete="email"
+                        spellCheck={false}
                         value={signupEmailVal} 
                         onChange={e => setSignupEmailVal(e.target.value)} 
                         type="email" 
@@ -207,6 +212,7 @@ export default function LoginPage() {
                       <Input 
                         id="signup-pass-field"
                         name="signup-password"
+                        autoComplete="new-password"
                         value={signupPassVal} 
                         onChange={e => setSignupPassVal(e.target.value)} 
                         type="password" 

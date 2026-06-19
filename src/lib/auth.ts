@@ -1,4 +1,3 @@
-
 "use client";
 
 import { 
@@ -59,11 +58,13 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * 🛡️ Reliable Email Sanitization
+ * 🛡️ Ultra-Reliable Email Sanitization
+ * Removes ALL whitespace (internal, leading, trailing) and converts to lowercase.
  */
 const sanitizeEmail = (email: any): string => {
   if (!email || typeof email !== 'string') return "";
-  return email.trim().toLowerCase();
+  // Remove all types of whitespace characters including non-breaking spaces
+  return email.replace(/\s/g, '').toLowerCase();
 };
 
 /**
@@ -72,8 +73,8 @@ const sanitizeEmail = (email: any): string => {
 export const registerEmail = async (email: string, pass: string, name: string) => {
   const cleanEmail = sanitizeEmail(email);
   
-  if (!cleanEmail || !cleanEmail.includes('@')) {
-    throw { code: 'auth/invalid-email' };
+  if (!cleanEmail || !cleanEmail.includes('@') || cleanEmail.length < 5) {
+    throw { code: 'auth/invalid-email', message: 'تنسيق البريد الإلكتروني غير صالح' };
   }
 
   // 1. Core Auth Account
@@ -94,7 +95,7 @@ export const registerEmail = async (email: string, pass: string, name: string) =
 export const loginEmail = (email: string, pass: string) => {
   const cleanEmail = sanitizeEmail(email);
   if (!cleanEmail || !cleanEmail.includes('@')) {
-    throw { code: 'auth/invalid-email' };
+    throw { code: 'auth/invalid-email', message: 'يرجى إدخال بريد إلكتروني صحيح' };
   }
   return signInWithEmailAndPassword(auth, cleanEmail, pass);
 };
