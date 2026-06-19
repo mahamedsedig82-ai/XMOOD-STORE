@@ -15,6 +15,18 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
+ * 🛡️ UNIVERSAL DATA PURIFIER
+ * Ensures absolute string purity for Firebase Auth.
+ */
+const sanitizeEmail = (raw: any): string => {
+  return String(raw || "")
+    .replace(/\s/g, "") // Remove all standard whitespace
+    .replace(/[^\x20-\x7E]/g, "") // Remove non-printable/hidden ASCII chars
+    .trim()
+    .toLowerCase();
+};
+
+/**
  * 🛡️ Profile Sync Service
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
@@ -57,52 +69,32 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * 🛡️ REGISTRATION PIPELINE (40.0)
- * Ensuring absolute email string purity before Firebase handshake.
+ * 🛡️ REGISTRATION PIPELINE (41.0)
  */
 export const registerEmail = async (rawEmail: any, pass: string, name: string) => {
-  console.log("--- AUTH REGISTRATION PIPELINE START ---");
-  
-  // 1. FORCED PURITY SANITIZATION
-  // We cast to string, remove ALL whitespace, non-printable chars, and lowercase.
-  const cleanEmail = String(rawEmail)
-    .replace(/\s/g, "") // Remove all standard whitespace
-    .replace(/[^\x20-\x7E]/g, "") // Remove non-printable/hidden ASCII chars
-    .trim()
-    .toLowerCase();
+  const cleanEmail = sanitizeEmail(rawEmail);
+  console.log(`[AUTH_FORENSIC] SIGNUP ATTEMPT: >>>${cleanEmail}<<< (Length: ${cleanEmail.length})`);
 
-  console.log(`[AUTH_FORENSIC] FINAL EMAIL VALUE: >>>${cleanEmail}<<<`);
-  console.log(`[AUTH_FORENSIC] LENGTH: ${cleanEmail.length}`);
-
-  // 2. PRE-FLIGHT VALIDATION
-  if (!cleanEmail || typeof cleanEmail !== 'string' || !cleanEmail.includes('@')) {
-    console.error("[AUTH_FORENSIC] REJECTED LOCALLY: Malformed email string.");
+  if (!cleanEmail || !cleanEmail.includes('@')) {
     throw new Error("تنسيق البريد الإلكتروني غير صالح.");
   }
 
   try {
-    // 3. ATOMIC FIREBASE CALL
-    console.log("CALLING FIREBASE: createUserWithEmailAndPassword...");
     const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
-    
-    // 4. IMMEDIATE IDENTITY BINDING
-    console.log("AUTH SUCCESS. BINDING IDENTITY...");
     await updateProfile(res.user, { displayName: name });
-    
-    // Note: We return the response so the caller can use the fresh user object
     return res;
   } catch (error: any) {
-    console.error("[AUTH_FORENSIC] FIREBASE REJECTION:", error.code, error.message);
+    console.error("[AUTH_FORENSIC] SIGNUP FAILURE:", error.code);
     throw error;
   }
 };
 
 /**
- * 🛡️ LOGIN PIPELINE (40.0)
+ * 🛡️ LOGIN PIPELINE (41.0)
  */
 export const loginEmail = async (rawEmail: any, pass: string) => {
-  const cleanEmail = String(rawEmail).replace(/\s/g, "").trim().toLowerCase();
-  console.log(`[AUTH_LOGIN] ATTEMPTING LOGIN FOR: >>>${cleanEmail}<<<`);
+  const cleanEmail = sanitizeEmail(rawEmail);
+  console.log(`[AUTH_FORENSIC] LOGIN ATTEMPT: >>>${cleanEmail}<<< (Length: ${cleanEmail.length})`);
 
   if (!cleanEmail || !cleanEmail.includes('@')) {
     throw new Error("يرجى إدخال بريد إلكتروني صحيح.");
@@ -110,8 +102,8 @@ export const loginEmail = async (rawEmail: any, pass: string) => {
 
   try {
     return await signInWithEmailAndPassword(auth, cleanEmail, pass);
-  } catch (error) {
-    console.error("[AUTH_LOGIN] FAILURE:", error);
+  } catch (error: any) {
+    console.error("[AUTH_FORENSIC] LOGIN FAILURE:", error.code);
     throw error;
   }
 };
