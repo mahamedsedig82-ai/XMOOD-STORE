@@ -17,10 +17,15 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // 🛡️ Separate States to prevent tab-switching corruption
+  const [loginEmailVal, setLoginEmailVal] = useState("");
+  const [loginPassVal, setLoginPassVal] = useState("");
+  
+  const [signupEmailVal, setSignupEmailVal] = useState("");
+  const [signupPassVal, setSignupPassVal] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  
   const [loading, setLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   
@@ -38,16 +43,16 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
-  // 🛡️ Atomic Redirect Guard 2.0
+  // 🛡️ Safe Redirect Orchestration
   useEffect(() => {
-    if (isMounted && !authLoading && authSettled && user && profile) {
+    if (isMounted && authSettled && !authLoading && user && profile) {
       if (user.emailVerified || profile.isVerified) {
         router.replace("/wallet");
       } else {
         router.replace("/verify-email?waiting=true");
       }
     }
-  }, [user, profile, authLoading, isMounted, router, authSettled]);
+  }, [user, profile, authLoading, authSettled, isMounted, router]);
 
   const validateEmail = (emailStr: string) => {
     return String(emailStr)
@@ -58,11 +63,14 @@ export default function LoginPage() {
   };
 
   const handleAuth = async (type: 'login' | 'signup') => {
-    if (!email.trim() || !password) {
-      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة كافة الحقول." });
+    const currentEmail = type === 'signup' ? signupEmailVal.trim() : loginEmailVal.trim();
+    const currentPass = type === 'signup' ? signupPassVal : loginPassVal;
+
+    if (!currentEmail || !currentPass) {
+      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة البريد وكلمة المرور." });
     }
 
-    if (!validateEmail(email.trim())) {
+    if (!validateEmail(currentEmail)) {
       return toast({ variant: "destructive", title: "تنسيق خاطئ", description: "يرجى إدخال بريد إلكتروني صالح." });
     }
 
@@ -70,43 +78,48 @@ export default function LoginPage() {
     try {
       if (type === 'signup') {
         if (!fullName.trim() || !phone.trim()) {
-          toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة الاسم ورقم الجوال." });
+          toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة كافة حقول الاشتراك." });
           setLoading(false);
           return;
         }
         
-        const res = await registerEmail(email, password, fullName);
+        const res = await registerEmail(currentEmail, currentPass, fullName);
+        // Sync phone number after initial creation
         const { syncUserProfile } = await import("@/lib/auth");
         await syncUserProfile(res.user, { phoneNumber: phone });
         
         await sendAccountVerification(res.user);
-        toast({ title: "تم إنشاء العضوية بنجاح", description: "يرجى تفعيل بريدك الإلكتروني الآن." });
+        toast({ title: "تم إنشاء العضوية", description: "يرجى تفعيل بريدك الإلكتروني الآن." });
       } else {
-        await loginEmail(email, password);
-        toast({ title: "تم الدخول بنجاح", description: "جاري تحميل بياناتك السيادية..." });
+        await loginEmail(currentEmail, currentPass);
+        toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في عالم XMOOD." });
       }
     } catch (error: any) {
-      console.error("[AUTH_UI_FAILURE]", error);
+      console.error("[AUTH_ERROR]", error);
       let msg = "فشل في المصادقة. تأكد من صحة البيانات.";
-      
       if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني غير صالح.";
-      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً لدينا.";
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') msg = "البريد أو كلمة المرور غير صحيحة.";
-      if (error.code === 'auth/network-request-failed') msg = "حدث خطأ في الاتصال بالشبكة.";
-      
+      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') msg = "البيانات غير صحيحة.";
       toast({ variant: "destructive", title: "تنبيه أمني", description: msg });
       setLoading(false);
     }
   };
 
-  if (!isMounted || (authLoading && !user)) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <Loader2 className="animate-spin text-primary" size={60} />
-        <p className="text-[10px] font-black uppercase tracking-widest gold-text animate-pulse">Securing Entry Node...</p>
-      </div>
-    );
-  }
+  // 🛡️ Consistent Loader Structure to prevent Hydration Mismatch
+  if (!isMounted) return (
+    <main className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
+      <Loader2 className="animate-spin text-primary" size={60} />
+      <p className="text-[10px] font-black uppercase tracking-widest gold-text">Initializing Sovereign Portal...</p>
+    </main>
+  );
+
+  // Still Loading Auth State
+  if (authLoading && !user) return (
+    <main className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
+      <Loader2 className="animate-spin text-primary" size={60} />
+      <p className="text-[10px] font-black uppercase tracking-widest gold-text">Securing Node Access...</p>
+    </main>
+  );
 
   return (
     <main className="min-h-screen bg-background relative overflow-hidden" dir="rtl">
@@ -118,7 +131,7 @@ export default function LoginPage() {
                <div className="relative inline-block">
                   <div className="absolute inset-0 bg-primary/20 blur-[20px] rounded-full scale-125 opacity-30" />
                   {config?.appearance?.logoUrl ? (
-                    <img src={config.appearance.logoUrl} className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover border-2 border-primary/20 shadow-xl relative z-10" alt="XMOOD" />
+                    <img src={config.appearance.logoUrl} className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover border-2 border-primary/20 shadow-xl relative z-10" alt="Logo" />
                   ) : (
                     <h2 className="handwritten-logo !text-2xl relative z-10" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
                   )}
@@ -136,11 +149,25 @@ export default function LoginPage() {
                 <TabsContent value="login" className="space-y-4">
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
-                      <Input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="user@xmood.pro" />
+                      <Input 
+                        id="login-email"
+                        autoComplete="email"
+                        value={loginEmailVal} 
+                        onChange={e => setLoginEmailVal(e.target.value)} 
+                        type="email" 
+                        placeholder="user@xmood.pro" 
+                      />
                    </div>
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">مفتاح المرور</Label>
-                      <Input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" />
+                      <Input 
+                        id="login-password"
+                        autoComplete="current-password"
+                        value={loginPassVal} 
+                        onChange={e => setLoginPassVal(e.target.value)} 
+                        type="password" 
+                        placeholder="••••••••" 
+                      />
                    </div>
                   <Button onClick={() => handleAuth('login')} disabled={loading} className="royal-button w-full h-14 text-[10px] mt-4">
                     {loading ? <Loader2 className="animate-spin" /> : <><ShieldCheck size={18} className="ml-2" /> تأمين الدخول</>}
@@ -149,11 +176,29 @@ export default function LoginPage() {
 
                 <TabsContent value="signup" className="space-y-4">
                    <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="عضو جديد" /></div>
+                      <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="الاسم الرباعي" /></div>
                       <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">رقم الجوال</Label><Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." /></div>
                    </div>
-                   <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">البريد الإلكتروني</Label><Input value={email} onChange={e => setEmail(e.target.value)} type="email" /></div>
-                   <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">كلمة المرور</Label><Input value={password} onChange={e => setPassword(e.target.value)} type="password" /></div>
+                   <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black text-primary/80 pr-3">البريد الإلكتروني</Label>
+                      <Input 
+                        id="signup-email"
+                        autoComplete="email"
+                        value={signupEmailVal} 
+                        onChange={e => setSignupEmailVal(e.target.value)} 
+                        type="email" 
+                      />
+                   </div>
+                   <div className="space-y-1.5">
+                      <Label className="text-[10px] font-black text-primary/80 pr-3">كلمة المرور</Label>
+                      <Input 
+                        id="signup-password"
+                        autoComplete="new-password"
+                        value={signupPassVal} 
+                        onChange={e => setSignupPassVal(e.target.value)} 
+                        type="password" 
+                      />
+                   </div>
                    <Button onClick={() => handleAuth('signup')} disabled={loading} className="royal-button w-full h-14 text-[10px] mt-2">
                      {loading ? <Loader2 className="animate-spin" /> : <><UserPlus size={18} className="ml-2" /> إنشاء العضوية</>}
                    </Button>

@@ -15,9 +15,7 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Profile Sync Service 9.0 (Idempotent & Resilient)
- * Ensures user document existence without overwriting critical data (Wallet, Role).
- * Acts as a self-healing mechanism for the user session.
+ * 🛡️ Profile Sync Service 10.0 (Atomic & Fail-safe)
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -28,14 +26,13 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
     const baseProfile = {
       uid: user.uid,
       displayName: additionalData.displayName || user.displayName || user.email?.split("@")[0] || "عضو",
-      email: user.email?.toLowerCase(),
+      email: user.email?.toLowerCase().trim(),
       isVerified: user.emailVerified || false,
       updatedAt: serverTimestamp(),
       ...additionalData
     };
 
     if (!userDoc.exists()) {
-      // 🏗️ First time creation
       await setDoc(userRef, {
         ...baseProfile,
         walletBalance: 0,
@@ -45,7 +42,6 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         createdAt: new Date().toISOString(),
       }, { merge: true });
     } else {
-      // 🔄 Resilient Sync (Update only necessary fields)
       const existing = userDoc.data();
       const updates: any = {};
       
@@ -61,8 +57,8 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
       }
     }
   } catch (error) {
-    console.error("[AUTH_SYNC] Critical stabilization failure:", error);
-    throw error; // Rethrow to let caller handle it (like during registration)
+    console.error("[AUTH_SYNC_CRITICAL]", error);
+    throw error;
   }
 }
 
@@ -114,16 +110,20 @@ export const sendAccountVerification = async (user: User) => {
     };
     await sendEmailVerification(user, actionCodeSettings);
   } catch (error: any) {
-    console.error("[AUTH_VERIFY] Dispatch failure:", error.message);
+    console.error("[AUTH_VERIFY_FAILURE]", error.message);
     throw error;
   }
 };
 
+/**
+ * 🛡️ Robust Registration
+ */
 export const registerEmail = async (email: string, pass: string, name: string) => {
+  if (!email || typeof email !== 'string') throw new Error("Email string required");
   const cleanEmail = email.trim().toLowerCase();
   
   if (process.env.NODE_ENV === 'development') {
-    console.log("[AUTH_DEBUG] Registering email:", cleanEmail);
+    console.log("[AUTH_DISPATCH] Creating account for:", cleanEmail);
   }
 
   // 1. Create Auth User
@@ -132,13 +132,22 @@ export const registerEmail = async (email: string, pass: string, name: string) =
   // 2. Set Profile Display Name in Auth
   await updateProfile(res.user, { displayName: name });
   
-  // 3. Atomically sync to Firestore (Wait for it to finish)
+  // 3. Sync to Firestore
   await syncUserProfile(res.user, { displayName: name });
   
   return res;
 };
 
-export const loginEmail = (e: string, p: string) => {
-  const cleanEmail = e.trim().toLowerCase();
-  return signInWithEmailAndPassword(auth, cleanEmail, p);
+/**
+ * 🛡️ Robust Login
+ */
+export const loginEmail = (email: string, pass: string) => {
+  if (!email || typeof email !== 'string') throw new Error("Email string required");
+  const cleanEmail = email.trim().toLowerCase();
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log("[AUTH_DISPATCH] Attempting login for:", cleanEmail);
+  }
+  
+  return signInWithEmailAndPassword(auth, cleanEmail, pass);
 };
