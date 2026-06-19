@@ -33,14 +33,17 @@ function VerifyEmailContent() {
       applyActionCode(auth, oobCode)
         .then(async () => {
           if (auth.currentUser) {
+            // Force token refresh
+            await auth.currentUser.getIdToken(true);
             await auth.currentUser.reload();
             // 🛡️ CRITICAL ATOMIC SYNC
             await syncUserProfile(auth.currentUser);
           }
           setStatus('success');
-          setTimeout(() => router.replace("/wallet"), 2500);
+          setTimeout(() => router.replace("/wallet"), 2000);
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error("[VERIFY_ERROR]", err);
           setStatus('error');
         });
       return;
@@ -55,7 +58,7 @@ function VerifyEmailContent() {
           // 🛡️ CRITICAL SYNC: Ensure Firestore profile matches Auth status
           await syncUserProfile(auth.currentUser);
           setStatus('success');
-          setTimeout(() => router.replace("/wallet"), 2500);
+          setTimeout(() => router.replace("/wallet"), 2000);
         }
       }
     }, 3000);
@@ -65,16 +68,16 @@ function VerifyEmailContent() {
 
   const handleResend = async () => {
     if (!auth.currentUser) {
-      toast({ variant: "destructive", title: "خطأ في الجلسة" });
+      toast({ variant: "destructive", title: "خطأ في الجلسة", description: "يرجى تسجيل الدخول مجدداً." });
       return;
     }
     setIsResending(true);
     try {
       const { sendAccountVerification } = await import("@/lib/auth");
       await sendAccountVerification(auth.currentUser);
-      toast({ title: "تم إرسال الرابط بنجاح" });
+      toast({ title: "تم إرسال الرابط بنجاح", description: "تفقد بريدك الآن." });
     } catch (e) {
-      toast({ variant: "destructive", title: "يرجى المحاولة لاحقاً" });
+      toast({ variant: "destructive", title: "تنبيه", description: "يرجى المحاولة بعد قليل." });
     } finally {
       setIsResending(false);
     }

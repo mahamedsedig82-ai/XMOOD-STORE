@@ -8,9 +8,13 @@ import { UserProfile } from '@/app/lib/types';
 import { syncUserProfile } from '@/lib/auth';
 
 /**
- * 🛡️ Sovereign Identity Manager 26.0 (Atomic Sync)
+ * 🛡️ Sovereign Identity Manager 27.0 (Atomic Sync & Self-Healing)
  * Orchestrates Auth and Firestore profile loading in a strict sequence.
- * Ensures 'loading' only resolves when BOTH auth and profile are ready.
+ * Features:
+ * 1. Wait for Auth State.
+ * 2. If Auth exists, wait for Firestore Profile.
+ * 3. If Profile missing, trigger silent self-healing (Sync).
+ * 4. Ensure 'loading' only resolves when session is fully usable.
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -51,21 +55,28 @@ export function useUser() {
 
       const userDocRef = doc(db, 'users', firebaseUser.uid);
       
-      // Establish real-time profile listener
+      // Establish real-time profile listener with self-healing
       profileUnsubscribeRef.current = onSnapshot(userDocRef, (snapshot) => {
-        if (!auth.currentUser) return;
+        // Prevent processing if auth changed during snapshot
+        if (auth.currentUser?.uid !== firebaseUser.uid) return;
 
         if (snapshot.exists()) {
-          setProfile({ ...snapshot.data(), uid: snapshot.id } as UserProfile);
+          const profileData = snapshot.data();
+          setProfile({ ...profileData, uid: snapshot.id } as UserProfile);
           setLoading(false);
           setAuthSettled(true);
         } else {
-          // If profile missing, trigger idempotent sync
-          // snapshot will refire once created
-          syncUserProfile(firebaseUser);
+          // 🛡️ SELF-HEALING: If user is authenticated but profile is missing, recreate it.
+          console.warn("[IDENTITY_SYNC] Missing profile detected. Reconstructing...");
+          syncUserProfile(firebaseUser).catch(err => {
+            console.error("[IDENTITY_SYNC] Reconstruction failed:", err);
+            setLoading(false);
+            setAuthSettled(true);
+          });
         }
       }, (err) => {
         console.warn("[IDENTITY_SYNC] Profile stream error:", err.message);
+        // Fallback to minimal profile if listener fails (permission issue etc)
         setLoading(false);
         setAuthSettled(true);
       });
@@ -80,7 +91,7 @@ export function useUser() {
     };
   }, []);
 
-  const isAdmin = !!(user && profile && ['owner', 'admin', 'gm'].includes(profile.role));
+  const isAdmin = !!(user && profile && ['owner', 'admin', 'gm', 'store_manager'].includes(profile.role));
   const isVerified = user?.emailVerified || profile?.isVerified || false;
   
   return { 

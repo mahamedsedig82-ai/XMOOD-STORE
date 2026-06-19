@@ -15,14 +15,16 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Profile Sync Service 8.0 (Atomic Integrity)
- * Ensures user document existence without overwriting critical data.
+ * 🛡️ Profile Sync Service 9.0 (Idempotent & Resilient)
+ * Ensures user document existence without overwriting critical data (Wallet, Role).
+ * Acts as a self-healing mechanism for the user session.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
   const userRef = doc(db, "users", user.uid);
   try {
     const userDoc = await getDoc(userRef);
+    
     const baseProfile = {
       uid: user.uid,
       displayName: additionalData.displayName || user.displayName || user.email?.split("@")[0] || "عضو",
@@ -33,6 +35,7 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
     };
 
     if (!userDoc.exists()) {
+      // 🏗️ First time creation
       await setDoc(userRef, {
         ...baseProfile,
         walletBalance: 0,
@@ -42,17 +45,24 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
         createdAt: new Date().toISOString(),
       }, { merge: true });
     } else {
+      // 🔄 Resilient Sync (Update only necessary fields)
       const existing = userDoc.data();
-      // Only update if status changed to avoid loops
-      if (existing.isVerified !== user.emailVerified) {
+      const updates: any = {};
+      
+      if (existing.isVerified !== user.emailVerified) updates.isVerified = user.emailVerified;
+      if (additionalData.displayName && existing.displayName !== additionalData.displayName) updates.displayName = additionalData.displayName;
+      if (additionalData.phoneNumber && existing.phoneNumber !== additionalData.phoneNumber) updates.phoneNumber = additionalData.phoneNumber;
+
+      if (Object.keys(updates).length > 0) {
         await updateDoc(userRef, { 
-          isVerified: user.emailVerified,
+          ...updates,
           updatedAt: serverTimestamp() 
         });
       }
     }
   } catch (error) {
-    console.error("[AUTH_SYNC] Profile stabilization failure:", error);
+    console.error("[AUTH_SYNC] Critical stabilization failure:", error);
+    throw error; // Rethrow to let caller handle it (like during registration)
   }
 }
 
@@ -110,10 +120,15 @@ export const sendAccountVerification = async (user: User) => {
 };
 
 export const registerEmail = async (email: string, pass: string, name: string) => {
+  // 1. Create Auth User
   const res = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), pass);
+  
+  // 2. Set Profile Display Name in Auth
   await updateProfile(res.user, { displayName: name });
-  // Initial sync
+  
+  // 3. Atomically sync to Firestore (Wait for it to finish)
   await syncUserProfile(res.user, { displayName: name });
+  
   return res;
 };
 

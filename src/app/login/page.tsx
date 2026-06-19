@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { loginEmail, registerEmail, syncUserProfile, sendAccountVerification } from "@/lib/auth";
+import { loginEmail, registerEmail, sendAccountVerification } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Loader2, UserPlus, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -25,7 +25,7 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
   
   const router = useRouter();
-  const { user, profile, loading: authLoading, isVerified, authSettled } = useUser();
+  const { user, profile, loading: authLoading, authSettled } = useUser();
   const db = useFirestore();
 
   const settingsRef = useMemoFirebase(() => {
@@ -38,7 +38,8 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
-  // 🛡️ Atomic Redirect Guard: Wait for both auth AND profile to be ready
+  // 🛡️ Atomic Redirect Guard 2.0
+  // Ensures we only redirect when Auth IS SETTLED and Profile IS LOADED.
   useEffect(() => {
     if (isMounted && !authLoading && authSettled && user && profile) {
       if (user.emailVerified || profile.isVerified) {
@@ -51,34 +52,43 @@ export default function LoginPage() {
 
   const handleAuth = async (type: 'login' | 'signup') => {
     if (!email || !password) {
-      return toast({ variant: "destructive", title: "بيانات ناقصة" });
+      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة كافة الحقول." });
     }
 
     setLoading(true);
     try {
       if (type === 'signup') {
         if (!fullName || !phone) {
-          toast({ variant: "destructive", title: "بيانات ناقصة" });
+          toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة الاسم ورقم الجوال." });
           setLoading(false);
           return;
         }
+        
+        // 🏗️ Sequential Registration (Wait for full completion)
         const res = await registerEmail(email, password, fullName);
-        await syncUserProfile(res.user, { displayName: fullName, phoneNumber: phone });
+        // Additional phone sync if needed
+        const { syncUserProfile } = await import("@/lib/auth");
+        await syncUserProfile(res.user, { phoneNumber: phone });
+        
         await sendAccountVerification(res.user);
-        toast({ title: "تم إنشاء العضوية بنجاح" });
+        toast({ title: "تم إنشاء العضوية بنجاح", description: "يرجى تفعيل بريدك الإلكتروني الآن." });
       } else {
         await loginEmail(email, password);
-        toast({ title: "جاري تأمين الدخول..." });
+        toast({ title: "تم الدخول بنجاح", description: "جاري تحميل بياناتك السيادية..." });
       }
     } catch (error: any) {
-      let msg = "فشل في المصادقة. تأكد من البيانات.";
-      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
-      toast({ variant: "destructive", title: "فشل العملية", description: msg });
+      console.error("[AUTH_UI_FAILURE]", error);
+      let msg = "فشل في المصادقة. تأكد من صحة البيانات.";
+      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً لدينا.";
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') msg = "البريد أو كلمة المرور غير صحيحة.";
+      if (error.code === 'auth/network-request-failed') msg = "حدث خطأ في الاتصال بالشبكة.";
+      
+      toast({ variant: "destructive", title: "تنبيه أمني", description: msg });
       setLoading(false);
     }
   };
 
-  if (!isMounted || authLoading || (user && !profile)) {
+  if (!isMounted || (authLoading && !user)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="animate-spin text-primary" size={60} />
