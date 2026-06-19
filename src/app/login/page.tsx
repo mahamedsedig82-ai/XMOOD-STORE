@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, UserPlus, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { useUser, useFirestore, useDoc, useMemoFirebase, auth } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 
 export default function LoginPage() {
@@ -55,7 +55,6 @@ export default function LoginPage() {
   }, [user, profile, authLoading, authSettled, isMounted, router]);
 
   const handleLogin = async () => {
-    console.log("RAW LOGIN INPUT:", loginEmailVal);
     if (!loginEmailVal.trim() || !loginPassVal) {
       return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إدخال البريد وكلمة المرور." });
     }
@@ -67,35 +66,33 @@ export default function LoginPage() {
     } catch (error: any) {
       setLoading(false);
       let msg = "بيانات الدخول غير صحيحة.";
-      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني المرفوع للخادم غير صالح.";
+      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني غير صالح.";
       toast({ variant: "destructive", title: "تنبيه أمني", description: msg });
     }
   };
 
   const handleSignup = async () => {
-    // 🛡️ REBUILT FLOW: DEBUGGING AND TRACEABILITY
     console.log("--- SIGNUP UI SUBMISSION ---");
-    console.log("STATE EMAIL:", signupEmailVal);
-    console.log("STATE NAME:", fullName);
-
     if (!signupEmailVal.trim() || !signupPassVal || !fullName.trim() || !phone.trim()) {
       return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة كافة الحقول المطلوبة." });
     }
 
     setLoading(true);
     try {
-      // Pass raw values to the library function which handles the single source of truth sanitization
-      await registerEmail(signupEmailVal, signupPassVal, fullName.trim());
+      // 1. Atomic Auth Creation
+      const res = await registerEmail(signupEmailVal, signupPassVal, fullName.trim());
       
-      if (auth.currentUser) {
-        await syncUserProfile(auth.currentUser, { phoneNumber: phone.trim() });
-        await sendAccountVerification(auth.currentUser);
+      // 2. Immediate Profile Sync using the FRESH result user object
+      if (res && res.user) {
+        console.log("SYNCING FRESH USER PROFILE...");
+        await syncUserProfile(res.user, { phoneNumber: phone.trim() });
+        await sendAccountVerification(res.user);
       }
       
       toast({ title: "تم إنشاء الحساب بنجاح", description: "يرجى تفعيل بريدك الإلكتروني للمتابعة." });
     } catch (error: any) {
       setLoading(false);
-      console.error("SIGNUP UI ERROR:", error);
+      console.error("SIGNUP UI ERROR:", error.code);
       
       let msg = "فشل إنشاء الحساب.";
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
@@ -180,7 +177,7 @@ export default function LoginPage() {
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
                         type="email"
-                        autoComplete="new-email"
+                        autoComplete="one-time-code"
                         spellCheck={false}
                         value={signupEmailVal} 
                         onChange={e => setSignupEmailVal(e.target.value)} 
