@@ -8,20 +8,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { loginEmail, registerEmail, sendAccountVerification } from "@/lib/auth";
+import { loginEmail, registerEmail, sendAccountVerification, syncUserProfile } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Loader2, UserPlus, ShieldCheck, AlertCircle } from "lucide-react";
+import { Loader2, UserPlus, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 
 export default function LoginPage() {
-  // 🛡️ Isolated states for Login
+  // 🛡️ Login State
   const [loginEmailVal, setLoginEmailVal] = useState("");
   const [loginPassVal, setLoginPassVal] = useState("");
   
-  // 🛡️ Isolated states for Signup
+  // 🛡️ Signup State
   const [signupEmailVal, setSignupEmailVal] = useState("");
   const [signupPassVal, setSignupPassVal] = useState("");
   const [fullName, setFullName] = useState("");
@@ -91,15 +91,23 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
+      // 1. Core Auth & Basic Profile
       const res = await registerEmail(email, signupPassVal, fullName);
-      const { syncUserProfile } = await import("@/lib/auth");
+      
+      // 2. Additional Meta Sync (Phone)
       await syncUserProfile(res.user, { phoneNumber: phone });
+      
+      // 3. Verification Email
       await sendAccountVerification(res.user);
+      
       toast({ title: "تم إنشاء العضوية", description: "تفضل بتفعيل بريدك الآن." });
     } catch (error: any) {
+      console.error("[SIGNUP_ERROR]", error);
       let msg = "فشل إنشاء الحساب.";
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
-      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد غير مقبول.";
+      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد غير مقبول من النظام.";
+      if (error.code === 'auth/weak-password') msg = "كلمة المرور ضعيفة جداً.";
+      
       toast({ variant: "destructive", title: "تنبيه", description: msg });
       setLoading(false);
     }
@@ -142,7 +150,6 @@ export default function LoginPage() {
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
                         id="login-email-input"
-                        autoComplete="email"
                         value={loginEmailVal} 
                         onChange={e => setLoginEmailVal(e.target.value)} 
                         type="email" 
@@ -153,7 +160,6 @@ export default function LoginPage() {
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">مفتاح المرور</Label>
                       <Input 
                         id="login-pass-input"
-                        autoComplete="current-password"
                         value={loginPassVal} 
                         onChange={e => setLoginPassVal(e.target.value)} 
                         type="password" 
@@ -167,14 +173,19 @@ export default function LoginPage() {
 
                 <TabsContent value="signup" className="space-y-4">
                    <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">الاسم الكامل</Label><Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="الاسم الرباعي" /></div>
-                      <div className="space-y-1.5"><Label className="text-[10px] font-black text-primary/80 pr-3">رقم الجوال</Label><Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." /></div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px] font-black text-primary/80 pr-3">الاسم الكامل</Label>
+                        <Input id="signup-name-input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="الاسم الرباعي" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[10px] font-black text-primary/80 pr-3">رقم الجوال</Label>
+                        <Input id="signup-phone-input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." />
+                      </div>
                    </div>
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
                         id="signup-email-input"
-                        autoComplete="off"
                         value={signupEmailVal} 
                         onChange={e => setSignupEmailVal(e.target.value)} 
                         type="email" 
@@ -185,7 +196,6 @@ export default function LoginPage() {
                       <Label className="text-[10px] font-black text-primary/80 pr-3">كلمة المرور</Label>
                       <Input 
                         id="signup-pass-input"
-                        autoComplete="new-password"
                         value={signupPassVal} 
                         onChange={e => setSignupPassVal(e.target.value)} 
                         type="password" 

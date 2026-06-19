@@ -16,6 +16,7 @@ import { auth, firestore as db } from "@/firebase";
 
 /**
  * 🛡️ Profile Sync Service
+ * Ensures Auth and Firestore are in perfect synchronization.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -46,6 +47,7 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
       const updates: any = {};
       if (existing.isVerified !== user.emailVerified) updates.isVerified = user.emailVerified;
       if (additionalData.displayName && existing.displayName !== additionalData.displayName) updates.displayName = additionalData.displayName;
+      
       if (Object.keys(updates).length > 0) {
         await updateDoc(userRef, { ...updates, updatedAt: serverTimestamp() });
       }
@@ -56,12 +58,12 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * 🛡️ Deep Sanitization for Email Strings
+ * 🛡️ Robust Email Sanitization
  */
 const sanitizeEmail = (email: any): string => {
   if (!email || typeof email !== 'string') return "";
-  // Remove all whitespace and invisible control characters
-  return email.replace(/[\u0000-\u001F\u007F-\u009F\s]/g, "").toLowerCase().trim();
+  // Deep clean whitespace and force lowercase
+  return email.trim().toLowerCase();
 };
 
 /**
@@ -69,7 +71,9 @@ const sanitizeEmail = (email: any): string => {
  */
 export const registerEmail = async (email: string, pass: string, name: string) => {
   const cleanEmail = sanitizeEmail(email);
+  
   if (!cleanEmail || !cleanEmail.includes('@')) {
+    console.error("[REG_ERROR] Invalid email value detected:", cleanEmail);
     throw { code: 'auth/invalid-email' };
   }
 
@@ -78,6 +82,8 @@ export const registerEmail = async (email: string, pass: string, name: string) =
   
   // 2. Immediate Profile Updates
   await updateProfile(res.user, { displayName: name });
+  
+  // 3. Firestore Sync
   await syncUserProfile(res.user, { displayName: name });
   
   return res;
