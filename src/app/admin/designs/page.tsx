@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, addDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, query, serverTimestamp } from "firebase/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,9 +28,13 @@ export default function DesignerPortfolioAdmin() {
 
   const { data: rawGalleryItems, loading } = useCollection(galleryQuery);
 
-  const galleryItems = (rawGalleryItems || []).sort((a: any, b: any) => 
-    new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-  );
+  // 🛡️ Immutable sorting to prevent reference loss
+  const galleryItems = useMemo(() => {
+    if (!rawGalleryItems) return [];
+    return [...rawGalleryItems].sort((a: any, b: any) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }, [rawGalleryItems]);
 
   const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -100,14 +104,16 @@ export default function DesignerPortfolioAdmin() {
   };
 
   const handleDeleteItem = async (id: string) => {
-    if (!confirm("هل أنت متأكد من الحذف النهائي لهذا العمل من المعرض؟") || !db) return;
+    if (!id || !db) return;
+    if (!confirm("هل أنت متأكد من الحذف النهائي لهذا العمل من المعرض؟")) return;
     
     setIsProcessing(true);
     try {
       await deleteDoc(doc(db, "gallery", id));
-      toast({ title: "تم الحذف بنجاح من الأرشيف" });
+      toast({ title: "تم الحذف بنجاح" });
     } catch (e: any) {
-      toast({ variant: "destructive", title: "فشل الحذف" });
+      console.error("[DELETE_ERROR]", e);
+      toast({ variant: "destructive", title: "فشل الحذف", description: "تأكد من صلاحيات الوصول." });
     } finally {
       setIsProcessing(false);
     }
@@ -120,7 +126,7 @@ export default function DesignerPortfolioAdmin() {
            <h1 className="text-4xl font-black gold-text leading-tight tracking-tighter">أرشيف الأعمال الإبداعية</h1>
            <p className="text-[11px] font-black uppercase text-muted-foreground tracking-[0.5em] mt-2">Elite Design Portfolio Hub</p>
         </div>
-        <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+        <Dialog open={isGalleryOpen} onOpenChange={isGalleryOpen ? (v) => !v && setIsGalleryOpen(false) : setIsGalleryOpen}>
           <DialogTrigger asChild>
             <Button className="royal-button h-18 px-12 text-base shadow-2xl hover:scale-105 transition-all"><Plus size={24} className="ml-3" /> نشر روائع جديدة</Button>
           </DialogTrigger>
@@ -174,14 +180,14 @@ export default function DesignerPortfolioAdmin() {
           <div className="col-span-full py-60 text-center opacity-30 italic font-black uppercase tracking-[0.5em] text-zinc-500">The Gallery is Empty</div>
         ) : galleryItems.map((item: any) => (
           <Card key={item.id} className="luxury-card border-none flex flex-col group h-full hover:scale-[1.03] transition-all duration-700 relative">
-             {/* 🛡️ Delete Action Header (Outside Image Scope) */}
-             <div className="p-4 bg-muted/20 border-b flex items-center justify-between z-20">
-                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[7px] px-3 py-1 uppercase tracking-widest">{item.category}</Badge>
+             {/* 🛡️ Protected Action Header */}
+             <div className="p-4 bg-muted/40 border-b flex items-center justify-between z-20">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-black text-[7px] px-3 py-1 uppercase tracking-widest">{item.category}</Badge>
                 <Button 
-                  onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id); }} 
+                  onClick={() => handleDeleteItem(item.id)} 
                   disabled={isProcessing}
                   variant="ghost" 
-                  className="h-10 w-10 p-0 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all"
+                  className="h-10 w-10 p-0 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"
                 >
                    <Trash2 size={18} />
                 </Button>
