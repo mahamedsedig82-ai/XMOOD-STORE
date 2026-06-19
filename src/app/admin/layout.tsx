@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { useEffect, useState, useMemo } from "react";
 import { logout } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "سوق الخدمات", icon: Briefcase, href: "/admin/other-services", roles: ['owner', 'admin', 'gm'] },
     { label: "طلبات العملاء", icon: ClipboardList, href: "/admin/operations-log", roles: ['owner', 'admin', 'gm', 'support'] },
     { label: "نظام السلة", icon: ShoppingCart, href: "/admin/cart-system", roles: ['owner', 'admin', 'gm'] },
-    { label: "إدارة المعرض", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'gm', 'designer'] },
+    { label: "إدارة المعرض", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'gm', 'designer', 'design_manager'] },
     { label: "إدارة الفروع", icon: GitBranch, href: "/admin/branches", roles: ['owner', 'admin', 'gm'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
     { label: "المالية والبنك", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'gm', 'accountant'] },
@@ -79,7 +79,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
-        {/* Desktop Sidebar - Ensured Visibility and Solid Layout */}
         <Sidebar className="border-l border-border bg-card/80 backdrop-blur-3xl hidden lg:flex shrink-0 shadow-2xl" side="right">
           <SidebarHeader className="p-10 border-b text-center flex flex-col items-center gap-6 bg-muted/10">
             <Link href="/" className="flex flex-col items-center transition-transform hover:scale-105">
@@ -117,7 +116,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </Sidebar>
 
-        {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background overflow-hidden">
           <header className="h-20 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-2xl z-[150] shrink-0">
              <div className="flex items-center gap-5">
@@ -130,7 +128,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
              </div>
 
-             {/* Mobile Admin Trigger */}
              <div className="flex items-center gap-4 lg:hidden">
                 <Button variant="ghost" size="icon" onClick={() => setIsMobileNavOpen(!isMobileNavOpen)} className="rounded-xl bg-muted/50 border h-11 w-11">
                    {isMobileNavOpen ? <X size={24} className="text-primary" /> : <Menu size={24} />}
@@ -139,18 +136,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
              <div className="hidden lg:flex items-center gap-5">
                 <div className="flex items-center gap-3 px-6 py-2 bg-green-500/5 rounded-full border border-green-500/10">
-                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" />
+                   <div className="w-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" style={{ height: '8px' }} />
                    <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">System Active</span>
                 </div>
                 <Badge variant="outline" className="border-border text-muted-foreground text-[9px] font-black px-4 py-1 rounded-full uppercase tracking-tighter">Verified Session</Badge>
-                {/* Immediate Logout for Admins on Desktop header too */}
                 <Button variant="ghost" size="icon" onClick={logout} className="h-10 w-10 text-red-500 hover:bg-red-500/10 rounded-xl">
                    <LogOut size={18} />
                 </Button>
              </div>
           </header>
 
-          {/* Mobile Admin Menu Overlay */}
           <AnimatePresence>
             {isMobileNavOpen && (
                <>
@@ -199,10 +194,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <AnimatePresence mode="wait">
                 <motion.div 
                   key={pathname} 
-                  initial={{ opacity: 0, y: 20 }} 
+                  initial={{ opacity: 0, y: 15 }} 
                   animate={{ opacity: 1, y: 0 }} 
-                  exit={{ opacity: 0, y: -20 }} 
-                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  exit={{ opacity: 0, y: -15 }} 
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 >
                   {children}
                 </motion.div>

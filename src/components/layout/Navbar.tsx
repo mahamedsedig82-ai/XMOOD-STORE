@@ -112,10 +112,10 @@ export function Navbar() {
             
             {isAdmin && (
               <Link 
-                href="/admin" 
+                href={profile?.role === 'designer' ? "/admin/designs" : "/admin"} 
                 className="flex items-center gap-2 px-5 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all"
               >
-                <ShieldAlert size={14} /> لوحة الإدارة
+                <ShieldAlert size={14} /> {profile?.role === 'designer' ? 'لوحة المصمم' : 'لوحة الإدارة'}
               </Link>
             )}
           </div>
@@ -188,7 +188,6 @@ export function Navbar() {
               className="fixed top-0 right-0 z-[500] h-full w-[85%] max-w-[340px] bg-background border-l border-white/10 shadow-2xl lg:hidden flex flex-col overflow-hidden"
               dir="rtl"
             >
-              {/* Pro Compact Header */}
               <div className="flex-none p-4 border-b border-white/5 bg-muted/5 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                    <div className="flex items-center gap-2">
@@ -215,9 +214,7 @@ export function Navbar() {
                 )}
               </div>
 
-              {/* Pro Compact Content */}
               <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
-                
                 <div className="space-y-2">
                   <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] pr-2 mb-2 opacity-50">التنقل الرئيسي</p>
                   <div className="grid gap-1">
@@ -238,22 +235,6 @@ export function Navbar() {
                 </div>
 
                 <div className="space-y-2">
-                   <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] pr-2 mb-2 opacity-50">الأصول والخدمات</p>
-                   <div className="grid grid-cols-1 gap-1">
-                      {categories.map((cat, i) => (
-                         <Link 
-                           key={i} 
-                           href={`/store?category=${cat}`} 
-                           className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/10 hover:bg-muted text-[9px] font-black text-foreground/80 transition-all"
-                         >
-                            <LayoutGrid size={14} className="text-primary/40" />
-                            {String(cat)}
-                         </Link>
-                      ))}
-                   </div>
-                </div>
-
-                <div className="space-y-2">
                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] pr-2 mb-2 opacity-50">الأمان والتحكم</p>
                    <div className="grid gap-1">
                       <Link href="/middleman" className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10 shadow-inner">
@@ -265,12 +246,12 @@ export function Navbar() {
                       </Link>
                       {isAdmin && (
                        <Link 
-                         href="/admin" 
+                         href={profile?.role === 'designer' ? "/admin/designs" : "/admin"} 
                          className="flex items-center gap-3 p-3 rounded-xl bg-blue-600/5 border border-blue-600/10 text-blue-500 shadow-inner"
                        >
                          <ShieldAlert size={18} />
                          <div className="flex flex-col text-right">
-                            <span className="font-black text-[10px] uppercase tracking-widest leading-tight">لوحة الإدارة</span>
+                            <span className="font-black text-[10px] uppercase tracking-widest leading-tight">{profile?.role === 'designer' ? 'لوحة المصمم' : 'لوحة الإدارة'}</span>
                             <span className="text-[7px] opacity-60 font-black uppercase tracking-tighter mt-0.5">التحكم السيادي</span>
                          </div>
                        </Link>
@@ -279,7 +260,6 @@ export function Navbar() {
                 </div>
               </div>
 
-              {/* Pro Compact Footer */}
               <div className="flex-none p-4 border-t border-white/5 bg-muted/10 space-y-3">
                 <div className="flex justify-between items-center bg-background/50 p-2 rounded-lg border border-white/5 shadow-inner">
                    <span className="text-[8px] font-black uppercase text-muted-foreground tracking-widest pr-2">المظهر</span>
