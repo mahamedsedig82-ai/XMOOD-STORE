@@ -10,10 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { loginEmail, registerEmail, sendAccountVerification, syncUserProfile } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Loader2, UserPlus, ShieldCheck, AlertCircle } from "lucide-react";
+import { Loader2, UserPlus, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase, auth } from "@/firebase";
 import { doc } from "firebase/firestore";
 
 export default function LoginPage() {
@@ -54,36 +54,27 @@ export default function LoginPage() {
     }
   }, [user, profile, authLoading, authSettled, isMounted, router]);
 
-  // 🛡️ Enhanced Validation for maximum compatibility
-  const isBasicEmail = (email: string) => {
-    const clean = email.replace(/\s/g, '');
-    return clean.length > 5 && clean.includes('@') && clean.includes('.');
-  };
-
   const handleLogin = async () => {
     const email = loginEmailVal.trim();
-    if (!email || !loginPassVal) {
+    const pass = loginPassVal;
+    if (!email || !pass) {
       return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة البريد وكلمة المرور." });
     }
 
     setLoading(true);
     try {
-      await loginEmail(email, loginPassVal);
+      await loginEmail(email, pass);
       toast({ title: "تم الدخول بنجاح" });
     } catch (error: any) {
-      console.error("[LOGIN_ERROR]", error);
+      setLoading(false);
       let msg = "بيانات الدخول غير صحيحة.";
       if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني غير صالح.";
-      if (error.code === 'auth/user-not-found') msg = "المستخدم غير موجود.";
-      if (error.code === 'auth/wrong-password') msg = "كلمة المرور غير صحيحة.";
-      
       toast({ variant: "destructive", title: "تنبيه أمني", description: msg });
-      setLoading(false);
     }
   };
 
   const handleSignup = async () => {
-    const email = signupEmailVal.replace(/\s/g, ''); // Remove all spaces immediately
+    const email = signupEmailVal.trim();
     const pass = signupPassVal;
     const name = fullName.trim();
     const ph = phone.trim();
@@ -92,8 +83,8 @@ export default function LoginPage() {
       return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة كافة حقول الاشتراك." });
     }
 
-    if (!isBasicEmail(email)) {
-      return toast({ variant: "destructive", title: "تنسيق غير مقبول", description: "يرجى التأكد من كتابة البريد الإلكتروني بشكل صحيح (مثال: user@domain.com)." });
+    if (!email.includes('@') || !email.includes('.')) {
+      return toast({ variant: "destructive", title: "تنسيق غير مقبول", description: "يرجى إدخال بريد إلكتروني صالح." });
     }
 
     setLoading(true);
@@ -101,7 +92,7 @@ export default function LoginPage() {
       // 1. Create Auth & Sync Profile
       await registerEmail(email, pass, name);
       
-      // 2. Extra sync for phone
+      // 2. Extra sync for phone (using auth from @/firebase)
       if (auth.currentUser) {
         await syncUserProfile(auth.currentUser, { phoneNumber: ph });
         await sendAccountVerification(auth.currentUser);
@@ -109,14 +100,14 @@ export default function LoginPage() {
       
       toast({ title: "تم إنشاء العضوية بنجاح", description: "يرجى تفعيل بريدك الإلكتروني الآن." });
     } catch (error: any) {
+      setLoading(false);
       console.error("[SIGNUP_ERROR]", error);
       let msg = "فشل إنشاء الحساب.";
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً لدينا.";
-      if (error.code === 'auth/invalid-email') msg = "Firebase: تنسيق البريد الإلكتروني المرفوع غير صالح.";
-      if (error.code === 'auth/weak-password') msg = "كلمة المرور ضعيفة جداً (6 رموز كحد أدنى).";
+      if (error.code === 'auth/invalid-email') msg = "Firebase: تنسيق البريد الإلكتروني غير صالح.";
+      if (error.code === 'auth/weak-password') msg = "كلمة المرور ضعيفة جداً.";
       
       toast({ variant: "destructive", title: "تنبيه", description: msg });
-      setLoading(false);
     }
   };
 

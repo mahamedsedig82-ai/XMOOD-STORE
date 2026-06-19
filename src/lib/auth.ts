@@ -15,8 +15,24 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
+ * 🛡️ Forensic Sanitization
+ * Ensures the email is a clean, lowercase, primitive string.
+ */
+const sanitizeEmail = (email: any): string => {
+  // Convert to string explicitly to handle any non-string input
+  const rawValue = typeof email === 'string' ? email : String(email || "");
+  const cleanEmail = rawValue.replace(/\s/g, '').toLowerCase().trim();
+  
+  // Forensic Logging (Development only)
+  if (process.env.NODE_ENV !== 'production') {
+    console.info(`[AUTH_FORENSIC] Processing email: "${cleanEmail}" (Length: ${cleanEmail.length}, Type: ${typeof cleanEmail})`);
+  }
+  
+  return cleanEmail;
+};
+
+/**
  * 🛡️ Profile Sync Service
- * Ensures Auth and Firestore are in perfect synchronization.
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -58,23 +74,13 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * 🛡️ Ultra-Reliable Email Sanitization
- * Removes ALL whitespace (internal, leading, trailing) and converts to lowercase.
- */
-const sanitizeEmail = (email: any): string => {
-  if (!email || typeof email !== 'string') return "";
-  // Remove all types of whitespace characters including non-breaking spaces
-  return email.replace(/\s/g, '').toLowerCase();
-};
-
-/**
- * 🛡️ Sovereign Registration Flow (Atomic)
+ * 🛡️ Sovereign Registration Flow (Atomic & Forensic Safe)
  */
 export const registerEmail = async (email: string, pass: string, name: string) => {
   const cleanEmail = sanitizeEmail(email);
   
-  if (!cleanEmail || !cleanEmail.includes('@') || cleanEmail.length < 5) {
-    throw { code: 'auth/invalid-email', message: 'تنسيق البريد الإلكتروني غير صالح' };
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    throw { code: 'auth/invalid-email', message: 'يرجى إدخال بريد إلكتروني صحيح' };
   }
 
   // 1. Core Auth Account
@@ -94,9 +100,6 @@ export const registerEmail = async (email: string, pass: string, name: string) =
  */
 export const loginEmail = (email: string, pass: string) => {
   const cleanEmail = sanitizeEmail(email);
-  if (!cleanEmail || !cleanEmail.includes('@')) {
-    throw { code: 'auth/invalid-email', message: 'يرجى إدخال بريد إلكتروني صحيح' };
-  }
   return signInWithEmailAndPassword(auth, cleanEmail, pass);
 };
 
