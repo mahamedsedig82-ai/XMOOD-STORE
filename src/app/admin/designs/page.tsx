@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, ImageIcon, Loader2, Upload, Sparkles, User, Clock, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, ImageIcon, Loader2, Upload, User, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 
@@ -78,7 +78,7 @@ export default function DesignerPortfolioAdmin() {
 
   const handleAddToGallery = async () => {
     if (!newDesign.title || !newDesign.imageUrl || !db || !user) {
-      toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى ملء العنوان ورفع الصورة." });
+      toast({ variant: "destructive", title: "بيانات ناقصة" });
       return;
     }
 
@@ -101,26 +101,34 @@ export default function DesignerPortfolioAdmin() {
     }
   };
 
+  // 🛡️ دالة الحذف الجذرية والمطورة
   const handleDeleteItem = async (docId: string) => {
     if (!docId || !db) {
-      console.error("[CRITICAL] NO_DOC_ID_PROVIDED");
+      console.error("[CRITICAL_ADMIN] NO_DOC_ID_FOR_DELETE");
       return;
     }
     
-    if (!confirm("⚠️ هل أنت متأكد من الحذف النهائي لهذا العمل؟ لا يمكن التراجع عن هذا الإجراء.")) return;
+    const confirmDelete = window.confirm("⚠️ هل أنت متأكد من الحذف النهائي؟ لا يمكن استعادة العمل بعد ذلك.");
+    if (!confirmDelete) return;
     
     setIsProcessing(true);
+    toast({ title: "جاري الحذف من الخادم..." });
+
     try {
-      const docRef = doc(db, "gallery", docId);
-      await deleteDoc(docRef);
-      console.log(`[GALLERY_DELETE] SUCCESS: ${docId}`);
-      toast({ title: "تم الحذف النهائي من الأرشيف" });
+      // استهداف مباشر للمستند عبر المعرف
+      const itemRef = doc(db, "gallery", docId);
+      console.log(`[FIREBASE_ACTION] DELETING_DOC: gallery/${docId}`);
+      
+      await deleteDoc(itemRef);
+      
+      console.log(`[FIREBASE_SUCCESS] DOC_DELETED: ${docId}`);
+      toast({ title: "تم الحذف النهائي من الأرشيف بنجاح" });
     } catch (e: any) {
-      console.error("[GALLERY_DELETE] ERROR:", e);
+      console.error("[FIREBASE_ERROR] DELETE_FAILED:", e);
       toast({ 
         variant: "destructive", 
         title: "فشل الحذف", 
-        description: "يرجى التحقق من استقرار الاتصال أو صلاحياتك الإدارية." 
+        description: "تأكد من صلاحياتك أو استقرار اتصالك." 
       });
     } finally {
       setIsProcessing(false);
@@ -187,18 +195,15 @@ export default function DesignerPortfolioAdmin() {
         ) : galleryItems.length === 0 ? (
           <div className="col-span-full py-60 text-center opacity-30 italic font-black uppercase tracking-[0.5em]">الأرشيف فارغ حالياً</div>
         ) : galleryItems.map((item: any) => (
-          <Card key={item.id} className="luxury-card border-none flex flex-col group h-full shadow-lg overflow-visible">
-             {/* 🛑 EXCLUSIVE ADMIN BAR - RADICAL SOLUTION: Outside the image container */}
-             <div className="p-4 bg-zinc-900 border-b border-white/5 flex items-center justify-between rounded-t-[3.5rem] z-30">
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-black text-[7px] px-3 py-1 uppercase">{item.category}</Badge>
+          <Card key={item.id} className="luxury-card border-none flex flex-col group h-full shadow-lg overflow-visible bg-card">
+             {/* 🛑 الشريط الإداري المعزول z-50 لضمان وصول النقرة */}
+             <div className="p-4 bg-zinc-950 border-b border-primary/10 flex items-center justify-between rounded-t-[3.5rem] z-50 relative">
+                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[8px] px-4 py-1 uppercase tracking-tighter">{item.category}</Badge>
                 <Button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteItem(item.id);
-                  }}
+                  onClick={() => handleDeleteItem(item.id)}
                   disabled={isProcessing}
                   variant="ghost" 
-                  className="h-10 w-10 p-0 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/20"
+                  className="h-10 w-10 p-0 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/40 border border-red-500/20 cursor-pointer"
                   title="حذف نهائي"
                 >
                    {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 size={20} />}
@@ -212,7 +217,7 @@ export default function DesignerPortfolioAdmin() {
              <CardContent className="p-8 flex-1 flex flex-col bg-card">
                 <h4 className="font-black text-2xl line-clamp-1 mb-3 gold-text tracking-tighter">{item.title}</h4>
                 <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed mb-8 flex-1">{item.description}</p>
-                <div className="pt-6 border-t flex items-center justify-between opacity-60">
+                <div className="pt-6 border-t border-border/40 flex items-center justify-between opacity-60">
                    <div className="flex items-center gap-3">
                       <User size={14} className="text-primary" />
                       <span className="text-[9px] font-black uppercase">{item.designerName}</span>

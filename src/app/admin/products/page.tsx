@@ -112,15 +112,19 @@ export default function AdminProducts() {
     }
   };
 
+  // 🛡️ دالة الحذف الجذرية للمنتجات
   const handleDelete = async (id: string) => {
     if (!id || !db) return;
-    if (!confirm("🛑 هل أنت متأكد من حذف هذه الباقة نهائياً؟")) return;
+    const confirmDelete = window.confirm("🛑 هل أنت متأكد من حذف هذه الباقة نهائياً؟ لا يمكن التراجع.");
+    if (!confirmDelete) return;
     
     setIsProcessing(true);
     try {
       await deleteDoc(doc(db, "products", id));
-      toast({ title: "تم الحذف النهائي" });
+      console.log(`[ADMIN_LOG] PRODUCT_DELETED: ${id}`);
+      toast({ title: "تم الحذف النهائي من المستودع" });
     } catch (e: any) {
+      console.error("[ADMIN_ERROR] DELETE_FAILED:", e);
       toast({ variant: "destructive", title: "فشل الحذف" });
     } finally {
       setIsProcessing(false);
