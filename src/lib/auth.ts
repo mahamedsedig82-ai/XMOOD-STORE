@@ -15,20 +15,21 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Forensic Sanitization
- * Ensures the email is a clean, lowercase, primitive string.
+ * 🛡️ Sovereign Sanitization Protocol
+ * Ensures the email is a pure, lowercase, primitive string.
  */
 const sanitizeEmail = (email: any): string => {
-  // Convert to string explicitly to handle any non-string input
-  const rawValue = typeof email === 'string' ? email : String(email || "");
-  const cleanEmail = rawValue.replace(/\s/g, '').toLowerCase().trim();
+  // 1. Force to string and handle nulls/undefined
+  const raw = String(email || "").trim();
+  // 2. Remove ALL types of whitespace (including invisible/unicode spaces)
+  const clean = raw.replace(/\s+/g, '').toLowerCase();
   
   // Forensic Logging (Development only)
   if (process.env.NODE_ENV !== 'production') {
-    console.info(`[AUTH_FORENSIC] Processing email: "${cleanEmail}" (Length: ${cleanEmail.length}, Type: ${typeof cleanEmail})`);
+    console.info(`[AUTH_SANITY] Input: "${email}" -> Clean: "${clean}" (Len: ${clean.length})`);
   }
   
-  return cleanEmail;
+  return clean;
 };
 
 /**
@@ -74,22 +75,23 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * 🛡️ Sovereign Registration Flow (Atomic & Forensic Safe)
+ * 🛡️ Sovereign Registration Flow
  */
 export const registerEmail = async (email: string, pass: string, name: string) => {
   const cleanEmail = sanitizeEmail(email);
   
-  if (!cleanEmail || !cleanEmail.includes('@')) {
-    throw { code: 'auth/invalid-email', message: 'يرجى إدخال بريد إلكتروني صحيح' };
+  // Final Pre-flight check
+  if (!cleanEmail || !cleanEmail.includes('@') || cleanEmail.length < 5) {
+    throw { code: 'auth/invalid-email', message: 'تنسيق البريد الإلكتروني غير صالح' };
   }
 
-  // 1. Core Auth Account
+  // 1. Create Auth Account
   const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
   
-  // 2. Immediate Profile Updates (Auth DisplayName)
+  // 2. Immediate Identity Hardening
   await updateProfile(res.user, { displayName: name });
   
-  // 3. Firestore Sync (Identity Core)
+  // 3. Firestore Sync (Sovereign Record)
   await syncUserProfile(res.user, { displayName: name });
   
   return res;

@@ -17,11 +17,10 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, auth } from "@/firebase
 import { doc } from "firebase/firestore";
 
 export default function LoginPage() {
-  // 🛡️ Login State
+  // 🛡️ State Management (Unified & Clean)
   const [loginEmailVal, setLoginEmailVal] = useState("");
   const [loginPassVal, setLoginPassVal] = useState("");
   
-  // 🛡️ Signup State
   const [signupEmailVal, setSignupEmailVal] = useState("");
   const [signupPassVal, setSignupPassVal] = useState("");
   const [fullName, setFullName] = useState("");
@@ -55,15 +54,13 @@ export default function LoginPage() {
   }, [user, profile, authLoading, authSettled, isMounted, router]);
 
   const handleLogin = async () => {
-    const email = loginEmailVal.trim();
-    const pass = loginPassVal;
-    if (!email || !pass) {
-      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة البريد وكلمة المرور." });
+    if (!loginEmailVal.trim() || !loginPassVal) {
+      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إدخال البريد وكلمة المرور." });
     }
 
     setLoading(true);
     try {
-      await loginEmail(email, pass);
+      await loginEmail(loginEmailVal.trim(), loginPassVal);
       toast({ title: "تم الدخول بنجاح" });
     } catch (error: any) {
       setLoading(false);
@@ -80,31 +77,30 @@ export default function LoginPage() {
     const ph = phone.trim();
 
     if (!email || !pass || !name || !ph) {
-      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة كافة حقول الاشتراك." });
+      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة كافة الحقول." });
     }
 
-    if (!email.includes('@') || !email.includes('.')) {
-      return toast({ variant: "destructive", title: "تنسيق غير مقبول", description: "يرجى إدخال بريد إلكتروني صالح." });
+    if (!email.includes('@')) {
+      return toast({ variant: "destructive", title: "تنسيق خاطئ", description: "يرجى إدخال بريد إلكتروني صالح." });
     }
 
     setLoading(true);
     try {
-      // 1. Create Auth & Sync Profile
+      // 1. Atomic Registration
       await registerEmail(email, pass, name);
       
-      // 2. Extra sync for phone (using auth from @/firebase)
+      // 2. Extra Data Sync (Phone)
       if (auth.currentUser) {
         await syncUserProfile(auth.currentUser, { phoneNumber: ph });
         await sendAccountVerification(auth.currentUser);
       }
       
-      toast({ title: "تم إنشاء العضوية بنجاح", description: "يرجى تفعيل بريدك الإلكتروني الآن." });
+      toast({ title: "تم إنشاء الحساب", description: "يرجى تفعيل بريدك الإلكتروني للمتابعة." });
     } catch (error: any) {
       setLoading(false);
-      console.error("[SIGNUP_ERROR]", error);
       let msg = "فشل إنشاء الحساب.";
-      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً لدينا.";
-      if (error.code === 'auth/invalid-email') msg = "Firebase: تنسيق البريد الإلكتروني غير صالح.";
+      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
+      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني مرفوض من النظام.";
       if (error.code === 'auth/weak-password') msg = "كلمة المرور ضعيفة جداً.";
       
       toast({ variant: "destructive", title: "تنبيه", description: msg });
@@ -148,25 +144,27 @@ export default function LoginPage() {
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
                         id="login-email-field"
-                        name="login-email"
-                        autoComplete="email"
+                        name="email"
+                        type="email"
+                        autoComplete="username"
                         spellCheck={false}
                         value={loginEmailVal} 
                         onChange={e => setLoginEmailVal(e.target.value)} 
-                        type="email" 
                         placeholder="user@xmood.pro" 
+                        required
                       />
                    </div>
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">مفتاح المرور</Label>
                       <Input 
                         id="login-pass-field"
-                        name="login-password"
+                        name="password"
+                        type="password"
                         autoComplete="current-password"
                         value={loginPassVal} 
                         onChange={e => setLoginPassVal(e.target.value)} 
-                        type="password" 
                         placeholder="••••••••" 
+                        required
                       />
                    </div>
                   <Button onClick={handleLogin} disabled={loading} className="royal-button w-full h-14 text-[10px] mt-4">
@@ -178,36 +176,38 @@ export default function LoginPage() {
                    <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-1.5">
                         <Label className="text-[10px] font-black text-primary/80 pr-3">الاسم الكامل</Label>
-                        <Input id="signup-name-field" name="full-name" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="الاسم الرباعي" />
+                        <Input id="signup-name-field" name="name" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="الاسم الرباعي" required />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-[10px] font-black text-primary/80 pr-3">رقم الجوال</Label>
-                        <Input id="signup-phone-field" name="phone-number" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." />
+                        <Input id="signup-phone-field" name="tel" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." required />
                       </div>
                    </div>
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
                         id="signup-email-field"
-                        name="signup-email"
+                        name="signup_email"
+                        type="email"
                         autoComplete="email"
                         spellCheck={false}
                         value={signupEmailVal} 
                         onChange={e => setSignupEmailVal(e.target.value)} 
-                        type="email" 
                         placeholder="new-user@xmood.pro"
+                        required
                       />
                    </div>
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black text-primary/80 pr-3">كلمة المرور</Label>
                       <Input 
                         id="signup-pass-field"
-                        name="signup-password"
+                        name="new_password"
+                        type="password"
                         autoComplete="new-password"
                         value={signupPassVal} 
                         onChange={e => setSignupPassVal(e.target.value)} 
-                        type="password" 
                         placeholder="••••••••"
+                        required
                       />
                    </div>
                    <Button onClick={handleSignup} disabled={loading} className="royal-button w-full h-14 text-[10px] mt-2">
