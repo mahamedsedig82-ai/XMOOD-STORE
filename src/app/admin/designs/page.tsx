@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, ImageIcon, Loader2, Upload, User, Clock, ShieldAlert } from "lucide-react";
+import { Plus, Trash2, ImageIcon, Loader2, Upload, User, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -97,7 +97,7 @@ export default function DesignerPortfolioAdmin() {
         setNewDesign({ title: "", description: "", imageUrl: "", category: "Signature" });
         toast({ title: "تم نشر العمل الإبداعي بنجاح" });
       })
-      .catch(async (err) => {
+      .catch(async () => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: 'gallery',
           operation: 'create',
@@ -109,8 +109,8 @@ export default function DesignerPortfolioAdmin() {
 
   const handleDeleteItem = (docId: string) => {
     if (!docId || !db) return;
-    if (!window.confirm("⚠️ هل أنت متأكد من حذف هذا العمل نهائياً؟")) return;
     
+    // إزالة confirm لضمان الاستجابة الفورية في الهواتف
     const docRef = doc(db, "gallery", docId);
     deleteDoc(docRef)
       .then(() => toast({ title: "تم الحذف بنجاح" }))
@@ -164,7 +164,7 @@ export default function DesignerPortfolioAdmin() {
               </div>
               <div className="space-y-2">
                  <label className="text-[10px] font-black text-primary uppercase pr-4">شرح الرؤية</label>
-                 <Textarea value={newDesign.description} onChange={e => setNewDesign({...newDesign, description: e.target.value})} placeholder="صف العمل..." className="min-h-[100px]" />
+                 <Textarea value={newDesign.description} onChange={e => setNewDesign({...newDesign, description: e.target.value})} placeholder="صف العمل..." className="min-h-[120px]" />
               </div>
             </div>
             <DialogFooter className="mt-8">
@@ -183,20 +183,18 @@ export default function DesignerPortfolioAdmin() {
           <div className="col-span-full py-40 text-center opacity-30 italic font-black uppercase tracking-widest">الأرشيف فارغ</div>
         ) : galleryItems.map((item: any) => (
           <Card key={item.id} className="luxury-card border-none flex flex-col group h-full shadow-lg bg-card overflow-visible">
-             {/* 🛡️ MOBILE-FIRST ADMIN BAR: High priority z-index and touch area */}
-             <div className="p-3 bg-zinc-950 border-b border-primary/10 flex items-center justify-between rounded-t-[2rem] md:rounded-t-[3.5rem] relative z-[150]">
-                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[7px] px-3 py-1 uppercase tracking-tighter">{item.category}</Badge>
+             <div className="p-4 bg-zinc-950 border-b border-primary/10 flex items-center justify-between rounded-t-[2rem] md:rounded-t-[3.5rem] relative z-[200]">
+                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[8px] px-3 py-1 uppercase tracking-tighter">{item.category}</Badge>
                 <button 
                   type="button"
-                  onClick={(e) => {
+                  onPointerDown={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     handleDeleteItem(item.id);
                   }}
-                  className="h-10 w-10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/80 border border-red-500/30 cursor-pointer active:scale-90 touch-auto"
-                  title="حذف نهائي"
+                  className="h-12 w-12 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/80 border border-red-500/30 cursor-pointer active:scale-95 pointer-events-auto"
                 >
-                   <Trash2 size={20} />
+                   <Trash2 size={24} />
                 </button>
              </div>
 

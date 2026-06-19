@@ -84,7 +84,6 @@
     @apply shadow-md rounded-[1.5rem] bg-card !backdrop-blur-none;
     will-change: auto;
   }
-  * { transition-property: none !important; }
   .animate-fade-in { animation: none !important; opacity: 1 !important; }
 }
 
@@ -98,7 +97,7 @@
 }
 
 .animate-fade-in { 
-  animation: fadeIn 0.2s ease-out forwards; 
+  animation: fadeIn 0.15s ease-out forwards; 
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 

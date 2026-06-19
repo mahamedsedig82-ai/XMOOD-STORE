@@ -96,7 +96,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              <SidebarMenu className="gap-4">
                {visibleSections.map((item) => (
                  <SidebarMenuItem key={item.href}>
-                   <SidebarMenuButton asChild isActive={pathname === item.href} className={`h-14 px-8 rounded-2xl transition-all duration-300 ${pathname === item.href ? 'bg-primary text-black shadow-2xl scale-[1.02]' : 'hover:bg-primary/10'}`}>
+                   <SidebarMenuButton asChild isActive={pathname === item.href} className={`h-14 px-8 rounded-2xl transition-all duration-300 ${pathname === item.href ? 'bg-primary text-black shadow-2xl' : 'hover:bg-primary/10'}`}>
                      <Link href={item.href} className="flex flex-row-reverse items-center gap-5 w-full">
                        <item.icon size={22} className={pathname === item.href ? 'text-black' : 'text-primary'} />
                        <span className="font-black text-[11px] uppercase tracking-widest">{item.label}</span>
@@ -129,7 +129,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
 
              <div className="flex items-center gap-4 lg:hidden">
-                <Button variant="ghost" size="icon" onClick={() => setIsMobileNavOpen(!isMobileNavOpen)} className="rounded-xl bg-muted/50 border h-11 w-11 active:scale-95 transition-transform">
+                <Button variant="ghost" size="icon" onClick={() => setIsMobileNavOpen(!isMobileNavOpen)} className="rounded-xl bg-muted/50 border h-11 w-11">
                    {isMobileNavOpen ? <X size={24} className="text-primary" /> : <Menu size={24} />}
                 </Button>
              </div>
@@ -140,70 +140,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                    <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">System Active</span>
                 </div>
                 <Badge variant="outline" className="border-border text-muted-foreground text-[9px] font-black px-4 py-1 rounded-full uppercase">Verified Session</Badge>
-                <Button variant="ghost" size="icon" onClick={logout} className="h-10 w-10 text-red-500 hover:bg-red-500/10 rounded-xl">
-                   <LogOut size={18} />
-                </Button>
              </div>
           </header>
 
-          <AnimatePresence mode="wait">
-            {isMobileNavOpen && (
-               <>
-                 <motion.div 
-                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                   onClick={() => setIsMobileNavOpen(false)}
-                   className="fixed inset-0 z-[200] bg-black/90 lg:hidden"
-                 />
-                 <motion.div 
-                   initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-                   transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                   className="fixed top-0 right-0 z-[210] w-[80%] h-full bg-background border-l border-primary/20 lg:hidden flex flex-col shadow-2xl overflow-hidden"
-                 >
-                    <div className="flex-none p-6 border-b flex justify-between items-center">
-                       <span className="font-black text-xs gold-text uppercase">Menu</span>
-                       <Button variant="ghost" size="icon" onClick={() => setIsMobileNavOpen(false)}><X size={20}/></Button>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                       <div className="grid grid-cols-1 gap-3">
-                          {visibleSections.map((item) => (
-                             <Link 
-                               key={item.href} 
-                               href={item.href} 
-                               onClick={() => setIsMobileNavOpen(false)}
-                               className={`flex items-center gap-4 p-4 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${pathname === item.href ? 'bg-primary text-black' : 'bg-muted/40 text-foreground/70'}`}
-                             >
-                                <item.icon size={18} className={pathname === item.href ? 'text-black' : 'text-primary'} />
-                                {item.label}
-                             </Link>
-                          ))}
-                       </div>
-                    </div>
-                    <div className="flex-none p-8 border-t bg-muted/20 flex flex-col gap-4">
-                       <Button asChild variant="outline" className="w-full h-14 rounded-xl font-black text-[10px] uppercase border-primary/30">
-                          <Link href="/"><ArrowRight size={18} /> العودة للمتجر</Link>
-                       </Button>
-                       <Button variant="ghost" onClick={() => { logout(); setIsMobileNavOpen(false); }} className="w-full h-14 rounded-xl text-red-500 font-black text-[10px] uppercase bg-red-500/5">
-                          <LogOut size={18} /> خروج
-                       </Button>
-                    </div>
-                 </motion.div>
-               </>
-            )}
-          </AnimatePresence>
-
           <main className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-16 py-12 pb-48 bg-background relative will-change-scroll">
              <div className="max-w-6xl mx-auto text-right relative z-10">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div 
-                  key={pathname} 
-                  initial={{ opacity: 0 }} 
-                  animate={{ opacity: 1 }} 
-                  exit={{ opacity: 0 }} 
-                  transition={{ duration: 0.15 }}
-                >
-                  {children}
-                </motion.div>
-              </AnimatePresence>
+                {children}
             </div>
           </main>
         </div>
