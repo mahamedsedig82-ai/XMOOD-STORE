@@ -15,17 +15,6 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Sovereign Sanitization Protocol 2.0
- * Ensures the email is a pure, lowercase string with zero whitespace.
- */
-const sanitizeEmail = (value: any): string => {
-  if (!value) return "";
-  // Force to primitive string and remove ALL whitespace (including non-breaking spaces)
-  const clean = String(value).replace(/\s+/g, '').toLowerCase();
-  return clean;
-};
-
-/**
  * 🛡️ Profile Sync Service
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
@@ -69,19 +58,18 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 
 /**
  * 🛡️ Robust Registration Flow
+ * Fixed: Removed overly aggressive sanitization to prevent auth/invalid-email regression.
  */
 export const registerEmail = async (email: string, pass: string, name: string) => {
-  const cleanEmail = sanitizeEmail(email);
+  // 0. Final Normalization
+  const cleanEmail = String(email).trim().toLowerCase();
   
-  // Strict Pre-flight validation to prevent auth/invalid-email
-  if (!cleanEmail || typeof cleanEmail !== 'string' || !cleanEmail.includes('@')) {
-    throw { code: 'auth/invalid-email', message: 'تنسيق البريد الإلكتروني غير صالح' };
-  }
+  console.info(`[AUTH_PIPELINE] Registering: ${cleanEmail}`);
 
-  // 1. Create Auth Account with guaranteed valid email string
+  // 1. Core Auth Account
   const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
   
-  // 2. Immediate Identity Hardening
+  // 2. Immediate Profile Updates (Auth DisplayName)
   await updateProfile(res.user, { displayName: name });
   
   // 3. Firestore Sync (Sovereign Record)
@@ -94,11 +82,9 @@ export const registerEmail = async (email: string, pass: string, name: string) =
  * 🛡️ Robust Login Pipeline
  */
 export const loginEmail = async (email: string, pass: string) => {
-  const cleanEmail = sanitizeEmail(email);
+  const cleanEmail = String(email).trim().toLowerCase();
   
-  if (!cleanEmail || typeof cleanEmail !== 'string' || !cleanEmail.includes('@')) {
-    throw { code: 'auth/invalid-email', message: 'برجاء إدخال بريد إلكتروني صحيح' };
-  }
+  console.info(`[AUTH_PIPELINE] Login attempt: ${cleanEmail}`);
 
   return signInWithEmailAndPassword(auth, cleanEmail, pass);
 };
