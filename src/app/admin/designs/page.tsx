@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, ImageIcon, Loader2, Upload, Sparkles, User, Clock } from "lucide-react";
+import { Plus, Trash2, ImageIcon, Loader2, Upload, Sparkles, User, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 
@@ -28,12 +28,13 @@ export default function DesignerPortfolioAdmin() {
 
   const { data: rawGalleryItems, loading } = useCollection(galleryQuery);
 
-  // 🛡️ Immutable sorting to prevent reference loss
   const galleryItems = useMemo(() => {
     if (!rawGalleryItems) return [];
-    return [...rawGalleryItems].sort((a: any, b: any) => 
-      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
-    );
+    return [...rawGalleryItems].sort((a: any, b: any) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
   }, [rawGalleryItems]);
 
   const compressImage = (file: File): Promise<string> => {
@@ -82,17 +83,14 @@ export default function DesignerPortfolioAdmin() {
     }
 
     setIsProcessing(true);
-    const data = {
-      ...newDesign,
-      designerId: user.uid,
-      designerName: profile?.displayName || "Elite Designer",
-      designerPhone: profile?.phoneNumber || "",
-      createdAt: new Date().toISOString(),
-      timestamp: serverTimestamp()
-    };
-
     try {
-      await addDoc(collection(db, "gallery"), data);
+      await addDoc(collection(db, "gallery"), {
+        ...newDesign,
+        designerId: user.uid,
+        designerName: profile?.displayName || "Elite Designer",
+        createdAt: new Date().toISOString(),
+        timestamp: serverTimestamp()
+      });
       setIsGalleryOpen(false);
       setNewDesign({ title: "", description: "", imageUrl: "", category: "Signature" });
       toast({ title: "تم نشر العمل الإبداعي بنجاح" });
@@ -103,17 +101,27 @@ export default function DesignerPortfolioAdmin() {
     }
   };
 
-  const handleDeleteItem = async (id: string) => {
-    if (!id || !db) return;
-    if (!confirm("هل أنت متأكد من الحذف النهائي لهذا العمل من المعرض؟")) return;
+  const handleDeleteItem = async (docId: string) => {
+    if (!docId || !db) {
+      console.error("[CRITICAL] NO_DOC_ID_PROVIDED");
+      return;
+    }
+    
+    if (!confirm("⚠️ هل أنت متأكد من الحذف النهائي لهذا العمل؟ لا يمكن التراجع عن هذا الإجراء.")) return;
     
     setIsProcessing(true);
     try {
-      await deleteDoc(doc(db, "gallery", id));
-      toast({ title: "تم الحذف بنجاح" });
+      const docRef = doc(db, "gallery", docId);
+      await deleteDoc(docRef);
+      console.log(`[GALLERY_DELETE] SUCCESS: ${docId}`);
+      toast({ title: "تم الحذف النهائي من الأرشيف" });
     } catch (e: any) {
-      console.error("[DELETE_ERROR]", e);
-      toast({ variant: "destructive", title: "فشل الحذف", description: "تأكد من صلاحيات الوصول." });
+      console.error("[GALLERY_DELETE] ERROR:", e);
+      toast({ 
+        variant: "destructive", 
+        title: "فشل الحذف", 
+        description: "يرجى التحقق من استقرار الاتصال أو صلاحياتك الإدارية." 
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -123,73 +131,77 @@ export default function DesignerPortfolioAdmin() {
     <div className="space-y-12 animate-fade-in pb-40" dir="rtl">
       <header className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card p-10 rounded-[3rem] border shadow-2xl">
         <div className="text-right">
-           <h1 className="text-4xl font-black gold-text leading-tight tracking-tighter">أرشيف الأعمال الإبداعية</h1>
-           <p className="text-[11px] font-black uppercase text-muted-foreground tracking-[0.5em] mt-2">Elite Design Portfolio Hub</p>
+           <h1 className="text-4xl font-black gold-text leading-tight">إدارة أرشيف الأعمال</h1>
+           <p className="text-[11px] font-black uppercase text-muted-foreground tracking-[0.5em] mt-2">Elite Design Control Panel</p>
         </div>
-        <Dialog open={isGalleryOpen} onOpenChange={isGalleryOpen ? (v) => !v && setIsGalleryOpen(false) : setIsGalleryOpen}>
+        <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
           <DialogTrigger asChild>
-            <Button className="royal-button h-18 px-12 text-base shadow-2xl hover:scale-105 transition-all"><Plus size={24} className="ml-3" /> نشر روائع جديدة</Button>
+            <Button className="royal-button h-18 px-12 text-base shadow-2xl"><Plus size={24} className="ml-3" /> نشر عمل جديد</Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border-none rounded-[3.5rem] p-12 max-w-2xl overflow-y-auto max-h-[90vh] shadow-[0_50px_100px_rgba(0,0,0,0.5)]">
+          <DialogContent className="bg-card border-none rounded-[3.5rem] p-12 max-w-2xl overflow-y-auto max-h-[90vh] shadow-2xl">
             <DialogHeader>
-              <DialogTitle className="text-3xl font-black gold-text flex items-center gap-4"><ImageIcon size={32} /> إضافة عمل للرواد</DialogTitle>
+              <DialogTitle className="text-3xl font-black gold-text flex items-center gap-4"><ImageIcon size={32} /> إضافة للرواد</DialogTitle>
             </DialogHeader>
             <div className="space-y-8 mt-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-primary uppercase pr-6 tracking-widest">عنوان العمل</label>
-                    <Input value={newDesign.title} onChange={e => setNewDesign({...newDesign, title: e.target.value})} placeholder="Xmood Official Branding..." />
+                    <label className="text-[10px] font-black text-primary uppercase pr-6">عنوان العمل</label>
+                    <Input value={newDesign.title} onChange={e => setNewDesign({...newDesign, title: e.target.value})} placeholder="العنوان..." />
                  </div>
                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-primary uppercase pr-6 tracking-widest">التصنيف</label>
-                    <Input value={newDesign.category} onChange={e => setNewDesign({...newDesign, category: e.target.value})} placeholder="Signature, Identity, UI..." />
+                    <label className="text-[10px] font-black text-primary uppercase pr-6">التصنيف</label>
+                    <Input value={newDesign.category} onChange={e => setNewDesign({...newDesign, category: e.target.value})} placeholder="Signature..." />
                  </div>
               </div>
               <div className="space-y-4">
-                 <label className="text-[10px] font-black text-primary uppercase pr-6 tracking-widest">التحفة الفنية (الصورة)</label>
-                 <div onClick={() => fileInputRef.current?.click()} className="h-56 bg-muted/30 border-2 border-dashed border-primary/20 rounded-[2.5rem] flex items-center justify-center cursor-pointer overflow-hidden group hover:bg-primary/5 transition-all">
+                 <label className="text-[10px] font-black text-primary uppercase pr-6">الصورة الفنية</label>
+                 <div onClick={() => fileInputRef.current?.click()} className="h-48 bg-muted/30 border-2 border-dashed border-primary/20 rounded-[2.5rem] flex items-center justify-center cursor-pointer overflow-hidden group">
                     {newDesign.imageUrl ? (
-                      <img src={newDesign.imageUrl} className="h-full w-full object-cover transition-transform group-hover:scale-110" alt="" />
+                      <img src={newDesign.imageUrl} className="h-full w-full object-cover" alt="" />
                     ) : (
                       <div className="text-center opacity-40">
                          <Upload className="mx-auto mb-3" size={40} />
-                         <p className="text-[10px] font-black uppercase tracking-widest">رفع من الأستوديو المركزي</p>
+                         <p className="text-[10px] font-black uppercase">رفع من الاستوديو</p>
                       </div>
                     )}
                     <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
                  </div>
               </div>
               <div className="space-y-3">
-                 <label className="text-[10px] font-black text-primary uppercase pr-6 tracking-widest">شرح الرؤية الإبداعية</label>
-                 <Textarea value={newDesign.description} onChange={e => setNewDesign({...newDesign, description: e.target.value})} placeholder="صف تفاصيل هذا العمل الاستثنائي..." className="min-h-[150px] !bg-zinc-950/50" />
+                 <label className="text-[10px] font-black text-primary uppercase pr-6">شرح الرؤية الإبداعية</label>
+                 <Textarea value={newDesign.description} onChange={e => setNewDesign({...newDesign, description: e.target.value})} placeholder="صف العمل..." className="min-h-[120px]" />
               </div>
             </div>
             <DialogFooter className="mt-12">
-               <Button onClick={handleAddToGallery} disabled={isProcessing} className="royal-button w-full h-20 text-2xl shadow-2xl">
-                 {isProcessing ? <Loader2 className="animate-spin" /> : <><Sparkles size={24} className="ml-4" /> خلود العمل في المعرض</>}
+               <Button onClick={handleAddToGallery} disabled={isProcessing} className="royal-button w-full h-20 text-2xl">
+                 {isProcessing ? <Loader2 className="animate-spin" /> : "تأكيد النشر الفوري"}
                </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
         {loading ? (
-          <div className="col-span-full py-40 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={100} /></div>
+          <div className="col-span-full py-40 text-center"><Loader2 className="animate-spin text-primary mx-auto" size={80} /></div>
         ) : galleryItems.length === 0 ? (
-          <div className="col-span-full py-60 text-center opacity-30 italic font-black uppercase tracking-[0.5em] text-zinc-500">The Gallery is Empty</div>
+          <div className="col-span-full py-60 text-center opacity-30 italic font-black uppercase tracking-[0.5em]">الأرشيف فارغ حالياً</div>
         ) : galleryItems.map((item: any) => (
-          <Card key={item.id} className="luxury-card border-none flex flex-col group h-full hover:scale-[1.03] transition-all duration-700 relative">
-             {/* 🛡️ Protected Action Header */}
-             <div className="p-4 bg-muted/40 border-b flex items-center justify-between z-20">
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-black text-[7px] px-3 py-1 uppercase tracking-widest">{item.category}</Badge>
+          <Card key={item.id} className="luxury-card border-none flex flex-col group h-full shadow-lg overflow-visible">
+             {/* 🛑 EXCLUSIVE ADMIN BAR - RADICAL SOLUTION: Outside the image container */}
+             <div className="p-4 bg-zinc-900 border-b border-white/5 flex items-center justify-between rounded-t-[3.5rem] z-30">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-black text-[7px] px-3 py-1 uppercase">{item.category}</Badge>
                 <Button 
-                  onClick={() => handleDeleteItem(item.id)} 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteItem(item.id);
+                  }}
                   disabled={isProcessing}
                   variant="ghost" 
-                  className="h-10 w-10 p-0 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"
+                  className="h-10 w-10 p-0 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/20"
+                  title="حذف نهائي"
                 >
-                   <Trash2 size={18} />
+                   {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 size={20} />}
                 </Button>
              </div>
 
@@ -197,15 +209,15 @@ export default function DesignerPortfolioAdmin() {
                 <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
              </div>
 
-             <CardContent className="p-8 flex-1 flex flex-col">
-                <h4 className="font-black text-2xl line-clamp-1 mb-3 group-hover:gold-text transition-all tracking-tighter">{item.title}</h4>
-                <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed mb-8 flex-1 font-medium">{item.description}</p>
-                <div className="pt-6 border-t flex items-center justify-between">
+             <CardContent className="p-8 flex-1 flex flex-col bg-card">
+                <h4 className="font-black text-2xl line-clamp-1 mb-3 gold-text tracking-tighter">{item.title}</h4>
+                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed mb-8 flex-1">{item.description}</p>
+                <div className="pt-6 border-t flex items-center justify-between opacity-60">
                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm"><User size={14} /></div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{item.designerName}</span>
+                      <User size={14} className="text-primary" />
+                      <span className="text-[9px] font-black uppercase">{item.designerName}</span>
                    </div>
-                   <div className="flex items-center gap-2 text-[8px] font-bold text-muted-foreground uppercase opacity-60">
+                   <div className="flex items-center gap-2 text-[8px] font-bold">
                       <Clock size={10} /> {new Date(item.createdAt).toLocaleDateString('ar-EG')}
                    </div>
                 </div>
