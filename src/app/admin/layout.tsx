@@ -81,7 +81,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
         <Sidebar className="border-l border-border bg-card/80 backdrop-blur-3xl hidden lg:flex shrink-0 shadow-2xl" side="right">
           <SidebarHeader className="p-10 border-b text-center flex flex-col items-center gap-6 bg-muted/10">
-            <Link href="/" className="flex flex-col items-center transition-transform hover:scale-105">
+            <Link href="/" className="flex flex-col items-center">
                {config?.appearance?.logoUrl ? (
                  <img src={config.appearance.logoUrl} className="h-20 w-20 rounded-full object-cover shadow-xl border-4 border-primary/20" alt="Logo" />
                ) : (
@@ -96,7 +96,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              <SidebarMenu className="gap-4">
                {visibleSections.map((item) => (
                  <SidebarMenuItem key={item.href}>
-                   <SidebarMenuButton asChild isActive={pathname === item.href} className={`h-14 px-8 rounded-2xl transition-all duration-400 ${pathname === item.href ? 'bg-primary text-black shadow-2xl scale-[1.05]' : 'hover:bg-primary/10 text-foreground/70'}`}>
+                   <SidebarMenuButton asChild isActive={pathname === item.href} className={`h-14 px-8 rounded-2xl transition-all duration-300 ${pathname === item.href ? 'bg-primary text-black shadow-2xl scale-[1.02]' : 'hover:bg-primary/10 text-foreground/70'}`}>
                      <Link href={item.href} className="flex flex-row-reverse items-center gap-5 w-full">
                        <item.icon size={22} className={pathname === item.href ? 'text-black' : 'text-primary'} />
                        <span className="font-black text-[11px] uppercase tracking-widest">{item.label}</span>
@@ -107,8 +107,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </SidebarMenu>
           </SidebarContent>
           <div className="p-8 border-t bg-muted/20 space-y-4">
-            <Button asChild variant="outline" className="w-full h-12 rounded-2xl text-[10px] font-black uppercase gap-4 border-primary/30 hover:bg-primary hover:text-black transition-all shadow-sm">
-              <Link href="/"><ArrowRight size={16} className="rotate-0" /> العودة للمتجر</Link>
+            <Button asChild variant="outline" className="w-full h-12 rounded-2xl text-[10px] font-black uppercase gap-4 border-primary/30 hover:bg-primary hover:text-black transition-all">
+              <Link href="/"><ArrowRight size={16} /> العودة للمتجر</Link>
             </Button>
             <Button variant="ghost" onClick={logout} className="w-full h-12 rounded-2xl text-red-500 font-black text-[10px] uppercase gap-4 hover:bg-red-500 hover:text-white transition-all">
               <LogOut size={16} /> تسجيل الخروج
@@ -136,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
              <div className="hidden lg:flex items-center gap-5">
                 <div className="flex items-center gap-3 px-6 py-2 bg-green-500/5 rounded-full border border-green-500/10">
-                   <div className="w-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" style={{ height: '8px' }} />
+                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#22c55e]" style={{ height: '8px' }} />
                    <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">System Active</span>
                 </div>
                 <Badge variant="outline" className="border-border text-muted-foreground text-[9px] font-black px-4 py-1 rounded-full uppercase tracking-tighter">Verified Session</Badge>
@@ -146,7 +146,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              </div>
           </header>
 
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {isMobileNavOpen && (
                <>
                  <motion.div 
@@ -188,16 +188,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )}
           </AnimatePresence>
 
-          <main className="flex-1 overflow-y-auto smooth-scroll custom-scrollbar px-4 md:px-16 py-12 pb-48 bg-background relative">
+          <main className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-16 py-12 pb-48 bg-background relative">
              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.03),transparent_40%)] pointer-events-none" />
              <div className="max-w-6xl mx-auto text-right relative z-10">
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.div 
                   key={pathname} 
-                  initial={{ opacity: 0, y: 15 }} 
+                  initial={{ opacity: 0, y: 10 }} 
                   animate={{ opacity: 1, y: 0 }} 
-                  exit={{ opacity: 0, y: -15 }} 
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  exit={{ opacity: 0, y: -10 }} 
+                  transition={{ duration: 0.3, ease: "easeOut" }}
                 >
                   {children}
                 </motion.div>

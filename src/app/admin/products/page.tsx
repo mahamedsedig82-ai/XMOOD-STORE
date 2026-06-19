@@ -112,19 +112,19 @@ export default function AdminProducts() {
     }
   };
 
-  // 🛡️ دالة الحذف الجذرية للمنتجات
   const handleDelete = async (id: string) => {
     if (!id || !db) return;
-    const confirmDelete = window.confirm("🛑 هل أنت متأكد من حذف هذه الباقة نهائياً؟ لا يمكن التراجع.");
-    if (!confirmDelete) return;
+    
+    if (!window.confirm("🛑 هل أنت متأكد من حذف هذه الباقة نهائياً؟ لا يمكن التراجع عن هذا الإجراء.")) return;
     
     setIsProcessing(true);
+    const toastId = toast({ title: "جاري حذف الباقة من المستودع..." });
+
     try {
       await deleteDoc(doc(db, "products", id));
-      console.log(`[ADMIN_LOG] PRODUCT_DELETED: ${id}`);
       toast({ title: "تم الحذف النهائي من المستودع" });
     } catch (e: any) {
-      console.error("[ADMIN_ERROR] DELETE_FAILED:", e);
+      console.error("[ADMIN_PRODUCT_DELETE] FATAL:", e);
       toast({ variant: "destructive", title: "فشل الحذف" });
     } finally {
       setIsProcessing(false);
@@ -226,7 +226,13 @@ export default function AdminProducts() {
                   <TableCell className="text-center">
                     <div className="flex justify-center gap-4">
                        <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl text-primary hover:bg-primary/10 border border-primary/10" onClick={() => startEdit(p)}><Edit2 size={20} /></Button>
-                       <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl text-red-500 hover:bg-red-50 border border-red-500/10" onClick={() => handleDelete(p.id)} disabled={isProcessing}><Trash2 size={20} /></Button>
+                       <button 
+                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(p.id); }}
+                         className="h-12 w-12 flex items-center justify-center rounded-2xl text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20 transition-all cursor-pointer disabled:opacity-50"
+                         disabled={isProcessing}
+                       >
+                          {isProcessing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Trash2 size={20} />}
+                       </button>
                     </div>
                   </TableCell>
                 </TableRow>

@@ -101,34 +101,24 @@ export default function DesignerPortfolioAdmin() {
     }
   };
 
-  // 🛡️ دالة الحذف الجذرية والمطورة
   const handleDeleteItem = async (docId: string) => {
-    if (!docId || !db) {
-      console.error("[CRITICAL_ADMIN] NO_DOC_ID_FOR_DELETE");
-      return;
-    }
+    if (!docId || !db) return;
     
-    const confirmDelete = window.confirm("⚠️ هل أنت متأكد من الحذف النهائي؟ لا يمكن استعادة العمل بعد ذلك.");
-    if (!confirmDelete) return;
+    if (!window.confirm("⚠️ هل أنت متأكد من حذف هذا العمل نهائياً من الأرشيف؟")) return;
     
     setIsProcessing(true);
-    toast({ title: "جاري الحذف من الخادم..." });
+    const toastId = toast({ title: "جاري الحذف السيادي..." });
 
     try {
-      // استهداف مباشر للمستند عبر المعرف
       const itemRef = doc(db, "gallery", docId);
-      console.log(`[FIREBASE_ACTION] DELETING_DOC: gallery/${docId}`);
-      
       await deleteDoc(itemRef);
-      
-      console.log(`[FIREBASE_SUCCESS] DOC_DELETED: ${docId}`);
-      toast({ title: "تم الحذف النهائي من الأرشيف بنجاح" });
+      toast({ title: "تم الحذف بنجاح" });
     } catch (e: any) {
-      console.error("[FIREBASE_ERROR] DELETE_FAILED:", e);
+      console.error("[ADMIN_GALLERY_DELETE] FATAL:", e);
       toast({ 
         variant: "destructive", 
         title: "فشل الحذف", 
-        description: "تأكد من صلاحياتك أو استقرار اتصالك." 
+        description: "يرجى التحقق من الصلاحيات أو الاتصال." 
       });
     } finally {
       setIsProcessing(false);
@@ -196,18 +186,16 @@ export default function DesignerPortfolioAdmin() {
           <div className="col-span-full py-60 text-center opacity-30 italic font-black uppercase tracking-[0.5em]">الأرشيف فارغ حالياً</div>
         ) : galleryItems.map((item: any) => (
           <Card key={item.id} className="luxury-card border-none flex flex-col group h-full shadow-lg overflow-visible bg-card">
-             {/* 🛑 الشريط الإداري المعزول z-50 لضمان وصول النقرة */}
-             <div className="p-4 bg-zinc-950 border-b border-primary/10 flex items-center justify-between rounded-t-[3.5rem] z-50 relative">
+             <div className="p-4 bg-zinc-950 border-b border-primary/10 flex items-center justify-between rounded-t-[3.5rem] relative z-[60]">
                 <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[8px] px-4 py-1 uppercase tracking-tighter">{item.category}</Badge>
-                <Button 
-                  onClick={() => handleDeleteItem(item.id)}
+                <button 
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteItem(item.id); }}
                   disabled={isProcessing}
-                  variant="ghost" 
-                  className="h-10 w-10 p-0 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/40 border border-red-500/20 cursor-pointer"
+                  className="h-10 w-10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/60 border border-red-500/20 cursor-pointer disabled:opacity-50"
                   title="حذف نهائي"
                 >
                    {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 size={20} />}
-                </Button>
+                </button>
              </div>
 
              <div className="relative aspect-[4/3] overflow-hidden bg-muted">
