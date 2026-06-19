@@ -15,8 +15,7 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Profile Sync Service 11.0 (Atomic & Idempotent)
- * مزامنة ملف المستخدم بذكاء يمنع الكتابة فوق البيانات الحساسة (الرصيد، الرتب).
+ * 🛡️ Profile Sync Service
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -34,7 +33,6 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
     };
 
     if (!userDoc.exists()) {
-      console.log("[AUTH_SYNC] Creating New Sovereign Profile for:", user.uid);
       await setDoc(userRef, {
         ...baseProfile,
         walletBalance: 0,
@@ -46,47 +44,66 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
     } else {
       const existing = userDoc.data();
       const updates: any = {};
-      
-      // مزامنة دقيقة فقط للحقول المتغيرة
       if (existing.isVerified !== user.emailVerified) updates.isVerified = user.emailVerified;
       if (additionalData.displayName && existing.displayName !== additionalData.displayName) updates.displayName = additionalData.displayName;
-      if (additionalData.phoneNumber && existing.phoneNumber !== additionalData.phoneNumber) updates.phoneNumber = additionalData.phoneNumber;
-
       if (Object.keys(updates).length > 0) {
-        console.log("[AUTH_SYNC] Atomic Profile Update for:", user.uid);
-        await updateDoc(userRef, { 
-          ...updates,
-          updatedAt: serverTimestamp() 
-        });
+        await updateDoc(userRef, { ...updates, updatedAt: serverTimestamp() });
       }
     }
   } catch (error) {
     console.error("[AUTH_SYNC_FATAL]", error);
-    throw error;
   }
 }
 
 /**
- * 🛡️ Sovereign Wipe Logout
+ * 🛡️ Deep Sanitization for Email Strings
  */
+const sanitizeEmail = (email: any): string => {
+  if (!email || typeof email !== 'string') return "";
+  // Remove all whitespace and invisible control characters
+  return email.replace(/[\u0000-\u001F\u007F-\u009F\s]/g, "").toLowerCase().trim();
+};
+
+/**
+ * 🛡️ Sovereign Registration Flow
+ */
+export const registerEmail = async (email: string, pass: string, name: string) => {
+  const cleanEmail = sanitizeEmail(email);
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    throw { code: 'auth/invalid-email' };
+  }
+
+  // 1. Create Auth Account
+  const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
+  
+  // 2. Immediate Profile Updates
+  await updateProfile(res.user, { displayName: name });
+  await syncUserProfile(res.user, { displayName: name });
+  
+  return res;
+};
+
+/**
+ * 🛡️ Robust Login Pipeline
+ */
+export const loginEmail = (email: string, pass: string) => {
+  const cleanEmail = sanitizeEmail(email);
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    throw { code: 'auth/invalid-email' };
+  }
+  return signInWithEmailAndPassword(auth, cleanEmail, pass);
+};
+
 export const logout = async () => {
   if (!auth) return;
-  try {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('xmood-cart');
-      localStorage.removeItem('xmood-theme');
-      sessionStorage.clear();
-    }
-    await signOut(auth);
-    window.location.href = '/login';
-  } catch (error) {
+  await signOut(auth);
+  if (typeof window !== 'undefined') {
+    localStorage.clear();
+    sessionStorage.clear();
     window.location.href = '/login';
   }
 };
 
-/**
- * 🛡️ Google Auth Bridge
- */
 export const loginWithGoogle = async () => {
   if (!auth) return;
   const provider = new GoogleAuthProvider();
@@ -102,59 +119,11 @@ export const loginWithGoogle = async () => {
   }
 };
 
-/**
- * 🛡️ Verification Service
- */
 export const sendAccountVerification = async (user: User) => {
   if (!user) return;
-  try {
-    const actionCodeSettings = {
-      url: 'https://xmood-36c92.firebaseapp.com/verify-email',
-      handleCodeInApp: true,
-    };
-    await sendEmailVerification(user, actionCodeSettings);
-  } catch (error: any) {
-    console.error("[AUTH_VERIFY_FAILURE]", error.message);
-    throw error;
-  }
-};
-
-/**
- * 🛡️ Atomic Registration Flow
- * إنشاء حساب Firebase و Firestore في وحدة زمنية واحدة لضمان الاستقرار.
- */
-export const registerEmail = async (email: string, pass: string, name: string) => {
-  if (!email || typeof email !== 'string') throw new Error("EMAIL_REQUIRED");
-  
-  // 🛡️ التطهير النهائي قبل الإرسال للـ SDK
-  const cleanEmail = email.trim().toLowerCase();
-  
-  if (process.env.NODE_ENV === 'development') {
-    console.log("[AUTH_SDK] Dispatching Account Creation for:", cleanEmail);
-  }
-
-  // 1. إنشاء حساب المصادقة
-  const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
-  
-  // 2. تحديث الاسم في Auth
-  await updateProfile(res.user, { displayName: name });
-  
-  // 3. المزامنة الذرية مع Firestore
-  await syncUserProfile(res.user, { displayName: name });
-  
-  return res;
-};
-
-/**
- * 🛡️ Robust Login Pipeline
- */
-export const loginEmail = (email: string, pass: string) => {
-  if (!email || typeof email !== 'string') throw new Error("EMAIL_REQUIRED");
-  const cleanEmail = email.trim().toLowerCase();
-  
-  if (process.env.NODE_ENV === 'development') {
-    console.log("[AUTH_SDK] Dispatching Login Request for:", cleanEmail);
-  }
-  
-  return signInWithEmailAndPassword(auth, cleanEmail, pass);
+  const actionCodeSettings = {
+    url: 'https://xmood-36c92.firebaseapp.com/verify-email',
+    handleCodeInApp: true,
+  };
+  await sendEmailVerification(user, actionCodeSettings);
 };
