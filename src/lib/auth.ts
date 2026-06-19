@@ -1,3 +1,4 @@
+
 "use client";
 
 import { 
@@ -58,32 +59,30 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * 🛡️ Robust Email Sanitization
+ * 🛡️ Reliable Email Sanitization
  */
 const sanitizeEmail = (email: any): string => {
   if (!email || typeof email !== 'string') return "";
-  // Deep clean whitespace and force lowercase
   return email.trim().toLowerCase();
 };
 
 /**
- * 🛡️ Sovereign Registration Flow
+ * 🛡️ Sovereign Registration Flow (Atomic)
  */
 export const registerEmail = async (email: string, pass: string, name: string) => {
   const cleanEmail = sanitizeEmail(email);
   
   if (!cleanEmail || !cleanEmail.includes('@')) {
-    console.error("[REG_ERROR] Invalid email value detected:", cleanEmail);
     throw { code: 'auth/invalid-email' };
   }
 
-  // 1. Create Auth Account
+  // 1. Core Auth Account
   const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
   
-  // 2. Immediate Profile Updates
+  // 2. Immediate Profile Updates (Auth DisplayName)
   await updateProfile(res.user, { displayName: name });
   
-  // 3. Firestore Sync
+  // 3. Firestore Sync (Identity Core)
   await syncUserProfile(res.user, { displayName: name });
   
   return res;
