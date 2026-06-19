@@ -42,6 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "نظام السلة", icon: ShoppingCart, href: "/admin/cart-system", roles: ['owner', 'admin', 'gm'] },
     { label: "إدارة المعرض", icon: ImageIcon, href: "/admin/designs", roles: ['owner', 'admin', 'gm', 'designer', 'design_manager'] },
     { label: "إدارة الفروع", icon: GitBranch, href: "/admin/branches", roles: ['owner', 'admin', 'gm'] },
+    { label: "إدارة الوكلاء", icon: ShieldCheck, href: "/admin/middleman", roles: ['owner', 'admin', 'gm'] },
     { label: "إدارة الأعضاء", icon: Users, href: "/admin/users", roles: ['owner', 'admin', 'gm'] },
     { label: "المالية والبنك", icon: Wallet, href: "/admin/finance", roles: ['owner', 'admin', 'gm', 'accountant'] },
     { label: "مركز الأمان", icon: ShieldAlert, href: "/admin/security", roles: ['owner', 'admin', 'gm'] },
