@@ -79,7 +79,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full bg-background overflow-hidden" dir="rtl">
-        <Sidebar className="border-l border-border bg-card/80 backdrop-blur-3xl hidden lg:flex shrink-0 shadow-2xl" side="right">
+        <Sidebar className="border-l border-border bg-card/80 hidden lg:flex shrink-0 shadow-2xl" side="right">
           <SidebarHeader className="p-10 border-b text-center flex flex-col items-center gap-6 bg-muted/10">
             <Link href="/" className="flex flex-col items-center">
                {config?.appearance?.logoUrl ? (
@@ -117,7 +117,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </Sidebar>
 
         <div className="flex-1 flex flex-col min-w-0 h-screen relative bg-background overflow-hidden">
-          <header className="h-20 border-b flex items-center justify-between px-6 md:px-12 bg-background/90 backdrop-blur-2xl z-[150] shrink-0">
+          <header className="h-20 border-b flex items-center justify-between px-6 md:px-12 bg-background/95 z-[150] shrink-0">
              <div className="flex items-center gap-5">
                 <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20 shadow-inner">
                    <Terminal size={22} />
@@ -152,11 +152,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                  <motion.div 
                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                    onClick={() => setIsMobileNavOpen(false)}
-                   className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md lg:hidden"
+                   className="fixed inset-0 z-[200] bg-black/90 lg:hidden"
                  />
                  <motion.div 
                    initial={{ y: "-100%" }} animate={{ y: 0 }} exit={{ y: "-100%" }}
-                   transition={{ type: "spring", damping: 30, stiffness: 200 }}
+                   transition={{ type: "tween", duration: 0.2 }}
                    className="fixed top-20 right-0 z-[210] w-full h-[calc(100vh-80px)] bg-background border-b-4 border-primary/30 lg:hidden flex flex-col shadow-2xl overflow-hidden"
                  >
                     <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -189,7 +189,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </AnimatePresence>
 
           <main className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-16 py-12 pb-48 bg-background relative">
-             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.03),transparent_40%)] pointer-events-none" />
              <div className="max-w-6xl mx-auto text-right relative z-10">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div 
@@ -197,7 +196,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   initial={{ opacity: 0, y: 10 }} 
                   animate={{ opacity: 1, y: 0 }} 
                   exit={{ opacity: 0, y: -10 }} 
-                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  transition={{ duration: 0.2 }}
                 >
                   {children}
                 </motion.div>

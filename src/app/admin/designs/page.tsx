@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, ImageIcon, Loader2, Upload, User, Clock } from "lucide-react";
+import { Plus, Trash2, ImageIcon, Loader2, Upload, User, Clock, ShieldAlert } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -91,6 +91,7 @@ export default function DesignerPortfolioAdmin() {
       timestamp: serverTimestamp()
     };
 
+    // ATOMIC NON-BLOCKING ADD
     addDoc(collection(db, "gallery"), data)
       .then(() => {
         setIsGalleryOpen(false);
@@ -111,9 +112,9 @@ export default function DesignerPortfolioAdmin() {
     if (!docId || !db) return;
     if (!window.confirm("⚠️ هل أنت متأكد من حذف هذا العمل نهائياً من الأرشيف؟")) return;
     
+    // ATOMIC NON-BLOCKING DELETE FOR INSTANT MOBILE RESPONSE
     const docRef = doc(db, "gallery", docId);
     
-    // Non-blocking delete for instant UI response
     deleteDoc(docRef)
       .then(() => toast({ title: "تم الحذف بنجاح" }))
       .catch(async (serverError) => {
@@ -185,14 +186,16 @@ export default function DesignerPortfolioAdmin() {
           <div className="col-span-full py-40 text-center opacity-30 italic font-black uppercase tracking-[0.3em]">الأرشيف فارغ حالياً</div>
         ) : galleryItems.map((item: any) => (
           <Card key={item.id} className="luxury-card border-none flex flex-col group h-full shadow-lg overflow-visible bg-card">
-             <div className="p-3 bg-zinc-950 border-b border-primary/10 flex items-center justify-between rounded-t-[2rem] md:rounded-t-[3.5rem] relative z-[50]">
+             {/* SOVEREIGN ADMIN BAR - FORCED VISIBILITY ON MOBILE */}
+             <div className="p-3 bg-zinc-950 border-b border-primary/10 flex items-center justify-between rounded-t-[2rem] md:rounded-t-[3.5rem] relative z-[100]">
                 <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[7px] px-3 py-1 uppercase tracking-tighter">{item.category}</Badge>
                 <button 
                   onClick={() => handleDeleteItem(item.id)}
-                  className="h-9 w-9 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/60 border border-red-500/20 cursor-pointer active:scale-90"
+                  className="h-10 w-10 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shadow-xl bg-black/60 border border-red-500/20 cursor-pointer active:scale-90 touch-none"
+                  style={{ touchAction: 'manipulation' }}
                   title="حذف نهائي"
                 >
-                   <Trash2 size={18} />
+                   <Trash2 size={20} />
                 </button>
              </div>
 
