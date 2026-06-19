@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, ImageIcon, Loader2, Upload, Sparkles, User } from "lucide-react";
+import { Plus, Trash2, ImageIcon, Loader2, Upload, Sparkles, User, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 
@@ -173,11 +173,24 @@ export default function DesignerPortfolioAdmin() {
         ) : galleryItems.length === 0 ? (
           <div className="col-span-full py-60 text-center opacity-30 italic font-black uppercase tracking-[0.5em] text-zinc-500">The Gallery is Empty</div>
         ) : galleryItems.map((item: any) => (
-          <Card key={item.id} className="luxury-card border-none flex flex-col group h-full hover:scale-[1.03] transition-all duration-700">
+          <Card key={item.id} className="luxury-card border-none flex flex-col group h-full hover:scale-[1.03] transition-all duration-700 relative">
+             {/* 🛡️ Delete Action Header (Outside Image Scope) */}
+             <div className="p-4 bg-muted/20 border-b flex items-center justify-between z-20">
+                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[7px] px-3 py-1 uppercase tracking-widest">{item.category}</Badge>
+                <Button 
+                  onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id); }} 
+                  disabled={isProcessing}
+                  variant="ghost" 
+                  className="h-10 w-10 p-0 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all"
+                >
+                   <Trash2 size={18} />
+                </Button>
+             </div>
+
              <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                 <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
-                <Badge className="absolute top-6 right-6 bg-primary text-black font-black uppercase text-[8px] px-5 py-1.5 rounded-full shadow-2xl tracking-[0.2em]">{item.category}</Badge>
              </div>
+
              <CardContent className="p-8 flex-1 flex flex-col">
                 <h4 className="font-black text-2xl line-clamp-1 mb-3 group-hover:gold-text transition-all tracking-tighter">{item.title}</h4>
                 <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed mb-8 flex-1 font-medium">{item.description}</p>
@@ -186,14 +199,9 @@ export default function DesignerPortfolioAdmin() {
                       <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm"><User size={14} /></div>
                       <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{item.designerName}</span>
                    </div>
-                   <Button 
-                    onClick={() => handleDeleteItem(item.id)} 
-                    disabled={isProcessing}
-                    variant="ghost" 
-                    className="h-12 w-12 p-0 text-red-500 hover:bg-red-50 rounded-[1.25rem] border border-transparent hover:border-red-200 transition-all"
-                  >
-                     <Trash2 size={20} />
-                  </Button>
+                   <div className="flex items-center gap-2 text-[8px] font-bold text-muted-foreground uppercase opacity-60">
+                      <Clock size={10} /> {new Date(item.createdAt).toLocaleDateString('ar-EG')}
+                   </div>
                 </div>
              </CardContent>
           </Card>
