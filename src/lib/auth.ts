@@ -57,36 +57,70 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * 🛡️ Robust Registration Flow
- * Fixed: Removed overly aggressive sanitization to prevent auth/invalid-email regression.
+ * 🛡️ REBUILT REGISTRATION FLOW (39.0)
+ * Hard enforcement of email string integrity and order.
  */
-export const registerEmail = async (email: string, pass: string, name: string) => {
-  // 0. Final Normalization
-  const cleanEmail = String(email).trim().toLowerCase();
+export const registerEmail = async (rawEmail: string, pass: string, name: string) => {
+  // 1. Mandatory Traceability
+  console.log("--- AUTH REGISTRATION START ---");
+  console.log("INPUT NAME:", name);
   
-  console.info(`[AUTH_PIPELINE] Registering: ${cleanEmail}`);
+  // 2. SINGLE SOURCE OF TRUTH SANITIZATION
+  const cleanEmail = String(rawEmail)
+    .trim()
+    .toLowerCase()
+    .replace(/\s/g, "");
 
-  // 1. Core Auth Account
-  const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
-  
-  // 2. Immediate Profile Updates (Auth DisplayName)
-  await updateProfile(res.user, { displayName: name });
-  
-  // 3. Firestore Sync (Sovereign Record)
-  await syncUserProfile(res.user, { displayName: name });
-  
-  return res;
+  console.log("CLEAN EMAIL FOR FIREBASE:", cleanEmail);
+  console.log("CLEAN EMAIL LENGTH:", cleanEmail.length);
+
+  // 3. STRICT TYPE SAFETY ENFORCEMENT
+  if (!cleanEmail || typeof cleanEmail !== 'string' || !cleanEmail.includes('@')) {
+    console.error("INVALID EMAIL AT BOUNDARY:", cleanEmail);
+    throw new Error("تنسيق البريد الإلكتروني غير صالح للإرسال.");
+  }
+
+  try {
+    // 4. ATOMIC FIREBASE CALL
+    console.log("CALLING FIREBASE: createUserWithEmailAndPassword");
+    const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
+    
+    // 5. IMMEDIATE PROFILE SYNC
+    console.log("AUTH SUCCESS. UPDATING PROFILE...");
+    await updateProfile(res.user, { displayName: name });
+    await syncUserProfile(res.user, { displayName: name });
+    
+    console.log("--- AUTH REGISTRATION COMPLETE ---");
+    return res;
+  } catch (error) {
+    console.error("FIREBASE AUTH ERROR:", error);
+    throw error;
+  }
 };
 
 /**
- * 🛡️ Robust Login Pipeline
+ * 🛡️ REBUILT LOGIN PIPELINE (39.0)
  */
-export const loginEmail = async (email: string, pass: string) => {
-  const cleanEmail = String(email).trim().toLowerCase();
+export const loginEmail = async (rawEmail: string, pass: string) => {
+  console.log("--- AUTH LOGIN START ---");
   
-  console.info(`[AUTH_PIPELINE] Login attempt: ${cleanEmail}`);
+  const cleanEmail = String(rawEmail)
+    .trim()
+    .toLowerCase()
+    .replace(/\s/g, "");
 
-  return signInWithEmailAndPassword(auth, cleanEmail, pass);
+  console.log("CLEAN LOGIN EMAIL:", cleanEmail);
+
+  if (!cleanEmail || typeof cleanEmail !== 'string') {
+    throw new Error("يرجى إدخال بريد إلكتروني صحيح.");
+  }
+
+  try {
+    return await signInWithEmailAndPassword(auth, cleanEmail, pass);
+  } catch (error) {
+    console.error("LOGIN FAILURE:", error);
+    throw error;
+  }
 };
 
 export const logout = async () => {

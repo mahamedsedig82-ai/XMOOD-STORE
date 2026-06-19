@@ -17,17 +17,18 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, auth } from "@/firebase
 import { doc } from "firebase/firestore";
 
 export default function LoginPage() {
-  // Separate states for Login and Signup to prevent conflicts
+  const [isMounted, setIsMounted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // Login State
   const [loginEmailVal, setLoginEmailVal] = useState("");
   const [loginPassVal, setLoginPassVal] = useState("");
   
+  // Signup State
   const [signupEmailVal, setSignupEmailVal] = useState("");
   const [signupPassVal, setSignupPassVal] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  
-  const [loading, setLoading] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
   
   const router = useRouter();
   const { user, profile, loading: authLoading, authSettled } = useUser();
@@ -54,6 +55,7 @@ export default function LoginPage() {
   }, [user, profile, authLoading, authSettled, isMounted, router]);
 
   const handleLogin = async () => {
+    console.log("RAW LOGIN INPUT:", loginEmailVal);
     if (!loginEmailVal.trim() || !loginPassVal) {
       return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إدخال البريد وكلمة المرور." });
     }
@@ -66,50 +68,52 @@ export default function LoginPage() {
       setLoading(false);
       let msg = "بيانات الدخول غير صحيحة.";
       if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني المرفوع للخادم غير صالح.";
-      if (error.code === 'auth/user-not-found') msg = "المستخدم غير موجود.";
       toast({ variant: "destructive", title: "تنبيه أمني", description: msg });
     }
   };
 
   const handleSignup = async () => {
-    // 0. Extract raw values
-    const email = signupEmailVal; 
-    const pass = signupPassVal;
-    const name = fullName.trim();
-    const ph = phone.trim();
+    // 🛡️ REBUILT FLOW: DEBUGGING AND TRACEABILITY
+    console.log("--- SIGNUP UI SUBMISSION ---");
+    console.log("STATE EMAIL:", signupEmailVal);
+    console.log("STATE NAME:", fullName);
 
-    console.info(`[UI_TRACE] Form Values: email=${email}, name=${name}`);
-
-    if (!email.trim() || !pass || !name || !ph) {
-      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة كافة الحقول." });
+    if (!signupEmailVal.trim() || !signupPassVal || !fullName.trim() || !phone.trim()) {
+      return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى تعبئة كافة الحقول المطلوبة." });
     }
 
     setLoading(true);
     try {
-      // 1. Trigger registration pipeline
-      await registerEmail(email, pass, name);
+      // Pass raw values to the library function which handles the single source of truth sanitization
+      await registerEmail(signupEmailVal, signupPassVal, fullName.trim());
       
-      // 2. Send verification
       if (auth.currentUser) {
-        await syncUserProfile(auth.currentUser, { phoneNumber: ph });
+        await syncUserProfile(auth.currentUser, { phoneNumber: phone.trim() });
         await sendAccountVerification(auth.currentUser);
       }
       
       toast({ title: "تم إنشاء الحساب بنجاح", description: "يرجى تفعيل بريدك الإلكتروني للمتابعة." });
     } catch (error: any) {
       setLoading(false);
-      console.error("[UI_ERROR] Registration Failure:", error);
+      console.error("SIGNUP UI ERROR:", error);
       
       let msg = "فشل إنشاء الحساب.";
       if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
-      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني مرفوض من قبل النظام.";
+      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني غير مقبول سيادياً.";
       if (error.code === 'auth/weak-password') msg = "كلمة المرور ضعيفة جداً.";
       
       toast({ variant: "destructive", title: "تنبيه", description: msg });
     }
   };
 
-  if (!isMounted) return null;
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <Loader2 className="animate-spin text-primary" size={60} />
+        <p className="text-[10px] font-black uppercase tracking-widest gold-text">Securing Entry Node...</p>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background relative overflow-hidden" dir="rtl">
@@ -139,8 +143,6 @@ export default function LoginPage() {
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
-                        id="login-email"
-                        name="email"
                         type="email"
                         autoComplete="email"
                         value={loginEmailVal} 
@@ -151,8 +153,6 @@ export default function LoginPage() {
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">مفتاح المرور</Label>
                       <Input 
-                        id="login-password"
-                        name="password"
                         type="password"
                         autoComplete="current-password"
                         value={loginPassVal} 
@@ -179,10 +179,8 @@ export default function LoginPage() {
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
-                        id="signup-email"
-                        name="signup-email"
                         type="email"
-                        autoComplete="off"
+                        autoComplete="new-email"
                         spellCheck={false}
                         value={signupEmailVal} 
                         onChange={e => setSignupEmailVal(e.target.value)} 
@@ -192,8 +190,6 @@ export default function LoginPage() {
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">كلمة المرور</Label>
                       <Input 
-                        id="signup-password"
-                        name="signup-password"
                         type="password"
                         autoComplete="new-password"
                         value={signupPassVal} 
