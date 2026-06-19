@@ -15,20 +15,13 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Sovereign Sanitization Protocol
- * Ensures the email is a pure, lowercase, primitive string.
+ * 🛡️ Sovereign Sanitization Protocol 2.0
+ * Ensures the email is a pure, lowercase string with zero whitespace.
  */
-const sanitizeEmail = (email: any): string => {
-  // 1. Force to string and handle nulls/undefined
-  const raw = String(email || "").trim();
-  // 2. Remove ALL types of whitespace (including invisible/unicode spaces)
-  const clean = raw.replace(/\s+/g, '').toLowerCase();
-  
-  // Forensic Logging (Development only)
-  if (process.env.NODE_ENV !== 'production') {
-    console.info(`[AUTH_SANITY] Input: "${email}" -> Clean: "${clean}" (Len: ${clean.length})`);
-  }
-  
+const sanitizeEmail = (value: any): string => {
+  if (!value) return "";
+  // Force to primitive string and remove ALL whitespace (including non-breaking spaces)
+  const clean = String(value).replace(/\s+/g, '').toLowerCase();
   return clean;
 };
 
@@ -75,17 +68,17 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
 }
 
 /**
- * 🛡️ Sovereign Registration Flow
+ * 🛡️ Robust Registration Flow
  */
 export const registerEmail = async (email: string, pass: string, name: string) => {
   const cleanEmail = sanitizeEmail(email);
   
-  // Final Pre-flight check
-  if (!cleanEmail || !cleanEmail.includes('@') || cleanEmail.length < 5) {
+  // Strict Pre-flight validation to prevent auth/invalid-email
+  if (!cleanEmail || typeof cleanEmail !== 'string' || !cleanEmail.includes('@')) {
     throw { code: 'auth/invalid-email', message: 'تنسيق البريد الإلكتروني غير صالح' };
   }
 
-  // 1. Create Auth Account
+  // 1. Create Auth Account with guaranteed valid email string
   const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
   
   // 2. Immediate Identity Hardening
@@ -100,8 +93,13 @@ export const registerEmail = async (email: string, pass: string, name: string) =
 /**
  * 🛡️ Robust Login Pipeline
  */
-export const loginEmail = (email: string, pass: string) => {
+export const loginEmail = async (email: string, pass: string) => {
   const cleanEmail = sanitizeEmail(email);
+  
+  if (!cleanEmail || typeof cleanEmail !== 'string' || !cleanEmail.includes('@')) {
+    throw { code: 'auth/invalid-email', message: 'برجاء إدخال بريد إلكتروني صحيح' };
+  }
+
   return signInWithEmailAndPassword(auth, cleanEmail, pass);
 };
 

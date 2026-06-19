@@ -17,7 +17,6 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, auth } from "@/firebase
 import { doc } from "firebase/firestore";
 
 export default function LoginPage() {
-  // 🛡️ State Management (Unified & Clean)
   const [loginEmailVal, setLoginEmailVal] = useState("");
   const [loginPassVal, setLoginPassVal] = useState("");
   
@@ -54,18 +53,22 @@ export default function LoginPage() {
   }, [user, profile, authLoading, authSettled, isMounted, router]);
 
   const handleLogin = async () => {
-    if (!loginEmailVal.trim() || !loginPassVal) {
+    const email = loginEmailVal.trim();
+    const pass = loginPassVal;
+
+    if (!email || !pass) {
       return toast({ variant: "destructive", title: "بيانات ناقصة", description: "يرجى إدخال البريد وكلمة المرور." });
     }
 
     setLoading(true);
     try {
-      await loginEmail(loginEmailVal.trim(), loginPassVal);
+      await loginEmail(email, pass);
       toast({ title: "تم الدخول بنجاح" });
     } catch (error: any) {
       setLoading(false);
       let msg = "بيانات الدخول غير صحيحة.";
       if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني غير صالح.";
+      if (error.code === 'auth/user-not-found') msg = "المستخدم غير موجود.";
       toast({ variant: "destructive", title: "تنبيه أمني", description: msg });
     }
   };
@@ -86,15 +89,11 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      // 1. Atomic Registration
       await registerEmail(email, pass, name);
-      
-      // 2. Extra Data Sync (Phone)
       if (auth.currentUser) {
         await syncUserProfile(auth.currentUser, { phoneNumber: ph });
         await sendAccountVerification(auth.currentUser);
       }
-      
       toast({ title: "تم إنشاء الحساب", description: "يرجى تفعيل بريدك الإلكتروني للمتابعة." });
     } catch (error: any) {
       setLoading(false);
@@ -109,7 +108,7 @@ export default function LoginPage() {
 
   if (!isMounted) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-      <Loader2 className="animate-spin text-primary" size={60} />
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       <p className="text-[10px] font-black uppercase tracking-widest gold-text">Securing Entry Node...</p>
     </div>
   );
@@ -122,11 +121,10 @@ export default function LoginPage() {
           <Card className="luxury-card border-none bg-card/60 backdrop-blur-xl shadow-2xl">
             <div className="p-8 text-center border-b border-white/5 flex flex-col items-center bg-muted/10 gap-5">
                <div className="relative inline-block">
-                  <div className="absolute inset-0 bg-primary/20 blur-[20px] rounded-full scale-125 opacity-30" />
                   {config?.appearance?.logoUrl ? (
-                    <img src={config.appearance.logoUrl} className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover border-2 border-primary/20 shadow-xl relative z-10" alt="Logo" />
+                    <img src={config.appearance.logoUrl} className="h-20 w-20 md:h-24 md:w-24 rounded-full object-cover border-2 border-primary/20 shadow-xl" alt="Logo" />
                   ) : (
-                    <h2 className="handwritten-logo !text-2xl relative z-10" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
+                    <h2 className="handwritten-logo !text-2xl" style={{ direction: 'ltr' }}>XMOOD STORE</h2>
                   )}
                </div>
                <Badge variant="outline" className="text-[8px] font-black text-primary border-primary/20 uppercase tracking-widest px-4 py-1 rounded-full bg-primary/5">Sovereign Identity Access</Badge>
@@ -144,9 +142,8 @@ export default function LoginPage() {
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
                         id="login-email-field"
-                        name="email"
                         type="email"
-                        autoComplete="username"
+                        autoComplete="email"
                         spellCheck={false}
                         value={loginEmailVal} 
                         onChange={e => setLoginEmailVal(e.target.value)} 
@@ -158,7 +155,6 @@ export default function LoginPage() {
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">مفتاح المرور</Label>
                       <Input 
                         id="login-pass-field"
-                        name="password"
                         type="password"
                         autoComplete="current-password"
                         value={loginPassVal} 
@@ -176,20 +172,19 @@ export default function LoginPage() {
                    <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-1.5">
                         <Label className="text-[10px] font-black text-primary/80 pr-3">الاسم الكامل</Label>
-                        <Input id="signup-name-field" name="name" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="الاسم الرباعي" required />
+                        <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="الاسم الرباعي" required />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-[10px] font-black text-primary/80 pr-3">رقم الجوال</Label>
-                        <Input id="signup-phone-field" name="tel" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." required />
+                        <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+966..." required />
                       </div>
                    </div>
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
                         id="signup-email-field"
-                        name="signup_email"
                         type="email"
-                        autoComplete="email"
+                        autoComplete="off"
                         spellCheck={false}
                         value={signupEmailVal} 
                         onChange={e => setSignupEmailVal(e.target.value)} 
@@ -201,7 +196,6 @@ export default function LoginPage() {
                       <Label className="text-[10px] font-black text-primary/80 pr-3">كلمة المرور</Label>
                       <Input 
                         id="signup-pass-field"
-                        name="new_password"
                         type="password"
                         autoComplete="new-password"
                         value={signupPassVal} 
