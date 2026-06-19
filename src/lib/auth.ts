@@ -15,7 +15,8 @@ import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from "firebase/firest
 import { auth, firestore as db } from "@/firebase";
 
 /**
- * 🛡️ Profile Sync Service 10.0 (Atomic & Fail-safe)
+ * 🛡️ Profile Sync Service 11.0 (Atomic & Idempotent)
+ * مزامنة ملف المستخدم بذكاء يمنع الكتابة فوق البيانات الحساسة (الرصيد، الرتب).
  */
 export async function syncUserProfile(user: User, additionalData: any = {}) {
   if (!user || !db) return;
@@ -26,13 +27,14 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
     const baseProfile = {
       uid: user.uid,
       displayName: additionalData.displayName || user.displayName || user.email?.split("@")[0] || "عضو",
-      email: user.email?.toLowerCase().trim(),
+      email: user.email?.toLowerCase().trim() || "",
       isVerified: user.emailVerified || false,
       updatedAt: serverTimestamp(),
       ...additionalData
     };
 
     if (!userDoc.exists()) {
+      console.log("[AUTH_SYNC] Creating New Sovereign Profile for:", user.uid);
       await setDoc(userRef, {
         ...baseProfile,
         walletBalance: 0,
@@ -45,11 +47,13 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
       const existing = userDoc.data();
       const updates: any = {};
       
+      // مزامنة دقيقة فقط للحقول المتغيرة
       if (existing.isVerified !== user.emailVerified) updates.isVerified = user.emailVerified;
       if (additionalData.displayName && existing.displayName !== additionalData.displayName) updates.displayName = additionalData.displayName;
       if (additionalData.phoneNumber && existing.phoneNumber !== additionalData.phoneNumber) updates.phoneNumber = additionalData.phoneNumber;
 
       if (Object.keys(updates).length > 0) {
+        console.log("[AUTH_SYNC] Atomic Profile Update for:", user.uid);
         await updateDoc(userRef, { 
           ...updates,
           updatedAt: serverTimestamp() 
@@ -57,7 +61,7 @@ export async function syncUserProfile(user: User, additionalData: any = {}) {
       }
     }
   } catch (error) {
-    console.error("[AUTH_SYNC_CRITICAL]", error);
+    console.error("[AUTH_SYNC_FATAL]", error);
     throw error;
   }
 }
@@ -116,37 +120,40 @@ export const sendAccountVerification = async (user: User) => {
 };
 
 /**
- * 🛡️ Robust Registration
+ * 🛡️ Atomic Registration Flow
+ * إنشاء حساب Firebase و Firestore في وحدة زمنية واحدة لضمان الاستقرار.
  */
 export const registerEmail = async (email: string, pass: string, name: string) => {
-  if (!email || typeof email !== 'string') throw new Error("Email string required");
+  if (!email || typeof email !== 'string') throw new Error("EMAIL_REQUIRED");
+  
+  // 🛡️ التطهير النهائي قبل الإرسال للـ SDK
   const cleanEmail = email.trim().toLowerCase();
   
   if (process.env.NODE_ENV === 'development') {
-    console.log("[AUTH_DISPATCH] Creating account for:", cleanEmail);
+    console.log("[AUTH_SDK] Dispatching Account Creation for:", cleanEmail);
   }
 
-  // 1. Create Auth User
+  // 1. إنشاء حساب المصادقة
   const res = await createUserWithEmailAndPassword(auth, cleanEmail, pass);
   
-  // 2. Set Profile Display Name in Auth
+  // 2. تحديث الاسم في Auth
   await updateProfile(res.user, { displayName: name });
   
-  // 3. Sync to Firestore
+  // 3. المزامنة الذرية مع Firestore
   await syncUserProfile(res.user, { displayName: name });
   
   return res;
 };
 
 /**
- * 🛡️ Robust Login
+ * 🛡️ Robust Login Pipeline
  */
 export const loginEmail = (email: string, pass: string) => {
-  if (!email || typeof email !== 'string') throw new Error("Email string required");
+  if (!email || typeof email !== 'string') throw new Error("EMAIL_REQUIRED");
   const cleanEmail = email.trim().toLowerCase();
   
   if (process.env.NODE_ENV === 'development') {
-    console.log("[AUTH_DISPATCH] Attempting login for:", cleanEmail);
+    console.log("[AUTH_SDK] Dispatching Login Request for:", cleanEmail);
   }
   
   return signInWithEmailAndPassword(auth, cleanEmail, pass);

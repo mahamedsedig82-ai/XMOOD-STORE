@@ -17,7 +17,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 
 export default function LoginPage() {
-  // 🛡️ Separate States to prevent tab-switching corruption
+  // 🛡️ صيانة الحالات المنفصلة لمنع تداخل البيانات
   const [loginEmailVal, setLoginEmailVal] = useState("");
   const [loginPassVal, setLoginPassVal] = useState("");
   
@@ -43,7 +43,7 @@ export default function LoginPage() {
     setIsMounted(true);
   }, []);
 
-  // 🛡️ Safe Redirect Orchestration
+  // 🛡️ مراقب التوجيه السيادي
   useEffect(() => {
     if (isMounted && authSettled && !authLoading && user && profile) {
       if (user.emailVerified || profile.isVerified) {
@@ -55,15 +55,14 @@ export default function LoginPage() {
   }, [user, profile, authLoading, authSettled, isMounted, router]);
 
   const validateEmail = (emailStr: string) => {
-    return String(emailStr)
-      .toLowerCase()
-      .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      );
+    if (!emailStr || typeof emailStr !== 'string') return false;
+    const regex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return regex.test(emailStr.toLowerCase().trim());
   };
 
   const handleAuth = async (type: 'login' | 'signup') => {
-    const currentEmail = type === 'signup' ? signupEmailVal.trim() : loginEmailVal.trim();
+    // 🛡️ استخراج البيانات بناءً على النوع بدقة مطلقة
+    const currentEmail = (type === 'signup' ? signupEmailVal : loginEmailVal).trim();
     const currentPass = type === 'signup' ? signupPassVal : loginPassVal;
 
     if (!currentEmail || !currentPass) {
@@ -83,42 +82,37 @@ export default function LoginPage() {
           return;
         }
         
+        console.log("[AUTH_TRACE] Initiating Registration Pipeline for:", currentEmail);
         const res = await registerEmail(currentEmail, currentPass, fullName);
-        // Sync phone number after initial creation
+        
+        // مزامنة رقم الهاتف بعد الإنشاء الأولي
         const { syncUserProfile } = await import("@/lib/auth");
         await syncUserProfile(res.user, { phoneNumber: phone });
         
         await sendAccountVerification(res.user);
-        toast({ title: "تم إنشاء العضوية", description: "يرجى تفعيل بريدك الإلكتروني الآن." });
+        toast({ title: "تم إنشاء العضوية بنجاح", description: "يرجى تفعيل بريدك الإلكتروني الآن." });
       } else {
+        console.log("[AUTH_TRACE] Initiating Login Pipeline for:", currentEmail);
         await loginEmail(currentEmail, currentPass);
         toast({ title: "تم الدخول بنجاح", description: "مرحباً بك في عالم XMOOD." });
       }
     } catch (error: any) {
-      console.error("[AUTH_ERROR]", error);
-      let msg = "فشل في المصادقة. تأكد من صحة البيانات.";
-      if (error.code === 'auth/invalid-email') msg = "تنسيق البريد الإلكتروني غير صالح.";
-      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً.";
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') msg = "البيانات غير صحيحة.";
+      console.error("[AUTH_CRITICAL_ERROR]", error);
+      let msg = "فشل في المصادقة. يرجى مراجعة البيانات.";
+      if (error.code === 'auth/invalid-email') msg = "البريد الإلكتروني غير صالح تقنياً.";
+      if (error.code === 'auth/email-already-in-use') msg = "هذا البريد مسجل مسبقاً في النظام.";
+      if (error.code === 'auth/weak-password') msg = "كلمة المرور ضعيفة جداً.";
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') msg = "بيانات الدخول غير صحيحة.";
+      
       toast({ variant: "destructive", title: "تنبيه أمني", description: msg });
       setLoading(false);
     }
   };
 
-  // 🛡️ Consistent Loader Structure to prevent Hydration Mismatch
   if (!isMounted) return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <Loader2 className="animate-spin text-primary" size={60} />
-      <p className="text-[10px] font-black uppercase tracking-widest gold-text">Initializing Sovereign Portal...</p>
-    </main>
-  );
-
-  // Still Loading Auth State
-  if (authLoading && !user) return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
-      <Loader2 className="animate-spin text-primary" size={60} />
-      <p className="text-[10px] font-black uppercase tracking-widest gold-text">Securing Node Access...</p>
-    </main>
+    </div>
   );
 
   return (
@@ -150,7 +144,8 @@ export default function LoginPage() {
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
-                        id="login-email"
+                        id="login-email-field"
+                        name="login-email"
                         autoComplete="email"
                         value={loginEmailVal} 
                         onChange={e => setLoginEmailVal(e.target.value)} 
@@ -161,7 +156,8 @@ export default function LoginPage() {
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black uppercase text-primary/80 pr-3">مفتاح المرور</Label>
                       <Input 
-                        id="login-password"
+                        id="login-password-field"
+                        name="login-password"
                         autoComplete="current-password"
                         value={loginPassVal} 
                         onChange={e => setLoginPassVal(e.target.value)} 
@@ -182,21 +178,25 @@ export default function LoginPage() {
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black text-primary/80 pr-3">البريد الإلكتروني</Label>
                       <Input 
-                        id="signup-email"
+                        id="signup-email-field"
+                        name="signup-email"
                         autoComplete="email"
                         value={signupEmailVal} 
                         onChange={e => setSignupEmailVal(e.target.value)} 
                         type="email" 
+                        placeholder="new-user@xmood.pro"
                       />
                    </div>
                    <div className="space-y-1.5">
                       <Label className="text-[10px] font-black text-primary/80 pr-3">كلمة المرور</Label>
                       <Input 
-                        id="signup-password"
+                        id="signup-password-field"
+                        name="signup-password"
                         autoComplete="new-password"
                         value={signupPassVal} 
                         onChange={e => setSignupPassVal(e.target.value)} 
                         type="password" 
+                        placeholder="••••••••"
                       />
                    </div>
                    <Button onClick={() => handleAuth('signup')} disabled={loading} className="royal-button w-full h-14 text-[10px] mt-2">
